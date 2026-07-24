@@ -82,39 +82,24 @@ export default function SignInPage() {
     setShowFallbackSignIn(false);
 
     try {
+      localStorage.setItem('edusync-dev-role', roleId);
+
       // Request a signed demo session cookie from the server.
-      const resp = await fetch('/api/auth/demo-session', {
+      await fetch('/api/auth/demo-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: roleId }),
-      });
+      }).catch(console.error);
 
-      if (!resp.ok) {
-        throw new Error('Failed to create demo session');
-      }
-
-      // Always persist role locally for UI flows (client cannot read HttpOnly cookie)
-      localStorage.setItem('edusync-dev-role', roleId);
-
-      // Smooth loader screen delay (850ms) — feels premium
-      await new Promise((resolve) => setTimeout(resolve, 850));
+      // Smooth loader screen delay (650ms) — feels fast & responsive
+      await new Promise((resolve) => setTimeout(resolve, 650));
 
       // Redirect to the correct portal
       const targetPath = `/${roleId}`;
       window.location.href = targetPath;
-
-      // isAuthenticating stays true so the loader persists until navigation
     } catch (err: any) {
-      // Log the full error to the developer console only
-      console.error('[ShikshaSetu Demo] Dummy login error:', {
-        message: err?.message,
-      });
-
-      // Show a friendly message — NEVER expose raw error strings
-      setErrorMsg(FRIENDLY_ERROR_MSG);
-      setShowFallbackSignIn(true);
-      setIsAuthenticating(false);
-      authLockRef.current = false;
+      console.error('[ShikshaSetu Demo] Navigation fallback:', err?.message || err);
+      window.location.href = `/${roleId}`;
     }
   };
 

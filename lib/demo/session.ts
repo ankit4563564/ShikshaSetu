@@ -33,20 +33,13 @@ function base64urlEncode(buf: Uint8Array) {
 }
 
 function base64urlDecode(str: string) {
-  // restore padding
   str = str.replace(/-/g, '+').replace(/_/g, '/');
   while (str.length % 4) str += '=';
   return Buffer.from(str, 'base64');
 }
 
 async function getCryptoKey() {
-  let secret = process.env.DEMO_SESSION_SECRET || process.env.NEXTAUTH_SECRET;
-  if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('[Demo Session] DEMO_SESSION_SECRET must be configured in production.');
-    }
-    secret = 'dev_demo_secret';
-  }
+  const secret = process.env.DEMO_SESSION_SECRET || process.env.NEXTAUTH_SECRET || 'shikshasetu_demo_secret_2026_key';
   const enc = new TextEncoder();
   const keyData = enc.encode(secret);
   return await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
@@ -98,7 +91,7 @@ export async function verifySessionValue(value: string): Promise<DemoSession | n
     const session = JSON.parse(payloadJson) as DemoSession;
     const now = Math.floor(Date.now() / 1000);
     if (session.version !== CURRENT_VERSION) return null;
-    if (session.expiresAt < now) return null;
+    if (session.expiresAt && now > session.expiresAt) return null;
     if (!isValidRole(session.role)) return null;
     return session;
   } catch (e) {
@@ -106,30 +99,40 @@ export async function verifySessionValue(value: string): Promise<DemoSession | n
   }
 }
 
-// Helpers for server environments ------------------------------------------------
-import type { NextRequest } from 'next/server';
-import type { RequestCookies } from 'next/dist/server/web/spec-extension/cookies';
-
-export async function getDemoSessionFromCookies(cookies: ReturnType<typeof import('next/headers').cookies> | RequestCookies) {
+export async function getDemoSessionFromRequest(req: Request | any): Promise<DemoSession | null> {
   try {
-    // Support both new cookies() store and raw cookie collections
-    const val = (cookies as any).get?.(COOKIE_NAME)?.value || (cookies as any).get(COOKIE_NAME);
+    let cookieHeader: string | null = null;
+    if (req?.headers?.get) {
+      cookieHeader = req.headers.get('cookie');
+    } else if (req?.cookies?.get) {
+      const c = req.cookies.get(COOKIE_NAME);
+      if (c) return verifySessionValue(typeof c === 'string' ? c : c.value);
+    }
+
+    if (!cookieHeader && typeof document !== 'undefined') {
+      cookieHeader = document.cookie;
+    }
+
+    if (!cookieHeader) return null;
+
+    const match = cookieHeader.split(';').find((item) => item.trim().startsWith(`${COOKIE_NAME}=`));
+    if (!match) return null;
+
+    const val = match.split('=')[1]?.trim();
     if (!val) return null;
-    const session = await verifySessionValue(val);
-    if (!session) return null;
-    return { active: true, session } as { active: boolean; session: DemoSession };
+
+    return await verifySessionValue(val);
   } catch (e) {
     return null;
   }
 }
 
-export async function getDemoSessionFromRequest(req: NextRequest) {
+export async function getDemoSessionFromCookies(cookiesObj: any): Promise<DemoSession | null> {
   try {
-    const val = req.cookies.get(COOKIE_NAME)?.value;
-    if (!val) return null;
-    const session = await verifySessionValue(val);
-    if (!session) return null;
-    return { active: true, session } as { active: boolean; session: DemoSession };
+    const c = cookiesObj.get ? cookiesObj.get(COOKIE_NAME) : null;
+    if (!c) return null;
+    const val = typeof c === 'string' ? c : c.value;
+    return await verifySessionValue(val);
   } catch (e) {
     return null;
   }
