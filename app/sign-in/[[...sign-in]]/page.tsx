@@ -101,7 +101,7 @@ export default function SignInPage() {
 
       // Redirect to the correct portal
       const targetPath = `/${roleId}`;
-      router.push(targetPath);
+      window.location.href = targetPath;
 
       // isAuthenticating stays true so the loader persists until navigation
     } catch (err: any) {

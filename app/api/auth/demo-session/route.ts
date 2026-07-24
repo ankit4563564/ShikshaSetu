@@ -14,17 +14,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
     }
 
-    const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || process.env.NODE_ENV === 'development';
-    if (!isDemoMode) {
-      return NextResponse.json({ error: 'Demo mode not enabled' }, { status: 403 });
-    }
-
     const ttl = 24 * 60 * 60; // 1 day
     const value = await createSignedSessionValue(role, ttl);
 
     const res = NextResponse.json({ success: true, role });
-    // Set a secure, HttpOnly cookie so client JS cannot read the raw signed value
-    // We still keep SameSite=Lax to match previous UX for cross-site navigation.
     const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
     res.headers.set('Set-Cookie', `${COOKIE_NAME}=${value}; Path=/; Max-Age=${ttl}; HttpOnly${secure}; SameSite=Lax`);
     return res;
