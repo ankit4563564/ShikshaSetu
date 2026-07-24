@@ -143,41 +143,56 @@ export function NotificationCenter({
   if (!isOpen) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95, y: -10 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95, y: -10 }}
-      className="absolute right-0 mt-2 w-[420px] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-deep-teal/10 z-50 flex flex-col overflow-hidden"
-    >
-      {/* Header */}
-      <div className="px-5 py-4 border-b border-deep-teal/10 bg-gradient-to-r from-deep-teal/5 to-transparent">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h3 className="font-display text-sm font-extrabold text-deep-teal">Notifications</h3>
-            {unreadCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-warm-clay/15 text-warm-clay">
-                {unreadCount} new
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setViewMode(viewMode === 'list' ? 'analytics' : 'list')}
-              className="p-1.5 rounded-lg hover:bg-deep-teal/5 text-deep-teal/40 transition-colors"
-              title="Analytics"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </button>
-            {unreadCount > 0 && (
+    <>
+      {/* Backdrop overlay */}
+      <div 
+        className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]" 
+        onClick={onClose} 
+      />
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+        className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-sm sm:max-w-md max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 flex flex-col overflow-hidden"
+      >
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/80">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h3 className="font-display text-sm font-extrabold text-slate-900">Notifications</h3>
+              {unreadCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                  {unreadCount} new
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
               <button
-                onClick={handleMarkAllRead}
-                className="px-2 py-1 rounded-lg text-[10px] font-bold text-deep-teal/50 hover:text-deep-teal hover:bg-deep-teal/5 transition-colors"
+                onClick={() => setViewMode(viewMode === 'list' ? 'analytics' : 'list')}
+                className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 transition-colors"
+                title="Analytics"
               >
-                Mark all read
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
               </button>
-            )}
+              {unreadCount > 0 && (
+                <button
+                  onClick={handleMarkAllRead}
+                  className="text-[11px] font-bold text-slate-600 hover:text-slate-900 px-2 py-1 rounded-md hover:bg-slate-200 transition-colors"
+                >
+                  Mark all read
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors font-bold text-xs"
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         </div>
 
@@ -197,7 +212,6 @@ export function NotificationCenter({
             </div>
           </div>
         )}
-      </div>
 
       {/* Filters */}
       {viewMode === 'list' && (
@@ -294,6 +308,7 @@ export function NotificationCenter({
         </div>
       )}
     </motion.div>
+    </>
   );
 }
 

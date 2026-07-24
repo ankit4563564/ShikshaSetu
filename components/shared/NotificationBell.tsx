@@ -77,19 +77,26 @@ function NotificationCenterWrapper({
   // If no recipientId from notifications yet, show a loading state
   if (!recipientId) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: -10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: -10 }}
-        className="absolute right-0 mt-2 w-[420px] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-deep-teal/10 z-50 flex flex-col overflow-hidden"
-      >
-        <div className="px-5 py-4 border-b border-deep-teal/10">
-          <h3 className="font-display text-sm font-extrabold text-deep-teal">Notifications</h3>
-        </div>
-        <div className="flex items-center justify-center py-12">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-deep-teal border-t-transparent" />
-        </div>
-      </motion.div>
+      <>
+        <div 
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]" 
+          onClick={onClose} 
+        />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: -10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: -10 }}
+          className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-sm sm:max-w-md max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 flex flex-col overflow-hidden"
+        >
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h3 className="font-display text-sm font-extrabold text-slate-900">Notifications</h3>
+            <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xs font-bold">✕</button>
+          </div>
+          <div className="flex items-center justify-center py-12">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
+          </div>
+        </motion.div>
+      </>
     );
   }
 
