@@ -2854,6 +2854,8 @@ export default function ParentTodayClient({
                   let botReply = '';
                   if (q.includes('sunday') || q.includes('saturday') || q.includes('weekend') || q.includes('holiday') || q.includes('class on')) {
                     botReply = `No, Sunday is a weekly school holiday for ${name}. School operations, classes, and bus tracking resume on Monday morning at 7:30 AM.`;
+                  } else if (q.includes('will bus') || q.includes('is bus coming') || q.includes('bus today') || q.includes('bus schedule')) {
+                    botReply = `Yes! Bus #4 is running on schedule today for ${name}. Morning pickup: 7:36 AM | Evening drop-off: 3:45 PM. Driver: Ramesh Kumar (+91 98765 43210).`;
                   } else if (q.includes('bus') || q.includes('route') || q.includes('tracking') || q.includes('driver')) {
                     botReply = `Bus #4 completed the morning pickup at 7:36 AM and arrived safely at school at 8:07 AM. Geofence tracking confirmed ${name} deboarded safely at 8:09 AM.`;
                   } else if (q.includes('homework') || q.includes('assignment') || q.includes('project') || q.includes('task')) {

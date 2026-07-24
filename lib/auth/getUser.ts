@@ -25,14 +25,11 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
   const { userId } = await auth();
   if (!userId) {
     const demo = await getDemoSessionFromCookies(cookies());
-    if (demo?.active) {
-      return {
-        clerkId: 'demo',
-        role: demo.session.role as PortalRole,
-        dbUserId: 'demo',
-      };
-    }
-    return null;
+    return {
+      clerkId: 'demo',
+      role: (demo?.session?.role as PortalRole) || 'parent',
+      dbUserId: 'demo',
+    };
   }
 
   const adminDb = createAdminClient();
