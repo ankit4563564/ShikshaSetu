@@ -9,7 +9,7 @@ export default async function GateLayout({ children }: { children: React.ReactNo
   const demo = await getDemoSessionFromCookies(cookies());
 
   if (!demo?.active) {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) redirect('/sign-in');
 
     const adminDb = createAdminClient();

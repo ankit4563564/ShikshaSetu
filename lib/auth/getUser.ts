@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getDemoSessionFromCookies } from '@/lib/demo/session';
 
-export type PortalRole = 'teacher' | 'student' | 'parent' | 'driver' | 'admin' | 'vendor';
+export type PortalRole = 'teacher' | 'student' | 'parent' | 'driver' | 'admin' | 'vendor' | 'gate';
 
 interface AuthenticatedUser {
   clerkId: string;
@@ -18,6 +18,7 @@ const ROLE_TABLE: Record<PortalRole, string> = {
   driver: 'drivers',
   admin: 'admins',
   vendor: 'vendors',
+  gate: 'gate_operators',
 };
 
 export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {

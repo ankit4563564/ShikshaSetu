@@ -89,6 +89,7 @@ export async function POST(req: NextRequest) {
   try {
     console.log('🌱 Starting Clerk user seed...\n');
 
+    const clerk = await clerkClient();
     const results = [];
 
     for (const user of DEMO_USERS) {
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
         
         // Check if user already exists
         try {
-          const existingUsers = await clerkClient().users.getUserList({
+          const existingUsers = await clerk.users.getUserList({
             emailAddress: [user.email],
           });
           
@@ -111,7 +112,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Create user
-        const newUser = await clerkClient().users.createUser({
+        const newUser = await clerk.users.createUser({
           emailAddress: [user.email],
           firstName: user.firstName,
           lastName: user.lastName,

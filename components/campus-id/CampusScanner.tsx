@@ -193,12 +193,22 @@ export function CampusScanner({
   };
 
   const handleManualSubmit = async () => {
-    if (manualCode.length < 3) return;
+    // Input validation - sanitize to digits only
+    const sanitized = manualCode.replace(/[^0-9]/g, '');
+    if (sanitized.length < 3) {
+      setErrorText('Code must be at least 3 digits');
+      return;
+    }
+    if (sanitized.length > 20) {
+      setErrorText('Code is too long');
+      return;
+    }
+    
     setIsBusy(true);
     setState('verifying');
 
     try {
-      const scanResult = await onScan(manualCode, mode);
+      const scanResult = await onScan(sanitized, mode);
       setResult(scanResult);
       setState('result');
     } catch (err) {

@@ -1,5 +1,9 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { SignUp } from '@clerk/nextjs';
 import Link from 'next/link';
+import { RoleSelector } from '@/components/onboarding';
 
 const demoProfiles = [
   {
@@ -68,11 +72,17 @@ const demoProfiles = [
 ];
 
 export default function SignUpPage() {
+  const [showRoleSelector, setShowRoleSelector] = useState(false);
+
   const colorClasses = {
     'marigold': 'bg-marigold/10 border-marigold/30 text-marigold',
     'sage': 'bg-sage/10 border-sage/30 text-sage',
     'deep-teal': 'bg-deep-teal/10 border-deep-teal/30 text-deep-teal',
     'warm-clay': 'bg-warm-clay/10 border-warm-clay/30 text-warm-clay',
+  };
+
+  const handleSignUpComplete = () => {
+    setShowRoleSelector(true);
   };
 
   return (
@@ -127,6 +137,7 @@ export default function SignUpPage() {
             routing="path"
             path="/sign-up"
             signInUrl="/sign-in"
+            afterSignUpUrl="/onboarding"
             appearance={{
               variables: {
                 colorPrimary: '#1f4e5f',
@@ -141,6 +152,12 @@ export default function SignUpPage() {
         </div>
 
       </div>
+
+      {/* Role Selector Modal */}
+      <RoleSelector 
+        isOpen={showRoleSelector}
+        onClose={() => setShowRoleSelector(false)}
+      />
     </div>
   );
 }

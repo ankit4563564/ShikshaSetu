@@ -14,7 +14,7 @@ export default async function StudentPage() {
   const demo = await getDemoSessionFromCookies(cookies());
 
   if (!demo?.active) {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) {
       redirect('/sign-in');
     }

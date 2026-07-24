@@ -3,6 +3,7 @@ export { SchoolStoryButton } from './SchoolStoryButton';
 export { SchoolStoryModal } from './SchoolStoryModal';
 export { RoleCard } from './RoleCard';
 export { RoleCardGrid } from './RoleCardGrid';
+export { RoleSelector } from './RoleSelector';
 export { IntroCinematic } from './IntroCinematic';
 export { JourneyTimeline } from './JourneyTimeline';
 export { LiveEcosystemStrip } from './LiveEcosystemStrip';

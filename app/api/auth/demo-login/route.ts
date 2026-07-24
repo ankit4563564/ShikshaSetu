@@ -46,7 +46,8 @@ export async function POST(request: NextRequest) {
     const email = `${role}@${DEMO_EMAIL_DOMAIN}`;
 
     // Verify the user exists in Clerk
-    const users = await clerkClient().users.getUserList({
+    const clerk = await clerkClient();
+    const users = await clerk.users.getUserList({
       emailAddress: [email],
     });
 
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     // Create a sign-in token for the user (expires in 10 minutes, single-use)
     // Clerk will authenticate the user when they visit the token URL
-    const signInToken = await clerkClient().signInTokens.createSignInToken({
+    const signInToken = await clerk.signInTokens.createSignInToken({
       userId: user.id,
       expiresInSeconds: 600,
     });

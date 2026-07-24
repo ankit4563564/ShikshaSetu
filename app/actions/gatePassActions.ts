@@ -37,7 +37,7 @@ export async function requestGatePassAction(
   let performer = 'dev-system';
 
   if (clerkKey) {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (userId) {
       performer = userId;
       // Resolve guardian UUID from clerk_user_id
@@ -139,7 +139,7 @@ export async function approveGatePassAction(passId: string, teacherId: string) {
   let performer = teacherId;
 
   if (clerkKey) {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (userId) performer = userId;
   }
 
@@ -250,7 +250,7 @@ export async function rejectGatePassAction(passId: string, teacherId: string, re
   let performer = teacherId;
 
   if (clerkKey) {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (userId) performer = userId;
   }
 
@@ -335,7 +335,7 @@ export async function cancelGatePassAction(passId: string) {
   let performer = 'parent';
 
   if (clerkKey) {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (userId) performer = userId;
   }
 
@@ -427,7 +427,7 @@ export async function verifyGatePassAction(passCode: string): Promise<VerifyPass
   let performer = 'gate-staff';
 
   if (clerkKey) {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (userId) performer = userId;
   }
 

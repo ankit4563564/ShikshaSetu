@@ -2,13 +2,13 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 export interface LinkUserResult {
   success: boolean;
-  linkedRole?: 'teacher' | 'parent' | 'admin';
+  linkedRole?: 'teacher' | 'parent' | 'admin' | 'vendor';
   error?: string;
 }
 
 /**
  * linkClerkUser: Idempotent and resilient user linking flow.
- * 1. Checks if clerk_user_id is already linked in teachers, guardians, or admins.
+ * 1. Checks if clerk_user_id is already linked in teachers, guardians, admins, or vendors.
  * 2. If not, queries by email in each table:
  *    - Updates the database row with the clerk_user_id.
  *    - Updates Clerk user's publicMetadata.role via Clerk API.
@@ -57,6 +57,18 @@ export async function linkClerkUser(userId: string, email: string): Promise<Link
     return { success: true, linkedRole: 'admin' };
   }
 
+  // Check vendors
+  const { data: vendorById } = await supabase
+    .from('vendors')
+    .select('id')
+    .eq('clerk_user_id', userId)
+    .limit(1)
+    .maybeSingle();
+
+  if (vendorById) {
+    return { success: true, linkedRole: 'vendor' };
+  }
+
   // 2. Email-based mapping lookup (runs on first login only)
   // Check teachers
   const { data: teacherByEmail } = await supabase
@@ -80,7 +92,8 @@ export async function linkClerkUser(userId: string, email: string): Promise<Link
     // Update Clerk metadata
     try {
       const { clerkClient } = await import('@clerk/nextjs/server');
-      await clerkClient.users.updateUserMetadata(userId, {
+      const clerk = await clerkClient();
+      await clerk.users.updateUserMetadata(userId, {
         publicMetadata: { role: 'teacher' }
       });
       return { success: true, linkedRole: 'teacher' };
@@ -118,7 +131,8 @@ export async function linkClerkUser(userId: string, email: string): Promise<Link
 
     try {
       const { clerkClient } = await import('@clerk/nextjs/server');
-      await clerkClient.users.updateUserMetadata(userId, {
+      const clerk = await clerkClient();
+      await clerk.users.updateUserMetadata(userId, {
         publicMetadata: { role: 'parent' }
       });
       return { success: true, linkedRole: 'parent' };
@@ -155,7 +169,8 @@ export async function linkClerkUser(userId: string, email: string): Promise<Link
 
     try {
       const { clerkClient } = await import('@clerk/nextjs/server');
-      await clerkClient.users.updateUserMetadata(userId, {
+      const clerk = await clerkClient();
+      await clerk.users.updateUserMetadata(userId, {
         publicMetadata: { role: 'admin' }
       });
       return { success: true, linkedRole: 'admin' };
@@ -164,6 +179,44 @@ export async function linkClerkUser(userId: string, email: string): Promise<Link
         .from('admins')
         .update({ clerk_user_id: null })
         .eq('id', adminByEmail.id);
+
+      return { 
+        success: false, 
+        error: `Clerk metadata update failed. Rollback succeeded: ${clerkError.message}` 
+      };
+    }
+  }
+
+  // Check vendors
+  const { data: vendorByEmail } = await supabase
+    .from('vendors')
+    .select('id')
+    .eq('email', email)
+    .limit(1)
+    .maybeSingle();
+
+  if (vendorByEmail) {
+    const { error: dbError } = await supabase
+      .from('vendors')
+      .update({ clerk_user_id: userId })
+      .eq('id', vendorByEmail.id);
+
+    if (dbError) {
+      return { success: false, error: `Database link update failed: ${dbError.message}` };
+    }
+
+    try {
+      const { clerkClient } = await import('@clerk/nextjs/server');
+      const clerk = await clerkClient();
+      await clerk.users.updateUserMetadata(userId, {
+        publicMetadata: { role: 'vendor' }
+      });
+      return { success: true, linkedRole: 'vendor' };
+    } catch (clerkError: any) {
+      await supabase
+        .from('vendors')
+        .update({ clerk_user_id: null })
+        .eq('id', vendorByEmail.id);
 
       return { 
         success: false, 

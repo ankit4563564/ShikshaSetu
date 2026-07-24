@@ -25,7 +25,7 @@ export default async function TeacherPage() {
 
   // 1. Clerk Authentication Check & Onboarding Link
   if (clerkKey && !demo?.active) {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) {
       redirect('/sign-in');
     }

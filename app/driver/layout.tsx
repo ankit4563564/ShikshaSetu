@@ -9,7 +9,7 @@ export default async function DriverLayout({ children }: { children: React.React
   const demo = await getDemoSessionFromCookies(cookies());
 
   if (!demo?.active) {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) redirect('/sign-in');
 
     const adminDb = createAdminClient();

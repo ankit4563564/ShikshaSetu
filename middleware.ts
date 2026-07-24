@@ -6,6 +6,7 @@ import { getDemoSessionFromRequest } from '@/lib/demo/session';
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
+  '/onboarding(.*)',
   '/unauthorized(.*)',
   '/',
   '/landing(.*)',
@@ -26,7 +27,7 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   // Ensure user is signed in
-  const session = auth();
+  const session = await auth();
   if (!session.userId) {
     return session.redirectToSignIn({ returnBackUrl: req.url });
   }

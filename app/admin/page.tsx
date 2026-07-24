@@ -22,7 +22,7 @@ export default async function AdminPage() {
   // Demo mode bypass: use centralized demo session validation
   const demo = await getDemoSessionFromCookies(cookies());
   if (clerkKey && !demo?.active) {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) {
       redirect('/sign-in');
     }

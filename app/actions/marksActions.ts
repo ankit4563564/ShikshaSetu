@@ -46,9 +46,9 @@ export interface ExamAnalytics {
   belowAverage: number;
 }
 
-function getTeacherId(): string | null {
+async function getTeacherId(): Promise<string | null> {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     return userId || null;
   } catch {
     return null;
@@ -56,7 +56,7 @@ function getTeacherId(): string | null {
 }
 
 export async function createExamAction(formData: FormData) {
-  const teacherId = getTeacherId();
+  const teacherId = await getTeacherId();
   if (!teacherId) throw new Error('Unauthorized');
 
   const supabase = createClient();
@@ -137,7 +137,7 @@ export async function updateMarksAction(
   examId: string,
   grades: { gradeId: string; score: number }[]
 ) {
-  const teacherId = getTeacherId();
+  const teacherId = await getTeacherId();
   if (!teacherId) throw new Error('Unauthorized');
 
   const adminDb = createAdminClient();
@@ -163,7 +163,7 @@ export async function updateMarksAction(
 }
 
 export async function publishExamAction(examId: string) {
-  const teacherId = getTeacherId();
+  const teacherId = await getTeacherId();
   if (!teacherId) throw new Error('Unauthorized');
 
   const adminDb = createAdminClient();
