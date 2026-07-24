@@ -26,32 +26,28 @@ export default async function TeacherPage() {
   // 1. Clerk Authentication Check & Onboarding Link
   if (clerkKey && !demo?.active) {
     const { userId } = await auth();
-    if (!userId) {
-      redirect('/sign-in');
-    }
+    if (userId) {
+      const user = await currentUser();
+      const email = user?.emailAddresses[0]?.emailAddress || '';
 
-    const user = await currentUser();
-    const email = user?.emailAddresses[0]?.emailAddress || '';
+      // Idempotent account onboarding linking on first login
+      const onboarding = await linkClerkUser(userId, email);
+      if (!onboarding.success) {
+        console.warn('[Teacher Onboarding] Warning:', onboarding.error);
+      }
 
-    // Idempotent account onboarding linking on first login
-    const onboarding = await linkClerkUser(userId, email);
-    if (!onboarding.success) {
-      console.warn('[Teacher Onboarding] Warning:', onboarding.error);
-    }
+      // Query database to fetch linked teacher record (admin client bypasses RLS)
+      const adminDb = createAdminClient();
+      const { data: teacher } = await adminDb
+        .from('teachers')
+        .select('id')
+        .eq('clerk_user_id', userId)
+        .limit(1)
+        .maybeSingle();
 
-    // Query database to fetch linked teacher record (admin client bypasses RLS)
-    const adminDb = createAdminClient();
-    const { data: teacher } = await adminDb
-      .from('teachers')
-      .select('id')
-      .eq('clerk_user_id', userId)
-      .limit(1)
-      .maybeSingle();
-
-    if (teacher) {
-      activeTeacherId = teacher.id;
-    } else {
-      redirect('/unauthorized?portal=teacher&currentRole=none');
+      if (teacher) {
+        activeTeacherId = teacher.id;
+      }
     }
   }
 

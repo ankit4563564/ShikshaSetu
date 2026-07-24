@@ -27,45 +27,42 @@ export default async function ParentPage() {
   const demo = await getDemoSessionFromCookies(cookies());
 
   // 1. Clerk Authentication Check & Onboarding Link
+  // 1. Clerk Authentication Check & Onboarding Link
   if (clerkKey && !demo?.active) {
     const { userId } = await auth();
-    if (!userId) {
-      redirect('/sign-in');
-    }
+    if (userId) {
+      const user = await currentUser();
+      const email = user?.emailAddresses[0]?.emailAddress || '';
 
-    const user = await currentUser();
-    const email = user?.emailAddresses[0]?.emailAddress || '';
+      // Idempotent account onboarding linking on first login
+      const onboarding = await linkClerkUser(userId, email);
+      if (!onboarding.success) {
+        console.warn('[Parent Onboarding] Warning:', onboarding.error);
+      }
 
-    // Idempotent account onboarding linking on first login
-    const onboarding = await linkClerkUser(userId, email);
-    if (!onboarding.success) {
-      console.warn('[Parent Onboarding] Warning:', onboarding.error);
-    }
+      // Query database to fetch linked guardian (admin client bypasses RLS)
+      const adminDb = createAdminClient();
+      const { data: guardian } = await adminDb
+        .from('guardians')
+        .select('id, first_name, last_name, email, preferred_language')
+        .eq('clerk_user_id', userId)
+        .limit(1)
+        .maybeSingle();
 
-    // Query database to fetch linked guardian (admin client bypasses RLS)
-    const adminDb = createAdminClient();
-    const { data: guardian } = await adminDb
-      .from('guardians')
-      .select('id, first_name, last_name, email, preferred_language')
-      .eq('clerk_user_id', userId)
-      .limit(1)
-      .maybeSingle();
+      if (guardian) {
+        guardianId = guardian.id;
+        guardianName = `${guardian.first_name} ${guardian.last_name}`;
+        guardianEmail = guardian.email;
+        parentLanguage = guardian.preferred_language || 'en';
 
-    if (guardian) {
-      guardianId = guardian.id;
-      guardianName = `${guardian.first_name} ${guardian.last_name}`;
-      guardianEmail = guardian.email;
-      parentLanguage = guardian.preferred_language || 'en';
+        // Fetch linked children from guardian_access table
+        const { data: access } = await adminDb
+          .from('guardian_access')
+          .select('student_id')
+          .eq('guardian_id', guardian.id);
 
-      // Fetch linked children from guardian_access table
-      const { data: access } = await adminDb
-        .from('guardian_access')
-        .select('student_id')
-        .eq('guardian_id', guardian.id);
-
-      linkedStudentIds = (access || []).map((a: any) => a.student_id);
-    } else {
-      redirect('/unauthorized?portal=parent&currentRole=none');
+        linkedStudentIds = (access || []).map((a: any) => a.student_id);
+      }
     }
   }
 

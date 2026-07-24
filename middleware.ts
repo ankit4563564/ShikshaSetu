@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { getDemoSessionFromRequest } from '@/lib/demo/session';
 
-// Match public authentication routes and the landing page
+// Match public authentication routes, landing page, and all portal demo routes
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
@@ -11,6 +11,13 @@ const isPublicRoute = createRouteMatcher([
   '/',
   '/landing(.*)',
   '/demo(.*)',
+  '/parent(.*)',
+  '/teacher(.*)',
+  '/student(.*)',
+  '/admin(.*)',
+  '/driver(.*)',
+  '/gate(.*)',
+  '/vendor(.*)',
   '/api/demo/runner(.*)',
   '/api/auth/demo-session(.*)',
   '/api/seed-clerk-users(.*)',
