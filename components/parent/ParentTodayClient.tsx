@@ -11,6 +11,7 @@ import { fetchChatMessagesAction, sendChatMessageAction, ChatMessageData } from 
 import { requestGatePassAction, cancelGatePassAction } from '@/app/actions/gatePassActions';
 import { submitMoodCheckin } from '@/app/actions/wellnessActions';
 import NotificationBell from '@/components/shared/NotificationBell';
+import LanguageToggle from '@/components/shared/LanguageToggle';
 import { confirmHomeSafe, raiseAlert, checkNotHomeSafe } from '@/lib/journey';
 import { Toast } from '@/components/shared/Toast';
 import { Skeleton } from '@/components/shared/Skeleton';

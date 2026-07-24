@@ -101,10 +101,10 @@ export async function POST(request: NextRequest) {
           }
           break;
         case 10:
-          result = await demoStep10QRGenerated(sessionId).catch(() => ({ success: true }));
+          result = await demoStep10QRGenerated(sessionId, session?.redemptionId || '').catch(() => ({ success: true }));
           break;
         case 11:
-          result = await demoStep11VendorScan(sessionId).catch(() => ({ success: true }));
+          result = await demoStep11VendorScan(sessionId, session?.redemptionId || '').catch(() => ({ success: true }));
           break;
         case 12:
           result = await demoStep12InventoryUpdate(sessionId).catch(() => ({ success: true }));

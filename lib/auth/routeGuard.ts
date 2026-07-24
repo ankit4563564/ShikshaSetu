@@ -42,7 +42,7 @@ export async function requireRole(allowedRoles: Role[]): Promise<AuthResult | Ne
 
     // Demo mode / unauthenticated fallback for seamless hackathon testing
     const demo = await getDemoSessionFromCookies(cookies());
-    const demoRoleId = demo?.session?.role || allowedRoles[0] || 'parent';
+    const demoRoleId = demo?.role || allowedRoles[0] || 'parent';
     return {
       userId: 'demo',
       roleId: `demo-${demoRoleId}-id`,

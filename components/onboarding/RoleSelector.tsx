@@ -73,7 +73,7 @@ export function RoleSelector({ isOpen, onClose, onRoleSelected }: RoleSelectorPr
       scale: 1,
       opacity: 1,
       y: 0,
-      transition: { type: 'spring', damping: 25, stiffness: 300 },
+      transition: { type: 'spring' as const, damping: 25, stiffness: 300 },
     },
     exit: { scale: 0.9, opacity: 0, y: 20 },
   };

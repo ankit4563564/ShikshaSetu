@@ -21,6 +21,7 @@ export interface DemoSession {
   issuedAt: number; // epoch seconds
   expiresAt: number; // epoch seconds
   version: number;
+  active?: boolean;
 }
 
 function isValidRole(r: any): r is DemoRole {
@@ -71,6 +72,7 @@ export async function createSignedSessionValue(role: DemoRole, ttlSeconds = 8640
     issuedAt: now,
     expiresAt: now + ttlSeconds,
     version: CURRENT_VERSION,
+    active: true,
   };
 
   const payload = JSON.stringify(session);
@@ -93,7 +95,7 @@ export async function verifySessionValue(value: string): Promise<DemoSession | n
     if (session.version !== CURRENT_VERSION) return null;
     if (session.expiresAt && now > session.expiresAt) return null;
     if (!isValidRole(session.role)) return null;
-    return session;
+    return { ...session, active: true };
   } catch (e) {
     return null;
   }

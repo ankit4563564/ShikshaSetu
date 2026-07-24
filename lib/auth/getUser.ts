@@ -27,7 +27,7 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
     const demo = await getDemoSessionFromCookies(cookies());
     return {
       clerkId: 'demo',
-      role: (demo?.session?.role as PortalRole) || 'parent',
+      role: (demo?.role as PortalRole) || 'parent',
       dbUserId: 'demo',
     };
   }
