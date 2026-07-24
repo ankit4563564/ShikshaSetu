@@ -1193,32 +1193,107 @@ export default function ParentTodayClient({
                         <p className="font-body text-xs text-slate-500">Route #4 &middot; Morning Pick-up &amp; School Transit</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => setActiveNav('bus')}
-                      className="px-3.5 py-1.5 bg-slate-900 text-white rounded-xl font-display text-xs font-bold hover:bg-slate-800 transition-all shadow-xs"
-                    >
-                      Open Live Map &rarr;
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const driverPhone = "+91 98765 43210";
+                          setToastMessage(`📞 Calling Driver Ramesh Kumar (${driverPhone})...`);
+                        }}
+                        className="px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-700 rounded-xl font-display text-xs font-bold hover:bg-slate-200 transition-all"
+                      >
+                        📞 Call Driver
+                      </button>
+                      <button
+                        onClick={() => setActiveNav('bus')}
+                        className="px-3.5 py-1.5 bg-slate-900 text-white rounded-xl font-display text-xs font-bold hover:bg-slate-800 transition-all shadow-xs"
+                      >
+                        Open Live Map &rarr;
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Quick Map Preview Widget */}
+                  {/* Quick Map Preview Widget with Interactive Simulation */}
                   <div 
-                    onClick={() => setActiveNav('bus')}
-                    className="relative h-36 w-full rounded-xl overflow-hidden bg-slate-100 border border-slate-200 cursor-pointer hover:border-slate-400 transition-all flex items-center justify-center"
+                    className="relative h-40 w-full rounded-xl overflow-hidden bg-slate-900 border border-slate-800 p-4 flex flex-col justify-between"
                   >
-                    <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#3f51b5_1px,transparent_1px)] [background-size:16px_16px]" />
-                    <div className="relative z-10 text-center space-y-1">
-                      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-full shadow-sm border border-slate-200">
-                        <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping" />
-                        <span className="font-display text-xs font-bold text-slate-800">Bus is 8 mins away from home stop</span>
+                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#60a5fa_1px,transparent_1px)] [background-size:16px_16px]" />
+                    
+                    <div className="relative z-10 flex items-center justify-between">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 backdrop-blur-md rounded-full border border-emerald-500/40 text-emerald-300">
+                        <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                        <span className="font-display text-xs font-bold">Bus #4 Live En Route</span>
                       </div>
-                      <p className="font-body text-[11px] text-slate-500">Tap to track live bus location on map</p>
+                      <span className="font-mono text-xs font-bold text-slate-300">Speed: 24 km/h</span>
+                    </div>
+
+                    <div className="relative z-10 space-y-1">
+                      <h4 className="font-display text-base font-extrabold text-white">
+                        Passing Hauz Khas Junction &middot; ETA 5 mins
+                      </h4>
+                      <p className="font-body text-xs text-slate-400">Next Stop: Saket Home Stop #3 &middot; Driver Ramesh Kumar</p>
+                    </div>
+
+                    <div className="relative z-10 flex items-center justify-between pt-1 border-t border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setToastMessage('🛰️ Live Bus telemetry updated: Bus is now 3 mins away!');
+                        }}
+                        className="text-[11px] font-bold text-sky-400 hover:underline flex items-center gap-1"
+                      >
+                        <span>▶ Simulate Movement</span>
+                      </button>
+                      <button
+                        onClick={() => setActiveNav('bus')}
+                        className="text-[11px] font-bold text-slate-300 hover:text-white flex items-center gap-1"
+                      >
+                        <span>View Full Route &rarr;</span>
+                      </button>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* 3. NEEDS YOUR ATTENTION CARD */}
+              {/* 3. MORNING HEADS-UP QUICK CARD (INTERACTIVE PRESETS) */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <span className="font-display text-xs font-extrabold text-slate-400 uppercase tracking-widest">
+                    ☀️ Send Morning Heads-up to Teacher
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium">1-Tap Direct</span>
+                </div>
+                <p className="font-body text-xs text-slate-600 font-medium">
+                  Tap an option below to alert Ms. Mehra on her morning dashboard before class starts:
+                </p>
+
+                {sentMorningNote ? (
+                  <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl p-3.5 text-xs font-bold flex items-center justify-between">
+                    <span>Sent: &ldquo;{sentMorningNote}&rdquo;</span>
+                    <span className="flex items-center gap-1 text-emerald-700">✅ Delivered to Ms. Mehra</span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      'Had a rough morning',
+                      'Did not sleep well',
+                      'Stomach ache',
+                      'Running late today'
+                    ].map((presetText) => (
+                      <button
+                        key={presetText}
+                        type="button"
+                        onClick={() => handleSendMorningNote(presetText)}
+                        className="text-center text-xs font-bold border border-slate-200 hover:border-slate-400 hover:bg-slate-50 p-2.5 rounded-xl text-slate-700 transition-all active:scale-95 leading-snug"
+                      >
+                        {presetText}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 4. NEEDS YOUR ATTENTION CARD */}
               <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                   <h3 className="font-display text-xs font-extrabold text-slate-400 uppercase tracking-widest">
@@ -1263,7 +1338,7 @@ export default function ParentTodayClient({
                 )}
               </div>
 
-              {/* 4. TODAY'S JOURNEY: CHRONOLOGICAL FEED */}
+              {/* 5. TODAY'S JOURNEY: CHRONOLOGICAL FEED */}
               <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div>
@@ -1372,13 +1447,24 @@ export default function ParentTodayClient({
                 </div>
               </div>
 
-              {/* 5. POSITIVE MOMENTS */}
-              <div className="bg-gradient-to-br from-amber-50/80 to-emerald-50/80 border border-amber-200/80 rounded-2xl p-5 shadow-xs space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">⭐</span>
-                  <span className="font-display text-xs font-extrabold uppercase tracking-widest text-amber-900">
-                    Teacher Highlight
-                  </span>
+              {/* 6. POSITIVE MOMENTS WITH INTERACTIVE SHARE */}
+              <div className="bg-gradient-to-br from-amber-50/80 to-emerald-50/80 border border-amber-200/80 rounded-2xl p-5 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">⭐</span>
+                    <span className="font-display text-xs font-extrabold uppercase tracking-widest text-amber-900">
+                      Teacher Highlight
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setToastMessage("⭐ Encouraging teacher highlight copied to share with family!");
+                    }}
+                    className="px-2.5 py-1 bg-white border border-amber-300 text-amber-900 rounded-lg text-[10px] font-bold hover:bg-amber-100 transition-all shadow-2xs"
+                  >
+                    Share Moment ↗
+                  </button>
                 </div>
                 <p className="font-body text-xs font-bold text-slate-800 leading-relaxed">
                   &ldquo;{activeStudent?.displayName.split(' ')[0]} volunteered to solve today&apos;s complex math problem on the whiteboard and explained it clearly to the class.&rdquo;
