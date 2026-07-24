@@ -72,9 +72,14 @@ export default async function TeacherPage() {
   }
 
   // If Clerk key is defined and a teacher record is found, we filter students to only show their assigned class students
-  const filteredRawStudents = clerkKey
+  let filteredRawStudents = clerkKey
     ? studentsRaw.filter((s) => s.classTeacherId === activeTeacherId || !s.classTeacherId)
     : studentsRaw;
+
+  // Fallback to full roster if filtering returned zero students
+  if (!filteredRawStudents || filteredRawStudents.length === 0) {
+    filteredRawStudents = studentsRaw;
+  }
 
   // 4.5 Fetch gate pass requests for class students
   const { data: dbPasses } = await supabase
