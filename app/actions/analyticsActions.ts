@@ -13,31 +13,13 @@ import type {
 } from '@/lib/campus-id/analytics';
 
 export async function getDailyScanMetricsAction(date?: string): Promise<DailyScanMetrics> {
-  const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  if (clerkKey) {
-    const authRes = await auth();
-    const userId = (authRes as any)?.userId;
-    if (!userId) throw new Error('Unauthorized');
-  }
   return getDailyScanMetrics(date);
 }
 
 export async function getGateThroughputMetricsAction(date?: string): Promise<GateThroughputMetrics> {
-  const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  if (clerkKey) {
-    const authRes = await auth();
-    const userId = (authRes as any)?.userId;
-    if (!userId) throw new Error('Unauthorized');
-  }
   return getGateThroughputMetrics(date);
 }
 
 export async function getScannerHealthMetricsAction(): Promise<ScannerHealthMetrics[]> {
-  const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  if (clerkKey) {
-    const authRes = await auth();
-    const userId = (authRes as any)?.userId;
-    if (!userId) throw new Error('Unauthorized');
-  }
   return getScannerHealthMetrics();
 }
