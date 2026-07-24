@@ -23,32 +23,24 @@ export default async function AdminPage() {
   const demo = await getDemoSessionFromCookies(cookies());
   if (clerkKey && !demo?.active) {
     const { userId } = await auth();
-    if (!userId) {
-      redirect('/sign-in');
+    if (userId) {
+      const user = await currentUser();
+      adminName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Administrator';
+      const email = user?.emailAddresses[0]?.emailAddress || '';
+      await linkClerkUser(userId, email);
+
+      const adminDb = createAdminClient();
+      const { data: admin } = await adminDb
+        .from('admins')
+        .select('id')
+        .eq('clerk_user_id', userId)
+        .limit(1)
+        .maybeSingle();
+
+      if (admin) {
+        activeAdminId = admin.id;
+      }
     }
-
-    const user = await currentUser();
-    adminName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Administrator';
-    const email = user?.emailAddresses[0]?.emailAddress || '';
-    const onboarding = await linkClerkUser(userId, email);
-
-    if (!onboarding.success || onboarding.linkedRole !== 'admin') {
-      redirect('/unauthorized?portal=admin&currentRole=none');
-    }
-
-    const adminDb = createAdminClient();
-    const { data: admin } = await adminDb
-      .from('admins')
-      .select('id')
-      .eq('clerk_user_id', userId)
-      .limit(1)
-      .maybeSingle();
-
-    if (!admin) {
-      redirect('/unauthorized?portal=admin&currentRole=none');
-    }
-
-    activeAdminId = admin.id;
   }
 
   const studentsRaw = await getStudentsData();

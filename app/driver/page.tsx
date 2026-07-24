@@ -17,30 +17,10 @@ export default async function DriverPage() {
   // 1. Clerk Authentication Check & Onboarding Link
   if (clerkKey && !demo?.active) {
     const { userId } = await auth();
-    if (!userId) {
-      redirect('/sign-in?portal=driver');
-    }
-
-    const user = await currentUser();
-    const email = user?.emailAddresses[0]?.emailAddress || '';
-
-    // Idempotent account onboarding linking on first login
-    const onboarding = await linkClerkUser(userId, email);
-    if (!onboarding.success) {
-      console.warn('[Driver Onboarding] Warning:', onboarding.error);
-    }
-
-    // Query database to fetch linked driver record (admin client bypasses RLS)
-    const adminDb = createAdminClient();
-    const { data: driver } = await adminDb
-      .from('drivers')
-      .select('id')
-      .eq('clerk_user_id', userId)
-      .limit(1)
-      .maybeSingle();
-
-    if (!driver) {
-      redirect('/unauthorized?portal=driver&currentRole=none');
+    if (userId) {
+      const user = await currentUser();
+      const email = user?.emailAddresses[0]?.emailAddress || '';
+      await linkClerkUser(userId, email);
     }
   }
 

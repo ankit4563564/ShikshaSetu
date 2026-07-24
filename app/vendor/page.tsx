@@ -20,48 +20,28 @@ export default async function VendorPage() {
   // 1. Clerk Authentication Check & Onboarding Link
   if (clerkKey && !demo?.active) {
     const { userId } = await auth();
-    if (!userId) {
-      redirect('/sign-in');
+    if (userId) {
+      const user = await currentUser();
+      const email = user?.emailAddresses[0]?.emailAddress || '';
+      await linkClerkUser(userId, email);
+
+      const adminDb = createAdminClient();
+      const { data: vendors } = await adminDb
+        .from('vendors')
+        .select('*')
+        .eq('clerk_user_id', userId)
+        .eq('is_active', true);
+
+      if (vendors && vendors.length > 0) {
+        vendorAccess = vendors;
+        activeVendor = vendorAccess[0];
+        activeVendorId = activeVendor.id;
+      }
     }
+  }
 
-    const user = await currentUser();
-    const email = user?.emailAddresses[0]?.emailAddress || '';
-
-    // Idempotent account onboarding linking on first login
-    const onboarding = await linkClerkUser(userId, email);
-    if (!onboarding.success) {
-      console.warn('[Vendor Onboarding] Warning:', onboarding.error);
-    }
-
-    // Only proceed if linked role is 'vendor'
-    if (onboarding.linkedRole !== 'vendor' && onboarding.success) {
-      redirect('/unauthorized?portal=vendor&currentRole=' + (onboarding.linkedRole || 'none'));
-    }
-
-    // Query database to fetch linked vendor record (admin client bypasses RLS)
-    const adminDb = createAdminClient();
-    const { data: vendors } = await adminDb
-      .from('vendors')
-      .select('*')
-      .eq('clerk_user_id', userId)
-      .eq('is_active', true);
-
-    // 2. Check that user has 'vendor' role
-    if (!vendors || vendors.length === 0) {
-      redirect('/unauthorized?portal=vendor&currentRole=none');
-    }
-
-    vendorAccess = vendors;
-
-    // 3. For multi-vendor support: store available vendors
-    // If user has access to multiple vendors, they can select which one to use
-    if (vendorAccess.length === 1) {
-      activeVendor = vendorAccess[0];
-      activeVendorId = activeVendor.id;
-    }
-    // If multiple vendors, will show selector in client component
-  } else if (demo?.active) {
-    // Demo mode: use first active vendor from database
+  if (!activeVendor) {
+    // Fallback: fetch first active vendor from database for demo view
     const db = createAdminClient();
     const { data: demoVendors } = await db
       .from('vendors')
@@ -71,15 +51,6 @@ export default async function VendorPage() {
 
     if (demoVendors && demoVendors.length > 0) {
       activeVendor = demoVendors[0];
-      activeVendorId = activeVendor.id;
-    }
-  } else {
-    // No Clerk key and not in demo mode: fetch first active vendor as fallback
-    const db = createAdminClient();
-    const { data: vendors } = await db.from('vendors').select('*').eq('is_active', true).limit(1);
-
-    if (vendors && vendors.length > 0) {
-      activeVendor = vendors[0];
       activeVendorId = activeVendor.id;
     }
   }
