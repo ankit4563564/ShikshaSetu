@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { m, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { SchoolRoleOption } from './types';
 import { SCHOOL_ROLES, ROLE_ROUTES } from './constants';
 import { RoleCard } from './RoleCard';
@@ -22,14 +22,17 @@ export function RoleSelector({ isOpen, onClose, onRoleSelected }: RoleSelectorPr
 
   const handleRoleSelect = useCallback(
     async (role: SchoolRoleOption) => {
+      if (isLoading) return;
       try {
         setIsLoading(true);
         setSelectedRole(role.id);
 
         // Store role in localStorage
-        localStorage.setItem('selected_role', role.id);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('selected_role', role.id);
+        }
 
-        // Update Clerk user metadata with the selected role
+        // Update Clerk user metadata with the selected role if signed in
         if (user) {
           await user.update({
             unsafeMetadata: {
@@ -37,7 +40,7 @@ export function RoleSelector({ isOpen, onClose, onRoleSelected }: RoleSelectorPr
               selectedRole: role.id,
               selectedAt: new Date().toISOString(),
             },
-          });
+          }).catch(() => null);
         }
 
         // Call the callback if provided
@@ -46,16 +49,16 @@ export function RoleSelector({ isOpen, onClose, onRoleSelected }: RoleSelectorPr
         }
 
         // Redirect to the appropriate portal after a brief delay for visual feedback
-        const redirectPath = ROLE_ROUTES[role.id];
+        const redirectPath = ROLE_ROUTES[role.id] || `/${role.id}`;
         setTimeout(() => {
           router.push(redirectPath);
-        }, 500);
+        }, 300);
       } catch (error) {
         console.error('Error selecting role:', error);
         setIsLoading(false);
       }
     },
-    [user, router, onRoleSelected]
+    [user, router, onRoleSelected, isLoading]
   );
 
   const backdropVariants = {
@@ -80,7 +83,7 @@ export function RoleSelector({ isOpen, onClose, onRoleSelected }: RoleSelectorPr
       {isOpen && (
         <>
           {/* Backdrop */}
-          <m.div
+          <motion.div
             key="backdrop"
             variants={backdropVariants}
             initial="hidden"
@@ -92,7 +95,7 @@ export function RoleSelector({ isOpen, onClose, onRoleSelected }: RoleSelectorPr
           />
 
           {/* Modal */}
-          <m.div
+          <motion.div
             key="modal"
             variants={modalVariants}
             initial="hidden"
@@ -143,18 +146,13 @@ export function RoleSelector({ isOpen, onClose, onRoleSelected }: RoleSelectorPr
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {SCHOOL_ROLES.filter((r) => r.isHero).map((role, index) => (
-                        <div
+                        <RoleCard
                           key={role.id}
-                          onClick={() => !isLoading && handleRoleSelect(role)}
-                          className="cursor-pointer"
-                        >
-                          <RoleCard
-                            role={role}
-                            index={index}
-                            onSelect={handleRoleSelect}
-                            disabled={isLoading}
-                          />
-                        </div>
+                          role={role}
+                          index={index}
+                          onSelect={handleRoleSelect}
+                          disabled={isLoading}
+                        />
                       ))}
                     </div>
                   </div>
@@ -166,18 +164,13 @@ export function RoleSelector({ isOpen, onClose, onRoleSelected }: RoleSelectorPr
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {SCHOOL_ROLES.filter((r) => !r.isHero).map((role, index) => (
-                        <div
+                        <RoleCard
                           key={role.id}
-                          onClick={() => !isLoading && handleRoleSelect(role)}
-                          className="cursor-pointer"
-                        >
-                          <RoleCard
-                            role={role}
-                            index={index + 2}
-                            onSelect={handleRoleSelect}
-                            disabled={isLoading}
-                          />
-                        </div>
+                          role={role}
+                          index={index + 2}
+                          onSelect={handleRoleSelect}
+                          disabled={isLoading}
+                        />
                       ))}
                     </div>
                   </div>
@@ -194,7 +187,7 @@ export function RoleSelector({ isOpen, onClose, onRoleSelected }: RoleSelectorPr
                 )}
               </div>
             </div>
-          </m.div>
+          </motion.div>
         </>
       )}
     </AnimatePresence>

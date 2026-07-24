@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { LayoutGroup, m, useReducedMotion } from 'framer-motion';
+import { LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import type { SchoolRoleOption } from './types';
 import { SCHOOL_ROLES } from './constants';
 import { RoleCard } from './RoleCard';
@@ -27,7 +27,7 @@ function RoleCardGridComponent({ onSelect, disabled }: RoleCardGridProps) {
               ⭐ HERO PORTALS (PARENT & TEACHER)
             </span>
           </div>
-          <m.div
+          <motion.div
             role="list"
             aria-label="Flagship experiences"
             variants={staggerContainerVariants}
@@ -37,16 +37,16 @@ function RoleCardGridComponent({ onSelect, disabled }: RoleCardGridProps) {
             className="grid grid-cols-1 gap-4 sm:grid-cols-2"
           >
             {heroRoles.map((role, index) => (
-              <m.div key={role.id} role="listitem" layout={!reduceMotion}>
+              <motion.div key={role.id} role="listitem" layout={!reduceMotion}>
                 <RoleCard
                   role={role}
                   index={index}
                   onSelect={onSelect}
                   disabled={disabled}
                 />
-              </m.div>
+              </motion.div>
             ))}
-          </m.div>
+          </motion.div>
         </div>
 
         {/* Operational Control Modules Section */}
@@ -56,7 +56,7 @@ function RoleCardGridComponent({ onSelect, disabled }: RoleCardGridProps) {
               ⚡ CONNECTED OPERATIONAL MODULES
             </span>
           </div>
-          <m.div
+          <motion.div
             role="list"
             aria-label="Operational modules"
             variants={staggerContainerVariants}
@@ -66,16 +66,16 @@ function RoleCardGridComponent({ onSelect, disabled }: RoleCardGridProps) {
             className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4"
           >
             {operationalRoles.map((role, index) => (
-              <m.div key={role.id} role="listitem" layout={!reduceMotion}>
+              <motion.div key={role.id} role="listitem" layout={!reduceMotion}>
                 <RoleCard
                   role={role}
                   index={index + 2}
                   onSelect={onSelect}
                   disabled={disabled}
                 />
-              </m.div>
+              </motion.div>
             ))}
-          </m.div>
+          </motion.div>
         </div>
       </div>
     </LayoutGroup>
