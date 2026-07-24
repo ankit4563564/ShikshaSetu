@@ -1440,48 +1440,92 @@ export default function ParentTodayClient({
           )
         )}
 
-        {/* Tab 2: Homework Tab (done/not done, no chart) */}
+        {/* Tab 2: Homework Tab */}
         {activeNav === 'homework' && (
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-display text-lg font-extrabold text-deep-teal">
-                Homework for {activeStudent?.displayName.split(' ')[0] || 'Rahul'}
-              </h3>
-              <p className="font-body text-xs text-deep-teal/50">
-                View submitted and pending homework assignments. No scores or charts are displayed.
-              </p>
+          <div className="space-y-6">
+            {/* Header & Overview */}
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-display text-xl font-extrabold text-slate-900">
+                    Homework for {activeStudent?.displayName.split(' ')[0] || 'Aarav'}
+                  </h3>
+                  <p className="font-body text-xs text-slate-500 mt-0.5">
+                    Track pending tasks, submitted assignments, and teacher notes
+                  </p>
+                </div>
+                <div className="px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-700 rounded-full font-bold text-xs">
+                  2 of 3 Completed
+                </div>
+              </div>
+
+              {/* Progress Summary bar */}
+              <div className="pt-2 border-t border-slate-100 flex items-center gap-4 text-xs font-semibold text-slate-600">
+                <span className="flex items-center gap-1.5 text-emerald-700 font-bold">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                  2 Submitted
+                </span>
+                <span>&bull;</span>
+                <span className="flex items-center gap-1.5 text-amber-700 font-bold">
+                  <span className="h-2 w-2 rounded-full bg-amber-500" />
+                  1 Pending Today
+                </span>
+              </div>
             </div>
 
             {!consentSettings.receiveAcademic ? (
-              <div className="rounded-2xl border border-deep-teal/10 bg-white p-6 shadow-sm text-center py-10">
-                <p className="font-body text-sm text-deep-teal/40 italic">
-                  🔒 Homework updates are hidden because this preference is disabled.
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs text-center py-10">
+                <p className="font-body text-sm text-slate-500 italic">
+                  🔒 Homework updates are hidden because this preference is disabled in settings.
                 </p>
               </div>
             ) : (
-              <div className="space-y-5">
-                {/* Due Today */}
-                <div className="space-y-3">
-                  <h4 className="font-display text-sm font-bold text-deep-teal/80 border-b border-deep-teal/5 pb-1">
-                    Due Today
-                  </h4>
+              <div className="space-y-6">
+                {/* Section 1: Due Today */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">⏱️</span>
+                      <h4 className="font-display text-sm font-extrabold text-slate-900">
+                        Due Today
+                      </h4>
+                    </div>
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 uppercase tracking-wider">
+                      Priority Focus
+                    </span>
+                  </div>
+
                   {homeworkDueToday.length === 0 ? (
-                    <p className="font-body text-xs text-deep-teal/40 italic">No homework due today.</p>
+                    <p className="font-body text-xs text-slate-400 italic">No homework due today. All caught up!</p>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {homeworkDueToday.map((hw) => (
-                        <div key={hw.id} className="flex items-center gap-3 bg-white border border-deep-teal/5 p-3 rounded-xl shadow-2xs">
-                          <input
-                            type="checkbox"
-                            checked={hw.isSubmitted}
-                            readOnly
-                            className="rounded border-deep-teal/20 text-deep-teal focus:ring-deep-teal/10 h-4.5 w-4.5 pointer-events-none"
-                          />
-                          <div className="flex-1">
-                            <h5 className="font-display text-xs font-bold text-deep-teal">{hw.title}</h5>
-                            <p className="font-body text-[10px] text-deep-teal/50 font-medium">
-                              {hw.subject}
-                            </p>
+                        <div key={hw.id} className="p-4 bg-slate-50/80 border border-slate-200 rounded-xl space-y-2">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                checked={hw.isSubmitted}
+                                readOnly
+                                className="rounded border-slate-300 text-slate-900 focus:ring-0 h-5 w-5 cursor-default"
+                              />
+                              <div>
+                                <h5 className="font-display text-sm font-bold text-slate-900">{hw.title}</h5>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold text-[10px]">
+                                    {hw.subject}
+                                  </span>
+                                  <span className="font-body text-[11px] text-slate-500">⏱️ Est: 20 mins</span>
+                                </div>
+                              </div>
+                            </div>
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              hw.isSubmitted 
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                                : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            }`}>
+                              {hw.isSubmitted ? '✓ Submitted' : 'Pending Submission'}
+                            </span>
                           </div>
                         </div>
                       ))}
@@ -1489,28 +1533,51 @@ export default function ParentTodayClient({
                   )}
                 </div>
 
-                {/* Due Tomorrow */}
-                <div className="space-y-3">
-                  <h4 className="font-display text-sm font-bold text-deep-teal/80 border-b border-deep-teal/5 pb-1">
-                    Due Tomorrow
-                  </h4>
+                {/* Section 2: Due Tomorrow */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">📚</span>
+                      <h4 className="font-display text-sm font-extrabold text-slate-900">
+                        Due Tomorrow
+                      </h4>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200 uppercase tracking-wider">
+                      Upcoming
+                    </span>
+                  </div>
+
                   {homeworkDueTomorrow.length === 0 ? (
-                    <p className="font-body text-xs text-deep-teal/40 italic">No homework due tomorrow.</p>
+                    <p className="font-body text-xs text-slate-400 italic">No homework scheduled for tomorrow.</p>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {homeworkDueTomorrow.map((hw) => (
-                        <div key={hw.id} className="flex items-center gap-3 bg-white border border-deep-teal/5 p-3 rounded-xl shadow-2xs">
-                          <input
-                            type="checkbox"
-                            checked={hw.isSubmitted}
-                            readOnly
-                            className="rounded border-deep-teal/20 text-deep-teal focus:ring-deep-teal/10 h-4.5 w-4.5 pointer-events-none"
-                          />
-                          <div className="flex-1">
-                            <h5 className="font-display text-xs font-bold text-deep-teal">{hw.title}</h5>
-                            <p className="font-body text-[10px] text-deep-teal/50 font-medium">
-                              {hw.subject}
-                            </p>
+                        <div key={hw.id} className="p-4 bg-slate-50/80 border border-slate-200 rounded-xl space-y-2">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                checked={hw.isSubmitted}
+                                readOnly
+                                className="rounded border-slate-300 text-slate-900 focus:ring-0 h-5 w-5 cursor-default"
+                              />
+                              <div>
+                                <h5 className="font-display text-sm font-bold text-slate-900">{hw.title}</h5>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[10px]">
+                                    {hw.subject}
+                                  </span>
+                                  <span className="font-body text-[11px] text-slate-500">⏱️ Est: 15 mins</span>
+                                </div>
+                              </div>
+                            </div>
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              hw.isSubmitted 
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                                : 'bg-slate-100 text-slate-600 border border-slate-200'
+                            }`}>
+                              {hw.isSubmitted ? '✓ Submitted' : 'Pending'}
+                            </span>
                           </div>
                         </div>
                       ))}
@@ -1518,12 +1585,19 @@ export default function ParentTodayClient({
                   )}
                 </div>
 
-                {/* Message Teacher Button */}
+                {/* Message Teacher Action */}
                 <button
                   onClick={() => setActiveNav('messages')}
-                  className="w-full border border-deep-teal hover:bg-deep-teal/5 text-deep-teal font-display text-xs font-bold py-2.5 rounded-xl transition-all active:scale-95 text-center mt-4 bg-transparent"
+                  className="w-full p-4 bg-white border border-slate-200/80 rounded-2xl shadow-xs hover:border-slate-400 transition-all text-left flex items-center justify-between"
                 >
-                  Send Quick Note
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">💬</span>
+                    <div>
+                      <h4 className="font-display text-xs font-bold text-slate-900">Have questions about an assignment?</h4>
+                      <p className="font-body text-[11px] text-slate-500">Send a direct message to Ms. Mehra &rarr;</p>
+                    </div>
+                  </div>
+                  <span className="px-3.5 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-xs">Message Teacher</span>
                 </button>
               </div>
             )}
