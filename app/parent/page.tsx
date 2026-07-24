@@ -18,7 +18,7 @@ export const revalidate = 60;
 export default async function ParentPage() {
   const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   let guardianId: string | null = null;
-  let guardianName: string = 'Parent';
+  let guardianName: string = 'Sunita Sharma';
   let guardianEmail: string = '';
   let linkedStudentIds: string[] = [];
   let parentLanguage: string = 'en';
@@ -150,10 +150,7 @@ export default async function ParentPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(63,81,181,.10),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(255,152,0,.09),transparent_28%),#f8f9fa] flex items-center justify-center p-0 sm:p-4">
-      <div className="fixed top-4 right-4 z-50">
-        <LanguageToggle />
-      </div>
+    <div className="min-h-screen bg-slate-100/80 flex items-center justify-center p-0 sm:p-4">
       <ParentTodayClient
         studentsData={processedStudents}
         initialParentType={'sunita'}

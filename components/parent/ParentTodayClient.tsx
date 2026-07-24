@@ -985,6 +985,7 @@ export default function ParentTodayClient({
           <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-extrabold text-[10px] uppercase tracking-wider">
             📱 Parent Mobile App
           </span>
+          <LanguageToggle />
           <NotificationBell />
           <button
             onClick={() => setShowSettings(prev => !prev)}
@@ -1157,7 +1158,7 @@ export default function ParentTodayClient({
               <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-display text-xs font-bold text-slate-400 uppercase tracking-widest block">
-                    Good Morning, {activeStudent?.parentName?.split(' ')[0] || 'Sunita'}
+                    Good Morning, {activeStudent?.parentName && activeStudent.parentName !== 'Parent' ? activeStudent.parentName.split(' ')[0] : 'Sunita'}
                   </span>
                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[10px] uppercase tracking-wider">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -2334,7 +2335,7 @@ export default function ParentTodayClient({
       </div>
 
       {/* ── Compact Floating Capsule Navigation ── */}
-      <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 max-w-md w-[calc(100%-2rem)] bg-slate-900/95 backdrop-blur-md text-white rounded-full shadow-2xl h-14 px-3 flex items-center justify-around z-40 border border-slate-800">
+      <nav className="sticky bottom-4 mx-auto max-w-md w-[calc(100%-2rem)] bg-slate-900/95 backdrop-blur-md text-white rounded-full shadow-2xl h-14 px-3 flex items-center justify-around z-40 border border-slate-800 my-4">
         
         {/* Home Tab */}
         <button
