@@ -1,0 +1,53 @@
+/* Teacher Portal Scoped Styles */
+
+.teacherShell {
+  @apply min-h-screen;
+  background: radial-gradient(circle at 8% 0%, rgba(63,81,181,.10), transparent 27%), 
+              radial-gradient(circle at 92% 16%, rgba(255,152,0,.08), transparent 24%), 
+              linear-gradient(180deg, #f8f9fa 0%, #f1f4f8 100%);
+}
+
+.header h1 {
+  @apply font-display font-extrabold;
+  color: #24389c;
+  letter-spacing: -.04em;
+}
+
+.header p {
+  color: #4a4c57;
+}
+
+.tabs {
+  @apply border-b;
+  border-color: rgba(63,81,181,.12);
+}
+
+.tabButton {
+  @apply rounded-t-xl px-4 py-2 font-bold transition-colors;
+  min-height: 40px;
+}
+
+.tabButton:hover {
+  background: rgba(63,81,181,.05);
+}
+
+.tabButton:focus-visible {
+  outline: 3px solid rgba(63,81,181,.28);
+  outline-offset: 3px;
+}
+
+.studentCard {
+  @apply rounded-2xl border p-4 transition-all;
+  border-color: rgba(63,81,181,.11);
+  background: rgba(255,255,255,.78);
+  box-shadow: 0 10px 24px rgba(25,28,29,.05);
+  backdrop-filter: blur(12px);
+}
+
+.studentCard:hover {
+  box-shadow: 0 16px 32px rgba(63,81,181,.09);
+}
+
+.section {
+  scroll-margin-top: 1.5rem;
+}

@@ -1,0 +1,10 @@
+export { SchoolStoryExperience } from './SchoolStoryExperience';
+export { SchoolStoryButton } from './SchoolStoryButton';
+export { SchoolStoryModal } from './SchoolStoryModal';
+export { RoleCard } from './RoleCard';
+export { RoleCardGrid } from './RoleCardGrid';
+export { IntroCinematic } from './IntroCinematic';
+export { JourneyTimeline } from './JourneyTimeline';
+export { LiveEcosystemStrip } from './LiveEcosystemStrip';
+export { AmbientBackground } from './AmbientBackground';
+export type { OnboardingPhase, SchoolRole, SchoolRoleOption } from './types';

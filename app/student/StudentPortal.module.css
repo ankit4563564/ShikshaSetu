@@ -1,0 +1,52 @@
+/* Student Portal Scoped Styles */
+
+.studentPortalShell {
+  @apply min-h-screen bg-paper;
+}
+
+.sidebar {
+  @apply fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r bg-white/65 px-5 py-7 backdrop-blur-xl lg:flex;
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 8px 0 35px rgba(63, 81, 181, .06);
+}
+
+.sidebarBranding {
+  @apply mb-6 px-2;
+}
+
+.profileCard {
+  @apply mb-6 rounded-2xl border p-4;
+  border-color: rgba(63, 81, 181, 0.1);
+  background: rgba(63, 81, 181, 0.05);
+}
+
+.navButton {
+  @apply flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-bold transition-all;
+}
+
+.navButtonActive {
+  @apply bg-primary/10 text-primary;
+}
+
+.navButtonInactive {
+  @apply text-muted hover:bg-primary/5 hover:text-primary;
+}
+
+.mainContent {
+  @apply mx-auto max-w-6xl space-y-5;
+}
+
+.topBar {
+  @apply mx-auto mb-5 flex max-w-6xl items-center justify-between rounded-2xl border bg-white/70 px-4 py-3 shadow-sm backdrop-blur-xl lg:px-6;
+  border-color: rgba(255, 255, 255, 0.75);
+}
+
+.heroSection {
+  @apply relative overflow-hidden rounded-[2rem] p-6 text-white shadow-2xl sm:p-8;
+  background: linear-gradient(135deg, var(--primary), #5967d0);
+}
+
+.card {
+  @apply rounded-2xl border bg-white/75 p-5 shadow-sm backdrop-blur-xl;
+  border-color: rgba(255, 255, 255, 0.8);
+}
