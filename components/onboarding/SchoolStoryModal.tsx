@@ -130,7 +130,7 @@ function SchoolStoryModalComponent({
           <m.button
             type="button"
             aria-label="Close onboarding"
-            className="absolute inset-0 bg-[rgba(15,35,42,0.55)] backdrop-blur-[10px]"
+            className="absolute inset-0 bg-black/80 backdrop-blur-md"
             variants={backdropVariants}
             onClick={onClose}
           />
@@ -144,17 +144,17 @@ function SchoolStoryModalComponent({
             tabIndex={-1}
             onKeyDown={handleKeyDown}
             variants={modalShellVariants}
-            className="relative z-10 flex max-h-[min(92vh,920px)] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border border-white/20 bg-[#0f232a]/92 shadow-[0_40px_120px_rgba(0,0,0,0.65)] backdrop-blur-2xl"
+            className="relative z-10 flex max-h-[min(92vh,920px)] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border border-white/25 bg-gradient-to-b from-[#0d1e24] via-[#112730] to-[#0a181e] shadow-[0_40px_120px_rgba(0,0,0,0.85)] backdrop-blur-2xl"
           >
             <AmbientBackground />
 
-            <div className="relative flex items-center justify-between border-b border-white/10 px-5 py-4 sm:px-6 bg-white/5">
+            <div className="relative flex items-center justify-between border-b border-white/15 px-5 py-4 sm:px-6 bg-white/[0.07]">
               <div>
                 <p
                   id="school-story-modal-title"
-                  className="font-display text-sm font-extrabold tracking-[0.2em] text-white uppercase"
+                  className="font-display text-base font-black tracking-[0.2em] text-white uppercase flex items-center gap-2"
                 >
-                  ShikshaSetu
+                  <span className="text-amber-400">✦</span> SHIKSHASETU
                 </p>
                 <p id="school-story-modal-description" className="sr-only">
                   Immersive onboarding to choose your school role and enter a connected demo journey.
@@ -164,7 +164,7 @@ function SchoolStoryModalComponent({
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
-                className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-white/80 transition hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
+                className="rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-black text-white transition hover:bg-white/20 hover:border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
               >
                 ESC
               </button>

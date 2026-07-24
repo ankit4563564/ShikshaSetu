@@ -22,9 +22,9 @@ function RoleCardGridComponent({ onSelect, disabled }: RoleCardGridProps) {
       <div className="space-y-6">
         {/* Primary Flagship Dual-Portal Section */}
         <div>
-          <div className="mb-3 flex items-center gap-2">
-            <span className="text-xs font-black uppercase tracking-[0.14em] text-marigold">
-              ⭐ Primary Flagship Experiences (Dual-Portal)
+          <div className="mb-3.5 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/20 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-amber-300 border border-amber-400/40 shadow-sm">
+              ⭐ HERO PORTALS (PARENT & TEACHER)
             </span>
           </div>
           <m.div
@@ -50,10 +50,10 @@ function RoleCardGridComponent({ onSelect, disabled }: RoleCardGridProps) {
         </div>
 
         {/* Operational Control Modules Section */}
-        <div>
-          <div className="mb-3 flex items-center gap-2">
-            <span className="text-xs font-black uppercase tracking-[0.14em] text-white/70">
-              ⚡ Connected Operational Modules (Background Data Engines)
+        <div className="pt-2">
+          <div className="mb-3.5 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-emerald-300 border border-white/20 shadow-sm">
+              ⚡ CONNECTED OPERATIONAL MODULES
             </span>
           </div>
           <m.div

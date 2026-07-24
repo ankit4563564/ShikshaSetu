@@ -24,7 +24,7 @@ export const SCHOOL_ROLES: SchoolRoleOption[] = [
     description: "Rich mobile experience for real-time bus tracking, gate proximity alerts, milestone tracking, and direct teacher messaging.",
     portalLabel: 'Parent Mobile App',
     isHero: true,
-    badge: 'PRIMARY HERO EXPERIENCE 1',
+    badge: '⭐ HERO PORTAL',
   },
   {
     id: 'teacher',
@@ -33,7 +33,7 @@ export const SCHOOL_ROLES: SchoolRoleOption[] = [
     description: 'Comprehensive executive dashboard enabling teachers to monitor holistic classroom health, attendance, and support radar at a glance.',
     portalLabel: 'Teacher Web Dashboard',
     isHero: true,
-    badge: 'PRIMARY HERO EXPERIENCE 2',
+    badge: '⭐ HERO PORTAL',
   },
   {
     id: 'admin',
@@ -41,7 +41,7 @@ export const SCHOOL_ROLES: SchoolRoleOption[] = [
     title: 'School Administration',
     description: 'Care Analytics™, school climate metrics, and operational control feeding executive insights.',
     portalLabel: 'Mission Control',
-    badge: 'OPERATIONAL MODULE',
+    badge: 'ADMIN',
   },
   {
     id: 'student',
@@ -49,7 +49,7 @@ export const SCHOOL_ROLES: SchoolRoleOption[] = [
     title: 'Student Companion',
     description: 'Student Growth Journal, School Mitra Socratic AI, and confidential counselor check-in interface.',
     portalLabel: 'Student Companion',
-    badge: 'OPERATIONAL MODULE',
+    badge: 'STUDENT',
   },
   {
     id: 'driver',
@@ -57,7 +57,7 @@ export const SCHOOL_ROLES: SchoolRoleOption[] = [
     title: 'Transport Operations',
     description: 'GPS telemetry & conductor hands-free boarding console broadcasting vehicle position.',
     portalLabel: 'Driver Portal',
-    badge: 'OPERATIONAL MODULE',
+    badge: 'TRANSPORT',
   },
   {
     id: 'gate',
@@ -65,7 +65,7 @@ export const SCHOOL_ROLES: SchoolRoleOption[] = [
     title: 'Gate Security Engine',
     description: 'Dynamic QR scanner & gate pass verification engine feeding arrival events directly into Teacher & Parent timelines.',
     portalLabel: 'Gate Security',
-    badge: 'OPERATIONAL MODULE',
+    badge: 'GATE SECURITY',
   },
 ];
 
