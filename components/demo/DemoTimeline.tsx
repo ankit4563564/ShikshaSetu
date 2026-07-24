@@ -104,95 +104,69 @@ function DemoStepCard({ step, index, status, isCurrent, isPaused }: {
         </motion.span>
       </div>
 
-      {/* Portal badge */}
-      <motion.div
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
-          getPortalColor(step.portal).includes('sage') ? 'bg-sage/10 text-sage' :
-          getPortalColor(step.portal).includes('primary') ? 'bg-primary/10 text-primary' :
-          getPortalColor(step.portal).includes('marigold') ? 'bg-marigold/10 text-marigold' :
-          getPortalColor(step.portal).includes('deep-teal') ? 'bg-deep-teal/10 text-deep-teal' :
-          getPortalColor(step.portal).includes('warm-clay') ? 'bg-warm-clay/10 text-warm-clay' :
-          'bg-deep-teal/10 text-deep-teal/60'
-        }`}
-      >
-        {step.portal === 'all' ? '⚡' : step.icon} {step.portal}
-      </motion.div>
+      {/* Step Header & Portal Links */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl drop-shadow-sm">{step.icon}</span>
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="font-display text-sm font-black text-deep-teal">
+                Step {step.id}: {step.title}
+              </p>
+              <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-deep-teal/20 uppercase tracking-wider ${
+                step.portal === 'parent' ? 'bg-amber-100 text-amber-900 border-amber-300' :
+                step.portal === 'teacher' ? 'bg-emerald-100 text-emerald-900 border-emerald-300' :
+                step.portal === 'gate' ? 'bg-teal-100 text-teal-900 border-teal-300' :
+                step.portal === 'driver' ? 'bg-orange-100 text-orange-900 border-orange-300' :
+                step.portal === 'student' ? 'bg-blue-100 text-blue-900 border-blue-300' :
+                step.portal === 'vendor' ? 'bg-purple-100 text-purple-900 border-purple-300' :
+                'bg-slate-100 text-slate-900 border-slate-300'
+              }`}>
+                {step.portal}
+              </span>
+            </div>
+            <p className="mt-1 text-xs leading-relaxed text-deep-teal/80 font-medium">
+              {step.description}
+            </p>
+          </div>
+        </div>
 
-      {/* Step content */}
-      <div className="mt-2 space-y-2">
-        <motion.h4
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="font-display text-sm font-extrabold text-deep-teal"
-        >
-          Step {step.id}: {step.title}
-        </motion.h4>
-        
-        <motion.p
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-[11px] leading-relaxed text-deep-teal/70"
-        >
-          {step.description}
-        </motion.p>
-
-        {/* Running animation */}
-        {isRunning && (
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: '100%' }}
-            transition={{ duration: 1.5, ease: 'linear', repeat: Infinity }}
-            className="h-1 rounded-full bg-marigold/30 overflow-hidden"
+        {/* Action Button */}
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <a
+            href={
+              step.portal === 'parent' ? '/parent' :
+              step.portal === 'teacher' ? '/teacher' :
+              step.portal === 'admin' ? '/admin' :
+              step.portal === 'student' ? '/student' :
+              step.portal === 'driver' ? '/driver' :
+              step.portal === 'gate' ? '/gate' :
+              '/vendor'
+            }
+            target="_blank"
+            rel="noreferrer"
+            className="px-2.5 py-1 rounded-lg bg-deep-teal/10 hover:bg-deep-teal text-deep-teal hover:text-white text-[10px] font-black transition-all border border-deep-teal/20"
           >
-            <motion.div
-              animate={{ x: ['-100%', '100%'] }}
-              transition={{ duration: 1, ease: 'linear', repeat: Infinity }}
-              className="h-full w-1/4 bg-marigold rounded-full"
-            />
-          </motion.div>
-        )}
-
-        {/* Error display */}
-        {isFailed && status?.error && (
-          <motion.p
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-[10px] font-medium text-warm-clay flex items-center gap-1"
-          >
-            <span>⚠</span> {status.error}
-          </motion.p>
-        )}
-
-        {/* Completion timestamp */}
-        {isCompleted && status?.completedAt && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-[9px] text-deep-teal/40 font-mono"
-          >
-            Completed at {new Date(status.completedAt).toLocaleTimeString()}
-          </motion.p>
-        )}
-
-        {/* Duration info */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center gap-2 text-[9px] text-deep-teal/40"
-        >
-          <span>⏱ ~{Math.round(step.estimatedDuration / 1000)}s</span>
-          {status?.startedAt && !isCompleted && <span className="text-sage">▸ Running...</span>}
-          {isCompleted && status?.startedAt && status?.completedAt && (
-            <span className="text-sage">
-              ✓ Done in {Math.round((Number(status.completedAt) - status.startedAt) / 1000)}s
-            </span>
-          )}
-        </motion.div>
+            Open {step.portal.toUpperCase()} ➔
+          </a>
+        </div>
       </div>
+
+      {/* Running animation */}
+      {isRunning && (
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: '100%' }}
+          transition={{ duration: 1.5, ease: 'linear', repeat: Infinity }}
+          className="mt-3 h-1 rounded-full bg-marigold/30 overflow-hidden"
+        >
+          <motion.div
+            animate={{ x: ['-100%', '100%'] }}
+            transition={{ duration: 1, ease: 'linear', repeat: Infinity }}
+            className="h-full w-1/4 bg-marigold rounded-full"
+          />
+        </motion.div>
+      )}
 
       {/* Pulse ring for current running step */}
       {isCurrent && isRunning && !isPaused && (
