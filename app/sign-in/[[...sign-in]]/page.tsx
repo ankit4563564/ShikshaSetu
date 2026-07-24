@@ -261,25 +261,13 @@ export default function SignInPage() {
                 </div>
 
                 {/* Typography details */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <h2 className="text-2xl font-extrabold tracking-tight text-[#1f4e5f]">
                     {activeRole.title}
                   </h2>
-                  <p className="text-sm leading-relaxed text-[#1f4e5f]/70 font-normal px-2">
+                  <p className="text-sm leading-relaxed text-[#1f4e5f]/70 font-normal px-2 max-w-sm">
                     {activeRole.description}
                   </p>
-                </div>
-
-                {/* Small Capsule chips representing role dashboard capabilities */}
-                <div className="flex flex-wrap justify-center gap-1.5 max-w-sm">
-                  {activeRole.features.map((feat) => (
-                    <span 
-                      key={feat}
-                      className="px-2.5 py-1 text-[10px] font-bold bg-[#1f4e5f]/5 border border-[#1f4e5f]/10 rounded-full text-[#1f4e5f]/80 uppercase tracking-wide"
-                    >
-                      {feat}
-                    </span>
-                  ))}
                 </div>
 
                 {/* CTAs */}
@@ -303,7 +291,7 @@ export default function SignInPage() {
                         Authenticating…
                       </span>
                     ) : (
-                      <>🚀 Continue as {activeRole.title.split(' ')[0]}</>
+                      <>Continue as {activeRole.title.split(' ')[0]} ➔</>
                     )}
                   </button>
 
@@ -313,10 +301,10 @@ export default function SignInPage() {
                     className={`w-full py-3.5 rounded-2xl border border-[#1f4e5f]/10 text-xs font-semibold tracking-wide transition-all duration-300 ${
                       isAuthenticating
                         ? 'bg-white/20 cursor-not-allowed opacity-50'
-                        : 'bg-white/40 hover:bg-white/95'
+                        : 'bg-white/40 hover:bg-white/95 text-[#1f4e5f]/80'
                     }`}
                   >
-                    🔐 Sign in with your own account
+                    Sign in with email
                   </button>
                 </div>
 
