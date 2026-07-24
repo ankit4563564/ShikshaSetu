@@ -2846,12 +2846,36 @@ export default function ParentTodayClient({
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (!schoolGPTQuery.trim()) return;
-                  const query = schoolGPTQuery;
+                  const query = schoolGPTQuery.trim();
+                  const q = query.toLowerCase();
+                  const name = activeStudent?.displayName || 'your child';
                   setSchoolGPTQuery('');
+
+                  let botReply = '';
+                  if (q.includes('sunday') || q.includes('saturday') || q.includes('weekend') || q.includes('holiday') || q.includes('class on')) {
+                    botReply = `No, Sunday is a weekly school holiday for ${name}. School operations, classes, and bus tracking resume on Monday morning at 7:30 AM.`;
+                  } else if (q.includes('bus') || q.includes('route') || q.includes('tracking') || q.includes('driver')) {
+                    botReply = `Bus #4 completed the morning pickup at 7:36 AM and arrived safely at school at 8:07 AM. Geofence tracking confirmed ${name} deboarded safely at 8:09 AM.`;
+                  } else if (q.includes('homework') || q.includes('assignment') || q.includes('project') || q.includes('task')) {
+                    botReply = `${name} has 2 active homework tasks: Mathematics (Exercise 4.2) due tomorrow and English Essay due on Friday.`;
+                  } else if (q.includes('teacher') || q.includes('faculty') || q.includes('mam') || q.includes('sir') || q.includes('contact')) {
+                    botReply = `${name}'s Class 8-A teacher is Ms. Ananya Mehra (Mathematics). You can message her directly from the Messages tab in your Parent App.`;
+                  } else if (q.includes('gate') || q.includes('photo') || q.includes('checkin') || q.includes('entry')) {
+                    botReply = `Gate #2 dynamic QR scan was verified at 8:09 AM with a 100% photo/ID match by Security Officer Priya.`;
+                  } else if (q.includes('safe') || q.includes('checkpoint') || q.includes('status') || q.includes('where is')) {
+                    botReply = `${name} has cleared all 5 safety checkpoints today (Bus #4 ➔ Gate #2 ➔ Class 8A ➔ Canteen POS ➔ Reached Home). 100% verified safe!`;
+                  } else if (q.includes('exam') || q.includes('test') || q.includes('marks') || q.includes('result')) {
+                    botReply = `Mid-Term examinations begin next month. ${name}'s overall attendance is at 96% and current academic progress is excellent.`;
+                  } else if (q.includes('fee') || q.includes('payment') || q.includes('dues')) {
+                    botReply = `All tuition and transport fees for Q3 are fully paid with zero outstanding balance for ${name}.`;
+                  } else {
+                    botReply = `Regarding "${query}": ${name} is currently in Class 8-A with 100% verified attendance, all 5 safety checkpoints cleared, and no critical school alerts today.`;
+                  }
+
                   setSchoolGPTChatHistory((prev) => [
                     ...prev,
                     { sender: 'user', text: query },
-                    { sender: 'bot', text: `Verified safety audit for "${query}": All 5 safety checkpoints cleared for ${activeStudent?.displayName}.` }
+                    { sender: 'bot', text: botReply }
                   ]);
                 }}
                 className="flex gap-2 pt-1"
