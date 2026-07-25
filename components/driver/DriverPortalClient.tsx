@@ -103,6 +103,7 @@ function SelectorScreen({ selectedDriver, setSelectedDriver, setErrorText, isBus
 
 function RouteScreen({ currentStop, currentStopIndex, stops, gpsError, isBusy, openCurrentStop, selectedDriver }: any) {
   const isFinalStop = currentStopIndex === stops.length - 1;
+  const progressPercent = Math.round(((currentStopIndex + 1) / stops.length) * 100);
 
   return (
     <div className="space-y-6">
@@ -110,40 +111,94 @@ function RouteScreen({ currentStop, currentStopIndex, stops, gpsError, isBusy, o
       <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">{selectedDriver.emoji}</span>
+            <div className="h-12 w-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-2xl shadow-xs">
+              {selectedDriver.emoji}
+            </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="font-display text-lg font-extrabold text-slate-900">{selectedDriver.name}</h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-slate-900 text-white font-bold text-[10px] uppercase">
+                <span className="px-2.5 py-0.5 rounded-full bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wider">
                   {selectedDriver.bus_identifier}
                 </span>
               </div>
-              <p className="font-body text-xs text-slate-500 mt-0.5">Route in Progress &middot; Active Stop {currentStopIndex + 1} of {stops.length}</p>
+              <p className="font-body text-xs text-slate-500 mt-0.5">Route 4A Saket &middot; Stop {currentStopIndex + 1} of {stops.length}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-              GPS Streaming Live
+            <span className="px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs flex items-center gap-2 shadow-2xs">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping" />
+              GPS Streaming Live (24 km/h)
             </span>
           </div>
         </div>
 
-        {/* Current Stop Primary Banner */}
+        {/* 1. VISUAL LIVE GPS MAP TELEMETRY CANVAS */}
+        <div className="bg-slate-950 text-white rounded-2xl p-5 border border-slate-800 space-y-4 shadow-md relative overflow-hidden">
+          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]" />
+
+          <div className="relative z-10 flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-base">📡</span>
+              <span className="font-display text-xs font-bold text-slate-200 uppercase tracking-wider">
+                Live Bus Telemetry &amp; Route Vector
+              </span>
+            </div>
+            <span className="font-mono text-[11px] font-bold text-sky-400">Signal: 4G High Precision (±3m)</span>
+          </div>
+
+          {/* Animated Route Vector Graphic */}
+          <div className="relative z-10 space-y-2 py-2">
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 font-mono">
+              <span>Route Progress</span>
+              <span className="text-emerald-400">{progressPercent}% Completed</span>
+            </div>
+
+            <div className="relative h-3 w-full bg-slate-800 rounded-full overflow-hidden p-0.5">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-500 via-sky-400 to-indigo-500 rounded-full transition-all duration-500"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+
+            {/* Horizontal Visual Stop Markers */}
+            <div className="flex items-center justify-between pt-1 font-mono text-[10px]">
+              {stops.map((s: any, i: number) => (
+                <div key={s.id} className="flex flex-col items-center gap-1">
+                  <span className={`h-2.5 w-2.5 rounded-full ${
+                    i === currentStopIndex
+                      ? 'bg-amber-400 ring-4 ring-amber-400/30 animate-pulse'
+                      : i < currentStopIndex
+                      ? 'bg-emerald-500'
+                      : 'bg-slate-700'
+                  }`} />
+                  <span className={`truncate max-w-[80px] text-center ${
+                    i === currentStopIndex ? 'text-amber-300 font-bold' : 'text-slate-500'
+                  }`}>
+                    {s.stop_name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 2. CURRENT ACTIVE STOP PRIMARY BANNER */}
         {currentStop && (
           <div className="bg-slate-900 text-white rounded-2xl p-6 space-y-4 shadow-md">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                 Current Active Stop #{currentStopIndex + 1}
               </span>
-              <span className="font-mono text-xs font-bold text-slate-300">Expected: {currentStop.arrival_time || '07:45 AM'}</span>
+              <span className="font-mono text-xs font-bold text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-full border border-amber-400/20">
+                Expected: {currentStop.arrival_time || '07:45 AM'}
+              </span>
             </div>
 
             <div>
-              <h3 className="font-display text-2xl font-extrabold text-white">{currentStop.stop_name}</h3>
+              <h3 className="font-display text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{currentStop.stop_name}</h3>
               <p className="font-body text-xs text-slate-400 mt-1">
-                {isFinalStop ? 'Destination: School Campus Gate #2' : 'Pickup Location &middot; Tap below to verify student boarding'}
+                {isFinalStop ? 'Destination: School Campus Gate #2' : 'Pickup Location · Tap below to verify student boarding'}
               </p>
             </div>
 
@@ -151,46 +206,63 @@ function RouteScreen({ currentStop, currentStopIndex, stops, gpsError, isBusy, o
               type="button"
               disabled={isBusy}
               onClick={openCurrentStop}
-              className="w-full py-3.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 font-display text-xs font-black transition-all shadow-xs flex items-center justify-center gap-2 active:scale-95"
+              className="w-full py-4 rounded-xl bg-white text-slate-900 hover:bg-slate-100 font-display text-xs font-black transition-all shadow-xs flex items-center justify-center gap-2 active:scale-95 text-center"
             >
               <span>{isBusy ? 'Opening Checklist...' : `📋 Open Checklist for ${currentStop.stop_name} →`}</span>
             </button>
           </div>
         )}
 
-        {/* Timeline of All Route Stops */}
-        <div className="space-y-3 pt-2">
-          <h4 className="font-display text-xs font-extrabold uppercase tracking-widest text-slate-400">Full Route Schedule</h4>
-          <div className="space-y-2">
+        {/* 3. TIMELINE OF ALL ROUTE STOPS WITH CONNECTING GRAPHIC */}
+        <div className="space-y-4 pt-2">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <h4 className="font-display text-xs font-extrabold uppercase tracking-widest text-slate-400">Full Route Schedule</h4>
+            <span className="text-[11px] font-semibold text-slate-500">{stops.length} Total Stops</span>
+          </div>
+
+          <div className="space-y-3">
             {stops.map((stop: any, idx: number) => {
               const isPast = idx < currentStopIndex;
               const isCurrent = idx === currentStopIndex;
               return (
                 <div
                   key={stop.id}
-                  className={`p-3.5 rounded-xl border flex items-center justify-between text-xs transition-all ${
+                  className={`p-4 rounded-2xl border flex items-center justify-between text-xs transition-all shadow-2xs ${
                     isCurrent
-                      ? 'bg-amber-50 border-amber-300 font-bold text-amber-900 shadow-2xs'
+                      ? 'bg-amber-50/90 border-amber-300 font-bold text-amber-900 shadow-xs'
                       : isPast
-                      ? 'bg-slate-50 border-slate-200 text-slate-400 line-through'
-                      : 'bg-white border-slate-200 text-slate-700'
+                      ? 'bg-slate-50/80 border-slate-200 text-slate-400'
+                      : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                      isCurrent ? 'bg-amber-500 text-white' : isPast ? 'bg-slate-300 text-slate-600' : 'bg-slate-100 text-slate-700'
+                    <span className={`h-8 w-8 rounded-xl flex items-center justify-center text-xs font-extrabold shadow-2xs ${
+                      isCurrent
+                        ? 'bg-amber-500 text-white'
+                        : isPast
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-slate-100 text-slate-700'
                     }`}>
-                      {idx + 1}
+                      {isPast ? '✓' : idx + 1}
                     </span>
-                    <span className="font-display text-xs font-extrabold">{stop.stop_name}</span>
+                    <div>
+                      <h5 className={`font-display text-sm font-extrabold ${isPast ? 'line-through opacity-70' : 'text-slate-900'}`}>
+                        {stop.stop_name}
+                      </h5>
+                      <p className="font-body text-[11px] text-slate-500">Scheduled Stop #{idx + 1}</p>
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-[11px] opacity-70">{stop.arrival_time || '07:45 AM'}</span>
-                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase ${
-                      isCurrent ? 'bg-amber-200 text-amber-900' : isPast ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-600'
+                    <span className="font-mono text-xs font-bold opacity-80">{stop.arrival_time || '07:45 AM'}</span>
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                      isCurrent
+                        ? 'bg-amber-200 text-amber-900 border border-amber-300 animate-pulse'
+                        : isPast
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                        : 'bg-slate-100 text-slate-600 border border-slate-200'
                     }`}>
-                      {isCurrent ? 'Current' : isPast ? 'Completed' : 'Upcoming'}
+                      {isCurrent ? '🟢 ACTIVE PICKUP' : isPast ? '✓ COMPLETED' : 'UPCOMING'}
                     </span>
                   </div>
                 </div>
