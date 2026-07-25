@@ -19,25 +19,418 @@ const DRIVERS: Driver[] = [
 
 const progressKey = (tripId: string) => `shikshasetu:conductor-trip:${tripId}`;
 
-// Placeholder screen components
+// ── Rich Interactive Screen Components ──
+
 function SelectorScreen({ selectedDriver, setSelectedDriver, setErrorText, isBusy, handleStartTrip }: any) {
-  return <div className="p-6">Select driver screen - not yet implemented</div>;
+  return (
+    <div className="space-y-6">
+      <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+        <div>
+          <h2 className="font-display text-xl font-extrabold text-slate-900">Select Attendant &amp; Bus Route</h2>
+          <p className="font-body text-xs text-slate-500 mt-1">
+            Choose your assigned bus driver profile to initialize passive background GPS streaming and student boarding checklists.
+          </p>
+        </div>
+
+        {/* Driver Selection Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {DRIVERS.map((driver) => {
+            const isSelected = selectedDriver?.id === driver.id;
+            return (
+              <button
+                key={driver.id}
+                type="button"
+                onClick={() => {
+                  setSelectedDriver(driver);
+                  setErrorText(null);
+                }}
+                className={`p-5 rounded-2xl text-left transition-all border flex flex-col justify-between h-36 ${
+                  isSelected
+                    ? 'bg-slate-900 text-white border-slate-900 shadow-md scale-[1.02]'
+                    : 'bg-slate-50/80 hover:bg-slate-100 border-slate-200 text-slate-900'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-3xl">{driver.emoji}</span>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                    isSelected ? 'bg-slate-800 text-emerald-400 border border-slate-700' : 'bg-white text-slate-700 border border-slate-200'
+                  }`}>
+                    {driver.bus_identifier}
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="font-display text-base font-extrabold">{driver.name}</h3>
+                  <p className={`font-body text-xs mt-0.5 ${isSelected ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Route: Saket &rarr; School Gate #2
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Action Button */}
+        <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-xs font-semibold text-slate-500">
+            {selectedDriver ? (
+              <span className="text-emerald-700 font-bold flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                Selected: {selectedDriver.name} ({selectedDriver.bus_identifier})
+              </span>
+            ) : (
+              <span>Please tap a bus driver profile above to continue</span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            disabled={!selectedDriver || isBusy}
+            onClick={handleStartTrip}
+            className={`w-full sm:w-auto px-6 py-3.5 rounded-2xl font-display text-sm font-extrabold transition-all shadow-md flex items-center justify-center gap-2 ${
+              !selectedDriver || isBusy
+                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                : 'bg-slate-900 hover:bg-slate-800 text-white active:scale-95'
+            }`}
+          >
+            <span>{isBusy ? 'Initializing Route...' : '▶ Start Bus Route & GPS Broadcast'}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function RouteScreen({ currentStop, currentStopIndex, stops, gpsError, isBusy, openCurrentStop, selectedDriver }: any) {
-  return <div className="p-6">Route screen - not yet implemented</div>;
+  const isFinalStop = currentStopIndex === stops.length - 1;
+
+  return (
+    <div className="space-y-6">
+      {/* Route Header Card */}
+      <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">{selectedDriver.emoji}</span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-display text-lg font-extrabold text-slate-900">{selectedDriver.name}</h2>
+                <span className="px-2.5 py-0.5 rounded-full bg-slate-900 text-white font-bold text-[10px] uppercase">
+                  {selectedDriver.bus_identifier}
+                </span>
+              </div>
+              <p className="font-body text-xs text-slate-500 mt-0.5">Route in Progress &middot; Active Stop {currentStopIndex + 1} of {stops.length}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+              GPS Streaming Live
+            </span>
+          </div>
+        </div>
+
+        {/* Current Stop Primary Banner */}
+        {currentStop && (
+          <div className="bg-slate-900 text-white rounded-2xl p-6 space-y-4 shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                Current Active Stop #{currentStopIndex + 1}
+              </span>
+              <span className="font-mono text-xs font-bold text-slate-300">Expected: {currentStop.arrival_time || '07:45 AM'}</span>
+            </div>
+
+            <div>
+              <h3 className="font-display text-2xl font-extrabold text-white">{currentStop.stop_name}</h3>
+              <p className="font-body text-xs text-slate-400 mt-1">
+                {isFinalStop ? 'Destination: School Campus Gate #2' : 'Pickup Location &middot; Tap below to verify student boarding'}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={openCurrentStop}
+              className="w-full py-3.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 font-display text-xs font-black transition-all shadow-xs flex items-center justify-center gap-2 active:scale-95"
+            >
+              <span>{isBusy ? 'Opening Checklist...' : `📋 Open Checklist for ${currentStop.stop_name} →`}</span>
+            </button>
+          </div>
+        )}
+
+        {/* Timeline of All Route Stops */}
+        <div className="space-y-3 pt-2">
+          <h4 className="font-display text-xs font-extrabold uppercase tracking-widest text-slate-400">Full Route Schedule</h4>
+          <div className="space-y-2">
+            {stops.map((stop: any, idx: number) => {
+              const isPast = idx < currentStopIndex;
+              const isCurrent = idx === currentStopIndex;
+              return (
+                <div
+                  key={stop.id}
+                  className={`p-3.5 rounded-xl border flex items-center justify-between text-xs transition-all ${
+                    isCurrent
+                      ? 'bg-amber-50 border-amber-300 font-bold text-amber-900 shadow-2xs'
+                      : isPast
+                      ? 'bg-slate-50 border-slate-200 text-slate-400 line-through'
+                      : 'bg-white border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                      isCurrent ? 'bg-amber-500 text-white' : isPast ? 'bg-slate-300 text-slate-600' : 'bg-slate-100 text-slate-700'
+                    }`}>
+                      {idx + 1}
+                    </span>
+                    <span className="font-display text-xs font-extrabold">{stop.stop_name}</span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-[11px] opacity-70">{stop.arrival_time || '07:45 AM'}</span>
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase ${
+                      isCurrent ? 'bg-amber-200 text-amber-900' : isPast ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {isCurrent ? 'Current' : isPast ? 'Completed' : 'Upcoming'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function BoardingScreen({ currentStop, currentStopIndex, stops, students, studentStatus, busyStudentId, board, isBusy, continueFromBoarding }: any) {
-  return <div className="p-6">Boarding screen - not yet implemented</div>;
+  const isFinalStop = currentStopIndex === stops.length - 1;
+  const boardedCount = Object.values(studentStatus).filter(Boolean).length;
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Boarding Verification</span>
+            <h2 className="font-display text-xl font-extrabold text-slate-900">{currentStop.stop_name}</h2>
+          </div>
+          <div className="px-3.5 py-1.5 bg-slate-100 border border-slate-200 text-slate-800 rounded-full font-bold text-xs">
+            {boardedCount} of {students.length} Boarded
+          </div>
+        </div>
+
+        {/* Student Roster */}
+        {students.length === 0 ? (
+          <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+            <p className="text-2xl">🚌</p>
+            <p className="font-body text-xs font-bold text-slate-600">No assigned students at this stop.</p>
+            <p className="font-body text-[11px] text-slate-400">Tap continue to proceed along the route.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {students.map((student: any) => {
+              const isBoarded = studentStatus[student.id];
+              const isBoardingThis = busyStudentId === student.id;
+              return (
+                <div
+                  key={student.id}
+                  className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${
+                    isBoarded
+                      ? 'bg-emerald-50/80 border-emerald-200 text-emerald-900'
+                      : 'bg-slate-50 border-slate-200 text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-bold text-xs ${
+                      isBoarded ? 'bg-emerald-200 text-emerald-900' : 'bg-slate-200 text-slate-700'
+                    }`}>
+                      {student.display_name.charAt(0)}
+                    </div>
+                    <div>
+                      <h4 className="font-display text-sm font-extrabold">{student.display_name}</h4>
+                      <span className="text-[11px] font-semibold text-slate-500">Saket Stop #3 &middot; Bus #4</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={isBoarded || isBoardingThis}
+                    onClick={() => board(student.id)}
+                    className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all ${
+                      isBoarded
+                        ? 'bg-emerald-600 text-white cursor-default'
+                        : isBoardingThis
+                        ? 'bg-slate-300 text-slate-600'
+                        : 'bg-slate-900 hover:bg-slate-800 text-white active:scale-95 shadow-xs'
+                    }`}
+                  >
+                    {isBoarded ? '✓ Boarded' : isBoardingThis ? 'Boarding...' : 'Mark Boarded'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Action Controls */}
+        <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+          <p className="text-xs font-semibold text-slate-500">
+            {students.length - boardedCount > 0 ? (
+              <span className="text-amber-700 font-bold">⚠️ {students.length - boardedCount} student(s) unboarded</span>
+            ) : (
+              <span className="text-emerald-700 font-bold">✓ All stop students accounted for</span>
+            )}
+          </p>
+
+          <button
+            type="button"
+            disabled={isBusy}
+            onClick={continueFromBoarding}
+            className="px-6 py-3 rounded-xl bg-slate-900 text-white font-display text-xs font-extrabold hover:bg-slate-800 transition-all shadow-md active:scale-95"
+          >
+            <span>{isBusy ? 'Processing...' : isFinalStop ? 'Proceed to Deboarding →' : 'Continue to Next Stop →'}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function DeboardingScreen({ currentStop, students, studentStatus, busyStudentId, deboard, isBusy, finishRoute }: any) {
-  return <div className="p-6">Deboarding screen - not yet implemented</div>;
+  const deboardedCount = Object.values(studentStatus).filter(Boolean).length;
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Final Destination Arrival</span>
+            <h2 className="font-display text-xl font-extrabold text-slate-900">School Campus Gate #2</h2>
+          </div>
+          <div className="px-3.5 py-1.5 bg-slate-100 border border-slate-200 text-slate-800 rounded-full font-bold text-xs">
+            {deboardedCount} of {students.length} Deboarded
+          </div>
+        </div>
+
+        {students.length === 0 ? (
+          <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+            <p className="text-2xl">🏫</p>
+            <p className="font-body text-xs font-bold text-slate-600">All students deboarded safely.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {students.map((student: any) => {
+              const isDeboarded = studentStatus[student.id];
+              const isDeboardingThis = busyStudentId === student.id;
+              return (
+                <div
+                  key={student.id}
+                  className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${
+                    isDeboarded
+                      ? 'bg-emerald-50/80 border-emerald-200 text-emerald-900'
+                      : 'bg-slate-50 border-slate-200 text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-700">
+                      {student.display_name.charAt(0)}
+                    </div>
+                    <div>
+                      <h4 className="font-display text-sm font-extrabold">{student.display_name}</h4>
+                      <span className="text-[11px] font-semibold text-slate-500">Arrived at School Gate #2</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={isDeboarded || isDeboardingThis}
+                    onClick={() => deboard(student)}
+                    className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all ${
+                      isDeboarded
+                        ? 'bg-emerald-600 text-white cursor-default'
+                        : isDeboardingThis
+                        ? 'bg-slate-300 text-slate-600'
+                        : 'bg-slate-900 hover:bg-slate-800 text-white active:scale-95 shadow-xs'
+                    }`}
+                  >
+                    {isDeboarded ? '✓ Deboarded Safe' : isDeboardingThis ? 'Deboarding...' : 'Verify Deboard'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+          <p className="text-xs font-semibold text-slate-500">
+            {deboardedCount === students.length ? (
+              <span className="text-emerald-700 font-bold">✓ 100% Students Safely Deboarded</span>
+            ) : (
+              <span className="text-amber-700 font-bold">⚠️ Verify all students before finishing route</span>
+            )}
+          </p>
+
+          <button
+            type="button"
+            disabled={isBusy}
+            onClick={finishRoute}
+            className="px-6 py-3 rounded-xl bg-slate-900 text-white font-display text-xs font-extrabold hover:bg-slate-800 transition-all shadow-md active:scale-95"
+          >
+            <span>{isBusy ? 'Finalizing Route...' : '🏁 Complete Route & Send Notifications →'}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function CompleteScreen({ completion, resetTrip, setNotice, setErrorText, setScreen }: any) {
-  return <div className="p-6">Completion screen - not yet implemented</div>;
+  return (
+    <div className="space-y-6">
+      <div className="bg-white border border-slate-200/80 rounded-3xl p-8 shadow-xs text-center space-y-6">
+        <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center text-3xl font-bold shadow-inner">
+          ✓
+        </div>
+
+        <div className="space-y-2 max-w-md mx-auto">
+          <h2 className="font-display text-2xl font-extrabold text-slate-900">Route Completed Successfully!</h2>
+          <p className="font-body text-xs text-slate-500 leading-relaxed">
+            All parents and school administrators have been notified of safe arrival at School Campus Gate #2.
+          </p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-3 gap-3 max-w-md mx-auto pt-2">
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+            <span className="text-[10px] font-bold uppercase text-slate-400 block">Boarded</span>
+            <strong className="text-2xl font-black text-slate-900 mt-1 block">{completion.boarded}</strong>
+          </div>
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+            <span className="text-[10px] font-bold uppercase text-slate-400 block">Deboarded</span>
+            <strong className="text-2xl font-black text-emerald-700 mt-1 block">{completion.deboarded}</strong>
+          </div>
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+            <span className="text-[10px] font-bold uppercase text-slate-400 block">Missed</span>
+            <strong className="text-2xl font-black text-amber-700 mt-1 block">{completion.missed}</strong>
+          </div>
+        </div>
+
+        <div className="pt-4">
+          <button
+            type="button"
+            onClick={() => {
+              resetTrip();
+              setScreen('selector');
+            }}
+            className="px-8 py-3.5 rounded-2xl bg-slate-900 text-white font-display text-xs font-black hover:bg-slate-800 transition-all shadow-md active:scale-95"
+          >
+            🔄 Start New Route
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function DriverPortalClient() {
