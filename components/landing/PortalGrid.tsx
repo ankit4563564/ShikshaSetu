@@ -116,47 +116,136 @@ export default function PortalGrid() {
             <span>⭐</span> Primary Flagship Experiences (Dual-Portal)
           </h3>
           <div className="grid gap-6 sm:grid-cols-2">
-            {primaryHeroPortals.map((portal) => (
-              <motion.div
-                key={portal.href}
-                whileHover={{ y: -6, scale: 1.01 }}
-                transition={{ duration: 0.3 }}
-                className="h-full"
+            {/* 📱 CARD 1: PARENT MOBILE APPLICATION VISUAL UI */}
+            <motion.div
+              whileHover={{ y: -6, scale: 1.01 }}
+              transition={{ duration: 0.3 }}
+              className="h-full"
+            >
+              <Link
+                href="/sign-in?role=parent"
+                className="group flex flex-col h-full rounded-3xl border border-[#1f4e5f]/20 border-t-4 border-t-[#6b9080] bg-white/95 overflow-hidden shadow-md backdrop-blur-md transition-all duration-300 hover:shadow-xl"
               >
-                <Link
-                  href={portal.href}
-                  className={`group flex flex-col h-full rounded-3xl border border-[#1f4e5f]/20 ${portal.accent} border-t-4 bg-white/95 overflow-hidden shadow-md backdrop-blur-md transition-all duration-300 hover:shadow-xl`}
-                >
-                  <div className="relative h-52 w-full border-b border-[#1f4e5f]/5 bg-[#1f4e5f]/5 overflow-hidden">
-                    <Image
-                      src={portal.image}
-                      alt={`${portal.title} - ${portal.description.substring(0, 100)}`}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/95 text-2xl shadow-lg backdrop-blur-md">
-                      {portal.emoji}
+                {/* Visual UI Preview Box */}
+                <div className="relative h-56 w-full bg-slate-900 border-b border-[#1f4e5f]/10 p-4 overflow-hidden flex flex-col justify-between select-none">
+                  {/* Subtle Grid Background */}
+                  <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]" />
+
+                  {/* Header Bar */}
+                  <div className="relative z-10 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                      <span className="font-display text-[11px] font-extrabold text-white">Aarav Sharma &middot; Class 8A</span>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-bold uppercase">
+                      ✓ Verified Safe (98%)
+                    </span>
+                  </div>
+
+                  {/* Live Bus Widget UI */}
+                  <div className="relative z-10 p-3 bg-slate-800/90 border border-slate-700 rounded-xl space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-slate-300 flex items-center gap-1">
+                        <span>🚌</span> Live Bus #4 &middot; Ramesh Kumar
+                      </span>
+                      <span className="font-mono text-[9px] font-bold text-sky-400">ETA 5 mins</span>
+                    </div>
+                    <p className="font-display text-xs font-bold text-white">Passing Hauz Khas Junction &rarr; En Route Home</p>
+                  </div>
+
+                  {/* Journey Feed Preview */}
+                  <div className="relative z-10 space-y-1 pt-1 border-t border-slate-800 text-[10px] font-medium text-slate-300 flex items-center justify-between">
+                    <span className="flex items-center gap-1">
+                      <span className="text-emerald-400">✓</span> 08:18 AM Gate #2 QR Verified
+                    </span>
+                    <span className="text-slate-400 font-mono">100% ID Match</span>
+                  </div>
+                </div>
+
+                <div className="p-7 flex-1 flex flex-col space-y-3">
+                  <span className="self-start inline-block px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border text-[#6b9080] bg-[#6b9080]/10 border-[#6b9080]/20">
+                    Primary Hero Experience 1
+                  </span>
+                  <h3 className="text-xl font-black text-[#1f4e5f] group-hover:text-primary transition-colors duration-200">
+                    📱 Parent Mobile Application
+                  </h3>
+                  <p className="text-xs font-medium text-[#1f4e5f]/80 leading-relaxed flex-1">
+                    Rich mobile application for tracking student milestones, academic growth, and live safety (real-time bus tracking with geofence proximity alerts).
+                  </p>
+                  <div className="pt-3 flex items-center text-xs font-black text-primary group-hover:translate-x-1 transition-transform duration-200">
+                    Launch Hero Experience →
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+
+            {/* 💻 CARD 2: TEACHER WEB DASHBOARD VISUAL UI */}
+            <motion.div
+              whileHover={{ y: -6, scale: 1.01 }}
+              transition={{ duration: 0.3 }}
+              className="h-full"
+            >
+              <Link
+                href="/sign-in?role=teacher"
+                className="group flex flex-col h-full rounded-3xl border border-[#1f4e5f]/20 border-t-4 border-t-[#e8a33d] bg-white/95 overflow-hidden shadow-md backdrop-blur-md transition-all duration-300 hover:shadow-xl"
+              >
+                {/* Visual UI Preview Box */}
+                <div className="relative h-56 w-full bg-slate-900 border-b border-[#1f4e5f]/10 p-4 overflow-hidden flex flex-col justify-between select-none">
+                  {/* Subtle Grid Background */}
+                  <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#e8a33d_1px,transparent_1px)] [background-size:16px_16px]" />
+
+                  {/* Header Bar */}
+                  <div className="relative z-10 flex items-center justify-between">
+                    <div>
+                      <span className="font-display text-[11px] font-extrabold text-white">Ms. Ananya Mehra</span>
+                      <p className="text-[9px] text-slate-400 font-medium">Class 8A &middot; Math &amp; Science</p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-bold">
+                      ✅ 1-Tap Roll Call (14/14)
+                    </span>
+                  </div>
+
+                  {/* Student Support Radar Chips */}
+                  <div className="relative z-10 grid grid-cols-3 gap-1.5">
+                    <div className="p-2 bg-slate-800/90 border border-slate-700 rounded-lg text-center">
+                      <span className="text-[9px] text-slate-400 font-bold block">On Track</span>
+                      <strong className="text-xs font-black text-emerald-400">12</strong>
+                    </div>
+                    <div className="p-2 bg-slate-800/90 border border-slate-700 rounded-lg text-center">
+                      <span className="text-[9px] text-slate-400 font-bold block">Worth Watching</span>
+                      <strong className="text-xs font-black text-amber-400">2</strong>
+                    </div>
+                    <div className="p-2 bg-slate-800/90 border border-slate-700 rounded-lg text-center">
+                      <span className="text-[9px] text-slate-400 font-bold block">Attention</span>
+                      <strong className="text-xs font-black text-rose-400">0</strong>
                     </div>
                   </div>
 
-                  <div className="p-7 flex-1 flex flex-col space-y-3">
-                    <span className={`self-start inline-block px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${portal.tagColor}`}>
-                      {portal.label}
+                  {/* Class Roster Preview */}
+                  <div className="relative z-10 space-y-1 pt-1 border-t border-slate-800 text-[10px] font-medium text-slate-300 flex items-center justify-between">
+                    <span className="flex items-center gap-1 font-bold text-slate-200">
+                      <span>👤</span> Aarav Sharma (92% Math Quiz)
                     </span>
-                    <h3 className="text-xl font-black text-[#1f4e5f] group-hover:text-primary transition-colors duration-200">
-                      {portal.title}
-                    </h3>
-                    <p className="text-xs font-medium text-[#1f4e5f]/80 leading-relaxed flex-1">
-                      {portal.description}
-                    </p>
-                    <div className="pt-3 flex items-center text-xs font-black text-primary group-hover:translate-x-1 transition-transform duration-200">
-                      Launch Hero Experience →
-                    </div>
+                    <span className="text-emerald-400 font-bold">Class Participation: High</span>
                   </div>
-                </Link>
-              </motion.div>
-            ))}
+                </div>
+
+                <div className="p-7 flex-1 flex flex-col space-y-3">
+                  <span className="self-start inline-block px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border text-[#e8a33d] bg-[#e8a33d]/10 border-[#e8a33d]/20">
+                    Primary Hero Experience 2
+                  </span>
+                  <h3 className="text-xl font-black text-[#1f4e5f] group-hover:text-primary transition-colors duration-200">
+                    💻 Teacher Web Dashboard
+                  </h3>
+                  <p className="text-xs font-medium text-[#1f4e5f]/80 leading-relaxed flex-1">
+                    Executive web dashboard enabling teachers to monitor holistic classroom health, attendance, student support radar, and academic progress at a glance.
+                  </p>
+                  <div className="pt-3 flex items-center text-xs font-black text-primary group-hover:translate-x-1 transition-transform duration-200">
+                    Launch Hero Experience →
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
           </div>
         </div>
 
