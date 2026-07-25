@@ -216,47 +216,119 @@ export default function ConnectedJourney() {
             className="grid overflow-hidden rounded-[28px] shadow-[0_32px_80px_rgba(15,20,80,.18)] lg:grid-cols-[1.55fr_1fr]"
             style={{ background: '#0e1630' }}
           >
-            {/* ── Map panel ───────────────────────────────────────────────── */}
-            <div className="relative min-h-[520px] overflow-hidden" style={{ background: '#d8e8d4' }}>
+            {/* ── Map panel (Realistic Vector & Satellite Hybrid Aesthetic) ──────── */}
+            <div className="relative min-h-[520px] overflow-hidden bg-[#e2ebd8]">
 
-              {/* Map road grid — subtle, hand-drawn feel */}
+              {/* Realistic Map Vector SVG (Water, Parks, Buildings, Highways, Street Labels) */}
               <svg
                 aria-hidden="true"
-                className="absolute inset-0 h-full w-full pointer-events-none opacity-60"
+                className="absolute inset-0 h-full w-full pointer-events-none"
                 viewBox="0 0 800 480"
                 preserveAspectRatio="none"
               >
-                {/* Major roads (white stripes) */}
-                <path d="M 0 240 Q 400 220 800 240" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="22" />
-                <path d="M 400 0 Q 420 240 400 480" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="18" />
-                <path d="M 0 400 Q 200 390 400 420 Q 600 440 800 400" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="14" />
-                <path d="M 150 0 Q 170 240 150 480" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="12" />
-                <path d="M 650 0 Q 630 240 650 480" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="12" />
-                {/* Minor roads */}
-                <path d="M 0 130 Q 400 120 800 130" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="8" />
-                <path d="M 0 350 Q 400 360 800 350" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="8" />
-                {/* Intersection highlights */}
-                <circle cx="400" cy="240" r="18" fill="rgba(255,255,255,0.5)" />
-                <circle cx="150" cy="240" r="12" fill="rgba(255,255,255,0.4)" />
-                <circle cx="650" cy="240" r="12" fill="rgba(255,255,255,0.4)" />
-                <circle cx="400" cy="130" r="10" fill="rgba(255,255,255,0.4)" />
-                <circle cx="400" cy="350" r="10" fill="rgba(255,255,255,0.4)" />
-                {/* Park/block fills */}
-                <rect x="20" y="20" width="120" height="100" rx="8" fill="rgba(160,200,140,0.5)" />
-                <rect x="460" y="270" width="100" height="80" rx="8" fill="rgba(160,200,140,0.4)" />
-                <rect x="680" y="130" width="100" height="90" rx="8" fill="rgba(160,200,140,0.45)" />
-                <rect x="20" y="290" width="110" height="90" rx="8" fill="rgba(200,220,180,0.4)" />
-                <rect x="550" y="20" width="100" height="70" rx="8" fill="rgba(160,200,140,0.4)" />
+                <defs>
+                  {/* Neon Route Glow Filter */}
+                  <filter id="routeGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                  <linearGradient id="routeGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#3b82f6" />
+                    <stop offset="50%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#4f63d2" />
+                  </linearGradient>
+                </defs>
+
+                {/* 1. Natural Green Parks & Landuse Zones */}
+                <rect x="30" y="20" width="160" height="110" rx="16" fill="#bbf7d0" opacity="0.75" />
+                <rect x="460" y="260" width="130" height="100" rx="16" fill="#86efac" opacity="0.65" />
+                <rect x="660" y="110" width="120" height="110" rx="16" fill="#bbf7d0" opacity="0.7" />
+                <rect x="30" y="290" width="130" height="110" rx="16" fill="#bbf7d0" opacity="0.6" />
+                <rect x="520" y="20" width="120" height="80" rx="14" fill="#a7f3d0" opacity="0.65" />
+
+                {/* 2. Realistic Blue River & Bridges */}
+                <path
+                  d="M -10 320 C 180 340, 240 180, 500 160 C 650 150, 750 60, 810 20"
+                  fill="none"
+                  stroke="#38bdf8"
+                  strokeWidth="32"
+                  opacity="0.8"
+                />
+                <path
+                  d="M -10 320 C 180 340, 240 180, 500 160 C 650 150, 750 60, 810 20"
+                  fill="none"
+                  stroke="#0284c7"
+                  strokeWidth="8"
+                  opacity="0.3"
+                />
+
+                {/* 3. Urban Building Footprints */}
+                <g fill="#cbd5e1" opacity="0.65">
+                  {/* Block 1 */}
+                  <rect x="50" y="150" width="30" height="24" rx="4" />
+                  <rect x="90" y="150" width="40" height="24" rx="4" />
+                  <rect x="50" y="180" width="80" height="30" rx="4" />
+                  
+                  {/* Block 2 */}
+                  <rect x="220" y="40" width="50" height="35" rx="4" />
+                  <rect x="280" y="40" width="60" height="35" rx="4" />
+                  <rect x="220" y="85" width="120" height="30" rx="4" />
+
+                  {/* Block 3 */}
+                  <rect x="480" y="40" width="30" height="40" rx="4" />
+                  <rect x="480" y="90" width="30" height="40" rx="4" />
+
+                  {/* Block 4 */}
+                  <rect x="600" y="290" width="50" height="40" rx="4" />
+                  <rect x="660" y="290" width="60" height="40" rx="4" />
+                  <rect x="600" y="340" width="120" height="35" rx="4" />
+                </g>
+
+                {/* 4. Secondary Neighborhood Streets */}
+                <g stroke="#ffffff" strokeWidth="9" opacity="0.8" strokeLinecap="round">
+                  <path d="M 0 130 Q 400 120 800 130" />
+                  <path d="M 0 370 Q 400 380 800 370" />
+                  <path d="M 210 0 Q 230 240 210 480" />
+                  <path d="M 600 0 Q 580 240 600 480" />
+                </g>
+
+                {/* 5. Major Dual-Carriageway Highway */}
+                <path d="M 0 240 Q 400 220 800 240" fill="none" stroke="#ffffff" strokeWidth="26" />
+                <path d="M 0 240 Q 400 220 800 240" fill="none" stroke="#fbbf24" strokeWidth="3" strokeDasharray="10 8" />
+
+                <path d="M 400 0 Q 420 240 400 480" fill="none" stroke="#ffffff" strokeWidth="22" />
+                <path d="M 400 0 Q 420 240 400 480" fill="none" stroke="#fbbf24" strokeWidth="3" strokeDasharray="10 8" />
+
+                {/* Major Highway Intersections */}
+                <circle cx="400" cy="230" r="22" fill="#ffffff" />
+                <circle cx="400" cy="230" r="14" fill="#fbbf24" opacity="0.4" />
+                <circle cx="210" cy="235" r="14" fill="#ffffff" />
+                <circle cx="600" cy="235" r="14" fill="#ffffff" />
+
+                {/* 6. Street Name Labels (Vector Typography) */}
+                <text x="70" y="222" fill="#475569" fontSize="10" fontFamily="sans-serif" fontWeight="800" letterSpacing="1">
+                  RING ROAD EXPWY
+                </text>
+                <text x="412" y="70" fill="#475569" fontSize="10" fontFamily="sans-serif" fontWeight="800" letterSpacing="1">
+                  AUROBINDO MARG
+                </text>
+                <text x="220" y="360" fill="#475569" fontSize="9" fontFamily="sans-serif" fontWeight="700" letterSpacing="0.5">
+                  SAKET AVE
+                </text>
+                <text x="610" y="275" fill="#475569" fontSize="9" fontFamily="sans-serif" fontWeight="700" letterSpacing="0.5">
+                  GREEN PARK BLVD
+                </text>
+                <text x="260" y="195" fill="#0284c7" fontSize="9" fontFamily="sans-serif" fontWeight="800" letterSpacing="0.5">
+                  YAMUNA CANAL
+                </text>
               </svg>
 
-              {/* Terrain texture overlay */}
+              {/* Satellite Grid Overlay for Realistic Depth */}
               <div
-                className="absolute inset-0 opacity-30 mix-blend-multiply"
+                className="absolute inset-0 opacity-15 pointer-events-none mix-blend-overlay"
                 style={{
-                  backgroundImage: `radial-gradient(circle at 15% 25%, #a8c89a 0 6%, transparent 6.5%),
-                    radial-gradient(circle at 82% 72%, #a8c89a 0 6%, transparent 6.5%),
-                    radial-gradient(circle at 55% 45%, #b8d4aa 0 4%, transparent 4.5%)`,
-                  backgroundSize: '80px 80px, 100px 100px, 60px 60px',
+                  backgroundImage: `radial-gradient(circle at 50% 50%, #000 1px, transparent 1px)`,
+                  backgroundSize: '24px 24px',
                 }}
               />
 
