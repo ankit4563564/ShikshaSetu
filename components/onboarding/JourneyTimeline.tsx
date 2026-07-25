@@ -58,9 +58,9 @@ function JourneyTimelineComponent({ onComplete }: JourneyTimelineProps) {
                   initial={{ scaleY: 0, opacity: 0.4 }}
                   animate={{ scaleY: 1, opacity: 1 }}
                   transition={{
-                    duration: reduceMotion ? 0.01 : 0.35,
-                    delay: reduceMotion ? 0 : index * 0.12 + 0.08,
-                    ease: [0.16, 1, 0.3, 1],
+                    duration: reduceMotion ? 0.01 : 0.9,
+                    delay: reduceMotion ? 0 : index * 0.45 + 0.2,
+                    ease: [0.22, 1, 0.36, 1],
                   }}
                   style={{ height: '100%' }}
                 />
@@ -70,8 +70,8 @@ function JourneyTimelineComponent({ onComplete }: JourneyTimelineProps) {
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: [0, 1, 0], y: [0, 18, 36] }}
                   transition={{
-                    duration: reduceMotion ? 0.01 : 0.9,
-                    delay: reduceMotion ? 0 : index * 0.12 + 0.12,
+                    duration: reduceMotion ? 0.01 : 1.8,
+                    delay: reduceMotion ? 0 : index * 0.45 + 0.25,
                     repeat: reduceMotion ? 0 : 1,
                     ease: 'easeInOut',
                   }}
