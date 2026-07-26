@@ -45,10 +45,10 @@ export function DualExperienceHubSection() {
                   <span className="text-emerald-500 font-extrabold">✓</span> Live Bus Tracking
                 </li>
                 <li className="flex items-center gap-2 bg-white/80 p-2.5 rounded-xl border border-amber-100 shadow-2xs">
-                  <span className="text-emerald-500 font-extrabold">✓</span> Attendance
+                  <span className="text-emerald-500 font-extrabold">✓</span> Attendance Alerts
                 </li>
                 <li className="flex items-center gap-2 bg-white/80 p-2.5 rounded-xl border border-amber-100 shadow-2xs">
-                  <span className="text-emerald-500 font-extrabold">✓</span> Homework &amp; Tasks
+                  <span className="text-emerald-500 font-extrabold">✓</span> Homework Tasks
                 </li>
                 <li className="flex items-center gap-2 bg-white/80 p-2.5 rounded-xl border border-amber-100 shadow-2xs">
                   <span className="text-emerald-500 font-extrabold">✓</span> Teacher Messages
@@ -58,22 +58,37 @@ export function DualExperienceHubSection() {
                 </li>
               </ul>
 
-              {/* Mobile Device Screenshot Preview */}
-              <div className="relative h-64 w-full rounded-2xl overflow-hidden mb-8 border border-slate-200 shadow-xl bg-slate-950 group-hover:scale-[1.01] transition-transform">
-                <Image
-                  src="/images/parent_safety_app.jpg"
-                  alt="Parent Mobile App Experience"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover opacity-95"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
+              {/* Single Sleek Smartphone Device Mockup */}
+              <div className="relative mx-auto w-full max-w-[280px] h-[360px] rounded-[32px] overflow-hidden shadow-2xl border-4 border-slate-900 bg-slate-950 p-3 flex flex-col justify-between my-4 group-hover:scale-[1.02] transition-transform">
+                <div className="flex items-center justify-between px-2 text-[9px] font-mono text-white/70 z-10">
+                  <span>08:14 AM</span>
+                  <div className="w-12 h-3 bg-slate-900 rounded-full mx-auto" />
+                  <span>100% ⚡</span>
+                </div>
+                <div className="absolute inset-0 z-0">
+                  <Image
+                    src="/images/parent_safety_app.jpg"
+                    alt="Parent Mobile App Experience"
+                    fill
+                    className="object-cover opacity-85"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/40" />
+                </div>
+                <div className="relative z-10 bg-slate-900/90 backdrop-blur-md p-3.5 rounded-xl border border-amber-400/40 text-white space-y-1.5 shadow-xl">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-amber-300 font-mono">Live Gate Push Alert</span>
+                    <span className="text-[9px] text-slate-400 font-mono">Just now</span>
+                  </div>
+                  <h4 className="text-xs font-bold text-white">Aarav Arrived Safely</h4>
+                  <p className="text-[10px] text-slate-300">Gate #2 RFID Scan Verified &middot; 08:14 AM</p>
+                </div>
+                <div className="w-24 h-1 bg-white/40 rounded-full mx-auto z-10" />
               </div>
             </div>
 
             <Link
               href="/parent"
-              className="w-full text-center py-4 px-6 rounded-2xl font-title-md text-sm font-extrabold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="w-full text-center py-4 px-6 rounded-2xl font-title-md text-sm font-extrabold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 mt-4"
             >
               Open Parent Experience
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -112,22 +127,36 @@ export function DualExperienceHubSection() {
                 </li>
               </ul>
 
-              {/* Desktop Dashboard Screenshot Preview */}
-              <div className="relative h-64 w-full rounded-2xl overflow-hidden mb-8 border border-slate-200 shadow-xl bg-slate-950 group-hover:scale-[1.01] transition-transform">
-                <Image
-                  src="/images/teacher_classroom_ai.jpg"
-                  alt="Teacher Workstation Experience"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover opacity-95"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
+              {/* Single Sleek Laptop Device Mockup */}
+              <div className="relative mx-auto w-full max-w-[380px] h-[240px] rounded-2xl overflow-hidden shadow-2xl border-4 border-slate-800 bg-slate-950 p-4 flex flex-col justify-between my-4 group-hover:scale-[1.02] transition-transform">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-800 text-[10px] font-mono text-slate-400">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+                  <span className="ml-2">Class 8A Teacher Workstation</span>
+                </div>
+                <div className="absolute inset-0 z-0">
+                  <Image
+                    src="/images/teacher_classroom_ai.jpg"
+                    alt="Teacher Workstation Experience"
+                    fill
+                    className="object-cover opacity-85"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                </div>
+                <div className="relative z-10 bg-slate-900/90 backdrop-blur-md p-3 rounded-xl border border-teal-400/40 text-white space-y-1 shadow-xl mt-auto">
+                  <div className="flex items-center justify-between text-[10px] font-mono">
+                    <span className="text-teal-300 font-bold">✓ 36/38 Students Present</span>
+                    <span className="text-emerald-400 font-bold">1-Tap Roll Call</span>
+                  </div>
+                  <p className="text-[10px] text-slate-300">SchoolGPT AI: Prepared Physics Quiz 8A &bull; 45 Mins Saved Today</p>
+                </div>
               </div>
             </div>
 
             <Link
               href="/teacher"
-              className="w-full text-center py-4 px-6 rounded-2xl font-title-md text-sm font-extrabold bg-teal-600 hover:bg-teal-500 text-white shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="w-full text-center py-4 px-6 rounded-2xl font-title-md text-sm font-extrabold bg-teal-600 hover:bg-teal-500 text-white shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 mt-4"
             >
               Open Teacher Experience
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
