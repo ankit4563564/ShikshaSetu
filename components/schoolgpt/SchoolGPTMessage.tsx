@@ -162,6 +162,57 @@ export default function SchoolGPTMessage({
               </div>
             )}
 
+            {/* DYNAMIC VISUALIZER 3: Live Bus GPS Telemetry Card */}
+            {(content.toLowerCase().includes('bus') || content.toLowerCase().includes('gps') || content.toLowerCase().includes('saket route')) && (
+              <div className="p-5 bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-3xl space-y-4 my-3 shadow-md">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl">🚌</span>
+                    <div>
+                      <h4 className="font-display text-xs sm:text-sm font-extrabold text-white">
+                        Saket Route #4 • Bus KL-05-AB-1234
+                      </h4>
+                      <p className="text-[10px] text-slate-400 font-mono">Driver: Ramesh Kumar (+91 98765 43210)</p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full text-[10px] font-extrabold flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                    En Route (28 km/h)
+                  </span>
+                </div>
+
+                {/* Route Visualizer Timeline */}
+                <div className="space-y-2">
+                  <span className="text-[10px] font-mono font-extrabold text-slate-400 uppercase tracking-widest block">
+                    Live Route Progress &amp; ETAs:
+                  </span>
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs font-body">
+                    <div className="p-2.5 bg-slate-800/80 rounded-2xl border border-slate-700/60">
+                      <span className="text-[10px] text-emerald-400 font-bold block">✓ Passed</span>
+                      <strong className="text-white text-xs block">Sector 10</strong>
+                      <span className="text-[9px] text-slate-400 font-mono">7:36 AM</span>
+                    </div>
+                    <div className="p-2.5 bg-emerald-950/80 rounded-2xl border border-emerald-500/50 shadow-xs">
+                      <span className="text-[10px] text-emerald-400 font-bold block">📍 Active Stop</span>
+                      <strong className="text-white text-xs block">Sector 12 Market</strong>
+                      <span className="text-[9px] text-emerald-300 font-mono">Current Location</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-800/80 rounded-2xl border border-slate-700/60">
+                      <span className="text-[10px] text-slate-400 font-bold block">⏱️ Next Stop</span>
+                      <strong className="text-white text-xs block">School Main Gate</strong>
+                      <span className="text-[9px] text-emerald-400 font-mono">ETA 4 mins</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Geofence Checkpoint Badge */}
+                <div className="p-3 bg-slate-800/60 border border-slate-700/60 rounded-2xl flex items-center justify-between text-xs">
+                  <span className="text-slate-300 font-medium">🛡️ Student Safety Geofence Status:</span>
+                  <span className="text-emerald-400 font-extrabold">100% Deboarded &amp; Verified Safe</span>
+                </div>
+              </div>
+            )}
+
             {/* Response Body Sections */}
             <div className="space-y-3 font-body text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
               {parsed?.bodyParts?.map((part, idx) => {
