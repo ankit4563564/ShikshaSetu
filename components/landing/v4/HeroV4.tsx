@@ -39,7 +39,7 @@ export function HeroV4() {
         <div className="lg:col-span-6 space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-mono font-extrabold uppercase tracking-widest">
             <span className="h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
-            <span>REAL-TIME SCHOOL ECOSYSTEM</span>
+            <span>SAFE &amp; CONNECTED SCHOOL DAY</span>
           </div>
 
           <h1 className="font-display text-4xl sm:text-6xl xl:text-7xl font-black text-slate-900 tracking-tight leading-[1.05]">
@@ -59,7 +59,7 @@ export function HeroV4() {
           <div className="flex items-center gap-6 pt-4 text-xs font-bold text-slate-500">
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              Live school insights
+              Live updates
             </span>
             <span>•</span>
             <span className="flex items-center gap-1.5">

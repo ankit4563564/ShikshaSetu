@@ -18,10 +18,10 @@ export function BentoModulesV4() {
     <SectionWrapper bg="bg-[#F5F8FF]">
       <div className="space-y-16">
         <SectionHeading
-          eyebrow="OPERATIONAL MODULES"
-          title="Modular capabilities for"
+          eyebrow="SCHOOL TOOLS"
+          title="Easy tools for"
           highlight="every team."
-          subtitle="Every department gets tailored tools that feed directly into the central SchoolGPT Intelligence Layer."
+          subtitle="Easy-to-use tools built for every member of the school community."
         />
 
         {/* Asymmetrical Bento Grid */}

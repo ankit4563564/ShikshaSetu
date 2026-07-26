@@ -17,10 +17,10 @@ export function ConnectedEcosystemV4() {
     <SectionWrapper bg="bg-[#FAFBFF]">
       <div className="space-y-16">
         <SectionHeading
-          eyebrow="POWERING THE WHOLE SCHOOL ECOSYSTEM"
+          eyebrow="CONNECTED TOGETHER"
           title="Everything you need."
           highlight="All in one place."
-          subtitle="One connected backbone data layer powering real-time sync across parents, teachers, transport, academics, and school leadership."
+          subtitle="Everything connects automatically: Gate entry, bus updates, attendance, marks, and parent messages."
         />
 
         {/* Connected Ecosystem Animated Nodes Diagram */}
@@ -38,7 +38,7 @@ export function ConnectedEcosystemV4() {
           </div>
 
           <div className="mt-8 p-4 bg-slate-50 border border-slate-200/70 rounded-2xl text-center text-xs text-slate-500 font-medium">
-            ⚡ Real-time telemetry syncs events instantly: Gate scan &rarr; Teacher Roster &rarr; Parent App &rarr; SchoolGPT.
+            ⚡ Instant updates: Gate entry &rarr; Teacher class list &rarr; Parent app notification &rarr; SchoolGPT.
           </div>
         </div>
       </div>

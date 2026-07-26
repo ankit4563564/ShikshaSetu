@@ -39,10 +39,10 @@ export function PlatformOverviewV3() {
     <SectionWrapper bg="bg-[#F5F8FF]" id="features">
       <div className="space-y-16">
         <SectionHeading
-          eyebrow="NEXT-GEN PLATFORM CAPABILITIES"
+          eyebrow="WHAT SHIKSHASETU DOES"
           title="One platform."
           highlight="Every connection."
-          subtitle="ShikshaSetu unites parents, teachers, students and school operations through AI-powered intelligence and real-time telemetry."
+          subtitle="ShikshaSetu connects parents, teachers, students and school managers with simple AI tools and instant updates."
         />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

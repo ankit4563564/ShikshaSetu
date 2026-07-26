@@ -30,7 +30,7 @@ export function SchoolGPTCenterpieceV4() {
         {/* Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <span className="px-4 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-mono font-extrabold uppercase tracking-widest">
-            ⚡ SCHOOLGPT AI
+            ⚡ SCHOOLGPT AI HELPER
           </span>
           <h2 className="font-display text-3xl sm:text-6xl font-black text-white tracking-tight leading-tight">
             Your AI assistant for <br />
@@ -84,7 +84,7 @@ export function SchoolGPTCenterpieceV4() {
                   <h3 className="font-display text-sm font-extrabold text-white">{activeResponse.title}</h3>
                 </div>
                 <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950 px-2.5 py-0.5 rounded-full border border-emerald-800">
-                  ✓ Verified School Data
+                  ✓ Verified School Records
                 </span>
               </div>
 
@@ -92,7 +92,7 @@ export function SchoolGPTCenterpieceV4() {
                 <p>{activeResponse.summary}</p>
 
                 <div className="space-y-2">
-                  <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">Evidence:</span>
+                  <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">Verified Facts:</span>
                   <div className="flex flex-wrap gap-2">
                     {activeResponse.evidence.map((ev) => (
                       <span key={ev} className="px-3 py-1 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 text-[11px] font-bold">
@@ -103,13 +103,13 @@ export function SchoolGPTCenterpieceV4() {
                 </div>
 
                 <div className="p-3.5 bg-indigo-950/60 border border-indigo-500/30 rounded-2xl">
-                  <span className="text-[10px] font-mono text-indigo-400 font-extrabold block uppercase">Recommendation:</span>
+                  <span className="text-[10px] font-mono text-indigo-400 font-extrabold block uppercase">Suggested Action:</span>
                   <p className="text-indigo-200 text-xs font-bold pt-0.5">{activeResponse.recommendation}</p>
                 </div>
               </div>
 
               <div className="pt-2 flex items-center justify-between border-t border-slate-800">
-                <span className="text-[10px] font-mono text-slate-400">SchoolGPT Core v4</span>
+                <span className="text-[10px] font-mono text-slate-400">SchoolGPT Smart Helper</span>
                 <Button href="/teacher" variant="primary" className="py-2 text-[11px]">Run Query Live &rarr;</Button>
               </div>
             </motion.div>
