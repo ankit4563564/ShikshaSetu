@@ -15,13 +15,15 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 // Translation dictionary
 const translations: Record<Language, Record<string, string>> = {
   en: {
-    // Navigation
+    // Navigation & Headers
     'nav.home': 'Home',
     'nav.homework': 'Homework',
     'nav.attendance': 'Attendance',
     'nav.bus': 'Bus',
     'nav.calendar': 'Calendar',
     'nav.messages': 'Messages',
+    'greeting.morning': 'Good Morning',
+    'greeting.safe_status': 'reached school safely & is on track today.',
     
     // Today screen
     'today.title': 'Today',
@@ -32,7 +34,11 @@ const translations: Record<Language, Record<string, string>> = {
     'today.request.pass': 'Request Gate Pass',
     'today.cancel.request': 'Cancel Request',
     'today.pass.history': 'Pass History',
-    
+    'today.verified_safe': 'Verified Safe (98%)',
+    'today.timeline_title': 'Chronological Timeline',
+    'today.ask_schoolgpt': 'Ask SchoolGPT: "Was my child safe today?"',
+    'today.direct_message': 'Direct Message Teacher',
+
     // Status
     'status.present': 'Present',
     'status.absent': 'Absent',
@@ -65,14 +71,16 @@ const translations: Record<Language, Record<string, string>> = {
     'common.submit': 'Submit',
   },
   hi: {
-    // Navigation
+    // Navigation & Headers
     'nav.home': 'होम',
     'nav.homework': 'होमवर्क',
     'nav.attendance': 'उपस्थिति',
     'nav.bus': 'बस',
     'nav.calendar': 'कैलेंडर',
     'nav.messages': 'संदेश',
-    
+    'greeting.morning': 'शुभ प्रभात',
+    'greeting.safe_status': 'आज सुरक्षित रूप से स्कूल पहुंचे और सही ट्रैक पर हैं।',
+
     // Today screen
     'today.title': 'आज',
     'today.morning.heads_up': 'सुबह की जानकारी',
@@ -82,7 +90,11 @@ const translations: Record<Language, Record<string, string>> = {
     'today.request.pass': 'गेट पास का अनुरोध करें',
     'today.cancel.request': 'अनुरोध रद्द करें',
     'today.pass.history': 'पास इतिहास',
-    
+    'today.verified_safe': 'सत्यापित सुरक्षित (98%)',
+    'today.timeline_title': 'समयक्रम घटनाक्रम',
+    'today.ask_schoolgpt': 'SchoolGPT से पूछें: "क्या मेरा बच्चा आज सुरक्षित था?"',
+    'today.direct_message': 'शिक्षक को सीधा संदेश भेजें',
+
     // Status
     'status.present': 'उपस्थित',
     'status.absent': 'अनुपस्थित',
@@ -115,14 +127,16 @@ const translations: Record<Language, Record<string, string>> = {
     'common.submit': 'जमा करें',
   },
   mr: {
-    // Navigation
+    // Navigation & Headers
     'nav.home': 'होम',
     'nav.homework': 'गृहपाठ',
     'nav.attendance': 'उपस्थिती',
     'nav.bus': 'बस',
     'nav.calendar': 'कैलेंडर',
     'nav.messages': 'संदेश',
-    
+    'greeting.morning': 'शुभ सकाळ',
+    'greeting.safe_status': 'आज सुरक्षितपणे शाळेत पोहोचले आणि योग्य मार्गावर आहेत.',
+
     // Today screen
     'today.title': 'आज',
     'today.morning.heads_up': 'सकाळची माहिती',
@@ -132,7 +146,11 @@ const translations: Record<Language, Record<string, string>> = {
     'today.request.pass': 'गेट पास विनंती करा',
     'today.cancel.request': 'विनंती रद्द करा',
     'today.pass.history': 'पास इतिहास',
-    
+    'today.verified_safe': 'सत्यापित सुरक्षित (98%)',
+    'today.timeline_title': 'वेळापत्रक घटनाक्रम',
+    'today.ask_schoolgpt': 'SchoolGPT ला विचार: "माझे मूल आज सुरक्षित होते का?"',
+    'today.direct_message': 'शिक्षकाला थेट संदेश पाठवा',
+
     // Status
     'status.present': 'उपस्थित',
     'status.absent': 'अनुपस्थित',

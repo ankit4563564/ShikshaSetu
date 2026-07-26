@@ -1159,16 +1159,16 @@ export default function ParentTodayClient({
               <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-display text-xs font-bold text-slate-400 uppercase tracking-widest block">
-                    Good Morning, {activeStudent?.parentName && activeStudent.parentName !== 'Parent' ? activeStudent.parentName.split(' ')[0] : 'Sunita'}
+                    {t('greeting.morning')}, {activeStudent?.parentName && activeStudent.parentName !== 'Parent' ? activeStudent.parentName.split(' ')[0] : 'Sunita'}
                   </span>
                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[10px] uppercase tracking-wider">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    Verified Safe
+                    {t('today.verified_safe')}
                   </div>
                 </div>
 
                 <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
-                  {activeStudent?.displayName.split(' ')[0] || 'Aarav'} reached school safely &amp; is on track today.
+                  {activeStudent?.displayName.split(' ')[0] || 'Aarav'} {t('greeting.safe_status')}
                 </h1>
 
                 <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-slate-100 text-xs font-semibold text-slate-600">
