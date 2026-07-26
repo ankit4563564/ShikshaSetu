@@ -1,0 +1,58 @@
+import { GuardianJourneyStep } from './types';
+
+export const GUARDIAN_JOURNEY_DATA: GuardianJourneyStep[] = [
+  {
+    studentId: 'std-001',
+    timestamp: '07:15 AM',
+    stepName: 'Morning Departure',
+    location: 'Home (Saket Block D)',
+    status: 'completed',
+    icon: '🏠',
+    details: 'Aarav departed home for bus stop.',
+  },
+  {
+    studentId: 'std-001',
+    timestamp: '07:35 AM',
+    stepName: 'Bus Boarded',
+    location: 'Saket Metro Station Stop #3 (Route #4)',
+    status: 'completed',
+    icon: '🚌',
+    details: 'RFID scan verified by Driver Ramesh. GPS active.',
+  },
+  {
+    studentId: 'std-001',
+    timestamp: '08:05 AM',
+    stepName: 'School Gate Entry',
+    location: 'Main Gate #1 (RFID Reader)',
+    status: 'completed',
+    icon: '🛡️',
+    details: 'Security gate scan verified. Notification sent to parent.',
+  },
+  {
+    studentId: 'std-001',
+    timestamp: '08:15 AM',
+    stepName: 'Homeroom Roll Call',
+    location: 'Classroom 8A',
+    status: 'completed',
+    icon: '✅',
+    details: 'Marked Present by Ms. Ananya Mehra.',
+  },
+  {
+    studentId: 'std-001',
+    timestamp: '11:00 AM',
+    stepName: 'Math Quiz Completed',
+    location: 'Classroom 8A',
+    status: 'completed',
+    icon: '✏️',
+    details: 'Scored 94% on Chapter 4 Algebraic Equations.',
+  },
+  {
+    studentId: 'std-001',
+    timestamp: '02:30 PM',
+    stepName: 'Evening Bus Boarding',
+    location: 'School Bus Bay #4',
+    status: 'upcoming',
+    icon: '🚌',
+    details: 'Scheduled departure for Saket Route #4.',
+  },
+];
