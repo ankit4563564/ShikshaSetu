@@ -1,61 +1,67 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export function AdminOperationsSection() {
   return (
-    <div className="rounded-[2.5rem] p-8 md:p-12 bg-gradient-to-br from-slate-900 via-primary to-slate-950 text-white border border-primary-fixed-dim/30 ambient-shadow grid grid-cols-1 md:grid-cols-2 gap-12 items-center hover:-translate-y-1 transition-all duration-300">
-      {/* Large Operations Center Desktop UI Visual */}
-      <div className="relative h-80 rounded-2xl overflow-hidden shadow-2xl border-4 border-primary-fixed/20 bg-slate-950 flex items-center justify-center">
+    <div className="rounded-[2.5rem] p-8 md:p-12 bg-white/95 border border-outline-variant/30 ambient-shadow grid grid-cols-1 md:grid-cols-2 gap-12 items-center hover:-translate-y-1 transition-all duration-300">
+      {/* Desktop Dashboard Visual */}
+      <div className="relative h-80 rounded-2xl overflow-hidden shadow-xl border border-outline-variant/30 bg-surface-container flex items-center justify-center">
         <Image
           src="/images/school_admin_analytics_visual.jpg"
-          alt="A modern school operations command center dashboard screen with telemetry graphs."
+          alt="A clean modern school administration dashboard showing real-time student attendance and transit metrics."
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
           className="object-cover"
         />
-        {/* Floating Command Center Widget Overlay */}
-        <div className="absolute top-4 left-4 right-4 bg-slate-950/90 backdrop-blur-md p-3.5 rounded-xl border border-primary-fixed/40 text-white shadow-xl flex items-center justify-between">
+        
+        {/* Clean, Human Dashboard Card Overlay */}
+        <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md p-4 rounded-xl border border-outline-variant/40 text-on-surface shadow-lg flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary-fixed/20 text-primary-fixed flex items-center justify-center">
-              <span className="material-symbols-outlined text-sm">dashboard</span>
+            <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+              <span className="material-symbols-outlined text-lg">domain</span>
             </div>
             <div>
-              <p className="text-xs font-bold text-primary-fixed">Campus Mission Control</p>
-              <p className="text-[10px] text-slate-300">1,420 Active Students &middot; 42 Buses Live</p>
+              <p className="text-xs font-bold text-primary font-display">Campus Live Status</p>
+              <p className="text-[11px] text-on-surface-variant font-medium">1,420 Students &middot; 42 Buses Active</p>
             </div>
           </div>
-          <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-500/40">
-            All Systems Normal
+          <span className="text-[11px] font-bold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full border border-emerald-200">
+            ✓ Gate Entry Complete
           </span>
         </div>
       </div>
 
       {/* Content */}
       <div className="space-y-6">
-        <div className="inline-flex items-center gap-2 bg-primary-fixed/15 border border-primary-fixed/30 px-3.5 py-1 rounded-full">
-          <span className="material-symbols-outlined text-primary-fixed text-sm">domain</span>
-          <span className="font-label-sm text-label-sm text-primary-fixed font-bold uppercase tracking-wider">Campus Operations Command Center</span>
+        <div className="inline-flex items-center gap-2 bg-surface-container-high px-3.5 py-1.5 rounded-full border border-outline-variant/20">
+          <span className="material-symbols-outlined text-primary text-sm">domain</span>
+          <span className="font-label-sm text-label-sm text-primary font-bold uppercase tracking-wider">For School Leaders &amp; Admin</span>
         </div>
-        <h3 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-white">
-          Unified School Operations &amp; Intelligence
+
+        <h3 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface leading-tight">
+          Complete Campus Visibility in One Place
         </h3>
-        <p className="font-body-lg text-body-lg text-slate-300 font-medium">
-          Command your entire campus from a single pane of glass — gate entry security, bus fleet GPS, attendance sync, and automated fee &amp; parent communications.
+
+        <p className="font-body-lg text-body-lg text-on-surface-variant font-medium">
+          Bring harmony to your school day — live gate entry, bus tracking, daily attendance, and automated parent communication linked in one clean, simple dashboard.
         </p>
-        <div className="flex flex-wrap gap-3 pt-2">
-          <span className="flex items-center gap-1.5 font-label-sm text-label-sm text-white bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700 font-semibold">
-            <span className="material-symbols-outlined text-sm text-primary-fixed">sensor_door</span> Gate Telemetry
+
+        <div className="flex flex-wrap gap-3 pt-1">
+          <span className="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant bg-surface-container-low px-3.5 py-1.5 rounded-full border border-outline-variant/30 font-semibold">
+            <span className="material-symbols-outlined text-sm text-primary">sensor_door</span> Gate Safety
           </span>
-          <span className="flex items-center gap-1.5 font-label-sm text-label-sm text-white bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700 font-semibold">
-            <span className="material-symbols-outlined text-sm text-primary-fixed">shield</span> Safety Matrix
+          <span className="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant bg-surface-container-low px-3.5 py-1.5 rounded-full border border-outline-variant/30 font-semibold">
+            <span className="material-symbols-outlined text-sm text-primary">directions_bus</span> Live Bus Fleet
           </span>
-          <span className="flex items-center gap-1.5 font-label-sm text-label-sm text-white bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700 font-semibold">
-            <span className="material-symbols-outlined text-sm text-primary-fixed">analytics</span> Predictive Admin
+          <span className="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant bg-surface-container-low px-3.5 py-1.5 rounded-full border border-outline-variant/30 font-semibold">
+            <span className="material-symbols-outlined text-sm text-primary">notifications_active</span> Parent Updates
           </span>
         </div>
-        <button type="button" className="mt-4 flex items-center gap-2 font-title-md text-title-md text-primary-fixed hover:text-white transition-colors font-extrabold">
-          Explore Operations Center <span className="material-symbols-outlined">arrow_forward</span>
-        </button>
+
+        <Link href="/admin" className="mt-4 inline-flex items-center gap-2 font-title-md text-title-md text-primary hover:text-primary-container transition-colors font-bold">
+          Explore Admin Dashboard <span className="material-symbols-outlined">arrow_forward</span>
+        </Link>
       </div>
     </div>
   );

@@ -5,71 +5,71 @@ import Link from 'next/link';
 
 const PROMPTS = [
   {
-    prompt: 'Why is Aarav struggling?',
-    response: 'Aarav’s attendance dropped by 12% over 2 weeks due to Route 04 morning bus traffic delays. Math comprehension remains 88%, but morning class attention is impacted.',
-    category: 'Student Diagnostics'
+    prompt: 'Why is Aarav struggling with attendance?',
+    response: 'Aarav’s morning bus route experienced road construction delays on 3 occasions. His academic engagement in afternoon classes remains high (88%).',
+    category: 'Student Support'
   },
   {
-    prompt: 'Compare Class 8A and 8B',
-    response: 'Class 8A shows 96% attendance with higher Science engagement. Class 8B has 91% attendance due to morning transit bottlenecks near Sector 39.',
-    category: 'Class Comparison'
+    prompt: 'Compare Class 8A and 8B morning arrival',
+    response: 'Class 8A shows 96% on-time arrival. Class 8B experienced a 10-minute transit delay due to rain near Sector 39.',
+    category: 'Class Insights'
   },
   {
-    prompt: 'Generate PTM Summary',
-    response: 'Summary for Priya Sharma: Aarav excels in Physics (92%) and English (88%). Recommended focus: Morning transit sleep schedule adjustment.',
+    prompt: 'Prepare PTM Summary for Aarav',
+    response: 'Summary for Priya Sharma: Aarav excels in Physics (92%) and English (88%). Recommendation: Bus 04 route adjustment confirmed.',
     category: 'PTM Report'
   },
   {
     prompt: 'Draft Parent Message',
-    response: 'Draft WhatsApp: "Hi Priya, Aarav arrived safely at 8:22 AM. Bus 04 was delayed by 10 mins due to rain. He is settled in Class 8-B."',
-    category: 'Communication'
+    response: 'Draft WhatsApp: "Hi Priya, Aarav arrived safely at 8:22 AM. Bus 04 was delayed by 10 mins due to weather. He is settled in Class 8-B."',
+    category: 'Parent Message'
   }
 ];
 
 const STORY_STEPS = [
   {
     step: '01',
-    title: 'Teacher Dashboard',
-    desc: 'Attendance & engagement signals synced in real time across Class 8-B.',
+    title: 'Morning Class Register',
+    desc: 'Attendance automatically recorded as students enter campus.',
     icon: 'dashboard',
-    badge: 'Real-time Signal',
-    highlight: '8-B Attendance: 94%',
+    badge: 'Morning Signal',
+    highlight: '8-B Attendance: 94% Present',
     color: 'border-sky-500/40 text-sky-400 bg-sky-500/10'
   },
   {
     step: '02',
-    title: 'AI Notices Attendance Drop',
-    desc: 'SchoolGPT flags 3 consecutive late arrivals for Aarav Sharma.',
+    title: 'Smart Attendance Flag',
+    desc: 'SchoolGPT notices 3 consecutive bus delays for Aarav Sharma.',
     icon: 'warning',
-    badge: 'Pattern Detected',
-    highlight: 'Flagged: 3 Late Pings',
+    badge: 'Notice Flagged',
+    highlight: 'Notice: 3 Transit Delays Noted',
     color: 'border-amber-500/40 text-amber-400 bg-amber-500/10'
   },
   {
     step: '03',
-    title: 'Reason Discovered',
-    desc: 'Cross-analyzes bus route delays with morning health check log.',
+    title: 'Schedule Insights',
+    desc: 'Cross-checks bus route traffic with morning health logs.',
     icon: 'find_in_page',
-    badge: 'Root Cause AI',
-    highlight: 'Route 04 Traffic + Mild Fever Logged',
+    badge: 'Insights Discovered',
+    highlight: 'Route 04 Traffic Delay + Mild Cold Logged',
     color: 'border-indigo-500/40 text-indigo-400 bg-indigo-500/10'
   },
   {
     step: '04',
     title: 'Draft Parent Message',
-    desc: 'SchoolGPT generates a personalized, empathetic update for Aarav’s mother.',
+    desc: 'SchoolGPT prepares a helpful, warm update for Aarav’s parent.',
     icon: 'chat',
-    badge: '1-Click Communication',
+    badge: '1-Click Message',
     highlight: '"Hi Priya, Aarav arrived safely at 8:22 AM..."',
     color: 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10'
   },
   {
     step: '05',
-    title: 'Meeting Scheduled & Risk Resolved',
-    desc: 'Parent confirms home rest tomorrow. Student risk score drops to 0%.',
+    title: 'Student Support Confirmed',
+    desc: 'Parent confirms home rest tomorrow. Student support log updated.',
     icon: 'check_circle',
-    badge: 'Outcome Achieved',
-    highlight: 'Risk Score: Resolved (14%)',
+    badge: 'Action Completed',
+    highlight: 'Support Action Confirmed',
     color: 'border-teal-500/40 text-teal-400 bg-teal-500/10'
   }
 ];
@@ -92,38 +92,38 @@ export function SchoolGPTSection() {
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);
-    }, 600);
+    }, 500);
   };
 
   const current = STORY_STEPS[activeStep];
   const activePrompt = selectedPromptIdx !== null ? PROMPTS[selectedPromptIdx] : null;
 
   return (
-    <div className="bg-slate-950 rounded-[2.5rem] p-8 md:p-14 ambient-shadow border border-slate-800 text-white relative overflow-hidden my-12" id="schoolgpt">
+    <div className="bg-primary text-white rounded-[2.5rem] p-8 md:p-14 ambient-shadow border border-white/10 relative overflow-hidden my-12" id="schoolgpt">
       {/* Background ambient lighting */}
       <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary-fixed/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-secondary-container/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 border-b border-slate-800 pb-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 border-b border-white/10 pb-8">
         <div>
-          <div className="inline-flex items-center gap-2 bg-primary/40 border border-primary-fixed-dim/30 px-3.5 py-1.5 rounded-full mb-4">
-            <span className="material-symbols-outlined text-secondary-container text-sm">auto_awesome</span>
-            <span className="font-label-sm text-label-sm text-secondary-fixed uppercase tracking-wider font-bold">Revolutionary AI Workflow</span>
+          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 px-3.5 py-1.5 rounded-full mb-4">
+            <span className="material-symbols-outlined text-secondary-fixed text-sm">auto_awesome</span>
+            <span className="font-label-sm text-label-sm text-secondary-fixed uppercase tracking-wider font-bold">SchoolGPT AI Assistant</span>
           </div>
           <h3 className="font-display-lg text-headline-lg-mobile md:text-headline-lg text-white leading-tight">
-            SchoolGPT: From Signal to <span className="text-secondary-container glow-text">Action in Seconds</span>
+            SchoolGPT: From Signal to <span className="text-secondary-fixed glow-text">Action in Seconds</span>
           </h3>
         </div>
-        <p className="font-body-lg text-body-md text-slate-300 max-w-md">
-          Not just another chatbot. SchoolGPT actively monitors student signals, detects hidden risks, and completes administrative actions automatically.
+        <p className="font-body-lg text-body-md text-white/80 max-w-md">
+          Built for Indian schools. SchoolGPT helps teachers save time on notes, assists admin teams with insights, and keeps parents informed.
         </p>
       </div>
 
       {/* Interactive Prompt Chips */}
       <div className="mb-10">
-        <span className="block text-xs font-mono font-bold text-slate-400 uppercase tracking-wider mb-3">
-          ⚡ Execute Live Prompt Demo (Click Any Prompt Below):
+        <span className="block text-xs font-mono font-bold text-white/70 uppercase tracking-wider mb-3">
+          💡 Try Live SchoolGPT Examples:
         </span>
         <div className="flex flex-wrap gap-2.5">
           {PROMPTS.map((p, idx) => (
@@ -133,8 +133,8 @@ export function SchoolGPTSection() {
               onClick={() => handlePromptClick(idx)}
               className={`px-4 py-2 rounded-full text-xs font-bold transition-all border flex items-center gap-2 ${
                 selectedPromptIdx === idx
-                  ? 'bg-secondary-container text-slate-950 border-secondary-container shadow-lg scale-105'
-                  : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700 hover:bg-slate-800'
+                  ? 'bg-secondary-container text-on-secondary-container border-secondary-container shadow-lg scale-105'
+                  : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
               }`}
             >
               <span className="material-symbols-outlined text-xs">chat</span>
@@ -145,7 +145,7 @@ export function SchoolGPTSection() {
             <button
               type="button"
               onClick={() => setSelectedPromptIdx(null)}
-              className="px-3.5 py-2 rounded-full text-xs font-bold bg-slate-800 text-slate-400 hover:text-white border border-slate-700"
+              className="px-3.5 py-2 rounded-full text-xs font-bold bg-white/10 text-white hover:bg-white/20 border border-white/20"
             >
               Reset to Story Flow ↺
             </button>
@@ -169,23 +169,23 @@ export function SchoolGPTSection() {
                 }}
                 className={`w-full text-left p-4 rounded-2xl transition-all duration-300 flex items-start gap-4 border ${
                   isActive
-                    ? 'bg-slate-900/90 border-secondary-container/60 shadow-xl scale-[1.02]'
-                    : 'bg-slate-900/30 border-slate-800/80 hover:bg-slate-900/50 hover:border-slate-700 text-slate-400'
+                    ? 'bg-white/15 border-secondary-fixed/60 shadow-xl scale-[1.02]'
+                    : 'bg-white/5 border-white/10 hover:bg-white/10 text-white/70'
                 }`}
               >
                 <div
                   className={`w-10 h-10 rounded-xl font-bold font-mono text-sm flex items-center justify-center shrink-0 transition-colors ${
-                    isActive ? 'bg-secondary-container text-slate-950 shadow-md' : 'bg-slate-800 text-slate-400'
+                    isActive ? 'bg-secondary-container text-on-secondary-container shadow-md' : 'bg-white/10 text-white'
                   }`}
                 >
                   {s.step}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <h4 className={`font-bold text-sm ${isActive ? 'text-white' : 'text-slate-300'}`}>{s.title}</h4>
+                    <h4 className={`font-bold text-sm ${isActive ? 'text-white' : 'text-white/80'}`}>{s.title}</h4>
                     {isActive && <span className="w-2 h-2 rounded-full bg-secondary-container animate-pulse" />}
                   </div>
-                  <p className="text-xs text-slate-400 mt-1 line-clamp-2">{s.desc}</p>
+                  <p className="text-xs text-white/70 mt-1 line-clamp-2">{s.desc}</p>
                 </div>
               </button>
             );
@@ -193,16 +193,16 @@ export function SchoolGPTSection() {
         </div>
 
         {/* Right Column: Live Interactive Console */}
-        <div className="lg:col-span-7 bg-slate-900/90 rounded-3xl p-6 md:p-8 border border-slate-800 shadow-2xl relative min-h-[380px] flex flex-col justify-between">
-          {/* Top Bar simulation */}
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="lg:col-span-7 bg-white/10 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-white/20 shadow-2xl relative min-h-[380px] flex flex-col justify-between">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-red-500/80" />
-              <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-              <div className="w-3 h-3 rounded-full bg-green-500/80" />
-              <span className="text-xs font-mono text-slate-500 ml-2">SchoolGPT Telemetry Pipeline</span>
+              <div className="w-3 h-3 rounded-full bg-red-400/80" />
+              <div className="w-3 h-3 rounded-full bg-yellow-400/80" />
+              <div className="w-3 h-3 rounded-full bg-green-400/80" />
+              <span className="text-xs font-mono text-white/70 ml-2">SchoolGPT Assistant</span>
             </div>
-            <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full border ${activePrompt ? 'bg-secondary-container/20 text-secondary-fixed border-secondary-container/40' : current.color}`}>
+            <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full border ${activePrompt ? 'bg-secondary-container text-on-secondary-container border-secondary-container' : current.color}`}>
               {activePrompt ? activePrompt.category : current.badge}
             </span>
           </div>
@@ -210,18 +210,18 @@ export function SchoolGPTSection() {
           {/* Prompt Execution Result OR Active Story Step */}
           {activePrompt ? (
             <div className="my-6 space-y-4 animate-fadeIn">
-              <div className="flex items-center gap-3 bg-slate-950 p-3 rounded-xl border border-slate-800">
-                <span className="material-symbols-outlined text-secondary-container">psychology</span>
-                <p className="text-xs font-mono text-secondary-container font-bold">Query: &ldquo;{activePrompt.prompt}&rdquo;</p>
+              <div className="flex items-center gap-3 bg-black/20 p-3 rounded-xl border border-white/10">
+                <span className="material-symbols-outlined text-secondary-fixed">psychology</span>
+                <p className="text-xs font-mono text-secondary-fixed font-bold">Query: &ldquo;{activePrompt.prompt}&rdquo;</p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 font-mono text-xs text-slate-200 leading-relaxed">
-                <div className="flex items-center justify-between text-slate-500 text-[10px] mb-2 border-b border-slate-800 pb-1">
-                  <span>SchoolGPT Response Stream</span>
-                  <span>Confidence: 99.8%</span>
+              <div className="p-4 rounded-2xl bg-black/30 border border-white/10 font-mono text-xs text-white leading-relaxed">
+                <div className="flex items-center justify-between text-white/60 text-[10px] mb-2 border-b border-white/10 pb-1">
+                  <span>SchoolGPT Response</span>
+                  <span>Accuracy: High</span>
                 </div>
                 {isTyping ? (
-                  <p className="text-amber-400 animate-pulse font-sans">Analyzing campus telemetry data...</p>
+                  <p className="text-secondary-fixed animate-pulse font-sans">Checking campus records...</p>
                 ) : (
                   <p className="text-white font-sans text-sm leading-relaxed">{activePrompt.response}</p>
                 )}
@@ -230,34 +230,34 @@ export function SchoolGPTSection() {
           ) : (
             <div className="my-6 space-y-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-secondary-container/20 border border-secondary-container/40 flex items-center justify-center text-secondary-container shadow-lg">
+                <div className="w-12 h-12 rounded-2xl bg-secondary-container/20 border border-secondary-container/40 flex items-center justify-center text-secondary-fixed shadow-lg">
                   <span className="material-symbols-outlined text-2xl">{current.icon}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400">Active Workflow Step {current.step} / 05</span>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-white/70">Step {current.step} of 05</span>
                   <h4 className="text-xl font-extrabold text-white">{current.title}</h4>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 font-mono text-xs text-secondary-fixed leading-relaxed">
-                <div className="flex items-center justify-between text-slate-500 text-[10px] mb-2 border-b border-slate-800/80 pb-1">
-                  <span>AI Insight Output</span>
-                  <span>Confidence: 99.4%</span>
+              <div className="p-4 rounded-2xl bg-black/30 border border-white/10 font-mono text-xs text-secondary-fixed leading-relaxed">
+                <div className="flex items-center justify-between text-white/60 text-[10px] mb-2 border-b border-white/10 pb-1">
+                  <span>AI Insight</span>
+                  <span>Confidence: High</span>
                 </div>
                 <p className="text-white font-sans text-sm font-semibold">{current.highlight}</p>
-                <p className="text-slate-400 font-sans text-xs mt-2">{current.desc}</p>
+                <p className="text-white/70 font-sans text-xs mt-2">{current.desc}</p>
               </div>
             </div>
           )}
 
           {/* Bottom Action Footer */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800 text-xs font-mono">
-            <span className="text-slate-400">STATUS: ACTIVE INTELLIGENCE</span>
+          <div className="flex items-center justify-between pt-4 border-t border-white/10 text-xs font-mono">
+            <span className="text-white/70">CONNECTED CAMPUS AI</span>
             <Link
               href="/admin"
-              className="bg-secondary-container text-slate-950 px-4 py-2 rounded-xl font-bold font-sans hover:bg-secondary-fixed transition-colors flex items-center gap-1"
+              className="bg-secondary-container text-on-secondary-container px-4 py-2 rounded-xl font-bold font-sans hover:bg-secondary-fixed transition-colors flex items-center gap-1"
             >
-              Open Full SchoolGPT Workstation →
+              Open SchoolGPT Workstation →
             </Link>
           </div>
         </div>
