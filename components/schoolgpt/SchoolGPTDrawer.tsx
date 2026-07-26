@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SchoolGPTContextCard from './SchoolGPTContextCard';
-import SchoolGPTDynamicEngine from './SchoolGPTDynamicEngine';
+import { askSchoolGPTAction } from '@/app/actions/schoolgptActions';
+import type { SchoolRole } from '@/school-brain/models/index';
 
 interface DrawerProps {
   isOpen: boolean;
@@ -13,12 +14,6 @@ interface DrawerProps {
   studentName?: string;
   classNameLabel?: string;
 }
-
-const friendlyLoadingSteps = [
-  'Understanding classroom context…',
-  'Gathering learning updates & attendance…',
-  'Preparing helpful insights…',
-];
 
 const teacherSuggestions = [
   'Who needs extra help today?',
@@ -36,6 +31,14 @@ const parentSuggestions = [
   'Summarize this week\'s learning.',
 ];
 
+interface ResponseItem {
+  query: string;
+  answer: string;
+  sources: string[];
+  suggestedFollowUps?: string[];
+  actionObject?: any;
+}
+
 export default function SchoolGPTDrawer({
   isOpen,
   onClose,
@@ -44,10 +47,9 @@ export default function SchoolGPTDrawer({
   studentName = 'Aarav Sharma',
   classNameLabel = 'Class 8A',
 }: DrawerProps) {
-  const [activeIntent, setActiveIntent] = useState<'STUDENT_REPORT' | 'CLASS_ANALYTICS' | 'TIMELINE' | 'ACTION' | 'SEARCH'>('STUDENT_REPORT');
   const [inputVal, setInputVal] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingIdx, setLoadingIdx] = useState(0);
+  const [history, setHistory] = useState<ResponseItem[]>([]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -57,33 +59,68 @@ export default function SchoolGPTDrawer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  const handleTriggerQuery = (queryText: string) => {
-    setInputVal(queryText);
+  const handleTriggerQuery = async (queryText: string) => {
+    const q = queryText.trim();
+    if (!q || isLoading) return;
+
+    setInputVal('');
     setIsLoading(true);
-    setLoadingIdx(0);
 
-    const q = queryText.toLowerCase();
-    let nextIntent: 'STUDENT_REPORT' | 'CLASS_ANALYTICS' | 'TIMELINE' | 'ACTION' | 'SEARCH' = 'STUDENT_REPORT';
-
-    if (q.includes('help') || q.includes('attention') || q.includes('check')) nextIntent = 'ACTION';
-    else if (q.includes('class') || q.includes('performing') || q.includes('8a')) nextIntent = 'CLASS_ANALYTICS';
-    else if (q.includes('timeline') || q.includes('today') || q.includes('bus')) nextIntent = 'TIMELINE';
-    else if (q.includes('report') || q.includes('child') || q.includes('doing')) nextIntent = 'STUDENT_REPORT';
-
-    const interval = setInterval(() => {
-      setLoadingIdx((prev) => {
-        if (prev >= friendlyLoadingSteps.length - 1) {
-          clearInterval(interval);
-          setIsLoading(false);
-          setActiveIntent(nextIntent);
-          return prev;
-        }
-        return prev + 1;
+    try {
+      const userRole: SchoolRole = (role.toLowerCase() as SchoolRole) || 'teacher';
+      const res = await askSchoolGPTAction({
+        question: q,
+        role: userRole,
+        history: history.flatMap((item) => [
+          { role: 'user', content: item.query },
+          { role: 'assistant', content: item.answer },
+        ]),
       });
-    }, 250);
+
+      setHistory((prev) => [
+        ...prev,
+        {
+          query: q,
+          answer: res.text,
+          sources: res.sources || ['School Telemetry Database'],
+          suggestedFollowUps: res.suggestedFollowUps,
+          actionObject: (res as any).actionObject,
+        },
+      ]);
+    } catch (err) {
+      console.error('[SchoolGPT Drawer] Error fetching response:', err);
+      setHistory((prev) => [
+        ...prev,
+        {
+          query: q,
+          answer: 'Sorry, I encountered an error executing this request. Please try again.',
+          sources: ['Error Handler'],
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const suggestions = role === 'Parent' ? parentSuggestions : teacherSuggestions;
+
+  const renderFormattedText = (text: string) => {
+    if (!text) return null;
+    return text.split('\n\n').map((para, idx) => (
+      <p key={idx} className="my-2 leading-relaxed font-medium text-slate-800 text-xs sm:text-sm">
+        {para.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return (
+              <strong key={i} className="font-extrabold text-slate-900">
+                {part.slice(2, -2)}
+              </strong>
+            );
+          }
+          return part;
+        })}
+      </p>
+    ));
+  };
 
   return (
     <AnimatePresence>
@@ -98,7 +135,7 @@ export default function SchoolGPTDrawer({
             className="fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-sm"
           />
 
-          {/* Drawer / Mobile Bottom Sheet Container */}
+          {/* Drawer Container */}
           <motion.div
             initial={{ x: '100%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -139,7 +176,7 @@ export default function SchoolGPTDrawer({
                 classNameLabel={classNameLabel}
               />
 
-              {/* Pinned Input Bar */}
+              {/* Input Bar */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <input
@@ -152,12 +189,14 @@ export default function SchoolGPTDrawer({
                       }
                     }}
                     placeholder={role === 'Parent' ? 'Ask about your child...' : 'Ask about a student or class...'}
+                    disabled={isLoading}
                     className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-slate-900 focus:bg-white font-medium shadow-2xs"
                   />
                   <button
                     type="button"
                     onClick={() => inputVal.trim() && handleTriggerQuery(inputVal)}
-                    className="px-4 py-3 rounded-2xl bg-slate-900 text-white font-extrabold text-xs shadow-xs hover:bg-slate-800 transition-all active:scale-95 shrink-0"
+                    disabled={isLoading || !inputVal.trim()}
+                    className="px-4 py-3 rounded-2xl bg-slate-900 text-white font-extrabold text-xs shadow-xs hover:bg-slate-800 transition-all active:scale-95 shrink-0 disabled:opacity-40"
                   >
                     Ask ✨
                   </button>
@@ -174,7 +213,8 @@ export default function SchoolGPTDrawer({
                         key={q}
                         type="button"
                         onClick={() => handleTriggerQuery(q)}
-                        className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 text-xs font-semibold transition-all active:scale-95"
+                        disabled={isLoading}
+                        className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 text-xs font-semibold transition-all active:scale-95 disabled:opacity-40"
                       >
                         {q}
                       </button>
@@ -183,29 +223,107 @@ export default function SchoolGPTDrawer({
                 </div>
               </div>
 
-              {/* Friendly Animated Loading State */}
-              {isLoading ? (
-                <div className="p-8 bg-slate-50 border border-slate-200/80 rounded-3xl text-center space-y-3 my-4">
+              {/* Loading State */}
+              {isLoading && (
+                <div className="p-6 bg-slate-50 border border-slate-200/80 rounded-3xl text-center space-y-3 my-4">
                   <div className="flex justify-center items-center gap-2">
                     <span className="h-2 w-2 animate-bounce rounded-full bg-slate-900" style={{ animationDelay: '0ms' }} />
                     <span className="h-2 w-2 animate-bounce rounded-full bg-slate-900" style={{ animationDelay: '150ms' }} />
                     <span className="h-2 w-2 animate-bounce rounded-full bg-slate-900" style={{ animationDelay: '300ms' }} />
                   </div>
                   <p className="font-body text-xs font-bold text-slate-700">
-                    {friendlyLoadingSteps[loadingIdx]}
+                    SchoolGPT multi-agent pipeline is executing targeted retrieval…
                   </p>
                 </div>
-              ) : (
-                /* Dynamic Response Display */
-                <SchoolGPTDynamicEngine
-                  intent={activeIntent}
-                  queryText={inputVal}
-                  onSelectAction={(actionText) => handleTriggerQuery(actionText)}
-                />
               )}
+
+              {/* Dynamic History Output Stream */}
+              <div className="space-y-4">
+                {history.map((item, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-5 bg-white border border-slate-200/80 rounded-3xl shadow-2xs space-y-4"
+                  >
+                    <div className="border-b border-slate-100 pb-2">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Question</span>
+                      <h4 className="font-display text-sm font-extrabold text-slate-900">{item.query}</h4>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] font-black text-emerald-700 uppercase tracking-wider block mb-1">
+                        SchoolGPT Verified Answer
+                      </span>
+                      {renderFormattedText(item.answer)}
+                    </div>
+
+                    {/* Action Object Payload if Present */}
+                    {item.actionObject && (
+                      <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+                            ⚡ Action Object: {item.actionObject.type}
+                          </span>
+                          <span className="text-[10px] font-bold bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-full">
+                            Ready
+                          </span>
+                        </div>
+                        <h5 className="font-display text-xs font-extrabold text-white">{item.actionObject.title}</h5>
+                        <p className="text-xs text-slate-300 font-mono bg-slate-800 p-2.5 rounded-xl">
+                          {item.actionObject.preview}
+                        </p>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {item.actionObject.actions?.map((act: string) => (
+                            <button
+                              key={act}
+                              type="button"
+                              onClick={() => alert(`Action executed: ${act}`)}
+                              className="px-3 py-1 bg-white text-slate-900 rounded-lg text-xs font-bold hover:bg-slate-100 transition-all"
+                            >
+                              {act}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Verified Sources */}
+                    {item.sources && item.sources.length > 0 && (
+                      <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-slate-400">Sources:</span>
+                        {item.sources.map((s) => (
+                          <span key={s} className="text-[10px] font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md">
+                            ✓ {s}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Follow up pills */}
+                    {item.suggestedFollowUps && item.suggestedFollowUps.length > 0 && (
+                      <div className="pt-2 space-y-1.5">
+                        <span className="text-[10px] font-bold text-slate-500 block">Suggested Follow-ups:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {item.suggestedFollowUps.map((fol) => (
+                            <button
+                              key={fol}
+                              type="button"
+                              onClick={() => handleTriggerQuery(fol)}
+                              className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all border border-slate-200/80"
+                            >
+                              {fol} &rarr;
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
             </div>
 
-            {/* Simple Footer */}
+            {/* Footer */}
             <div className="p-4 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between text-xs font-medium text-slate-500">
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" />
