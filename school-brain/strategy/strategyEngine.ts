@@ -17,12 +17,11 @@ export const STRATEGY_DIRECTIVES: Record<ResponseStrategy, StrategyDirective> = 
 
   AnalyticalReport: {
     strategyName: 'AnalyticalReport',
-    structureFormat: `Structure: Organize your response into 4 distinct sections:
-1. 📌 OBSERVATION: State the key finding or main status clearly.
-2. 📊 EVIDENCE: Present specific retrieved numbers, scores, percentages, or logs.
-3. 💡 REASONING: Explain WHY this conclusion was reached based strictly on the evidence.
-4. 🚀 SUGGESTED NEXT STEP: Give 1-2 practical, actionable recommendations.`,
-    toneGuidance: `Tone: Analytical, objective, evidence-driven, and supportive.`,
+    structureFormat: `Structure: Organize your response cleanly into natural sections:
+- Executive Summary / Key Finding (1-2 sentences)
+- Verified Evidence & Numbers (bullet points)
+- Insights & Next Steps`,
+    toneGuidance: `Tone: Analytical, objective, clear, and supportive.`,
     requireExplainability: true,
   },
 
