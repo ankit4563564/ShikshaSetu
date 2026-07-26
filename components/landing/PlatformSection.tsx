@@ -2,6 +2,7 @@ import React from 'react';
 import { SchoolGPTSection } from './SchoolGPTSection';
 import { ParentSection } from './ParentSection';
 import { TeacherSection } from './TeacherSection';
+import { AdminOperationsSection } from './AdminOperationsSection';
 
 export function PlatformSection() {
   return (
@@ -16,10 +17,15 @@ export function PlatformSection() {
             ShikshaSetu powers school administrators, teachers, parents, and students in one unified intelligent ecosystem.
           </p>
         </div>
-        <div className="space-y-8">
-          <SchoolGPTSection />
+
+        {/* Revolutionary SchoolGPT Workflow Story Flow */}
+        <SchoolGPTSection />
+
+        {/* 3 Distinct Role Experience Cards */}
+        <div className="space-y-12 mt-16">
           <ParentSection />
           <TeacherSection />
+          <AdminOperationsSection />
         </div>
       </div>
     </section>
