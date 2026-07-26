@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { useLandingModal } from './LandingModalContext';
 
 export function CTASection() {
@@ -22,26 +23,31 @@ export function CTASection() {
               <span className="font-label-sm text-label-sm text-on-surface tracking-wider font-bold">SEE IT IN ACTION</span>
             </div>
             <h2 className="font-display-lg text-headline-lg md:text-display-lg text-white">
-              Walk a full school day in seven minutes.
+              Experience the connected school day.
             </h2>
             <p className="font-body-lg text-body-lg text-white/90 max-w-xl mx-auto font-medium">
-              Start your school journey and step into any role portal to follow the connected chain from gate to home.
+              Step directly into the Parent or Teacher portal and experience how one AI intelligence layer links home and campus in real time.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4 pt-6">
+              <Link
+                href="/parent"
+                className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-7 py-3.5 rounded-full font-title-md text-sm font-extrabold shadow-lg hover:scale-105 transition-all inline-flex items-center gap-2"
+              >
+                Open Parent Experience →
+              </Link>
+              <Link
+                href="/teacher"
+                className="bg-teal-600 hover:bg-teal-500 text-white px-7 py-3.5 rounded-full font-title-md text-sm font-extrabold shadow-lg hover:scale-105 transition-all inline-flex items-center gap-2"
+              >
+                Open Teacher Experience →
+              </Link>
               <button
                 type="button"
                 onClick={openRoleSelector}
-                className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all shadow-lg font-bold hover:scale-105 inline-flex items-center gap-2"
+                className="bg-white/10 border border-white/30 text-white px-7 py-3.5 rounded-full font-title-md text-sm font-bold hover:bg-white/20 transition-all hover:scale-105"
               >
-                Start Your School Journey →
-              </button>
-              <button
-                type="button"
-                onClick={openRoleSelector}
-                className="bg-white/10 border border-white/30 text-white px-8 py-4 rounded-full font-title-md text-title-md hover:bg-white/20 transition-all font-bold hover:scale-105"
-              >
-                Enter Portal
+                Experience ShikshaSetu
               </button>
             </div>
           </div>

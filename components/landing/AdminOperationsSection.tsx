@@ -38,7 +38,7 @@ export function AdminOperationsSection() {
           </h3>
 
           <p className="font-body text-sm sm:text-base text-white/80 leading-relaxed max-w-md">
-            Monitor attendance, transport, communication, and administration from one unified workspace.
+            Every action from the Parent and Teacher experiences is synchronized automatically through one intelligent operational platform.
           </p>
 
           {/* Lightweight Outcome List */}

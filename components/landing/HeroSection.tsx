@@ -27,17 +27,36 @@ export function HeroSection() {
           <p className="font-body-lg text-body-lg text-white/80 max-w-xl">
             Gate entry, classroom attention, live bus tracking, and home-safe confirmation — linked in real time for parents, teachers, and school teams.
           </p>
-          <div className="flex flex-wrap gap-4 pt-4">
-            <button
-              type="button"
-              onClick={openRoleSelector}
-              className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all shadow-lg flex items-center gap-2 font-bold hover:scale-105 active:scale-95 inline-flex"
-            >
-              Start Your School Journey
-              <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </button>
+          <div className="flex flex-col gap-4 pt-4">
+            <div className="flex flex-wrap gap-4">
+              <button
+                type="button"
+                onClick={openRoleSelector}
+                className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all shadow-lg flex items-center gap-2 font-extrabold hover:scale-105 active:scale-95 inline-flex"
+              >
+                🚀 Experience Live Demo
+                <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              </button>
+            </div>
+
+            {/* Quick Access Pills for Hackathon Judges */}
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <span className="text-xs font-mono text-white/70 font-semibold">Quick Portal Access:</span>
+              <a
+                href="/parent"
+                className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-full text-xs font-bold transition-all hover:scale-105 flex items-center gap-1.5"
+              >
+                👨‍👩‍👧 Parent Experience
+              </a>
+              <a
+                href="/teacher"
+                className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-full text-xs font-bold transition-all hover:scale-105 flex items-center gap-1.5"
+              >
+                👩‍🏫 Teacher Experience
+              </a>
+            </div>
           </div>
-          <div className="flex gap-6 pt-8 border-t border-white/10">
+          <div className="flex gap-6 pt-6 border-t border-white/10">
             <a href="#school-story" className="flex items-center gap-2 cursor-pointer hover:opacity-100 opacity-90 transition-opacity">
               <span className="material-symbols-outlined text-secondary-fixed text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
               <span className="font-label-sm text-label-sm text-white/70">Live school signals</span>
