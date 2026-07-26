@@ -17,15 +17,15 @@ export default function SchoolGPTContextCard({
     <motion.div
       initial={{ opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-3.5 bg-slate-900 text-white rounded-2xl shadow-2xs flex items-center justify-between gap-3 text-xs"
+      className="p-3.5 bg-slate-50 border border-slate-200/80 text-slate-800 rounded-2xl flex items-center justify-between gap-3 text-xs font-body"
     >
       <div className="flex items-center gap-2.5">
-        <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-        <span className="font-body text-slate-300 font-semibold">
-          You are viewing <strong className="text-white font-extrabold">{classNameLabel}</strong> {studentName ? `• ${studentName}` : ''}
+        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+        <span className="text-slate-600 font-medium">
+          Viewing <strong className="text-slate-900 font-bold">{classNameLabel}</strong> {studentName ? `• ${studentName}` : ''}
         </span>
       </div>
-      <span className="text-[11px] font-bold text-slate-400 bg-slate-800 px-2.5 py-1 rounded-xl">
+      <span className="text-[11px] font-bold text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-xl">
         {screenName}
       </span>
     </motion.div>

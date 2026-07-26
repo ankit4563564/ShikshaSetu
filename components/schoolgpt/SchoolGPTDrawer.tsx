@@ -16,7 +16,7 @@ interface DrawerProps {
 }
 
 const teacherSuggestions = [
-  'Who needs extra help today?',
+  'Which students need support today?',
   'How is my class performing?',
   'Generate today\'s parent summary.',
   'Explain attendance this week.',
@@ -82,7 +82,7 @@ export default function SchoolGPTDrawer({
         {
           query: q,
           answer: res.text,
-          sources: res.sources || ['School Telemetry Database'],
+          sources: res.sources || ['School Database'],
           suggestedFollowUps: res.suggestedFollowUps,
           actionObject: (res as any).actionObject,
         },
@@ -107,7 +107,7 @@ export default function SchoolGPTDrawer({
   const renderFormattedText = (text: string) => {
     if (!text) return null;
     return text.split('\n\n').map((para, idx) => (
-      <p key={idx} className="my-2 leading-relaxed font-medium text-slate-800 text-xs sm:text-sm">
+      <p key={idx} className="my-2 leading-relaxed font-medium text-slate-700 text-xs sm:text-sm">
         {para.split(/(\*\*.*?\*\*)/g).map((part, i) => {
           if (part.startsWith('**') && part.endsWith('**')) {
             return (
@@ -132,7 +132,7 @@ export default function SchoolGPTDrawer({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm"
           />
 
           {/* Drawer Container */}
@@ -141,7 +141,7 @@ export default function SchoolGPTDrawer({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 240 }}
-            className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-xl bg-white shadow-2xl flex flex-col justify-between border-l border-slate-200 overflow-hidden font-body"
+            className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-lg bg-white shadow-2xl flex flex-col justify-between border-l border-slate-200 overflow-hidden font-body"
           >
             {/* Header */}
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
@@ -154,14 +154,14 @@ export default function SchoolGPTDrawer({
                     School Assistant
                   </h3>
                   <p className="text-xs font-medium text-slate-500">
-                    Always here to help &bull; {screenName}
+                    {screenName}
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition-all"
+                className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs transition-all"
               >
                 ✕
               </button>
@@ -204,7 +204,7 @@ export default function SchoolGPTDrawer({
 
                 {/* Suggested Questions */}
                 <div className="space-y-1.5 pt-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                  <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400 block">
                     Suggested Questions
                   </span>
                   <div className="flex flex-wrap gap-2">
@@ -232,45 +232,34 @@ export default function SchoolGPTDrawer({
                     <span className="h-2 w-2 animate-bounce rounded-full bg-slate-900" style={{ animationDelay: '300ms' }} />
                   </div>
                   <p className="font-body text-xs font-bold text-slate-700">
-                    SchoolGPT multi-agent pipeline is executing targeted retrieval…
+                    SchoolGPT is generating answer…
                   </p>
                 </div>
               )}
 
-              {/* Dynamic History Output Stream */}
+              {/* Dynamic History Stream */}
               <div className="space-y-4">
                 {history.map((item, idx) => (
                   <motion.div
                     key={idx}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-5 bg-white border border-slate-200/80 rounded-3xl shadow-2xs space-y-4"
+                    className="p-5 bg-white border border-slate-200/80 rounded-3xl shadow-xs space-y-3 font-body"
                   >
                     <div className="border-b border-slate-100 pb-2">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Question</span>
-                      <h4 className="font-display text-sm font-extrabold text-slate-900">{item.query}</h4>
+                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block">Question</span>
+                      <h4 className="font-display text-xs sm:text-sm font-extrabold text-slate-900">{item.query}</h4>
                     </div>
 
                     <div>
-                      <span className="text-[10px] font-black text-emerald-700 uppercase tracking-wider block mb-1">
-                        SchoolGPT Verified Answer
-                      </span>
                       {renderFormattedText(item.answer)}
                     </div>
 
-                    {/* Action Object Payload if Present */}
+                    {/* Action Object Payload */}
                     {item.actionObject && (
                       <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
-                            ⚡ Action Object: {item.actionObject.type}
-                          </span>
-                          <span className="text-[10px] font-bold bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-full">
-                            Ready
-                          </span>
-                        </div>
                         <h5 className="font-display text-xs font-extrabold text-white">{item.actionObject.title}</h5>
-                        <p className="text-xs text-slate-300 font-mono bg-slate-800 p-2.5 rounded-xl">
+                        <p className="text-xs text-slate-300 font-mono bg-slate-800 p-2 rounded-xl">
                           {item.actionObject.preview}
                         </p>
                         <div className="flex flex-wrap gap-2 pt-1">
@@ -297,25 +286,6 @@ export default function SchoolGPTDrawer({
                             ✓ {s}
                           </span>
                         ))}
-                      </div>
-                    )}
-
-                    {/* Follow up pills */}
-                    {item.suggestedFollowUps && item.suggestedFollowUps.length > 0 && (
-                      <div className="pt-2 space-y-1.5">
-                        <span className="text-[10px] font-bold text-slate-500 block">Suggested Follow-ups:</span>
-                        <div className="flex flex-wrap gap-1.5">
-                          {item.suggestedFollowUps.map((fol) => (
-                            <button
-                              key={fol}
-                              type="button"
-                              onClick={() => handleTriggerQuery(fol)}
-                              className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all border border-slate-200/80"
-                            >
-                              {fol} &rarr;
-                            </button>
-                          ))}
-                        </div>
                       </div>
                     )}
                   </motion.div>

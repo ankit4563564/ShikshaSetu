@@ -13,44 +13,53 @@ interface SchoolGPTMessageProps {
 export default function SchoolGPTMessage({
   role,
   content,
-  sources = ['School Telemetry Database', 'Live Student Portal'],
-  confidence = 'HIGH',
+  sources = ['School Database', 'Live Student Portal'],
 }: SchoolGPTMessageProps) {
   const isUser = role === 'user';
 
-  const confidenceBadge = {
-    HIGH: { label: 'Verified Source (High Confidence)', style: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
-    MEDIUM: { label: 'Knowledge Engine (Medium Confidence)', style: 'bg-sky-50 text-sky-800 border-sky-200' },
-    GENERAL: { label: 'General Knowledge', style: 'bg-purple-50 text-purple-800 border-purple-200' },
-    LIMITED: { label: 'Offline Fallback Context', style: 'bg-amber-50 text-amber-800 border-amber-200' },
-  };
+  // Section Parser: Breaks formatted AI response into Title, Summary, Evidence, Recommendations
+  const parseSectionedResponse = (text: string) => {
+    if (!text) return { title: '', body: [] };
 
-  // Helper to format bold markdown text, lists, and line breaks cleanly
-  const renderFormattedContent = (text: string) => {
-    if (!text) return null;
+    const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+    let title = '';
+    const bodyParts: { type: 'heading' | 'paragraph' | 'list'; text: string; items?: string[] }[] = [];
 
-    const paragraphs = text.split('\n\n');
-    return paragraphs.map((para, i) => {
-      // Check for bullet points or lists
-      if (para.includes('\n•') || para.includes('\n-') || para.startsWith('•') || para.startsWith('-')) {
-        const lines = para.split('\n');
-        return (
-          <ul key={i} className="list-disc list-inside space-y-1 my-2 font-medium text-slate-800">
-            {lines.map((line, idx) => {
-              const cleanLine = line.replace(/^[•\-*]\s*/, '').trim();
-              if (!cleanLine) return null;
-              return <li key={idx}>{renderBoldText(cleanLine)}</li>;
-            })}
-          </ul>
-        );
+    let currentList: string[] = [];
+
+    lines.forEach((line, idx) => {
+      if (idx === 0 && !line.startsWith('•') && !line.startsWith('-') && !line.startsWith('📌')) {
+        title = line.replace(/^\*\*|\*\*$/g, '').replace(/^#+\s*/, '');
+        return;
       }
 
-      return (
-        <p key={i} className="leading-relaxed font-medium my-2 text-slate-800 text-xs sm:text-sm">
-          {renderBoldText(para)}
-        </p>
-      );
+      if (line.startsWith('📌') || line.startsWith('⚠️') || line.startsWith('📊') || line.startsWith('💡') || line.startsWith('🚀')) {
+        if (currentList.length > 0) {
+          bodyParts.push({ type: 'list', text: '', items: [...currentList] });
+          currentList = [];
+        }
+        bodyParts.push({ type: 'heading', text: line });
+        return;
+      }
+
+      if (line.startsWith('•') || line.startsWith('-')) {
+        currentList.push(line.replace(/^[•\-*]\s*/, ''));
+        return;
+      }
+
+      if (currentList.length > 0) {
+        bodyParts.push({ type: 'list', text: '', items: [...currentList] });
+        currentList = [];
+      }
+
+      bodyParts.push({ type: 'paragraph', text: line });
     });
+
+    if (currentList.length > 0) {
+      bodyParts.push({ type: 'list', text: '', items: [...currentList] });
+    }
+
+    return { title, bodyParts };
   };
 
   const renderBoldText = (str: string) => {
@@ -67,73 +76,84 @@ export default function SchoolGPTMessage({
     });
   };
 
+  const parsed = !isUser ? parseSectionedResponse(content) : null;
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`w-full py-3 ${
+      className={`w-full ${
         isUser
-          ? 'border-b border-slate-100'
-          : 'bg-slate-50/70 border border-slate-200/80 rounded-3xl p-5 sm:p-6 my-3 shadow-2xs'
+          ? 'flex justify-end py-2'
+          : 'bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4 font-body'
       }`}
     >
-      <div className="flex gap-3.5 items-start">
-        {/* Avatar */}
-        <div
-          className={`h-9 w-9 rounded-2xl flex items-center justify-center font-display text-xs font-black select-none shrink-0 shadow-2xs ${
-            isUser ? 'bg-slate-900 text-white' : 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xs'
-          }`}
-        >
-          {isUser ? 'U' : '✨'}
+      {isUser ? (
+        <div className="bg-slate-900 text-white rounded-3xl px-5 py-3 text-sm font-extrabold shadow-2xs max-w-2xl">
+          {content}
         </div>
-
-        <div className="flex-1 space-y-3 min-w-0">
-          {/* Header */}
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/70 pb-2">
-            <span className="font-display text-xs font-black uppercase tracking-widest text-slate-700 flex items-center gap-2">
-              <span>{isUser ? 'User Request' : 'SchoolGPT Adaptive Assistant'}</span>
+      ) : (
+        <div className="space-y-4">
+          {/* Header Badge */}
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+              <span>✨ SchoolGPT Assistant</span>
             </span>
-            {!isUser && confidence && (
-              <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${confidenceBadge[confidence].style}`}>
-                ● {confidenceBadge[confidence].label}
-              </span>
-            )}
+            <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-full">
+              ✓ Verified Data
+            </span>
           </div>
 
-          {/* Message View */}
-          {isUser ? (
-            <p className="font-display text-sm font-extrabold text-slate-900 leading-relaxed">
-              {content}
-            </p>
-          ) : (
-            <div className="space-y-4">
-              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs space-y-2">
-                {renderFormattedContent(content)}
-              </div>
+          {/* Response Title */}
+          {parsed?.title && (
+            <h3 className="font-display text-base sm:text-lg font-extrabold text-slate-900 leading-snug">
+              {parsed.title}
+            </h3>
+          )}
 
-              {/* Verified Sources Chips */}
-              {sources && sources.length > 0 && (
-                <div className="pt-2 border-t border-slate-200/60 space-y-1.5">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
-                    Verified Evidence Sources &amp; Telemetry
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {sources.map((src) => (
-                      <span
-                        key={src}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-2xs"
-                      >
-                        <span>📄</span>
-                        <span>{src}</span>
-                      </span>
+          {/* Response Body Sections */}
+          <div className="space-y-3 font-body text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+            {parsed?.bodyParts?.map((part, idx) => {
+              if (part.type === 'heading') {
+                return (
+                  <h4 key={idx} className="font-display text-xs sm:text-sm font-extrabold text-slate-900 pt-2 pb-0.5">
+                    {part.text}
+                  </h4>
+                );
+              }
+              if (part.type === 'list' && part.items) {
+                return (
+                  <ul key={idx} className="list-disc list-inside space-y-1.5 my-2 pl-1">
+                    {part.items.map((item, i) => (
+                      <li key={i} className="text-slate-800 font-medium">
+                        {renderBoldText(item)}
+                      </li>
                     ))}
-                  </div>
-                </div>
-              )}
+                  </ul>
+                );
+              }
+              return <p key={idx}>{renderBoldText(part.text)}</p>;
+            })}
+          </div>
+
+          {/* Evidence Sources */}
+          {sources && sources.length > 0 && (
+            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-mono font-extrabold text-slate-400 uppercase tracking-wider">
+                Sources:
+              </span>
+              {sources.map((src) => (
+                <span
+                  key={src}
+                  className="px-2.5 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-[11px] font-semibold text-slate-600"
+                >
+                  ✓ {src}
+                </span>
+              ))}
             </div>
           )}
         </div>
-      </div>
+      )}
     </motion.div>
   );
 }
