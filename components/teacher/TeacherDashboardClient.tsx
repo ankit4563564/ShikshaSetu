@@ -268,6 +268,7 @@ export default function TeacherDashboardClient({
   const [isLoading, setIsLoading] = useState(true);
   const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(false);
   const [showWhyDrawer, setShowWhyDrawer] = useState(false);
+  const [completedActions, setCompletedActions] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     setIsLoading(false);
@@ -706,17 +707,35 @@ export default function TeacherDashboardClient({
           </div>
         </motion.section>
 
-        {/* 4. TODAY'S CLASSROOM TIMELINE & NEXT ACTIONS */}
+        {/* 4. SCHOOLGPT AI CLASS SUMMARY BANNER (SURFACED DIRECTLY ON MAIN FEED) */}
+        <motion.section variants={fadeSlideUp} initial="hidden" animate="visible" className="mb-6 bg-slate-900 text-white rounded-3xl p-6 sm:p-7 shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl">🤖</span>
+              <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-300">
+                SchoolGPT Daily Class Intelligence Summary
+              </h4>
+            </div>
+            <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-bold uppercase tracking-wider">
+              Class 8A: Stable (94%)
+            </span>
+          </div>
+          <p className="font-body text-xs leading-relaxed text-slate-200 font-medium">
+            &ldquo;Your class is performing well overall. Attendance is excellent at 95%, and homework completion remains above average at 88%. Two students (Priya Patel and Rohan Sharma) may benefit from brief supportive check-ins during homeroom today.&rdquo;
+          </p>
+        </motion.section>
+
+        {/* 5. TODAY'S CLASSROOM TIMELINE & INTERACTIVE NEXT ACTIONS */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Today's Next Actions (2 cols) */}
           <motion.section variants={fadeSlideUp} initial="hidden" animate="visible" className="lg:col-span-2 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h2 className="text-xs font-black uppercase tracking-widest text-slate-400">Today&apos;s Action Items</h2>
-                <p className="mt-0.5 text-xs font-semibold text-slate-600">The highest-priority interventions for your day.</p>
+                <h2 className="text-xs font-black uppercase tracking-widest text-slate-400">Today&apos;s Action Items (Task Checklist)</h2>
+                <p className="mt-0.5 text-xs font-semibold text-slate-600 font-body">Tap any checkbox as you complete tasks throughout your day.</p>
               </div>
-              <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[10px] font-bold text-slate-700">
-                {productQueue.length} Pending Actions
+              <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[10px] font-bold text-slate-700 font-mono">
+                {4 - Object.keys(completedActions).length} Remaining
               </span>
             </div>
 
@@ -726,20 +745,48 @@ export default function TeacherDashboardClient({
                 { title: 'Reply to Sunita Sharma regarding Bus #4 Saket stop', detail: 'Parent asked about evening pickup telemetry', tag: 'Message' },
                 { title: 'Review Chapter 4 Mathematics Quiz scores', detail: 'Class average 92% — 2 students need review', tag: 'Academic' },
                 { title: 'Approve pending Gate Pass for Kabir Verma', detail: 'Early departure requested for dental appointment', tag: 'Pass' },
-              ].map((item, idx) => (
-                <div key={idx} className="p-3.5 bg-slate-50 border border-slate-200/70 rounded-2xl flex items-start justify-between gap-3 hover:border-slate-300 transition-all">
-                  <div className="flex items-start gap-3">
-                    <input type="checkbox" className="mt-1 rounded border-slate-300 text-slate-900 focus:ring-0 h-4 w-4 cursor-pointer" />
-                    <div>
-                      <h5 className="font-display text-xs font-extrabold text-slate-900">{item.title}</h5>
-                      <p className="font-body text-[11px] text-slate-500 mt-0.5">{item.detail}</p>
+              ].map((item, idx) => {
+                const isDone = Boolean(completedActions[idx]);
+                return (
+                  <div
+                    key={idx}
+                    className={`p-3.5 border rounded-2xl flex items-start justify-between gap-3 transition-all ${
+                      isDone ? 'bg-emerald-50/50 border-emerald-200 opacity-80' : 'bg-slate-50 border-slate-200/70 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={isDone}
+                        onChange={() => {
+                          setCompletedActions((prev) => {
+                            const next = { ...prev, [idx]: !prev[idx] };
+                            if (!prev[idx]) {
+                              setToast({ message: `✓ Task Completed: "${item.title}"`, type: 'success' });
+                              setTimeout(() => setToast(null), 3000);
+                            }
+                            return next;
+                          });
+                        }}
+                        className="mt-1 rounded border-slate-300 text-emerald-600 focus:ring-0 h-4 w-4 cursor-pointer"
+                      />
+                      <div>
+                        <h5 className={`font-display text-xs font-extrabold ${isDone ? 'text-slate-500 line-through' : 'text-slate-900'}`}>
+                          {item.title}
+                        </h5>
+                        <p className="font-body text-[11px] text-slate-500 mt-0.5">{item.detail}</p>
+                      </div>
                     </div>
+                    <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wider shrink-0 border ${
+                      isDone
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-white text-slate-600 border-slate-200'
+                    }`}>
+                      {isDone ? 'Done ✓' : item.tag}
+                    </span>
                   </div>
-                  <span className="px-2.5 py-0.5 bg-white border border-slate-200 text-slate-600 rounded-full font-bold text-[10px] uppercase tracking-wider shrink-0">
-                    {item.tag}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </motion.section>
 
