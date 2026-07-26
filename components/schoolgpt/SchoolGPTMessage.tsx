@@ -20,28 +20,40 @@ export default function SchoolGPTMessage({
   const isUser = role === 'user';
   const [activeActionModal, setActiveActionModal] = useState<ActionPayload | null>(null);
 
-  // Section Parser
-  const parseSectionedResponse = (text: string) => {
-    if (!text) return { title: '', bodyParts: [] };
+  // Section Parser: Cleans up technical headers (OBSERVATION, EVIDENCE, REASONING) and breaks text into scannable paragraphs
+  const parseSectionedResponse = (raw: string) => {
+    if (!raw) return { title: '', bodyParts: [] };
 
-    const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+    // Clean up technical tag markers into clean section headings
+    const cleaned = raw
+      .replace(/(?:📈|📌|📊|💡|🚀)\s*(?:OBSERVATION|EVIDENCE|REASONING|SUGGESTED NEXT STEP):?/gi, (match) => {
+        const lower = match.toLowerCase();
+        if (lower.includes('observation')) return '\n\n### Overview\n';
+        if (lower.includes('evidence')) return '\n\n### Verified Evidence\n';
+        if (lower.includes('reasoning')) return '\n\n### Insights & Analysis\n';
+        if (lower.includes('suggested next step') || lower.includes('next step')) return '\n\n### Suggested Next Steps\n';
+        return '\n\n';
+      })
+      .replace(/(?:📈|📌|📊|💡|🚀)/g, '');
+
+    const lines = cleaned.split('\n').map((l) => l.trim()).filter(Boolean);
     let title = '';
     const bodyParts: { type: 'heading' | 'paragraph' | 'list'; text: string; items?: string[] }[] = [];
 
     let currentList: string[] = [];
 
     lines.forEach((line, idx) => {
-      if (idx === 0 && !line.startsWith('•') && !line.startsWith('-') && !line.startsWith('📌')) {
+      if (idx === 0 && !line.startsWith('###') && !line.startsWith('•') && !line.startsWith('-')) {
         title = line.replace(/^\*\*|\*\*$/g, '').replace(/^#+\s*/, '');
         return;
       }
 
-      if (line.startsWith('📌') || line.startsWith('⚠️') || line.startsWith('📊') || line.startsWith('💡') || line.startsWith('🚀')) {
+      if (line.startsWith('###')) {
         if (currentList.length > 0) {
           bodyParts.push({ type: 'list', text: '', items: [...currentList] });
           currentList = [];
         }
-        bodyParts.push({ type: 'heading', text: line });
+        bodyParts.push({ type: 'heading', text: line.replace(/^###\s*/, '') });
         return;
       }
 
@@ -70,7 +82,7 @@ export default function SchoolGPTMessage({
     return parts.map((part, index) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return (
-          <strong key={index} className="font-extrabold text-slate-900">
+          <strong key={index} className="font-semibold text-slate-900">
             {part.slice(2, -2)}
           </strong>
         );
