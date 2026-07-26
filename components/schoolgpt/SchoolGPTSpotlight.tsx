@@ -11,14 +11,14 @@ interface SpotlightProps {
 }
 
 const spotlightActions = [
-  { id: '1', icon: '🎯', title: 'Which students need support today?', category: 'Attention Radar', action: 'query' },
-  { id: '2', icon: '👤', title: "Show Aarav's complete academic report", category: 'Student Analytics', action: 'query' },
+  { id: '1', icon: '🎯', title: 'Which students need support today?', category: 'Student Support', action: 'query' },
+  { id: '2', icon: '👤', title: "Show Aarav's complete academic report", category: 'Student Report', action: 'query' },
   { id: '3', icon: '📊', title: "Summarize today's attendance anomalies", category: 'Attendance', action: 'query' },
-  { id: '4', icon: '✉️', title: 'Generate PTM summary update for Class 8A', category: 'Parent Comms', action: 'query' },
-  { id: '5', icon: '📈', title: 'Compare Term 1 and Term 3 performance', category: 'Growth Analytics', action: 'query' },
-  { id: '6', icon: '⏱️', title: 'Show bus tracking and gate entry logs', category: 'Safety Telemetry', action: 'query' },
-  { id: '7', icon: '📚', title: 'Jump to Gradebook & Marks Page', category: 'Navigation', action: 'nav', path: '/teacher' },
-  { id: '8', icon: '🚌', title: 'Jump to Bus Telemetry Tracking', category: 'Navigation', action: 'nav', path: '/parent' },
+  { id: '4', icon: '✉️', title: 'Generate PTM summary update for Class 8A', category: 'Parent Messages', action: 'query' },
+  { id: '5', icon: '📈', title: 'Compare Term 1 and Term 3 performance', category: 'Growth Comparison', action: 'query' },
+  { id: '6', icon: '⏱️', title: 'Show bus tracking and gate entry logs', category: 'Safety & Transport', action: 'query' },
+  { id: '7', icon: '📚', title: 'Jump to Gradebook & Marks Page', category: 'Shortcuts', action: 'nav', path: '/teacher' },
+  { id: '8', icon: '🚌', title: 'Jump to Bus Telemetry Tracking', category: 'Shortcuts', action: 'nav', path: '/parent' },
 ];
 
 export default function SchoolGPTSpotlight({ isOpen, onClose, onSelectPrompt }: SpotlightProps) {
@@ -66,7 +66,7 @@ export default function SchoolGPTSpotlight({ isOpen, onClose, onSelectPrompt }: 
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Type a command, search student, or ask SchoolGPT..."
+              placeholder="Search a student, ask a question, or choose a shortcut..."
               className="flex-1 bg-transparent text-sm sm:text-base font-medium text-slate-900 placeholder-slate-400 outline-none"
             />
             <span className="px-2 py-0.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-500 font-mono text-[10px] font-bold">
@@ -78,7 +78,7 @@ export default function SchoolGPTSpotlight({ isOpen, onClose, onSelectPrompt }: 
           <div className="p-3 max-h-80 overflow-y-auto space-y-1">
             {filtered.length === 0 ? (
               <div className="p-6 text-center text-xs font-medium text-slate-400">
-                No matching commands found. Press Enter to ask SchoolGPT directly.
+                No matching options found. Press Enter to ask SchoolGPT directly.
               </div>
             ) : (
               filtered.map((item) => (
@@ -113,7 +113,7 @@ export default function SchoolGPTSpotlight({ isOpen, onClose, onSelectPrompt }: 
               <span className="font-mono font-bold text-slate-600">↑↓</span> to navigate
               <span className="font-mono font-bold text-slate-600">↵</span> to select
             </span>
-            <span className="font-bold text-slate-500">SchoolGPT Spotlight Command</span>
+            <span className="font-bold text-slate-500">Quick Search &amp; Shortcuts</span>
           </div>
         </motion.div>
       </div>

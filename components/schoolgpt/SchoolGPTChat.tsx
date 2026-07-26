@@ -79,9 +79,9 @@ const quickActions = [
 ];
 
 const activeLoadingMessages = [
-  'Analyzing attendance records & student history…',
-  'Reviewing assessment trends & homework submissions…',
-  'Compiling SchoolGPT evidence-based summary…',
+  'Looking up student & attendance records…',
+  'Reviewing recent marks & homework…',
+  'Preparing your summary…',
 ];
 
 function generateId(): string {

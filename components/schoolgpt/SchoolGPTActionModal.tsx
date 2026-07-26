@@ -100,7 +100,7 @@ export default function SchoolGPTActionModal({ isOpen, onClose, actionObject }: 
           {/* Execution Action Triggers */}
           <div className="space-y-2 pt-1">
             <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400 block">
-              Execution Triggers:
+              Choose Action:
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
@@ -109,7 +109,7 @@ export default function SchoolGPTActionModal({ isOpen, onClose, actionObject }: 
                 className="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95"
               >
                 <span>✉️</span>
-                <span>WhatsApp</span>
+                <span>Send WhatsApp</span>
               </button>
 
               <button
@@ -134,13 +134,13 @@ export default function SchoolGPTActionModal({ isOpen, onClose, actionObject }: 
 
           {/* Footer Note */}
           <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-medium text-slate-400">
-            <span>Official ShikshaSetu Action Engine</span>
+            <span>ShikshaSetu Assistant</span>
             <button
               type="button"
               onClick={onClose}
               className="font-bold text-slate-600 hover:text-slate-900"
             >
-              Close Window
+              Close
             </button>
           </div>
         </motion.div>

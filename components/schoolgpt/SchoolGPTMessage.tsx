@@ -109,7 +109,7 @@ export default function SchoolGPTMessage({
                 <span>✨ SchoolGPT Assistant</span>
               </span>
               <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-full">
-                ✓ Verified Evidence
+                ✓ Verified School Data
               </span>
             </div>
 
@@ -124,7 +124,7 @@ export default function SchoolGPTMessage({
             {isComparisonQuery && (
               <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3 my-2">
                 <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400 block">
-                  📊 Dynamic Visualizer: Academic Growth Comparison
+                  📊 Growth Comparison
                 </span>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
@@ -196,7 +196,7 @@ export default function SchoolGPTMessage({
                     setActiveActionModal({
                       id: `act-${Date.now()}`,
                       type: 'report',
-                      title: 'Class 8A Academic & Intervention Brief',
+                      title: 'Class 8A Summary Report',
                       preview: content,
                       actions: ['Preview', 'WhatsApp Share', 'Print PDF', 'Copy'],
                     })
@@ -204,7 +204,7 @@ export default function SchoolGPTMessage({
                   className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl shadow-2xs transition-all active:scale-95 flex items-center gap-2"
                 >
                   <span>⚡</span>
-                  <span>Execute Action (WhatsApp / Print PDF)</span>
+                  <span>Take Action (WhatsApp / Print PDF)</span>
                 </button>
               </div>
             )}
