@@ -44,14 +44,13 @@ function useModerationActions(adminId: string, role: string) {
   }, [adminId, role, invalidate]);
 
   const hide = useCallback(async (postId: string) => {
-    const reason = prompt('Reason for hiding:');
-    const res = await hidePostAction(postId, adminId, role, reason || undefined);
+    const reason = 'Policy Violation';
+    const res = await hidePostAction(postId, adminId, role, reason);
     if (res.success) invalidate();
     return res;
   }, [adminId, role, invalidate]);
 
   const reveal = useCallback(async (postId: string) => {
-    if (!confirm('Revealing identity creates a permanent audit log. Continue?')) return;
     return revealPostIdentityAction(postId, adminId);
   }, [adminId]);
 

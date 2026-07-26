@@ -19,6 +19,7 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setActiveChatStudentId(studentId);
@@ -124,7 +125,7 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
       setMessages((prev) => prev.map((msg) => (msg.id === tempId ? res.message! : msg)));
     } else {
       setMessages((prev) => prev.filter((msg) => msg.id !== tempId));
-      alert('Failed to send message. Reverting changes.');
+      setError('Failed to send message. Please try again.');
     }
 
     setIsSending(false);

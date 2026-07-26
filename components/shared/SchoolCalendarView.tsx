@@ -80,7 +80,6 @@ export default function SchoolCalendarView({ isEditable = false }: SchoolCalenda
   };
 
   const handleDeleteEvent = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this event?')) return;
     const res = await deleteCalendarPeriodAction(id);
     if (res.success) {
       loadPeriods();

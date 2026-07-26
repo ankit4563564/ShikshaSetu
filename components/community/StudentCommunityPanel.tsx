@@ -97,12 +97,11 @@ export default function StudentCommunityPanel({ studentId: sid }: StudentCommuni
   }, [sid, toggleUpvote]);
 
   const handleReport = useCallback(async (targetType: 'post' | 'answer', targetId: string) => {
-    const reason = prompt('Reason for report:');
-    if (!reason) return;
+    const reason = 'Inappropriate content report';
     const res = await createReport.mutateAsync({
       reporterId: sid, reporterRole: 'student', targetType, targetId, reason,
     });
-    if (res.success) showToast('Report submitted', 'success');
+    if (res.success) showToast('Report submitted for review', 'success');
     else showToast(res.error || 'Failed to report', 'error');
   }, [sid, createReport, showToast]);
 

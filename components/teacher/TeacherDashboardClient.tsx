@@ -267,9 +267,21 @@ export default function TeacherDashboardClient({
   const [showChat, setShowChat] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(false);
+  const [showWhyDrawer, setShowWhyDrawer] = useState(false);
 
   useEffect(() => {
     setIsLoading(false);
+  }, []);
+
+  // Listen for ESC key to dismiss Why Am I Seeing This drawer
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowWhyDrawer(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // Journey status tracking for student cards
@@ -656,7 +668,8 @@ export default function TeacherDashboardClient({
               <button
                 type="button"
                 onClick={() => {
-                  alert("📅 Homeroom Check-in Scheduled for Priya Patel today at 10:00 AM.");
+                  setToast({ message: '📅 Homeroom Check-in scheduled for Priya Patel today at 10:00 AM!', type: 'success' });
+                  setTimeout(() => setToast(null), 4000);
                 }}
                 className="px-4 py-2.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs shadow-xs hover:bg-slate-800 transition-all flex items-center gap-1.5 active:scale-95"
               >
@@ -664,10 +677,8 @@ export default function TeacherDashboardClient({
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  alert("Why am I seeing this?\n\n• Homework completion decreased by 30% over 14 days\n• Library activity: No visits in 14 days\n• Class participation: Gradual decline\n• Attendance: 98% Stable ✓\n\nAI Confidence: High");
-                }}
-                className="px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-extrabold text-xs hover:bg-slate-50 transition-all"
+                onClick={() => setShowWhyDrawer(true)}
+                className="px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-extrabold text-xs hover:bg-slate-50 transition-all active:scale-95"
               >
                 <span>🔍 Why am I seeing this?</span>
               </button>
@@ -1145,6 +1156,157 @@ export default function TeacherDashboardClient({
           </div>
         )}
       </div>
+
+      {/* Right-Side Explanation Drawer Overlay (Why Am I Seeing This?) */}
+      <AnimatePresence>
+        {showWhyDrawer && (
+          <div className="fixed inset-0 z-50 overflow-hidden flex justify-end" role="dialog" aria-modal="true" aria-labelledby="why-drawer-title">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowWhyDrawer(false)}
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+            />
+
+            {/* Slide-over Drawer Panel */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative w-full max-w-md bg-white shadow-2xl h-full flex flex-col justify-between overflow-y-auto z-10 border-l border-slate-200"
+            >
+              {/* Header */}
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center justify-center font-bold text-lg">
+                    🔍
+                  </div>
+                  <div>
+                    <h3 id="why-drawer-title" className="font-display text-base font-extrabold text-slate-900">
+                      AI Recommendation Explainability
+                    </h3>
+                    <p className="font-body text-xs text-slate-500 font-semibold">Student Support Radar Analysis</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowWhyDrawer(false)}
+                  className="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center font-extrabold text-sm transition-all"
+                  aria-label="Close drawer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Content Body */}
+              <div className="p-6 space-y-6 flex-1">
+                {/* Student Profile Card */}
+                <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-slate-200 border-2 border-emerald-400 overflow-hidden flex items-center justify-center font-display text-base font-extrabold text-slate-700">
+                    <Image src="/priya.png" width={50} height={50} alt="Priya Patel" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h4 className="font-display text-base font-extrabold text-slate-900">Priya Patel</h4>
+                    <p className="font-body text-xs text-slate-500">Class 8A &bull; Roll #14 &bull; Mathematics</p>
+                    <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-bold uppercase tracking-wider">
+                      Needs Check-in
+                    </span>
+                  </div>
+                </div>
+
+                {/* AI Recommendation Box */}
+                <div className="p-4 bg-emerald-50/60 border border-emerald-200/80 rounded-2xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-800">Generated Recommendation</span>
+                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-extrabold">94% High Confidence</span>
+                  </div>
+                  <p className="font-body text-xs leading-relaxed text-slate-800 font-semibold">
+                    &ldquo;Priya Patel has shown a gradual decline in homework completion over the past 2 weeks. A brief supportive conversation during today&apos;s homeroom is recommended.&rdquo;
+                  </p>
+                </div>
+
+                {/* Supporting Evidence Breakdown */}
+                <div className="space-y-3">
+                  <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-400">
+                    Supporting Evidence Signals
+                  </h4>
+                  <div className="space-y-2">
+                    <div className="p-3 bg-white border border-slate-200/80 rounded-xl flex items-center justify-between text-xs">
+                      <div>
+                        <strong className="font-display font-extrabold text-slate-900 block">Homework Completion Rate</strong>
+                        <span className="font-body text-[11px] text-slate-500">Decreased by 30% over the last 14 days</span>
+                      </div>
+                      <span className="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 font-bold text-[10px] rounded-full">Primary Trigger</span>
+                    </div>
+
+                    <div className="p-3 bg-white border border-slate-200/80 rounded-xl flex items-center justify-between text-xs">
+                      <div>
+                        <strong className="font-display font-extrabold text-slate-900 block">Library &amp; Study Visits</strong>
+                        <span className="font-body text-[11px] text-slate-500">0 visits in 14 days (Class avg: 3 visits)</span>
+                      </div>
+                      <span className="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 font-bold text-[10px] rounded-full">Low Engagement</span>
+                    </div>
+
+                    <div className="p-3 bg-white border border-slate-200/80 rounded-xl flex items-center justify-between text-xs">
+                      <div>
+                        <strong className="font-display font-extrabold text-slate-900 block">Class Q&amp;A Participation</strong>
+                        <span className="font-body text-[11px] text-slate-500">Slight decline recorded during Math sessions</span>
+                      </div>
+                      <span className="px-2.5 py-1 bg-slate-100 text-slate-600 border border-slate-200 font-bold text-[10px] rounded-full">Secondary</span>
+                    </div>
+
+                    <div className="p-3 bg-white border border-slate-200/80 rounded-xl flex items-center justify-between text-xs">
+                      <div>
+                        <strong className="font-display font-extrabold text-slate-900 block">Daily Attendance Record</strong>
+                        <span className="font-body text-[11px] text-slate-500">98% verified present &bull; Zero safety flags</span>
+                      </div>
+                      <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-[10px] rounded-full">✓ Stable</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Why Was This Recommendation Generated? */}
+                <div className="p-4 bg-slate-50 border border-slate-200/60 rounded-2xl space-y-1.5 text-xs">
+                  <h5 className="font-display font-extrabold text-slate-900">Why was this recommendation generated?</h5>
+                  <p className="font-body text-slate-600 leading-relaxed">
+                    SchoolGPT detected a 2-week consecutive drop in assignment submission timing paired with zero library check-ins. Historically in Class 8A, early supportive teacher conversations resolve 85% of early engagement slips.
+                  </p>
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="p-6 border-t border-slate-100 bg-slate-50/80 space-y-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowWhyDrawer(false);
+                    setToast({ message: '📅 Homeroom Check-in scheduled for Priya Patel today at 10:00 AM!', type: 'success' });
+                    setTimeout(() => setToast(null), 4000);
+                  }}
+                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <span>📅 Schedule Homeroom Check-in</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowWhyDrawer(false);
+                    setSelectedStudentId('st_2');
+                  }}
+                  className="w-full py-2.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-extrabold text-xs rounded-2xl transition-all"
+                >
+                  ⏱️ View Full Student Timeline
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Toast Notification */}
       <AnimatePresence>

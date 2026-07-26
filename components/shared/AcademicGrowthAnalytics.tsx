@@ -88,6 +88,7 @@ export default function AcademicGrowthAnalytics({
   isParentView = false,
 }: AcademicGrowthAnalyticsProps) {
   const [selectedSubject, setSelectedSubject] = useState<string>('Mathematics');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const activeSubjectData = SAMPLE_GROWTH_DATA.find((s) => s.subject === selectedSubject) || SAMPLE_GROWTH_DATA[0];
 
@@ -233,7 +234,10 @@ export default function AcademicGrowthAnalytics({
           <div className="pt-1">
             <button
               type="button"
-              onClick={() => alert(`Simple 1-Tap Remediation sprint assigned for ${activeSubjectData.subject}!`)}
+              onClick={() => {
+                setToastMessage(`✓ Remediation sprint assigned for ${activeSubjectData.subject}!`);
+                setTimeout(() => setToastMessage(null), 4000);
+              }}
               className="w-full py-2.5 rounded-xl bg-primary text-white font-extrabold text-xs shadow-2xs hover:bg-primary/90 transition-all active:scale-95"
             >
               {isParentView ? 'View Easy Practice Tips →' : 'Assign 1-Tap 10-Min Class Sprint →'}

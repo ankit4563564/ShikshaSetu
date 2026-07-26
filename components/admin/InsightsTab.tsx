@@ -121,10 +121,10 @@ export function InsightsTab({ adminId }: InsightsTabProps) {
         fetchInsights(selectedDate || undefined);
         fetchDates();
       } else {
-        alert(data.error || 'Generation failed');
+        setError(data.error || 'Generation failed');
       }
     } catch (e: any) {
-      alert(e.message);
+      setError(e.message);
     } finally {
       setGenerating(false);
     }
