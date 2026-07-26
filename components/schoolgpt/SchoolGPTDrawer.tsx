@@ -92,10 +92,10 @@ export default function SchoolGPTDrawer({
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <h3 className="font-display text-sm font-black text-slate-900">👋 Hi Rahul</h3>
+                    <h3 className="font-display text-sm font-black text-slate-900">{uiProps.greeting}</h3>
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                   </div>
-                  <p className="text-[11px] font-medium text-slate-500">I&apos;m here to help with Aarav&apos;s school day.</p>
+                  <p className="text-[11px] font-medium text-slate-500">{uiProps.contextBanner}</p>
                 </div>
               </div>
 

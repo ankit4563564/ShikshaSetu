@@ -9,12 +9,12 @@ export interface UIAdapterProps {
 }
 
 export function adaptContextToUI(ctx: DomainContext): UIAdapterProps {
-  const student = ctx.studentName || 'Aarav Sharma';
+  const student = ctx.studentName || 'Aarav';
   const cls = `${ctx.classGrade || '8'}${ctx.classSection || 'A'}`;
 
   if (ctx.role === 'parent') {
     return {
-      greeting: `Welcome, ${student}'s Parent 👋`,
+      greeting: `Hi, ${student}'s Parent 👋`,
       placeholder: `Ask about ${student}'s safety, attendance, or bus...`,
       contextBanner: `Viewing Safety & Progress for ${student}`,
       suggestions: [
@@ -23,6 +23,60 @@ export function adaptContextToUI(ctx: DomainContext): UIAdapterProps {
         { title: 'Where is Bus?', prompt: 'Where is the school bus right now?', icon: '🚌', bg: 'bg-rose-50 text-rose-700 border-rose-100' },
       ],
       quickActions: ['Attendance Rate', 'Overdue Homework', 'Bus Live Location', 'Teacher Note'],
+    };
+  }
+
+  if (ctx.role === 'teacher') {
+    return {
+      greeting: `Hi, Ms. Mehra (Class ${cls} Teacher) 👋`,
+      placeholder: `Ask about Class ${cls} attendance, marks, or PTM...`,
+      contextBanner: `Viewing Active Workspace • Class ${cls}`,
+      suggestions: [
+        { title: 'Support Radar', prompt: 'Which students need support today?', icon: '🎯', bg: 'bg-rose-50 text-rose-700 border-rose-100' },
+        { title: 'Student Report', prompt: `Show ${student}'s performance report.`, icon: '👤', bg: 'bg-sky-50 text-sky-700 border-sky-100' },
+        { title: 'PTM Draft', prompt: `Generate PTM summary update for Class ${cls}.`, icon: '✉️', bg: 'bg-purple-50 text-purple-700 border-purple-100' },
+      ],
+      quickActions: ['Support List', 'Student Profile', 'Attendance Rate', 'Draft PTM'],
+    };
+  }
+
+  if (ctx.role === 'admin') {
+    return {
+      greeting: `Hi, Campus Administrator 👋`,
+      placeholder: `Ask about campus telemetry, transport, or gate logs...`,
+      contextBanner: `Viewing School-Wide Mission Control`,
+      suggestions: [
+        { title: 'Campus Health Index', prompt: 'What is today\'s overall campus attendance?', icon: '📊', bg: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+        { title: 'Bus Fleet Status', prompt: 'Check live transport fleet telemetry.', icon: '🚌', bg: 'bg-amber-50 text-amber-700 border-amber-100' },
+        { title: 'Gate Scan Summary', prompt: 'Summarize morning gate entry scans.', icon: '🚨', bg: 'bg-rose-50 text-rose-700 border-rose-100' },
+      ],
+      quickActions: ['Campus Attendance', 'Bus Fleet', 'Gate Logs', 'Fee Collections'],
+    };
+  }
+
+  if (ctx.role === 'driver') {
+    return {
+      greeting: `Hi, Transit Driver 👋`,
+      placeholder: `Ask about assigned route stops or student manifest...`,
+      contextBanner: `Viewing Saket Route #4 Telemetry`,
+      suggestions: [
+        { title: 'Route Schedule', prompt: 'Show my bus route stops and timings.', icon: '🚌', bg: 'bg-sky-50 text-sky-700 border-sky-100' },
+        { title: 'Passenger Roster', prompt: 'Show assigned student list for Route #4.', icon: '📋', bg: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+      ],
+      quickActions: ['Route Stops', 'Students Onboard', 'Emergency Contact'],
+    };
+  }
+
+  if (ctx.role === 'gate') {
+    return {
+      greeting: `Hi, Gate Security 👋`,
+      placeholder: `Ask about digital gate passes or visitor approvals...`,
+      contextBanner: `Viewing Gate #2 Security Console`,
+      suggestions: [
+        { title: 'Verify Gate Pass', prompt: `Verify digital pickup gate pass for ${student}.`, icon: '🔑', bg: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+        { title: 'Today Scan Log', prompt: 'Show today gate entry count and status.', icon: '⏱️', bg: 'bg-sky-50 text-sky-700 border-sky-100' },
+      ],
+      quickActions: ['Verify Pass', 'Exit Log', 'Visitor Pass'],
     };
   }
 
@@ -68,15 +122,14 @@ export function adaptContextToUI(ctx: DomainContext): UIAdapterProps {
 
     default:
       return {
-        greeting: `Good Day, Educator 👋`,
-        placeholder: `Ask about a student, attendance, marks, or PTM...`,
+        greeting: `Hi, ${student} 👋`,
+        placeholder: `Ask about a topic, attendance, marks, or homework...`,
         contextBanner: `Viewing Active Workspace • Class ${cls}`,
         suggestions: [
-          { title: 'Support Radar', prompt: 'Which students need support today?', icon: '🎯', bg: 'bg-rose-50 text-rose-700 border-rose-100' },
-          { title: 'Student Report', prompt: `Show ${student}'s performance report.`, icon: '👤', bg: 'bg-sky-50 text-sky-700 border-sky-100' },
-          { title: 'PTM Draft', prompt: `Generate PTM summary update for Class ${cls}.`, icon: '✉️', bg: 'bg-purple-50 text-purple-700 border-purple-100' },
+          { title: 'Explain Chapter', prompt: 'Explain Physics Chapter 4 in simple terms.', icon: '📚', bg: 'bg-sky-50 text-sky-700 border-sky-100' },
+          { title: 'Practice Quiz', prompt: 'Give me 3 practice quiz questions.', icon: '🎯', bg: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
         ],
-        quickActions: ['Support List', 'Student Profile', 'Attendance Rate', 'Draft PTM'],
+        quickActions: ['Explain Homework', 'Practice Quiz', 'Today Schedule', 'Library Books'],
       };
   }
 }
