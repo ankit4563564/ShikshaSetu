@@ -1551,138 +1551,90 @@ export default function ParentTodayClient({
           </div>
         )}
 
-        {/* Tab 3: Attendance Wellness & Intelligence Dashboard */}
+        {/* Tab 3: Attendance Experience (Apple-Health Simplicity) */}
         {activeNav === 'attendance' && (
-          <div className="space-y-6">
-            {/* 1. HERO ATTENDANCE WELLNESS SUMMARY */}
-            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-display text-2xl font-extrabold text-slate-900 tracking-tight">
-                      Attendance Health
-                    </h3>
-                    <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-extrabold text-xs uppercase tracking-wider">
-                      Excellent
-                    </span>
-                  </div>
-                  <p className="font-body text-xs font-semibold text-slate-500 mt-1">
-                    18 of 20 Days Attended &bull; Zero Safety Alerts
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 self-start sm:self-auto">
-                  <span className="text-3xl font-black font-display text-slate-900">90%</span>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                    +4% vs last month
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100">
-                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Today&apos;s Status</span>
-                  <strong className="font-display text-sm font-extrabold text-emerald-700 flex items-center gap-1 mt-0.5">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    Present (08:18 AM)
-                  </strong>
-                </div>
-
-                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Current Streak</span>
-                  <strong className="font-display text-sm font-extrabold text-slate-900 mt-0.5 block">
-                    🔥 12 Days
-                  </strong>
-                </div>
-
-                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Class Average</span>
-                  <strong className="font-display text-sm font-extrabold text-slate-900 mt-0.5 block">
-                    88% Attendance
-                  </strong>
-                </div>
-
-                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Absences / Late</span>
-                  <strong className="font-display text-sm font-extrabold text-slate-900 mt-0.5 block">
-                    1 Absent &bull; 1 Late
-                  </strong>
-                </div>
-              </div>
-            </div>
-
-            {/* 2. SCHOOLGPT AI ATTENDANCE INSIGHT */}
-            <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-sm space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">✨</span>
-                  <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-300">
-                    SchoolGPT Attendance Summary
-                  </h4>
-                </div>
-                <span className="text-[10px] font-bold text-emerald-400">Verified On Track</span>
-              </div>
-              <p className="font-body text-xs leading-relaxed text-slate-200 font-medium">
-                &ldquo;Aarav has maintained excellent 90% attendance this month and has not missed any critical examination days. No attendance concerns detected.&rdquo;
-              </p>
-            </div>
-
-            {/* 3. TODAY'S ATTENDANCE CHECKPOINT TIMELINE */}
-            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h4 className="font-display text-sm font-extrabold text-slate-900">
-                  Today&apos;s Attendance Checkpoint
-                </h4>
-                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 uppercase tracking-wider">
+          <div className="space-y-7">
+            
+            {/* 1. ATTENDANCE STATUS (REASSURANCE HERO) */}
+            <div className="bg-white border border-emerald-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-3 bg-gradient-to-r from-emerald-50/60 via-white to-emerald-50/20">
+              <div className="flex items-center justify-between">
+                <span className="px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[11px] uppercase tracking-wider border border-emerald-200 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   Verified Present
                 </span>
+                <span className="text-xs font-mono font-bold text-slate-500">Verified at 08:18 AM</span>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl space-y-1">
-                  <span className="font-mono text-[11px] font-bold text-slate-400 block">08:07 AM</span>
-                  <h5 className="font-display text-xs font-extrabold text-slate-900">Gate #2 QR Scanned</h5>
-                  <p className="font-body text-[11px] text-slate-500">Security Gate Verified</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+                <div>
+                  <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                    ✅ Present Today
+                  </h1>
+                  <p className="font-body text-xs font-semibold text-slate-600 mt-1">
+                    No attendance concerns detected. All roll calls verified.
+                  </p>
                 </div>
-
-                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl space-y-1">
-                  <span className="font-mono text-[11px] font-bold text-slate-400 block">08:15 AM</span>
-                  <h5 className="font-display text-xs font-extrabold text-slate-900">Classroom 8A Entrance</h5>
-                  <p className="font-body text-[11px] text-slate-500">Seated in class</p>
-                </div>
-
-                <div className="p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-2xl space-y-1">
-                  <span className="font-mono text-[11px] font-bold text-emerald-700 block">08:18 AM</span>
-                  <h5 className="font-display text-xs font-extrabold text-emerald-900">Roll Call Marked</h5>
-                  <p className="font-body text-[11px] text-emerald-700">Ms. Mehra Confirmed</p>
-                </div>
-
-                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl space-y-1">
-                  <span className="font-mono text-[11px] font-bold text-slate-400 block">08:18 AM</span>
-                  <h5 className="font-display text-xs font-extrabold text-slate-900">Parent Notified</h5>
-                  <p className="font-body text-[11px] text-slate-500">Instant App Push</p>
+                <div className="bg-white border border-emerald-200 px-5 py-3 rounded-2xl text-center shadow-2xs shrink-0">
+                  <span className="block text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Monthly Attendance</span>
+                  <span className="font-display text-2xl font-black text-slate-900">90%</span>
                 </div>
               </div>
             </div>
 
-            {/* 4. MONTHLY CALENDAR HEATMAP */}
+            {/* 2. SCHOOLGPT INSIGHT (CONVERSATIONAL HELPER) */}
+            <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-xl space-y-4 border border-slate-800">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl p-2.5 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-400/30">✨</span>
+                <div>
+                  <h4 className="text-xs font-extrabold text-white font-display">SchoolGPT Attendance Insight</h4>
+                  <p className="text-[11px] text-slate-300 font-medium">
+                    &ldquo;Attendance has been consistently healthy this month. Only one late arrival. No action is required.&rdquo;
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2.5 pt-1 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setToastMessage('⏱️ 15 July Late Arrival: Traffic congestion on Saket main road (Excused).')}
+                  className="bg-white/10 hover:bg-white/20 text-white text-xs px-3.5 py-2 rounded-xl font-semibold border border-white/15 transition-all text-left"
+                >
+                  💡 Why was the student late?
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveNav('messages')}
+                  className="bg-white/10 hover:bg-white/20 text-white text-xs px-3.5 py-2 rounded-xl font-semibold border border-white/15 transition-all text-left"
+                >
+                  👩‍🏫 Talk to Class Teacher
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setToastMessage('📊 90% Monthly Attendance (+4% vs June 2026).')}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs px-4 py-2 rounded-xl font-extrabold transition-all shadow-md text-left"
+                >
+                  📈 View Attendance Trend
+                </button>
+              </div>
+            </div>
+
+            {/* 3. MONTHLY CALENDAR (APPLE CALENDAR STYLING) */}
             <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                 <div>
                   <h4 className="font-display text-lg font-extrabold text-slate-900">
-                    July 2026 Attendance Heatmap
+                    July 2026 Calendar
                   </h4>
-                  <p className="font-body text-xs text-slate-500">Tap any day cell to view exact check-in telemetry</p>
+                  <p className="font-body text-xs text-slate-500">Tap any day cell to view telemetry</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-600">
                   <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-md bg-emerald-500" /> Present</span>
                   <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-md bg-amber-500" /> Late</span>
                   <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-md bg-rose-500" /> Absent</span>
-                  <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-md bg-slate-200" /> Weekend</span>
                 </div>
               </div>
 
-              {/* Calendar Grid Days */}
+              {/* Calendar Grid */}
               <div className="grid grid-cols-7 gap-2 text-center">
                 {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
                   <span key={day} className="font-display text-xs font-black text-slate-400 uppercase tracking-widest py-1">
@@ -1690,7 +1642,6 @@ export default function ParentTodayClient({
                   </span>
                 ))}
 
-                {/* Calendar Date Cells */}
                 {Array.from({ length: 31 }, (_, i) => i + 1).map((date) => {
                   const isWeekend = (date % 7 === 6) || (date % 7 === 0);
                   const isAbsent = date === 12;
@@ -1728,72 +1679,80 @@ export default function ParentTodayClient({
               </div>
             </div>
 
-            {/* 5. RECENT RECORDS & QUICK ATTENDANCE ACTIONS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Recent Log */}
-              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-3">
-                <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2.5">
-                  Recent Attendance Log
+            {/* 4. RECENT HISTORY (LATEST 3 RECORDS) */}
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-400">
+                  Recent Attendance History
                 </h4>
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-200/60">
-                    <div>
-                      <strong className="font-display text-xs font-extrabold text-slate-900 block">Today &middot; Present</strong>
-                      <span className="font-body text-[11px] text-slate-500">School Gate #2 &bull; 08:18 AM</span>
-                    </div>
-                    <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold text-[10px]">On Time</span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-200/60">
-                    <div>
-                      <strong className="font-display text-xs font-extrabold text-slate-900 block">Yesterday &middot; Present</strong>
-                      <span className="font-body text-[11px] text-slate-500">School Gate #2 &bull; 08:14 AM</span>
-                    </div>
-                    <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold text-[10px]">On Time</span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 bg-amber-50 rounded-2xl border border-amber-200/80">
-                    <div>
-                      <strong className="font-display text-xs font-extrabold text-amber-900 block">15 July &middot; Late Arrival</strong>
-                      <span className="font-body text-[11px] text-amber-700">Traffic Delay &bull; 08:42 AM</span>
-                    </div>
-                    <span className="px-2.5 py-1 bg-amber-100 text-amber-800 border border-amber-300 rounded-full font-bold text-[10px]">Excused</span>
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setToastMessage('📋 Showing full 20-day attendance history.')}
+                  className="text-xs font-bold text-amber-600 hover:text-amber-700"
+                >
+                  View Full History →
+                </button>
               </div>
 
-              {/* Attendance Actions */}
-              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-3 flex flex-col justify-between">
-                <div>
-                  <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2.5">
-                    Attendance Actions
-                  </h4>
-                  <p className="font-body text-xs text-slate-500 mt-2">
-                    Need to submit planned leave or request an official attendance report for records?
-                  </p>
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-200/60">
+                  <div>
+                    <strong className="font-display text-xs font-extrabold text-slate-900 block">Today &middot; Present</strong>
+                    <span className="font-body text-[11px] text-slate-500">School Gate #2 &bull; Verified 08:18 AM</span>
+                  </div>
+                  <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold text-[10px]">On Time</span>
                 </div>
 
-                <div className="space-y-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowPassModal(true)}
-                    className="w-full p-3 bg-slate-900 text-white rounded-2xl text-xs font-extrabold shadow-xs hover:bg-slate-800 transition-all flex items-center justify-between"
-                  >
-                    <span>🎫 Request Gate Pass / Leave</span>
-                    <span>&rarr;</span>
-                  </button>
+                <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-200/60">
+                  <div>
+                    <strong className="font-display text-xs font-extrabold text-slate-900 block">Yesterday &middot; Present</strong>
+                    <span className="font-body text-[11px] text-slate-500">School Gate #2 &bull; Verified 08:14 AM</span>
+                  </div>
+                  <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold text-[10px]">On Time</span>
+                </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setToastMessage('📄 Official Attendance Report (July 2026) downloaded successfully!')}
-                    className="w-full p-3 bg-white border border-slate-200 text-slate-700 rounded-2xl text-xs font-extrabold hover:bg-slate-50 transition-all flex items-center justify-between"
-                  >
-                    <span>📥 Download Monthly Report</span>
-                    <span>↓</span>
-                  </button>
+                <div className="flex items-center justify-between p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200/80">
+                  <div>
+                    <strong className="font-display text-xs font-extrabold text-amber-900 block">15 July &middot; Late Arrival</strong>
+                    <span className="font-body text-[11px] text-amber-700">Traffic Delay &bull; Verified 08:42 AM</span>
+                  </div>
+                  <span className="px-2.5 py-1 bg-amber-100 text-amber-800 border border-amber-300 rounded-full font-bold text-[10px]">Excused</span>
                 </div>
               </div>
             </div>
+
+            {/* 5. PRACTICAL PARENT ACTIONS */}
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
+              <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-3">
+                Attendance Actions
+              </h4>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowPassModal(true)}
+                  className="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-extrabold shadow-md transition-all flex items-center gap-2 active:scale-95"
+                >
+                  <span>🎫 Request Leave</span>
+                  <span>&rarr;</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setToastMessage('📄 Attendance report (July 2026) downloaded.')}
+                  className="px-5 py-3.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 rounded-2xl text-xs font-extrabold transition-all"
+                >
+                  📥 Download Report
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveNav('messages')}
+                  className="px-5 py-3.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 rounded-2xl text-xs font-extrabold transition-all"
+                >
+                  👩‍🏫 Contact Teacher
+                </button>
+              </div>
+            </div>
+
           </div>
         )}
 
