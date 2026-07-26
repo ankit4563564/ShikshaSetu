@@ -550,81 +550,104 @@ export default function TeacherDashboardClient({
   return (
     <div className="teacher-shell min-h-screen bg-paper pb-10 pt-4 font-body">
       <div className="teacher-container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
-        <header className="teacher-header mb-4 flex flex-col justify-between gap-3 rounded-xl border border-deep-teal/[0.06] bg-white/80 p-4 px-5 shadow-[0_1px_3px_rgba(25,28,29,.02)] backdrop-blur-sm md:flex-row md:items-center">
-          <div className="flex justify-between items-start w-full md:w-auto">
+        {/* 1. TEACHER INTELLIGENT DAILY BRIEFING (HERO HEADER) */}
+        <header className="teacher-header mb-6 rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs space-y-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-display text-2xl font-bold tracking-tight text-deep-teal">
-                  Class Overview
+                <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
+                  Good Morning, Ms. Mehra
                 </h1>
-                <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-deep-teal/10 border border-deep-teal/15 text-deep-teal font-extrabold text-[10px] uppercase tracking-wider">
-                  💻 Teacher Web Dashboard
+                <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 text-white font-extrabold text-[10px] uppercase tracking-wider">
+                  🤖 AI Teaching Companion
                 </span>
               </div>
-              <p className="mt-0.5 font-body text-xs text-deep-teal/70 font-semibold">
-                Ms. Ananya Mehra · Class 8A · Math & Science
+              <p className="mt-1 font-body text-xs text-slate-500 font-semibold">
+                Class 8A &bull; Mathematics &amp; Science Coordinator &bull; Classroom 8A
               </p>
             </div>
-            <div className="md:hidden">
-              <NotificationBell />
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setToast({ message: '✓ All 14 students marked Present for Class 8A!', type: 'success' });
+                  setTimeout(() => setToast(null), 4000);
+                }}
+                className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 text-xs font-extrabold transition-all shadow-2xs active:scale-95"
+              >
+                <span>✅</span>
+                <span>1-Tap Attendance (Mark All Present)</span>
+              </button>
+
+              <div className="flex items-center gap-2 px-3.5 py-2 bg-slate-100 text-slate-700 rounded-2xl text-xs font-mono font-bold">
+                <span>⏱️ Prep Time: 3 mins</span>
+              </div>
+
+              <div className="hidden md:block">
+                <NotificationBell />
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => {
-                setToast({ message: '✓ All 14 students marked Present for Class 8A!', type: 'success' });
-                setTimeout(() => setToast(null), 4000);
-              }}
-              className="inline-flex items-center gap-2 rounded-xl bg-sage/15 border border-sage/30 px-3.5 py-2 text-xs font-black text-sage hover:bg-sage hover:text-white transition-all shadow-2xs"
-            >
-              <span>✅</span>
-              <span>1-Tap Roll Call (Mark All Present)</span>
-            </button>
-            <div className="hidden md:block">
-              <NotificationBell />
-            </div>
-            <div className="flex gap-3 font-body text-[11px] text-deep-teal/70 font-bold">
-              <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-sage" />
-                On Track
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-marigold" />
-                Worth Watching
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-warm-clay" />
-                Needs Attention
-              </span>
+
+          {/* Today's Daily Briefing Bullets */}
+          <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 sm:p-5 space-y-2">
+            <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-400">
+              Today&apos;s Intelligence Briefing
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs font-semibold text-slate-700 pt-1">
+              <div className="flex items-center gap-2">
+                <span className="text-amber-600 font-bold">•</span>
+                <span><strong>2 students</strong> worth checking in with (Priya Patel, Rohan)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-600 font-bold">•</span>
+                <span><strong>Attendance completed</strong> (95% Present Today)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sky-600 font-bold">•</span>
+                <span><strong>4 parent messages</strong> waiting in inbox</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-indigo-600 font-bold">•</span>
+                <span><strong>Math Quiz</strong> scheduled at 11:00 AM</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-teal-600 font-bold">•</span>
+                <span><strong>Overall class health:</strong> Stable (94%)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-purple-600 font-bold">•</span>
+                <span><strong>Homework submission:</strong> 88% complete</span>
+              </div>
             </div>
           </div>
         </header>
 
-        <motion.section variants={staggerContainer} initial="hidden" animate="visible" aria-label="Today snapshot" className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-          <motion.div variants={fadeSlideUp}><SnapshotCard label="Students" value={dashboardSnapshot.students} tone="primary" /></motion.div>
-          <motion.div variants={fadeSlideUp}><SnapshotCard label="Needs attention" value={dashboardSnapshot.attention} tone="error" /></motion.div>
-          <motion.div variants={fadeSlideUp}><SnapshotCard label="Worth watching" value={dashboardSnapshot.watching} tone="secondary" /></motion.div>
-          <motion.div variants={fadeSlideUp}><SnapshotCard label="Pending reviews" value={dashboardSnapshot.pendingReviews} tone="tertiary" /></motion.div>
+        {/* 2. CLASS HEALTH ACTIONABLE METRICS */}
+        <motion.section variants={staggerContainer} initial="hidden" animate="visible" aria-label="Today snapshot" className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+          <motion.div variants={fadeSlideUp}><SnapshotCard label="Active Students" value={dashboardSnapshot.students} tone="primary" /></motion.div>
+          <motion.div variants={fadeSlideUp}><SnapshotCard label="Needs Check-in" value={dashboardSnapshot.attention} tone="error" /></motion.div>
+          <motion.div variants={fadeSlideUp}><SnapshotCard label="Worth Watching" value={dashboardSnapshot.watching} tone="secondary" /></motion.div>
+          <motion.div variants={fadeSlideUp}><SnapshotCard label="Pending Reviews" value={dashboardSnapshot.pendingReviews} tone="tertiary" /></motion.div>
         </motion.section>
 
-        {/* 💚 STUDENT SUPPORT RADAR CARD (Warm, Compassionate Engagement Detection) */}
-        <motion.section variants={fadeSlideUp} initial="hidden" animate="visible" className="mb-4 rounded-2xl border border-sage/30 bg-gradient-to-br from-sage/15 via-white to-primary/5 p-5 shadow-sm space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-sage/20 pb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-sage/20 border border-sage/30 flex items-center justify-center text-lg shrink-0">
+        {/* 3. STUDENT SUPPORT RADAR CARD (PRIMARY HERO FOCUS) */}
+        <motion.section variants={fadeSlideUp} initial="hidden" animate="visible" className="mb-6 rounded-3xl border border-slate-200/80 bg-gradient-to-br from-emerald-50/50 via-white to-sky-50/30 p-6 sm:p-8 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/60 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center justify-center text-xl shrink-0 shadow-2xs">
                 💚
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-display text-sm font-black text-ink">Student Support Radar</h3>
-                  <span className="px-2.5 py-0.5 rounded-full bg-sage/20 text-sage font-extrabold text-[9px] uppercase tracking-wider">
-                    Care Opportunity
+                  <h3 className="font-display text-base font-extrabold text-slate-900">Student Support Radar</h3>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px] uppercase tracking-wider border border-emerald-200">
+                    High Priority Focus
                   </span>
                 </div>
-                <p className="text-xs font-semibold text-muted/80 mt-0.5">
-                  Gradual change in engagement observed. A brief, supportive conversation may help.
+                <p className="text-xs font-semibold text-slate-600 mt-0.5">
+                  &ldquo;Priya Patel has shown a gradual decline in homework completion over the past 2 weeks. A brief supportive conversation during today&apos;s homeroom is recommended.&rdquo;
                 </p>
               </div>
             </div>
@@ -633,18 +656,18 @@ export default function TeacherDashboardClient({
               <button
                 type="button"
                 onClick={() => {
-                  alert("📅 Check-in Scheduled for Aarav Sharma on Monday 10:00 AM.");
+                  alert("📅 Homeroom Check-in Scheduled for Priya Patel today at 10:00 AM.");
                 }}
-                className="px-3.5 py-2 rounded-xl bg-sage text-white font-extrabold text-xs shadow-2xs hover:brightness-105 transition-all flex items-center gap-1.5"
+                className="px-4 py-2.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs shadow-xs hover:bg-slate-800 transition-all flex items-center gap-1.5 active:scale-95"
               >
                 <span>📅 Schedule Check-in</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  alert("Why am I seeing this?\n\n• Homework completion decreased by 30% over 14 days\n• Library activity: No visits in 14 days\n• Class participation: Gradual decline\n• Attendance: Stable ✓\n\nAI Confidence: Moderate");
+                  alert("Why am I seeing this?\n\n• Homework completion decreased by 30% over 14 days\n• Library activity: No visits in 14 days\n• Class participation: Gradual decline\n• Attendance: 98% Stable ✓\n\nAI Confidence: High");
                 }}
-                className="px-3 py-2 rounded-xl bg-white border border-sage/30 text-sage font-extrabold text-xs hover:bg-sage/5 transition-all"
+                className="px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-extrabold text-xs hover:bg-slate-50 transition-all"
               >
                 <span>🔍 Why am I seeing this?</span>
               </button>
@@ -652,58 +675,101 @@ export default function TeacherDashboardClient({
           </div>
 
           {/* 4 EVIDENCE BREAKDOWN CHIPS */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-            <div className="p-2.5 rounded-xl bg-white/90 border border-sage/20">
-              <span className="text-[10px] font-bold text-muted/70 block">Homework Completion</span>
-              <strong className="text-xs font-black text-amber-700 block">↓ 30% Over 14 Days</strong>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+            <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-0.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Homework Completion</span>
+              <strong className="text-xs font-extrabold text-amber-700 block">↓ 30% Over 14 Days</strong>
             </div>
-            <div className="p-2.5 rounded-xl bg-white/90 border border-sage/20">
-              <span className="text-[10px] font-bold text-muted/70 block">Library Activity</span>
-              <strong className="text-xs font-black text-amber-700 block">No Visits in 14 Days</strong>
+            <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-0.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Library Visits</span>
+              <strong className="text-xs font-extrabold text-amber-700 block">0 Visits in 14 Days</strong>
             </div>
-            <div className="p-2.5 rounded-xl bg-white/90 border border-sage/20">
-              <span className="text-[10px] font-bold text-muted/70 block">Class Participation</span>
-              <strong className="text-xs font-black text-amber-700 block">Slight Decline</strong>
+            <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-0.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Class Participation</span>
+              <strong className="text-xs font-extrabold text-amber-700 block">Slight Decline</strong>
             </div>
-            <div className="p-2.5 rounded-xl bg-white/90 border border-sage/20">
-              <span className="text-[10px] font-bold text-muted/70 block">Attendance</span>
-              <strong className="text-xs font-black text-sage block">✓ 98% Stable</strong>
+            <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-0.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Attendance Record</span>
+              <strong className="text-xs font-extrabold text-emerald-700 block">✓ 98% Stable</strong>
             </div>
           </div>
         </motion.section>
 
-        <motion.section variants={fadeSlideUp} initial="hidden" animate="visible" className="mb-4 rounded-xl border border-deep-teal/[0.07] bg-white/92 p-4 shadow-sm">
-          <div className="mb-3 flex items-end justify-between gap-3 border-b border-deep-teal/10 pb-2">
-            <div>
-              <h2 className="text-[11px] font-black uppercase tracking-[0.14em] text-deep-teal/85">Teacher Next Actions</h2>
-              <p className="mt-1 text-xs font-medium text-deep-teal/60">The highest-priority interventions for today.</p>
+        {/* 4. TODAY'S CLASSROOM TIMELINE & NEXT ACTIONS */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Today's Next Actions (2 cols) */}
+          <motion.section variants={fadeSlideUp} initial="hidden" animate="visible" className="lg:col-span-2 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h2 className="text-xs font-black uppercase tracking-widest text-slate-400">Today&apos;s Action Items</h2>
+                <p className="mt-0.5 text-xs font-semibold text-slate-600">The highest-priority interventions for your day.</p>
+              </div>
+              <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[10px] font-bold text-slate-700">
+                {productQueue.length} Pending Actions
+              </span>
             </div>
-            <span className="rounded-full border border-deep-teal/10 bg-deep-teal/[0.03] px-2.5 py-1 text-[10px] font-bold text-deep-teal/72">{productQueue.length} pending</span>
-          </div>
-          {productQueue.length > 0 ? (
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-2 md:grid-cols-2">
-              {productQueue.slice(0, 4).map((student) => (
-                <motion.div key={student.studentId} variants={fadeSlideUp}>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedStudentId(student.studentId)}
-                    className="w-full rounded-lg border border-deep-teal/[0.07] bg-paper px-3 py-2.5 text-left transition-all duration-200 hover:border-deep-teal/20 hover:bg-deep-teal/[0.02] hover:shadow-sm active:scale-[0.99]"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="font-display text-[15px] font-extrabold tracking-[-0.02em] text-deep-teal/95">{student.displayName}</span>
-                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] ${student.productInsight?.priority === 'urgent' ? 'bg-warm-clay/10 text-warm-clay' : 'bg-marigold/10 text-marigold'}`}>
-                        {student.productInsight?.priority}
-                      </span>
+
+            <div className="space-y-2.5">
+              {[
+                { title: 'Check in with Priya Patel during homeroom', detail: 'Address homework completion drop (30% over 14 days)', tag: 'Urgent' },
+                { title: 'Reply to Sunita Sharma regarding Bus #4 Saket stop', detail: 'Parent asked about evening pickup telemetry', tag: 'Message' },
+                { title: 'Review Chapter 4 Mathematics Quiz scores', detail: 'Class average 92% — 2 students need review', tag: 'Academic' },
+                { title: 'Approve pending Gate Pass for Kabir Verma', detail: 'Early departure requested for dental appointment', tag: 'Pass' },
+              ].map((item, idx) => (
+                <div key={idx} className="p-3.5 bg-slate-50 border border-slate-200/70 rounded-2xl flex items-start justify-between gap-3 hover:border-slate-300 transition-all">
+                  <div className="flex items-start gap-3">
+                    <input type="checkbox" className="mt-1 rounded border-slate-300 text-slate-900 focus:ring-0 h-4 w-4 cursor-pointer" />
+                    <div>
+                      <h5 className="font-display text-xs font-extrabold text-slate-900">{item.title}</h5>
+                      <p className="font-body text-[11px] text-slate-500 mt-0.5">{item.detail}</p>
                     </div>
-                    <p className="mt-1.5 text-xs font-medium leading-relaxed text-deep-teal/78">{student.productInsight?.nextAction}</p>
-                  </button>
-                </motion.div>
+                  </div>
+                  <span className="px-2.5 py-0.5 bg-white border border-slate-200 text-slate-600 rounded-full font-bold text-[10px] uppercase tracking-wider shrink-0">
+                    {item.tag}
+                  </span>
+                </div>
               ))}
-            </motion.div>
-          ) : (
-            <p className="mt-1 text-xs font-semibold text-deep-teal/62">No intervention queue right now. Keep attendance, homework, wellness, and transport updates current.</p>
-          )}
-        </motion.section>
+            </div>
+          </motion.section>
+
+          {/* Today's Classroom Timeline (1 col) */}
+          <motion.section variants={fadeSlideUp} initial="hidden" animate="visible" className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
+            <div className="border-b border-slate-100 pb-3">
+              <h2 className="text-xs font-black uppercase tracking-widest text-slate-400">Classroom Timeline</h2>
+              <p className="mt-0.5 text-xs font-semibold text-slate-600">Today&apos;s real-time events.</p>
+            </div>
+
+            <div className="space-y-3 relative pl-4 border-l-2 border-slate-100">
+              <div className="relative">
+                <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-white" />
+                <span className="font-mono text-[10px] font-bold text-slate-400 block">08:10 AM</span>
+                <strong className="font-display text-xs font-extrabold text-slate-900 block">Attendance Completed</strong>
+                <span className="text-[11px] text-slate-500">14/14 Students Verified</span>
+              </div>
+
+              <div className="relative">
+                <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-sky-500 border-2 border-white" />
+                <span className="font-mono text-[10px] font-bold text-slate-400 block">09:30 AM</span>
+                <strong className="font-display text-xs font-extrabold text-slate-900 block">Parent Message Received</strong>
+                <span className="text-[11px] text-slate-500">Sunita Sharma &bull; Bus #4</span>
+              </div>
+
+              <div className="relative">
+                <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-indigo-500 border-2 border-white" />
+                <span className="font-mono text-[10px] font-bold text-slate-400 block">10:15 AM</span>
+                <strong className="font-display text-xs font-extrabold text-slate-900 block">Homework Submitted</strong>
+                <span className="text-[11px] text-slate-500">Algebra Practice #4 (12/14)</span>
+              </div>
+
+              <div className="relative">
+                <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-amber-500 border-2 border-white" />
+                <span className="font-mono text-[10px] font-bold text-slate-400 block">11:00 AM</span>
+                <strong className="font-display text-xs font-extrabold text-slate-900 block">Math Quiz Begins</strong>
+                <span className="text-[11px] text-slate-500">Scheduled Classroom 8A</span>
+              </div>
+            </div>
+          </motion.section>
+        </div>
 
         {/* Tab Navigation */}
         <div className="teacher-tabs mb-4 border-b border-deep-teal/[0.08]">
