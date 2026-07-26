@@ -144,8 +144,13 @@ export async function askSchoolGPTAction(req: SchoolGPTRequest): Promise<SchoolG
     queryPlan
   );
 
+  // 7. Role Security & Permission Guard Inspection
+  const { ResponseGuard } = await import('@/lib/schoolgpt/ResponseGuard');
+  const sanitizedText = ResponseGuard.sanitizeResponse(res.text, req.role as any);
+
   return {
     ...res,
+    text: sanitizedText,
     actionObject,
   };
 }
