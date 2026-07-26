@@ -1,6 +1,11 @@
 import { LandingNavbar } from '@/components/landing/LandingNavbar';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { SchoolDayStorySection } from '@/components/landing/SchoolDayStorySection';
+import { SchoolDayScene1_Morning } from '@/components/landing/story/SchoolDayScene1_Morning';
+import { SchoolDayScene2_Classroom } from '@/components/landing/story/SchoolDayScene2_Classroom';
+import { SchoolDayScene3_SchoolGPT } from '@/components/landing/story/SchoolDayScene3_SchoolGPT';
+import { SchoolDayScene4_Evening } from '@/components/landing/story/SchoolDayScene4_Evening';
+import { SchoolDayScene5_Outcomes } from '@/components/landing/story/SchoolDayScene5_Outcomes';
 import { PlatformSection } from '@/components/landing/PlatformSection';
 import { TransitSection } from '@/components/landing/TransitSection';
 import { BentoModulesSection } from '@/components/landing/BentoModulesSection';
@@ -20,8 +25,15 @@ export default function Home() {
             {/* 1. High-Energy Hero Section with Floating Interactive Badges */}
             <HeroSection />
 
-            {/* 2. Emotional Story Arc Timeline: Morning -> Bus -> Gate -> Class -> AI -> Home */}
-            <SchoolDayStorySection />
+            {/* 2. Emotional Story Arc Timeline & Interactive 5-Scene Animated Movie */}
+            <div id="school-story">
+              <SchoolDayStorySection />
+              <SchoolDayScene1_Morning />
+              <SchoolDayScene2_Classroom />
+              <SchoolDayScene3_SchoolGPT />
+              <SchoolDayScene4_Evening />
+              <SchoolDayScene5_Outcomes />
+            </div>
 
             {/* 3. Revolutionary SchoolGPT Story Flow + 3 Distinct Role Experience Cards */}
             <PlatformSection />

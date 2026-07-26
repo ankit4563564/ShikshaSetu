@@ -28,14 +28,13 @@ export function HeroSection() {
             Gate entry, classroom attention, live bus tracking, and home-safe confirmation — linked in real time for parents, teachers, and school teams.
           </p>
           <div className="flex flex-wrap gap-4 pt-4">
-            <button
-              type="button"
-              onClick={() => openLeadModal('Start Your School Story')}
-              className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all shadow-lg flex items-center gap-2 font-bold hover:scale-105 active:scale-95"
+            <a
+              href="#school-story"
+              className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all shadow-lg flex items-center gap-2 font-bold hover:scale-105 active:scale-95 inline-flex"
             >
               Start your school story
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </button>
+            </a>
             <button
               type="button"
               onClick={openDemoModal}
@@ -46,14 +45,14 @@ export function HeroSection() {
             </button>
           </div>
           <div className="flex gap-6 pt-8 border-t border-white/10">
-            <div className="flex items-center gap-2 cursor-pointer hover:opacity-100 opacity-90 transition-opacity" onClick={() => openDemoModal()}>
+            <a href="#school-story" className="flex items-center gap-2 cursor-pointer hover:opacity-100 opacity-90 transition-opacity">
               <span className="material-symbols-outlined text-secondary-fixed text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
               <span className="font-label-sm text-label-sm text-white/70">Live school signals</span>
-            </div>
-            <div className="flex items-center gap-2 cursor-pointer hover:opacity-100 opacity-90 transition-opacity" onClick={() => openDemoModal()}>
+            </a>
+            <a href="#school-story" className="flex items-center gap-2 cursor-pointer hover:opacity-100 opacity-90 transition-opacity">
               <span className="material-symbols-outlined text-secondary-fixed text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
               <span className="font-label-sm text-label-sm text-white/70">Built for Indian schools</span>
-            </div>
+            </a>
           </div>
         </div>
 
