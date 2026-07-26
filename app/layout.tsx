@@ -7,6 +7,7 @@ import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import { CampusIdInitializer } from '@/components/campus-id/CampusIdInitializer';
 import { CommunityProvider } from '@/components/community/CommunityProvider';
+import { SchoolGPTProvider } from '@/components/schoolgpt/SchoolGPTProvider';
 
 export const metadata: Metadata = {
   title: 'ShikshaSetu',
@@ -29,8 +30,10 @@ export default function RootLayout({
         <ClerkProvider publishableKey={clerkKey}>
           <LanguageProvider>
             <NotificationProvider>
-              <CampusIdInitializer />
-              <DevRoleShell><DemoShell><CommunityProvider><main id="main-content" role="main">{children}</main></CommunityProvider></DemoShell></DevRoleShell>
+              <SchoolGPTProvider>
+                <CampusIdInitializer />
+                <DevRoleShell><DemoShell><CommunityProvider><main id="main-content" role="main">{children}</main></CommunityProvider></DemoShell></DevRoleShell>
+              </SchoolGPTProvider>
             </NotificationProvider>
           </LanguageProvider>
         </ClerkProvider>
