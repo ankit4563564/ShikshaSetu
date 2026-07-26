@@ -38,8 +38,8 @@ const INTENT_PATTERNS: Record<Intent, { keywords: string[]; patterns: RegExp[] }
     patterns: [/fee/i, /payment/i, /dues?/i, /bill/i, /receipt/i, /unpaid/i, /tuition/i],
   },
   ptm: {
-    keywords: ['ptm', 'parent teacher', 'meeting', 'conference', 'parent meeting'],
-    patterns: [/ptm/i, /parent.{0,5}teacher.{0,5}meeting/i, /meeting/i, /conference/i, /parent\s+replied/i],
+    keywords: ['ptm', 'parent teacher', 'meeting', 'conference', 'parent meeting', 'ptm summary'],
+    patterns: [/ptm/i, /parent.{0,5}teacher.{0,5}meeting/i, /meeting/i, /conference/i, /parent\s+replied/i, /ptm\s+summary/i],
   },
   health: {
     keywords: ['health', 'medical', 'nurse', 'sick', 'fever', 'medicine', 'infirmary', 'first aid', 'doctor', 'allergy'],
@@ -62,12 +62,12 @@ const INTENT_PATTERNS: Record<Intent, { keywords: string[]; patterns: RegExp[] }
     patterns: [/notice/i, /announ/i, /circular/i, /important/i, /update/i],
   },
   teacher_workload: {
-    keywords: ['workload', 'teaching load', 'free periods', 'periods per day', 'substitute', 'staff room', 'assigned classes'],
-    patterns: [/workload/i, /teaching\s+hours/i, /free\s+period/i, /staff\s+room/i, /periods\s+per\s+day/i],
+    keywords: ['workload', 'teaching load', 'free periods', 'periods per day', 'substitute', 'staff room', 'assigned classes', 'teach per day'],
+    patterns: [/workload/i, /teaching\s+hours/i, /free\s+period/i, /staff\s+room/i, /periods\s+per\s+day/i, /periods\s+does/i, /teach\s+per\s+day/i],
   },
   student_performance: {
-    keywords: ['performance', 'progress', 'how is', 'doing', 'report', 'analysis', 'overall grade'],
-    patterns: [/perform/i, /progress/i, /how\s+is\s+[a-z]+\s+doing/i, /report/i, /analys/i],
+    keywords: ['performance', 'progress', 'how is', 'doing', 'report', 'analysis', 'overall grade', 'compare', 'versus', 'vs'],
+    patterns: [/perform/i, /progress/i, /how\s+is\s+[a-z]+\s+doing/i, /report/i, /analys/i, /compare\s+[a-z]+\s+and/i, /compare\s+him/i],
   },
   clubs: {
     keywords: ['club', 'robotics', 'drama', 'art', 'music', 'chess', 'debate', 'activity', 'extracurricular'],

@@ -1,6 +1,7 @@
-import { buildSystemPrompt, buildQuickPrompt } from '@/school-brain/prompts/promptComposer';
+import { buildSystemPrompt } from '@/school-brain/prompts/promptComposer';
 import { buildFinalResponse } from '@/school-brain/response-builder/responseBuilder';
 import type { SchoolRole, ConfidenceLevel, Intent, SchoolBrainContext } from '@/school-brain/models/index';
+import type { QueryPlan } from '@/school-brain/planner/queryPlanner';
 
 // ─────────────────────────────────────────────
 // SchoolGPT LLM Orchestrator
@@ -113,27 +114,63 @@ export async function generateSchoolGPTResponse(
   intent: Intent = 'unknown',
   retrievedConfidence: ConfidenceLevel = 'MEDIUM',
   modulesConsulted: string[] = ['School Database'],
-  brainContext?: SchoolBrainContext
+  brainContext?: SchoolBrainContext,
+  queryPlan?: QueryPlan
 ): Promise<SchoolGPTResponse> {
-  // Build context-aware system prompt with data injection
   const context: SchoolBrainContext = brainContext || { role: role as SchoolRole };
-  const system = buildSystemPrompt(context, data, intent, retrievedConfidence);
-
+  const system = buildSystemPrompt(context, data, intent, retrievedConfidence, queryPlan);
   const user = `User Question: ${question}`;
+  const startTime = Date.now();
 
-  // 1. Try Groq (Primary LLM Provider)
+  // ── SchoolGPT Execution Trace Logging ──
+  console.log('\n=================================================');
+  console.log('SchoolGPT Execution Trace');
+  console.log('=================================================');
+  console.log(`User Query            : "${question}"`);
+  console.log(`Detected Intent       : ${intent}`);
+  console.log(`Conversation Context  : ${history.length} previous turns`);
+  console.log(`Resolved Entities     : ${queryPlan?.targetEntities?.join(', ') || 'none'}`);
+  console.log(`Query Plan            : Goal: ${queryPlan?.userGoal || 'lookup'}, Strategy: ${queryPlan?.responseStrategy || 'AnalyticalReport'}`);
+  console.log(`Role Objective        : ${queryPlan?.roleObjective?.primaryObjective || 'Assist user'}`);
+  console.log(`Retriever Plan        : Retained datasets: ${queryPlan?.requiredDatasets?.join(', ') || 'all'}`);
+  console.log(`Retrieved Sources     : ${modulesConsulted.join(', ')}`);
+  console.log(`Missing Sources       : None reported`);
+  console.log(`Confidence Score      : ${retrievedConfidence}`);
+  console.log(`Response Strategy     : ${queryPlan?.responseStrategy || 'AnalyticalReport'}`);
+  console.log(`Selected Domain Skill : ${queryPlan?.domainSkill || 'GeneralAssistant'}`);
+  console.log(`LLM Provider          : ${queryPlan?.isDeterministic ? 'Fast-Path Bypass' : (process.env.GROQ_API_KEY ? 'Groq (llama-3.3-70b-versatile)' : 'Gemini Fallback')}`);
+  console.log(`Execution Time        : ${Date.now() - startTime} ms`);
+  console.log(`Token Count           : ~${Math.round((system.length + user.length) / 4)} tokens`);
+
+  // 1. Deterministic Fast-Path Direct Tool Return (Instant response without LLM call latency)
+  if (queryPlan?.isDeterministic && data && data.trim().length > 10) {
+    console.log('[SchoolGPT Fast Path] Returning deterministic response directly from data layer.');
+    console.log(`Final Response Length : ${data.length} chars`);
+    console.log('=================================================\n');
+    return buildFinalResponse(
+      data,
+      modulesConsulted,
+      intent,
+      'HIGH',
+      undefined,
+      role as SchoolRole
+    );
+  }
+
+
+  // 2. Try Groq (Primary LLM Provider)
   let resultText = await groqGenerate(system, history, user);
 
-  // 2. Try Gemini (Secondary Fallback Provider)
+  // 3. Try Gemini (Secondary Fallback Provider)
   if (!resultText) {
-    console.log('[SchoolGPT] Groq execution unavailable/failed. Invoking Gemini fallback...');
+    console.log('[SchoolGPT] Groq execution unavailable/fallback. Invoking Gemini...');
     resultText = await geminiGenerate(system, history, user);
   }
 
   if (resultText) {
     try {
       const parsed = JSON.parse(resultText);
-      const brainRes = buildFinalResponse(
+      return buildFinalResponse(
         parsed.text || data || 'I have consulted our school operating system records for your query.',
         parsed.sources || modulesConsulted,
         intent,
@@ -141,12 +178,10 @@ export async function generateSchoolGPTResponse(
         parsed.suggestedFollowUps,
         role as SchoolRole
       );
-      return brainRes;
     } catch (e) {
       console.warn('[SchoolGPT] Failed to parse JSON response payload:', e);
-      // If LLM returned non-JSON, try to use the raw text
       if (resultText.length > 20) {
-        const brainRes = buildFinalResponse(
+        return buildFinalResponse(
           resultText,
           modulesConsulted,
           intent,
@@ -154,13 +189,12 @@ export async function generateSchoolGPTResponse(
           undefined,
           role as SchoolRole
         );
-        return brainRes;
       }
     }
   }
 
-  // 3. Structured Fallback Response when LLM API keys are missing/offline
-  const brainRes = buildFinalResponse(
+  // 4. Structured Fallback Response when LLM API keys are missing/offline
+  return buildFinalResponse(
     data || 'I couldn\'t find specific records matching your query in the current database. Please feel free to rephrase or explore the portal options.',
     modulesConsulted,
     intent,
@@ -168,6 +202,5 @@ export async function generateSchoolGPTResponse(
     undefined,
     role as SchoolRole
   );
-
-  return brainRes;
 }
+

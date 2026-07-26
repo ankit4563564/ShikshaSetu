@@ -1,4 +1,7 @@
 import type { SchoolRole, SchoolBrainContext, Intent, ConfidenceLevel } from '../models/index';
+import type { QueryPlan } from '../planner/queryPlanner';
+import { getDomainSkill } from '../skills/domainSkills';
+import { getStrategyDirective } from '../strategy/strategyEngine';
 
 // ─────────────────────────────────────────────
 // System Prompt Composer
@@ -28,7 +31,8 @@ export function buildSystemPrompt(
   context: SchoolBrainContext,
   retrievedDataSummary?: string,
   intent?: Intent,
-  confidence?: ConfidenceLevel
+  confidence?: ConfidenceLevel,
+  queryPlan?: QueryPlan
 ): string {
   const role = context.role || 'teacher';
   const userName = context.userName || context.teacherName || context.studentName || 'User';
@@ -41,9 +45,14 @@ export function buildSystemPrompt(
     ? getConfidenceGuide(confidence)
     : '';
 
+  // Get active domain skill instructions
+  const skillConfig = queryPlan ? getDomainSkill(queryPlan.domainSkill) : getDomainSkill('GeneralAssistant');
+  // Get active response strategy directives
+  const strategyConfig = queryPlan ? getStrategyDirective(queryPlan.responseStrategy) : getStrategyDirective('AnalyticalReport');
+
   const dataAvailability = retrievedDataSummary && retrievedDataSummary.trim().length > 10
-    ? `\n\nIMPORTANT: The following school data has been retrieved from our knowledge base and should be your PRIMARY source for this response. Paraphrase it warmly — do NOT dump it raw:\n---\n${retrievedDataSummary}\n---`
-    : `\n\nNo specific school data was retrieved for this query. Use your general educational knowledge to provide a helpful, warm response. If the question is about specific school records (attendance, marks, etc.), politely mention that you couldn't find matching records and suggest alternative ways to ask.`;
+    ? `\n\nIMPORTANT: The following verified school data has been retrieved from our knowledge base and should be your PRIMARY source for this response. Do NOT fabricate numbers:\n---\n${retrievedDataSummary}\n---`
+    : `\n\nNo specific school data was retrieved for this query. Use your general educational knowledge to provide a helpful, warm response. If the question asks for specific school records (such as historical fee receipts or missing marks), EXPLICITLY state what data field is missing from records instead of making assumptions.`;
 
   return `You are SchoolGPT, the intelligent, calm, and empathetic School Operating System AI Assistant for ShikshaSetu.
 
@@ -56,21 +65,25 @@ ${ROLE_BOUNDARIES[role]}
 ${intentContext}
 ${confidenceGuide}
 
+Active Domain Skill: ${skillConfig.title}
+${skillConfig.focusInstructions}
+
+Response Strategy Directive: ${strategyConfig.strategyName}
+${strategyConfig.structureFormat}
+${strategyConfig.toneGuidance}
+
 Today's Date: Wednesday, 22nd July 2026.
 
-Core Personality & Communication Style:
-- Tone: Calm, warm, highly helpful, professional, and empathetic. Never robotic, defensive, or clinical.
-- Always address the user naturally. Use their name when it enhances warmth.
-- When presenting lists or records, summarize key insights FIRST, then provide details.
-- When data shows patterns (e.g., declining attendance), proactively highlight the insight.
-- For general educational questions (e.g., "Explain Newton's Laws", "What is Bloom's Taxonomy?"), provide clear, beautifully explained answers using your knowledge.
-- NEVER say "Data unavailable", "No records found", "Error", "I don't have access". Instead use natural phrasing like "I couldn't find that in our current records..." or "I wasn't able to locate..."
-- When you cannot help, ALWAYS suggest alternative approaches or related information you CAN provide.
+Core Instructions:
+- Adapt structure and tone dynamically to match the active Strategy Directive.
+- EXPLAINABILITY: Always explain WHY conclusions were reached using concrete numbers/evidence from retrieved context.
+- MISSING DATA: If requested records are missing from retrieved data, explicitly state what specific information is unavailable.
+- NEVER say "Data unavailable" or return raw JSON in prose. Use plain text formatting with bullet points (•) when appropriate.
 
 Output Format:
 You MUST output ONLY valid JSON matching this exact schema:
 {
-  "text": "Your complete, warm, conversational response. Use plain prose. Format lists with bullet points (•). Never include raw JSON structures in the text.",
+  "text": "Your complete response formatted according to the Strategy Directive.",
   "sources": ["Module Name 1", "Module Name 2"],
   "suggestedFollowUps": ["Actionable follow-up 1", "Actionable follow-up 2", "Actionable follow-up 3"],
   "confidence": "HIGH" | "MEDIUM" | "GENERAL" | "LIMITED",
@@ -103,3 +116,4 @@ export function buildQuickPrompt(context: SchoolBrainContext): string {
 
   return `You are SchoolGPT, a warm and helpful AI assistant for ShikshaSetu school. Respond conversationally to ${userName} (${role}). Today is Wednesday, 22nd July 2026. Output ONLY valid JSON: {"text": "...", "sources": [...], "suggestedFollowUps": [...], "confidence": "HIGH", "source": "SchoolGPT Core"}`;
 }
+

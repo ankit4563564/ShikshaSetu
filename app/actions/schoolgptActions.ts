@@ -2,9 +2,13 @@
 
 import { classifyIntent } from '@/school-brain/intents/intentClassifier';
 import { resolveContextualReferences } from '@/school-brain/memory/conversationMemory';
+import { planQueryExecution } from '@/school-brain/planner/queryPlanner';
 import { executeHybridRetrieval } from '@/school-brain/retrieval/retriever';
 import { generateSchoolGPTResponse, type SchoolGPTResponse } from '@/lib/schoolgpt/generateResponse';
 import type { SchoolRole, SchoolBrainContext } from '@/school-brain/models/index';
+import { generateProactiveInsights, type ProactiveInsightCard } from '@/school-brain/proactive/proactiveEngine';
+import { evaluateClarificationNeed } from '@/school-brain/clarification/clarificationEngine';
+import { generateActionObject, type ActionObject } from '@/school-brain/actions/actionExecutionEngine';
 import { requireAuth } from '@/lib/auth/getUser';
 import {
   retrieveAttendance,
@@ -33,23 +37,45 @@ interface SchoolGPTRequest {
   classSection?: string;
 }
 
-export async function askSchoolGPTAction(req: SchoolGPTRequest): Promise<SchoolGPTResponse> {
+export async function askSchoolGPTAction(req: SchoolGPTRequest): Promise<SchoolGPTResponse & { actionObject?: ActionObject | null }> {
+
   await requireAuth();
 
   const history = req.history || [];
-  const { resolvedQuery } = resolveContextualReferences(req.question, history);
+  // 1. Context Resolution & Pronoun Memory State
+  const { resolvedQuery, state } = resolveContextualReferences(req.question, history);
+  
+  // 2. Intent Classification
   const classified = classifyIntent(resolvedQuery, history);
 
   const brainContext: SchoolBrainContext = {
     role: req.role,
-    studentId: req.studentId,
+    studentId: req.studentId || state.currentStudentId,
     teacherId: req.teacherId,
     childrenIds: req.childrenIds,
-    classGrade: req.classGrade,
-    classSection: req.classSection,
+    classGrade: req.classGrade || state.currentClassGrade,
+    classSection: req.classSection || state.currentClassSection,
   };
 
-  // 1. Try fetching from Live DB for the detected intent (if connected)
+  // 3. Clarification Check (Bypass LLM if query is ambiguous)
+  const clarification = evaluateClarificationNeed(classified, req.question, brainContext);
+  if (clarification && clarification.isAmbiguous) {
+    console.log('[SchoolGPT Clarification Engine] Intercepted ambiguous query, prompting user for clarification.');
+    return {
+      text: `${clarification.question}\n\n${clarification.options.map((opt, i) => `${i + 1}. **${opt.label}**`).join('\n')}`,
+      sources: ['Clarification Engine'],
+      suggestedFollowUps: clarification.options.map(opt => opt.queryToTrigger),
+      source: 'clarification_engine',
+      confidence: 'HIGH',
+    };
+  }
+
+  // 4. Query Planning Layer
+  const queryPlan = planQueryExecution(classified, resolvedQuery, brainContext, state);
+  const actionObject = generateActionObject(classified.intent, resolvedQuery, '', req.role);
+
+
+  // 4. Live DB Retrieval Attempt
   let liveDbResult = '';
   try {
     switch (classified.intent) {
@@ -95,17 +121,32 @@ export async function askSchoolGPTAction(req: SchoolGPTRequest): Promise<SchoolG
     console.warn('[SchoolGPT Actions] Live DB retriever fallback triggered:', e);
   }
 
-  // 2. Perform 4-Tier Hybrid Knowledge Retrieval
-  const retrievalResult = await executeHybridRetrieval(classified, resolvedQuery, brainContext, liveDbResult);
+  // 5. Targeted Hybrid Retrieval
+  const retrievalResult = await executeHybridRetrieval(classified, resolvedQuery, brainContext, liveDbResult, queryPlan);
 
-  // 3. Synthesize Final Context-Aware LLM / Fallback Response
-  return generateSchoolGPTResponse(
+  // 6. Synthesize Final Response
+  const res = await generateSchoolGPTResponse(
     resolvedQuery,
     retrievalResult.data,
     req.role,
     history,
     classified.intent,
     retrievalResult.confidence,
-    retrievalResult.modulesConsulted
+    retrievalResult.modulesConsulted,
+    brainContext,
+    queryPlan
   );
+
+  return {
+    ...res,
+    actionObject,
+  };
 }
+
+
+export async function getProactiveInsightsAction(role: SchoolRole): Promise<ProactiveInsightCard[]> {
+  await requireAuth();
+  return generateProactiveInsights(role);
+}
+
+

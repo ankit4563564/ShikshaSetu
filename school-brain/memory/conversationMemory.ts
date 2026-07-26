@@ -17,28 +17,36 @@ export interface MemoryContext {
   lastSubject?: string;
 }
 
+export interface ConversationState {
+  currentStudentId?: string;
+  currentStudentName?: string;
+  currentClassGrade?: string;
+  currentClassSection?: string;
+  currentSubject?: string;
+  lastIntent?: string;
+  lastRetrievedData?: string;
+  turnCount: number;
+}
+
 /**
  * Resolves contextual references (pronouns, implicit references)
  * by analyzing conversation history.
- *
- * Examples:
- * - "Who needs attention?" → names Rohan, Kabir, Dev
- * - "Draft a message for their parents" → resolves "their" to those students
- * - "What about Aarav?" → resolves to Aarav Singh
- * - "Show me Bus 3 details" → then "How many students use it?" → resolves "it" to Bus 3
  */
 export function resolveContextualReferences(
   query: string,
   history: { role: string; content: string }[] = []
-): { resolvedQuery: string; contextNotes: string; memoryContext: MemoryContext } {
+): { resolvedQuery: string; contextNotes: string; memoryContext: MemoryContext; state: ConversationState } {
   const memoryContext: MemoryContext = {};
+  const state: ConversationState = {
+    turnCount: history.length,
+  };
 
   if (!history || history.length === 0) {
-    return { resolvedQuery: query, contextNotes: '', memoryContext };
+    return { resolvedQuery: query, contextNotes: '', memoryContext, state };
   }
 
   const lowerQuery = query.toLowerCase();
-  const recentHistory = history.slice(-6);
+  const recentHistory = history.slice(-8);
   const recentHistoryText = recentHistory.map(h => h.content).join('\n');
   const lowerHistory = recentHistoryText.toLowerCase();
 
@@ -56,9 +64,17 @@ export function resolveContextualReferences(
   memoryContext.lastGrade = mentionedGrade || undefined;
   memoryContext.lastSubject = mentionedSubject || undefined;
 
+  if (mentionedStudents.length > 0) {
+    state.currentStudentName = mentionedStudents[0];
+    const s = DEMO_STUDENTS.find(st => st.displayName.toLowerCase() === mentionedStudents[0].toLowerCase());
+    if (s) state.currentStudentId = s.id;
+  }
+  if (mentionedGrade) state.currentClassGrade = mentionedGrade;
+  if (mentionedSubject) state.currentSubject = mentionedSubject;
+
   // ── Detect domain continuity ──
   if (lowerHistory.includes('attention') || lowerHistory.includes('struggling') || lowerHistory.includes('weak')) {
-    memoryContext.lastDomain = 'attention';
+    memoryContext.lastDomain = 'who_needs_attention';
   } else if (lowerHistory.includes('attendance')) {
     memoryContext.lastDomain = 'attendance';
   } else if (lowerHistory.includes('homework') || lowerHistory.includes('assignment')) {
@@ -66,43 +82,36 @@ export function resolveContextualReferences(
   } else if (lowerHistory.includes('timetable') || lowerHistory.includes('schedule')) {
     memoryContext.lastDomain = 'timetable';
   } else if (lowerHistory.includes('bus') || lowerHistory.includes('transport')) {
-    memoryContext.lastDomain = 'transport';
+    memoryContext.lastDomain = 'bus';
   } else if (lowerHistory.includes('library') || lowerHistory.includes('book')) {
     memoryContext.lastDomain = 'library';
   } else if (lowerHistory.includes('exam') || lowerHistory.includes('test') || lowerHistory.includes('marks')) {
     memoryContext.lastDomain = 'exams';
   }
 
-  // ── Resolve pronouns ──
+  state.lastIntent = memoryContext.lastDomain;
+
+  // ── Resolve pronouns (him, her, their, they, them, this student) ──
   const hasPronoun = /\b(their|them|they|his|her|him|that student|the weak students|those students|the student|these students|it|this)\b/i.test(lowerQuery);
 
   if (hasPronoun) {
-    // Pronoun referring to students needing attention
-    if (memoryContext.lastDomain === 'attention' && mentionedStudents.length > 0) {
+    if (memoryContext.lastDomain === 'who_needs_attention' && mentionedStudents.length > 0) {
       const studentNames = mentionedStudents.slice(0, 5).join(', ');
       contextNotes = `Resolved pronoun → students needing attention: ${studentNames}.`;
       resolvedQuery = `${query} [Context: referring to students needing attention: ${studentNames}]`;
-    }
-    // Pronoun referring to a specific student
-    else if (mentionedStudents.length === 1) {
+    } else if (mentionedStudents.length === 1) {
       contextNotes = `Resolved pronoun → ${mentionedStudents[0]}.`;
       resolvedQuery = `${query} [Context: referring to student ${mentionedStudents[0]}]`;
-    }
-    // Pronoun referring to multiple students
-    else if (mentionedStudents.length > 1) {
+    } else if (mentionedStudents.length > 1) {
       const studentNames = mentionedStudents.join(', ');
       contextNotes = `Resolved pronoun → students: ${studentNames}.`;
       resolvedQuery = `${query} [Context: referring to students: ${studentNames}]`;
-    }
-    // Pronoun referring to a bus
-    else if (memoryContext.lastDomain === 'transport') {
+    } else if (memoryContext.lastDomain === 'bus') {
       const busMatch = lowerHistory.match(/bus\s*(\d+)/i);
       const busRef = busMatch ? `Bus ${busMatch[1]}` : 'the bus';
       contextNotes = `Resolved pronoun → ${busRef}.`;
       resolvedQuery = `${query} [Context: referring to ${busRef}]`;
-    }
-    // Pronoun referring to a teacher
-    else if (mentionedTeachers.length > 0) {
+    } else if (mentionedTeachers.length > 0) {
       contextNotes = `Resolved pronoun → teacher: ${mentionedTeachers[0]}.`;
       resolvedQuery = `${query} [Context: referring to teacher ${mentionedTeachers[0]}]`;
     }
@@ -112,25 +121,25 @@ export function resolveContextualReferences(
   const whatAboutMatch = lowerQuery.match(/what about\s+(.+?)(?:\?|$)/i);
   if (whatAboutMatch) {
     const ref = whatAboutMatch[1].trim();
-    // Check if ref is a student name
     const student = DEMO_STUDENTS.find(s =>
       s.displayName.toLowerCase().includes(ref) || s.firstName.toLowerCase() === ref
     );
     if (student && memoryContext.lastDomain) {
       contextNotes = `Follow-up about ${student.displayName} in context of ${memoryContext.lastDomain}.`;
       resolvedQuery = `${query} [Context: asking about ${student.displayName} regarding ${memoryContext.lastDomain}]`;
+      state.currentStudentName = student.displayName;
+      state.currentStudentId = student.id;
     }
   }
 
   // ── Resolve implicit class/grade references ──
   if (mentionedGrade && !lowerQuery.match(/(?:class|grade)\s*\d/i)) {
-    // If query doesn't specify a grade but history has one, carry it forward
     if (lowerQuery.includes('class') || lowerQuery.includes('student') || lowerQuery.includes('attendance') || lowerQuery.includes('homework')) {
       resolvedQuery += ` [Context: Grade ${mentionedGrade}]`;
     }
   }
 
-  return { resolvedQuery, contextNotes, memoryContext };
+  return { resolvedQuery, contextNotes, memoryContext, state };
 }
 
 // ── Entity Extraction from History ──
@@ -175,3 +184,4 @@ function extractMentionedSubject(text: string): string | null {
   }
   return null;
 }
+

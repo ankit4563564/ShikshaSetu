@@ -1,14 +1,13 @@
 import type { BrainResponse, ConfidenceLevel, Intent, SchoolRole } from '../models/index';
 import { formatForDisplay, sanitizeOutput, addConfidenceFooter } from '../formatter/responseFormatter';
-import { getProactiveSuggestions } from '../skills/skillsEngine';
+import { selectNextStepRecommendations } from '../recommendations/recommendationEngine';
 
 // ─────────────────────────────────────────────
 // Response Builder Engine
 // Assembles the final response with:
 // - Intelligent formatting
-// - Contextual follow-up suggestions
-// - Confidence-aware output
-// - Source attribution
+// - Recommendation Engine next steps
+// - Confidence-aware output & transparent source attribution
 // ─────────────────────────────────────────────
 
 export function buildFinalResponse(
@@ -17,36 +16,43 @@ export function buildFinalResponse(
   intent: Intent,
   confidence: ConfidenceLevel = 'MEDIUM',
   suggestedFollowUps?: string[],
-  role?: SchoolRole
+  role?: SchoolRole,
+  queryText?: string,
+  missingFields?: string[]
 ): BrainResponse {
   // Format and sanitize the output
   const cleanedText = sanitizeOutput(rawText);
   const formatted = formatForDisplay(cleanedText, intent, role || 'teacher', confidence);
-  const withFooter = addConfidenceFooter(formatted.text, confidence, sources);
 
-  // Build contextual follow-ups
-  let finalFollowUps = suggestedFollowUps || [];
-
-  if (finalFollowUps.length === 0) {
-    // Try proactive skill-based suggestions first
-    if (role) {
-      finalFollowUps = getProactiveSuggestions(intent, role);
-    }
-
-    // Fall back to intent-based defaults if still empty
-    if (finalFollowUps.length === 0) {
-      finalFollowUps = getDefaultFollowUps(intent);
-    }
+  // Build transparent "Based on" sources and "Not included" missing data block
+  let attributedText = formatted.text;
+  const verifiedSourcesList = sources.length > 0 ? sources : ['School Knowledge Base'];
+  
+  if (!attributedText.includes('Based on')) {
+    attributedText += `\n\n──────────────────────────────────────\n📌 **Based on verified sources**:\n${verifiedSourcesList.map(s => `  ✓ ${s}`).join('\n')}`;
   }
+
+  if (missingFields && missingFields.length > 0 && !attributedText.includes('Not included')) {
+    attributedText += `\n\n⚠️ **Not included in current records**:\n${missingFields.map(m => `  • ${m}`).join('\n')}`;
+  }
+
+  const withFooter = addConfidenceFooter(attributedText, confidence, sources);
+
+  // Run Recommendation Engine to derive high-value next-step follow-ups
+  const dynamicRecommendations = selectNextStepRecommendations(intent, undefined, role || 'teacher', queryText || '');
+  const finalFollowUps = (suggestedFollowUps && suggestedFollowUps.length > 0)
+    ? suggestedFollowUps
+    : dynamicRecommendations;
 
   return {
     text: withFooter.trim(),
-    sources: sources.length > 0 ? sources : ['School Operating System Knowledge Base'],
-    suggestedFollowUps: finalFollowUps.slice(0, 3),
+    sources: verifiedSourcesList,
+    suggestedFollowUps: finalFollowUps.slice(0, 4),
     source: intent,
     confidence,
   };
 }
+
 
 function getDefaultFollowUps(intent: Intent): string[] {
   const followUpMap: Partial<Record<Intent, string[]>> = {
