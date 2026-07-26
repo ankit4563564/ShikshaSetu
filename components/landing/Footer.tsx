@@ -1,7 +1,12 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { useLandingModal } from './LandingModalContext';
 
 export function Footer() {
+  const { openRoleSelector, openLeadModal } = useLandingModal();
+
   return (
     <footer className="bg-slate-950 text-white w-full pt-16 pb-12 border-t border-slate-800">
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter">
@@ -12,22 +17,30 @@ export function Footer() {
             <h3 className="text-2xl font-bold font-display text-white">Ready to see it live?</h3>
             <p className="text-slate-300 text-sm">Experience a full connected school day walkthrough in 7 minutes.</p>
           </div>
-          <Link
-            href="/parent"
-            className="bg-secondary-container text-on-secondary-container hover:bg-secondary-fixed px-6 py-3 rounded-full font-bold text-sm transition-all shadow-lg shrink-0 flex items-center gap-2"
-          >
-            Enter Live Portal
-            <span className="material-symbols-outlined text-sm">arrow_forward</span>
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={openRoleSelector}
+              className="bg-secondary-container text-on-secondary-container hover:bg-secondary-fixed px-6 py-3 rounded-full font-bold text-sm transition-all shadow-lg shrink-0 flex items-center gap-2"
+            >
+              Enter Live Portal
+              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+            </button>
+            <button
+              onClick={() => openLeadModal('Request Campus Trial')}
+              className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-full font-bold text-sm transition-all"
+            >
+              Book School Demo
+            </button>
+          </div>
         </div>
 
         {/* 4 Main Footer Columns */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pb-12 border-b border-slate-800/80">
           <div className="col-span-2 md:col-span-1 space-y-4">
-            <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary-container" style={{ fontVariationSettings: "'FILL' 1" }}>school</span>
               <span className="font-display-lg text-xl font-bold text-white">ShikshaSetu</span>
-            </div>
+            </Link>
             <p className="font-body-md text-sm text-slate-400 max-w-xs leading-relaxed">
               One connected school day for parents, teachers, and campus administration teams.
             </p>
@@ -39,12 +52,13 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-label-sm text-xs text-secondary-fixed uppercase tracking-wider mb-4 font-bold">Product</h4>
+            <h4 className="font-label-sm text-xs text-secondary-fixed uppercase tracking-wider mb-4 font-bold">Product Navigation</h4>
             <ul className="space-y-2.5 text-sm text-slate-400">
-              <li><a className="hover:text-white transition-colors" href="#parents">For Parents</a></li>
-              <li><a className="hover:text-white transition-colors" href="#teachers">For Teachers</a></li>
-              <li><a className="hover:text-white transition-colors" href="#schoolgpt">SchoolGPT AI</a></li>
-              <li><a className="hover:text-white transition-colors" href="#modules">Campus Modules</a></li>
+              <li><Link className="hover:text-white transition-colors" href="/parent">Parent Portal</Link></li>
+              <li><Link className="hover:text-white transition-colors" href="/teacher">Teacher Workstation</Link></li>
+              <li><Link className="hover:text-white transition-colors" href="/admin">School Operations</Link></li>
+              <li><Link className="hover:text-white transition-colors" href="/gate">Gate Security Console</Link></li>
+              <li><Link className="hover:text-white transition-colors" href="/pricing">Pricing Plans</Link></li>
             </ul>
           </div>
 
@@ -59,19 +73,24 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-label-sm text-xs text-secondary-fixed uppercase tracking-wider mb-4 font-bold">Connect</h4>
-            <div className="flex items-center gap-3 mb-4">
-              <a href="#" className="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:border-secondary-container transition-colors">
+            <h4 className="font-label-sm text-xs text-secondary-fixed uppercase tracking-wider mb-4 font-bold">Resources &amp; Support</h4>
+            <ul className="space-y-2.5 text-sm text-slate-400 mb-4">
+              <li><Link className="hover:text-white transition-colors" href="/resources">Resource Center</Link></li>
+              <li><Link className="hover:text-white transition-colors" href="/blog">Blog &amp; Insights</Link></li>
+              <li><Link className="hover:text-white transition-colors" href="/support">Help &amp; Documentation</Link></li>
+              <li><Link className="hover:text-white transition-colors" href="/contact">Contact Support</Link></li>
+            </ul>
+            <div className="flex items-center gap-3">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:border-secondary-container transition-colors">
                 <span className="font-bold text-xs">𝕏</span>
               </a>
-              <a href="#" className="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:border-secondary-container transition-colors">
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:border-secondary-container transition-colors">
                 <span className="font-bold text-xs">in</span>
               </a>
-              <a href="#" className="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:border-secondary-container transition-colors">
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:border-secondary-container transition-colors">
                 <span className="font-bold text-xs">▶</span>
               </a>
             </div>
-            <p className="text-xs text-slate-400">Dedicated support 24/7 for partner schools.</p>
           </div>
         </div>
 
@@ -79,9 +98,9 @@ export function Footer() {
         <div className="mt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500 font-medium">
           <p>© 2024 ShikshaSetu Technologies. All rights reserved.</p>
           <div className="flex gap-6">
-            <a className="hover:text-slate-300 transition-colors" href="#">Privacy Policy</a>
-            <a className="hover:text-slate-300 transition-colors" href="#">Terms of Service</a>
-            <a className="hover:text-slate-300 transition-colors" href="#">Data Security Protocol</a>
+            <Link className="hover:text-slate-300 transition-colors" href="/privacy">Privacy Policy</Link>
+            <Link className="hover:text-slate-300 transition-colors" href="/terms">Terms of Service</Link>
+            <Link className="hover:text-slate-300 transition-colors" href="/about">About Us</Link>
           </div>
         </div>
       </div>

@@ -1,7 +1,12 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { useLandingModal } from './LandingModalContext';
 
 export function CTASection() {
+  const { openDemoModal, openRoleSelector, openLeadModal } = useLandingModal();
+
   return (
     <section className="py-section-gap bg-textured pb-32">
       <div className="max-w-4xl mx-auto px-margin-mobile md:px-gutter">
@@ -12,6 +17,7 @@ export function CTASection() {
             style={{ backgroundImage: "url('/shikshasetu_banner.png')" }}
           />
           <div className="absolute -top-[50%] -left-[20%] w-[70%] h-[100%] rounded-full bg-primary-fixed/20 blur-[80px] pointer-events-none" />
+          
           <div className="relative z-10 space-y-6">
             <div className="inline-flex items-center gap-2 glass-panel-light border-white/20 px-4 py-1.5 rounded-full">
               <span className="font-label-sm text-label-sm text-on-surface tracking-wider font-bold">SEE IT IN ACTION</span>
@@ -22,12 +28,34 @@ export function CTASection() {
             <p className="font-body-lg text-body-lg text-white/90 max-w-xl mx-auto font-medium">
               Run the live demo, or step into any role portal and follow the same chain from gate to home.
             </p>
+            
             <div className="flex flex-wrap justify-center gap-4 pt-6">
-              <button type="button" className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all shadow-lg font-bold">
+              <button
+                type="button"
+                onClick={openDemoModal}
+                className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all shadow-lg font-bold hover:scale-105"
+              >
                 Watch the school day →
               </button>
-              <Link href="/parent-portal" className="bg-white/10 border border-white/30 text-white px-8 py-4 rounded-full font-title-md text-title-md hover:bg-white/20 transition-all font-bold inline-block">
+              <button
+                type="button"
+                onClick={openRoleSelector}
+                className="bg-white/10 border border-white/30 text-white px-8 py-4 rounded-full font-title-md text-title-md hover:bg-white/20 transition-all font-bold hover:scale-105"
+              >
                 Enter a portal
+              </button>
+              <button
+                type="button"
+                onClick={() => openLeadModal('Book a Campus Demo')}
+                className="bg-emerald-500 text-slate-950 px-8 py-4 rounded-full font-title-md text-title-md hover:bg-emerald-400 transition-all font-bold hover:scale-105"
+              >
+                Book Demo
+              </button>
+              <Link
+                href="/contact"
+                className="bg-slate-900 border border-slate-700 text-slate-200 px-8 py-4 rounded-full font-title-md text-title-md hover:bg-slate-800 transition-all font-bold hover:scale-105 inline-block"
+              >
+                Contact Sales
               </Link>
             </div>
           </div>
