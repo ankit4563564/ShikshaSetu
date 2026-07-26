@@ -1,5 +1,6 @@
 import Navbar from '@/components/landing/Navbar';
 import Hero from '@/components/landing/Hero';
+import SchoolGPTShowcase from '@/components/landing/SchoolGPTShowcase';
 import ConnectedJourney from '@/components/landing/ConnectedJourney';
 import PortalGrid from '@/components/landing/PortalGrid';
 import CTA from '@/components/landing/CTA';
@@ -12,6 +13,7 @@ export default function Home() {
       <div className="landing-shell min-h-screen overflow-x-hidden bg-paper font-body text-ink">
         <Navbar />
         <Hero />
+        <SchoolGPTShowcase />
         <ConnectedJourney />
         <PortalGrid />
         <CTA />
