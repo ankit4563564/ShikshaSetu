@@ -1,32 +1,23 @@
-import { HeroV4 } from '@/components/landing/v4/HeroV4';
-import { TrustMetricsV4 } from '@/components/landing/v4/TrustMetricsV4';
-import { SchoolDayScene1_Morning } from '@/components/landing/story/SchoolDayScene1_Morning';
-import { SchoolDayScene2_Classroom } from '@/components/landing/story/SchoolDayScene2_Classroom';
-import { SchoolDayScene3_SchoolGPT } from '@/components/landing/story/SchoolDayScene3_SchoolGPT';
-import { SchoolDayScene4_Evening } from '@/components/landing/story/SchoolDayScene4_Evening';
-import { SchoolDayScene5_Outcomes } from '@/components/landing/story/SchoolDayScene5_Outcomes';
-import { BentoModulesV4 } from '@/components/landing/v4/BentoModulesV4';
-import { FinalCTAV4 } from '@/components/landing/v4/FinalCTAV4';
-import { FooterV4 } from '@/components/landing/v4/FooterV4';
+import { LandingNavbar } from '@/components/landing/LandingNavbar';
+import { HeroSection } from '@/components/landing/HeroSection';
+import { PlatformSection } from '@/components/landing/PlatformSection';
+import { TransitSection } from '@/components/landing/TransitSection';
+import { CTASection } from '@/components/landing/CTASection';
+import { Footer } from '@/components/landing/Footer';
 import { LandingMotion } from '@/components/landing/Motion';
 
 export default function Home() {
   return (
     <LandingMotion>
-      <div className="landing-shell min-h-screen overflow-x-hidden bg-[#FAFBFF] font-body text-slate-900">
-        <HeroV4 />
-        <TrustMetricsV4 />
-        
-        {/* "One Connected School Day" 5-Scene Interactive Story Movie */}
-        <SchoolDayScene1_Morning />
-        <SchoolDayScene2_Classroom />
-        <SchoolDayScene3_SchoolGPT />
-        <SchoolDayScene4_Evening />
-        <SchoolDayScene5_Outcomes />
-
-        <BentoModulesV4 />
-        <FinalCTAV4 />
-        <FooterV4 />
+      <div className="bg-background text-on-surface font-body-md antialiased overflow-x-hidden">
+        <LandingNavbar />
+        <main className="pt-20">
+          <HeroSection />
+          <PlatformSection />
+          <TransitSection />
+          <CTASection />
+        </main>
+        <Footer />
       </div>
     </LandingMotion>
   );
