@@ -7,7 +7,9 @@ export function HeroSection() {
       {/* Decorative Background Elements */}
       <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/20 to-transparent pointer-events-none" />
       <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-primary-fixed/10 blur-[100px] pointer-events-none" />
+      
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10 w-full">
+        {/* Left Column: Text & CTA Content */}
         <div className="text-white space-y-8">
           <div className="inline-flex items-center gap-2 glass-panel px-4 py-1.5 rounded-full border border-white/20">
             <span className="w-2 h-2 rounded-full bg-secondary-container animate-pulse" />
@@ -41,28 +43,109 @@ export function HeroSection() {
             </div>
           </div>
         </div>
-        <div className="relative h-[600px] w-full rounded-2xl overflow-hidden shadow-2xl">
-          <Image
-            src="/shikshasetu-hero-student.png"
-            alt="A high-quality, professional photograph of a modern Indian schoolgirl with a stylish backpack, smiling confidently in a sleek, contemporary school hallway with glass and wood accents."
-            fill
-            priority
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-cover"
-          />
-          {/* Glassmorphism Overlay Element */}
-          <div className="absolute bottom-6 left-6 right-6 glass-panel p-4 rounded-xl flex items-center justify-between border border-white/20 z-10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center">
-                <span className="material-symbols-outlined text-on-secondary-container">directions_bus</span>
+
+        {/* Right Column: High-Energy Floating Ecosystem Interactive Hero Visual */}
+        <div className="relative w-full h-[600px]">
+          {/* Main Student Card Container */}
+          <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+            <Image
+              src="/shikshasetu-hero-student.png"
+              alt="A high-quality photograph of a modern Indian student smiling confidently in a contemporary school hallway."
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
+            />
+            {/* Dark gradient overlay for bottom badge readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-black/20 pointer-events-none" />
+
+            {/* Bottom Glassmorphism Bar: Live Status */}
+            <div className="absolute bottom-5 left-5 right-5 glass-panel p-4 rounded-xl flex items-center justify-between border border-white/20 z-20 shadow-xl backdrop-blur-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center shadow-inner">
+                  <span className="material-symbols-outlined text-on-secondary-container">directions_bus</span>
+                </div>
+                <div>
+                  <p className="font-label-sm text-label-sm text-white/70">Live Status</p>
+                  <p className="font-title-md text-title-md text-white font-bold">Arrived Safely at Campus</p>
+                </div>
+              </div>
+              <span className="font-label-sm text-label-sm text-white/60 bg-white/10 px-2.5 py-1 rounded-full border border-white/10">Just now</span>
+            </div>
+          </div>
+
+          {/* ──── FLOATING ECOSYSTEM NOTIFICATIONS ──── */}
+
+          {/* 1. Live Bus Notification (Top Left) */}
+          <div className="absolute -top-4 left-4 sm:-left-6 z-30 animate-float-slow">
+            <div className="glass-panel-light backdrop-blur-xl bg-white/90 px-3.5 py-2.5 rounded-2xl shadow-2xl border border-amber-200/60 flex items-center gap-3 max-w-[210px] hover:scale-105 transition-transform">
+              <div className="w-8 h-8 rounded-full bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-sm font-bold">directions_bus</span>
               </div>
               <div>
-                <p className="font-label-sm text-label-sm text-white/70">Live Status</p>
-                <p className="font-title-md text-title-md text-white font-bold">Arrived Safely</p>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
+                  <p className="text-[11px] font-extrabold text-slate-900 leading-none">Live Bus GPS</p>
+                </div>
+                <p className="text-[9px] font-semibold text-slate-600 mt-0.5">Bus 04 &middot; 1.2 km away</p>
               </div>
             </div>
-            <span className="font-label-sm text-label-sm text-white/50">Just now</span>
           </div>
+
+          {/* 2. Attendance Confirmed (Top Right) */}
+          <div className="absolute top-6 -right-3 sm:-right-6 z-30 animate-float-medium">
+            <div className="glass-panel-light backdrop-blur-xl bg-white/90 px-3.5 py-2.5 rounded-2xl shadow-2xl border border-emerald-200/60 flex items-center gap-3 max-w-[215px] hover:scale-105 transition-transform">
+              <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-600 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-sm font-bold">verified</span>
+              </div>
+              <div>
+                <p className="text-[11px] font-extrabold text-slate-900 leading-none">Attendance Confirmed</p>
+                <p className="text-[9px] font-semibold text-emerald-600 mt-0.5">✓ 08:14 AM &middot; Gate Scan</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Homework Assigned (Middle Left) */}
+          <div className="absolute top-1/3 -left-5 sm:-left-8 z-30 animate-float-fast">
+            <div className="glass-panel-light backdrop-blur-xl bg-white/90 px-3 py-2 rounded-2xl shadow-2xl border border-sky-200/60 flex items-center gap-2.5 max-w-[200px] hover:scale-105 transition-transform">
+              <div className="w-7 h-7 rounded-full bg-sky-500/20 text-sky-600 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-xs font-bold">assignment_turned_in</span>
+              </div>
+              <div>
+                <p className="text-[10px] font-extrabold text-slate-900 leading-none">Homework Assigned</p>
+                <p className="text-[9px] font-semibold text-slate-600 mt-0.5">Math Ch 5 &middot; Submitted</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Parent Notified (Middle Right) */}
+          <div className="absolute top-1/2 -right-4 sm:-right-8 z-30 animate-float-slow">
+            <div className="glass-panel-light backdrop-blur-xl bg-white/90 px-3.5 py-2.5 rounded-2xl shadow-2xl border border-indigo-200/60 flex items-center gap-3 max-w-[210px] hover:scale-105 transition-transform">
+              <div className="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-600 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-sm font-bold">family_restroom</span>
+              </div>
+              <div>
+                <p className="text-[11px] font-extrabold text-slate-900 leading-none">Parent Notified</p>
+                <p className="text-[9px] font-semibold text-indigo-600 mt-0.5">SMS &amp; Push Delivered</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 5. AI Insight (Lower Left) */}
+          <div className="absolute bottom-24 left-6 z-30 animate-float-medium">
+            <div className="glass-panel-light backdrop-blur-xl bg-slate-900/90 text-white px-4 py-2.5 rounded-2xl shadow-2xl border border-amber-400/40 flex items-center gap-3 max-w-[220px] hover:scale-105 transition-transform">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 flex items-center justify-center shrink-0 shadow-md">
+                <span className="material-symbols-outlined text-sm font-bold">auto_awesome</span>
+              </div>
+              <div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] font-extrabold text-amber-300 uppercase tracking-wide">SchoolGPT AI</span>
+                </div>
+                <p className="text-[10px] font-bold text-white leading-tight">Attention Peak +18% Today</p>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>

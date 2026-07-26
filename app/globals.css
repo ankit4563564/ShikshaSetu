@@ -13,6 +13,24 @@
 .glow-text { text-shadow: 0 0 20px rgba(252, 186, 82, 0.3); }
 .route-line { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: drawRoute 3s ease-out forwards infinite; }
 @keyframes drawRoute { to { stroke-dashoffset: 0; } }
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes floatMedium {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes floatFast {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float-slow { animation: floatSlow 5.5s ease-in-out infinite; }
+.animate-float-medium { animation: floatMedium 4.2s ease-in-out infinite 0.8s; }
+.animate-float-fast { animation: floatFast 3.6s ease-in-out infinite 1.5s; }
+
 .bg-textured {
     background-image: linear-gradient(rgba(249, 249, 255, 0.9), rgba(249, 249, 255, 0.9)), url('/shikshasetu_banner.png');
     background-size: cover;
