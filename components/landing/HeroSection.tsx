@@ -35,14 +35,6 @@ export function HeroSection() {
               Start your school story
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </a>
-            <button
-              type="button"
-              onClick={openDemoModal}
-              className="glass-panel text-white px-8 py-4 rounded-full font-title-md text-title-md hover:bg-white/10 transition-all flex items-center gap-2 font-bold hover:scale-105 active:scale-95"
-            >
-              Watch the school day
-              <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </button>
           </div>
           <div className="flex gap-6 pt-8 border-t border-white/10">
             <a href="#school-story" className="flex items-center gap-2 cursor-pointer hover:opacity-100 opacity-90 transition-opacity">

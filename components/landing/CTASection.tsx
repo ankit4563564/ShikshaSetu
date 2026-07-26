@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useLandingModal } from './LandingModalContext';
 
 export function CTASection() {
-  const { openDemoModal, openRoleSelector, openLeadModal } = useLandingModal();
+  const { openRoleSelector } = useLandingModal();
 
   return (
     <section className="py-section-gap bg-textured pb-32">
@@ -26,17 +26,16 @@ export function CTASection() {
               Walk a full school day in seven minutes.
             </h2>
             <p className="font-body-lg text-body-lg text-white/90 max-w-xl mx-auto font-medium">
-              Run the live demo, or step into any role portal and follow the same chain from gate to home.
+              Experience the live animated story, or step into any role portal and follow the same chain from gate to home.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4 pt-6">
-              <button
-                type="button"
-                onClick={openDemoModal}
-                className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all shadow-lg font-bold hover:scale-105"
+              <a
+                href="#school-story"
+                className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all shadow-lg font-bold hover:scale-105 inline-flex items-center gap-2"
               >
-                Watch the school day →
-              </button>
+                Start your school story →
+              </a>
               <button
                 type="button"
                 onClick={openRoleSelector}
@@ -44,19 +43,6 @@ export function CTASection() {
               >
                 Enter a portal
               </button>
-              <button
-                type="button"
-                onClick={() => openLeadModal('Book a Campus Demo')}
-                className="bg-emerald-500 text-slate-950 px-8 py-4 rounded-full font-title-md text-title-md hover:bg-emerald-400 transition-all font-bold hover:scale-105"
-              >
-                Book Demo
-              </button>
-              <Link
-                href="/contact"
-                className="bg-slate-900 border border-slate-700 text-slate-200 px-8 py-4 rounded-full font-title-md text-title-md hover:bg-slate-800 transition-all font-bold hover:scale-105 inline-block"
-              >
-                Contact Sales
-              </Link>
             </div>
           </div>
         </div>
