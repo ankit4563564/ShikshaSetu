@@ -1172,16 +1172,16 @@ export default function ParentTodayClient({
                     {activeStudent?.displayName.split(' ')[0] || 'Aarav'} {t('greeting.safe_status')}
                   </h1>
                   <p className="font-body text-xs font-semibold text-slate-500 mt-1">
-                    Everything is on track today &middot; 100% Safety Synced
+                    {t('hero.subtext')}
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-100 text-xs font-semibold text-slate-600">
-                  <span className="flex items-center gap-1.5 text-slate-800 font-bold">📍 Campus Gate #2</span>
+                  <span className="flex items-center gap-1.5 text-slate-800 font-bold">{t('hero.gate')}</span>
                   <span className="text-slate-300">&bull;</span>
-                  <span className="flex items-center gap-1 text-slate-700">🚌 Bus #4 (Ramesh Kumar)</span>
+                  <span className="flex items-center gap-1 text-slate-700">{t('hero.bus')}</span>
                   <span className="text-slate-300">&bull;</span>
-                  <span className="text-emerald-700 font-bold font-mono text-[11px]">Safety Score: 98%</span>
+                  <span className="text-emerald-700 font-bold font-mono text-[11px]">{t('hero.score')}</span>
                 </div>
               </div>
 
@@ -1191,21 +1191,21 @@ export default function ParentTodayClient({
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping" />
                     <span className="font-display text-xs font-black uppercase tracking-widest text-slate-400">
-                      Current Status
+                      {t('status.current_title')}
                     </span>
                   </div>
                   <span className="text-[10px] font-bold text-sky-400 bg-sky-500/20 px-2.5 py-1 rounded-full border border-sky-500/30">
-                    Live Telemetry
+                    {t('status.live_telemetry')}
                   </span>
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <h3 className="font-display text-xl font-extrabold text-white">
-                      Classroom 8A &middot; Math Quiz Completed
+                      {t('status.math_quiz')}
                     </h3>
                     <p className="font-body text-xs text-slate-300 mt-1">
-                      Scored 92% in Algebra Quiz &middot; Participating actively in class
+                      {t('status.math_desc')}
                     </p>
                   </div>
 
@@ -1214,7 +1214,7 @@ export default function ParentTodayClient({
                       onClick={() => setActiveNav('bus')}
                       className="px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-100 rounded-xl text-xs font-bold transition-all shadow-xs"
                     >
-                      Track Bus Live &rarr;
+                      {t('status.track_bus')}
                     </button>
                   </div>
                 </div>
@@ -1225,12 +1225,12 @@ export default function ParentTodayClient({
                 <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                   <div>
                     <h3 className="font-display text-xl font-extrabold text-slate-900">
-                      Today&apos;s Journey
+                      {t('today.journey')}
                     </h3>
-                    <p className="font-body text-xs text-slate-500">Chronological timeline of {activeStudent?.displayName.split(' ')[0]}&apos;s day</p>
+                    <p className="font-body text-xs text-slate-500">{t('today.journey_sub')}</p>
                   </div>
                   <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                    Live Timeline
+                    {t('today.live_timeline')}
                   </span>
                 </div>
 
@@ -1241,11 +1241,11 @@ export default function ParentTodayClient({
                       🚌
                     </div>
                     <div className="flex items-center justify-between">
-                      <h4 className="font-display text-sm font-bold text-slate-900">Boarded School Bus #4</h4>
+                      <h4 className="font-display text-sm font-bold text-slate-900">{t('timeline.bus_boarded')}</h4>
                       <span className="font-mono text-xs font-bold text-slate-400">07:42 AM</span>
                     </div>
                     <p className="font-body text-xs text-slate-600">
-                      Picked up at Saket Stop #3. Driver Ramesh Kumar confirmed seating.
+                      {t('timeline.bus_desc')}
                     </p>
                   </div>
 
@@ -1255,11 +1255,11 @@ export default function ParentTodayClient({
                       🏫
                     </div>
                     <div className="flex items-center justify-between">
-                      <h4 className="font-display text-sm font-bold text-slate-900">Reached School Campus</h4>
+                      <h4 className="font-display text-sm font-bold text-slate-900">{t('timeline.school_reached')}</h4>
                       <span className="font-mono text-xs font-bold text-slate-400">08:18 AM</span>
                     </div>
                     <p className="font-body text-xs text-slate-600">
-                      Security Gate #2 dynamic QR scan verified with 100% ID photo match.
+                      {t('timeline.school_desc')}
                     </p>
                   </div>
 
@@ -1269,11 +1269,11 @@ export default function ParentTodayClient({
                       📚
                     </div>
                     <div className="flex items-center justify-between">
-                      <h4 className="font-display text-sm font-bold text-slate-900">Completed Mathematics Quiz</h4>
+                      <h4 className="font-display text-sm font-bold text-slate-900">{t('timeline.quiz')}</h4>
                       <span className="font-mono text-xs font-bold text-slate-400">10:25 AM</span>
                     </div>
                     <p className="font-body text-xs text-slate-600">
-                      Scored 92% in Algebra Quiz. Classroom participation was excellent.
+                      {t('timeline.quiz_desc')}
                     </p>
 
                     {/* Progressive Disclosure: Expandable Detail Drawer */}
@@ -1282,7 +1282,7 @@ export default function ParentTodayClient({
                         onClick={() => setIsWhyExpanded(prev => !prev)}
                         className="text-xs font-bold text-slate-700 hover:text-slate-900 flex items-center gap-1 bg-transparent p-0 border-0"
                       >
-                        <span>Why you&apos;re seeing this</span>
+                        <span>{t('timeline.why')}</span>
                         <svg className={`w-3 h-3 transition-transform ${isWhyExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
@@ -1303,11 +1303,11 @@ export default function ParentTodayClient({
                       📝
                     </div>
                     <div className="flex items-center justify-between">
-                      <h4 className="font-display text-sm font-bold text-slate-900">Homework Assigned</h4>
+                      <h4 className="font-display text-sm font-bold text-slate-900">{t('timeline.hw')}</h4>
                       <span className="font-mono text-xs font-bold text-slate-400">01:40 PM</span>
                     </div>
                     <p className="font-body text-xs text-slate-600">
-                      Science Chapter 4 Exercise (Due tomorrow by 8:00 AM).
+                      {t('timeline.hw_desc')}
                     </p>
                   </div>
                 </div>
@@ -1317,9 +1317,9 @@ export default function ParentTodayClient({
               <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <h3 className="font-display text-xs font-extrabold text-slate-400 uppercase tracking-widest">
-                    Needs Your Attention
+                    {t('attention.title')}
                   </h3>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Action Items</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('attention.items')}</span>
                 </div>
 
                 {parentNotifications.length > 0 ? (
@@ -1333,7 +1333,7 @@ export default function ParentTodayClient({
                         New teacher note received from {parentNotifications[parentNotifications.length - 1].senderName}
                       </span>
                     </div>
-                    <span className="text-xs font-bold text-amber-700">Reply &rarr;</span>
+                    <span className="text-xs font-bold text-amber-700">{t('attention.reply')}</span>
                   </div>
                 ) : activePass && activePass.status === 'pending' ? (
                   <div className="flex items-center justify-between p-3.5 bg-blue-50 border border-blue-200 rounded-2xl">
@@ -1347,13 +1347,13 @@ export default function ParentTodayClient({
                       onClick={() => setShowCancelConfirmModal(true)}
                       className="text-xs font-bold text-blue-700 hover:underline"
                     >
-                      Manage
+                      {t('attention.manage')}
                     </button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2.5 text-emerald-700 bg-emerald-50 border border-emerald-200/80 p-4 rounded-2xl">
                     <span className="text-lg font-bold">✓</span>
-                    <span className="font-body text-xs font-bold">You&apos;re all caught up today. Zero pending alerts.</span>
+                    <span className="font-body text-xs font-bold">{t('attention.all_caught_up')}</span>
                   </div>
                 )}
               </div>
@@ -1365,21 +1365,21 @@ export default function ParentTodayClient({
                   onClick={() => setShowPassModal(true)}
                   className="flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-2xs hover:bg-slate-50 transition-all"
                 >
-                  <span>🎫 Request Gate Pass</span>
+                  <span>{t('action.gate_pass')}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSendMorningNote('Had a rough morning')}
                   className="flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-2xs hover:bg-slate-50 transition-all"
                 >
-                  <span>☀️ Morning Heads-up</span>
+                  <span>{t('action.morning_note')}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveNav('messages')}
                   className="flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-2xs hover:bg-slate-50 transition-all"
                 >
-                  <span>💬 Message Teacher</span>
+                  <span>{t('action.message_teacher')}</span>
                 </button>
               </div>
             </div>

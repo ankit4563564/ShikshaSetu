@@ -24,9 +24,44 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.messages': 'Messages',
     'greeting.morning': 'Good Morning',
     'greeting.safe_status': 'reached school safely & is on track today.',
+    'hero.subtext': 'Everything is on track today · 100% Safety Synced',
+    'hero.gate': '📍 Campus Gate #2',
+    'hero.bus': '🚌 Bus #4 (Ramesh Kumar)',
+    'hero.score': 'Safety Score: 98%',
     
-    // Today screen
+    // Current Status
+    'status.current_title': 'Current Status',
+    'status.live_telemetry': 'Live Telemetry',
+    'status.math_quiz': 'Classroom 8A · Math Quiz Completed',
+    'status.math_desc': 'Scored 92% in Algebra Quiz · Participating actively in class',
+    'status.track_bus': 'Track Bus Live →',
+
+    // Today's Journey Timeline
     'today.title': 'Today',
+    'today.journey': "Today's Journey",
+    'today.journey_sub': "Chronological timeline of Aarav's day",
+    'today.live_timeline': 'Live Timeline',
+    'timeline.bus_boarded': 'Boarded School Bus #4',
+    'timeline.bus_desc': 'Picked up at Saket Stop #3. Driver Ramesh Kumar confirmed seating.',
+    'timeline.school_reached': 'Reached School Campus',
+    'timeline.school_desc': 'Security Gate #2 dynamic QR scan verified with 100% ID photo match.',
+    'timeline.quiz': 'Completed Mathematics Quiz',
+    'timeline.quiz_desc': 'Scored 92% in Algebra Quiz. Classroom participation was excellent.',
+    'timeline.hw': 'Homework Assigned',
+    'timeline.hw_desc': 'Science Chapter 4 Exercise (Due tomorrow by 8:00 AM).',
+    'timeline.why': "Why you're seeing this",
+
+    // Needs Attention & Actions
+    'attention.title': 'Needs Your Attention',
+    'attention.items': 'Action Items',
+    'attention.all_caught_up': "You're all caught up today. Zero pending alerts.",
+    'attention.reply': 'Reply →',
+    'attention.manage': 'Manage',
+    'action.gate_pass': '🎫 Request Gate Pass',
+    'action.morning_note': '☀️ Morning Heads-up',
+    'action.message_teacher': '💬 Message Teacher',
+
+    // Today screen old keys
     'today.morning.heads_up': 'Morning Heads-up',
     'today.homework.due': 'Homework Due',
     'today.attendance': 'Attendance',
@@ -80,9 +115,44 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.messages': 'संदेश',
     'greeting.morning': 'शुभ प्रभात',
     'greeting.safe_status': 'आज सुरक्षित रूप से स्कूल पहुंचे और सही ट्रैक पर हैं।',
+    'hero.subtext': 'आज सब कुछ सही ट्रैक पर है · 100% सुरक्षा सिंक',
+    'hero.gate': '📍 कैंपस गेट #2',
+    'hero.bus': '🚌 बस #4 (रमेश कुमार)',
+    'hero.score': 'सुरक्षा स्कोर: 98%',
 
-    // Today screen
+    // Current Status
+    'status.current_title': 'वर्तमान स्थिति',
+    'status.live_telemetry': 'लाइव टेलीमेट्री',
+    'status.math_quiz': 'कक्षा 8A · गणित प्रश्नोत्तरी पूर्ण',
+    'status.math_desc': 'बीजगणित प्रश्नोत्तरी में 92% अंक प्राप्त किए · कक्षा में सक्रिय भागीदारी',
+    'status.track_bus': 'बस लाइव ट्रैक करें →',
+
+    // Today's Journey Timeline
     'today.title': 'आज',
+    'today.journey': 'आज की यात्रा',
+    'today.journey_sub': 'आरव के दिन का समयक्रम घटनाक्रम',
+    'today.live_timeline': 'लाइव समयरेखा',
+    'timeline.bus_boarded': 'स्कूल बस #4 में सवार हुए',
+    'timeline.bus_desc': 'साकेत स्टॉप #3 पर पिकअप। ड्राइवर रमेश कुमार ने सीट की पुष्टि की।',
+    'timeline.school_reached': 'स्कूल परिसर पहुंचे',
+    'timeline.school_desc': 'सुरक्षा गेट #2 डायनामिक क्यूआर स्कैन 100% आईडी फोटो मैच के साथ सत्यापित।',
+    'timeline.quiz': 'गणित प्रश्नोत्तरी पूरी की',
+    'timeline.quiz_desc': 'बीजगणित प्रश्नोत्तरी में 92% अंक। कक्षा में भागीदारी उत्कृष्ट थी।',
+    'timeline.hw': 'होमवर्क आवंटित',
+    'timeline.hw_desc': 'विज्ञान अध्याय 4 अभ्यास (कल सुबह 8:00 बजे तक देय)।',
+    'timeline.why': 'आप यह क्यों देख रहे हैं',
+
+    // Needs Attention & Actions
+    'attention.title': 'आपके ध्यान की आवश्यकता है',
+    'attention.items': 'कार्य मदें',
+    'attention.all_caught_up': 'आज आप पूरी तरह अपडेट हैं। शून्य लंबित अलर्ट।',
+    'attention.reply': 'उत्तर दें →',
+    'attention.manage': 'प्रबंधित करें',
+    'action.gate_pass': '🎫 गेट पास का अनुरोध करें',
+    'action.morning_note': '☀️ सुबह की जानकारी',
+    'action.message_teacher': '💬 शिक्षक को संदेश भेजें',
+
+    // Today screen old keys
     'today.morning.heads_up': 'सुबह की जानकारी',
     'today.homework.due': 'होमवर्क देय',
     'today.attendance': 'उपस्थिति',
@@ -136,9 +206,44 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.messages': 'संदेश',
     'greeting.morning': 'शुभ सकाळ',
     'greeting.safe_status': 'आज सुरक्षितपणे शाळेत पोहोचले आणि योग्य मार्गावर आहेत.',
+    'hero.subtext': 'आज सर्व काही योग्य मार्गावर आहे · 100% सुरक्षा सिंक',
+    'hero.gate': '📍 कॅम्पस गेट #2',
+    'hero.bus': '🚌 बस #4 (रमेश कुमार)',
+    'hero.score': 'सुरक्षा गुण: 98%',
 
-    // Today screen
+    // Current Status
+    'status.current_title': 'सध्याची स्थिती',
+    'status.live_telemetry': 'लाइव्ह टेलीमेट्री',
+    'status.math_quiz': 'वर्ग 8A · गणित क्विझ पूर्ण',
+    'status.math_desc': 'बीजगणित क्विझमध्ये 92% गुण मिळवले · वर्गात सक्रिय सहभाग',
+    'status.track_bus': 'बस लाइव्ह ट्रॅक करा →',
+
+    // Today's Journey Timeline
     'today.title': 'आज',
+    'today.journey': 'आजचा प्रवास',
+    'today.journey_sub': 'आरवच्या दिवसाची वेळरेषा',
+    'today.live_timeline': 'लाइव्ह वेळरेषा',
+    'timeline.bus_boarded': 'शाळा बस #4 मध्ये बसले',
+    'timeline.bus_desc': 'साकेत थांबा #3 वर पिकअप. ड्रायव्हर रमेश कुमार यांनी जागेची पुष्टी केली.',
+    'timeline.school_reached': 'शाळा कॅम्पसमध्ये पोहोचले',
+    'timeline.school_desc': 'सुरक्षा गेट #2 डायनॅमिक QR स्कॅन 100% आयडी फोटो जुळणीसह सत्यापित.',
+    'timeline.quiz': 'गणित क्विझ पूर्ण केली',
+    'timeline.quiz_desc': 'बीजगणित क्विझमध्ये 92% गुण. वर्गातील सहभाग उत्कृष्ट होता.',
+    'timeline.hw': 'गृहपाठ देण्यात आला',
+    'timeline.hw_desc': 'विज्ञान अध्याय 4 सराव (उद्या सकाळी 8:00 पर्यंत देय).',
+    'timeline.why': 'तुम्ही हे का पाहत आहात',
+
+    // Needs Attention & Actions
+    'attention.title': 'तुमच्या लक्ष्याची गरज आहे',
+    'attention.items': 'कृती वस्तू',
+    'attention.all_caught_up': 'आज तुम्ही पूर्णपणे अद्ययावत आहात. शून्य प्रलंबित सूचना.',
+    'attention.reply': 'उत्तर द्या →',
+    'attention.manage': 'व्यवस्थापित करा',
+    'action.gate_pass': '🎫 गेट पासची विनंती करा',
+    'action.morning_note': '☀️ सकाळची माहिती',
+    'action.message_teacher': '💬 शिक्षकाला संदेश पाठवा',
+
+    // Today screen old keys
     'today.morning.heads_up': 'सकाळची माहिती',
     'today.homework.due': 'गृहपाठ देय',
     'today.attendance': 'उपस्थिती',
