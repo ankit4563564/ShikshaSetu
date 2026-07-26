@@ -47,6 +47,17 @@ export function SchoolGPTProvider({ children }: { children: React.ReactNode }) {
     return 'general';
   };
 
+  const getScreenName = () => {
+    if (pathname === '/' || pathname === '') return 'AI Assistant';
+    if (pathname.includes('/parent')) return 'Parent Portal';
+    if (pathname.includes('/student')) return 'Student Workspace';
+    if (pathname.includes('/admin')) return 'Admin Workspace';
+    if (pathname.includes('/driver')) return 'Driver Telemetry';
+    if (pathname.includes('/gate')) return 'Gate Protocol';
+    if (pathname.includes('/teacher')) return 'Teacher Workspace';
+    return 'AI Assistant';
+  };
+
   return (
     <ContextRegistryProvider
       initialContext={{
@@ -71,7 +82,7 @@ export function SchoolGPTProvider({ children }: { children: React.ReactNode }) {
           <SchoolGPTOrb
             isOpen={isOpen}
             onToggle={() => setIsOpen(!isOpen)}
-            screenName={`${getRoleFromPath().toUpperCase()} Workspace`}
+            screenName={getScreenName()}
           />
 
           {/* Global Intelligence Side Drawer */}
