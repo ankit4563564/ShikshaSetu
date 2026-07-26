@@ -645,6 +645,42 @@ export default function TeacherDashboardClient({
           <motion.div variants={fadeSlideUp}><SnapshotCard label="Pending Reviews" value={dashboardSnapshot.pendingReviews} tone="tertiary" /></motion.div>
         </motion.section>
 
+        {/* 2.5 INTEGRATED SCHOOLGPT ASSISTANT WORKFLOW BAR */}
+        <motion.div variants={fadeSlideUp} initial="hidden" animate="visible" className="mb-6 bg-slate-900 text-white rounded-3xl p-5 shadow-xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-secondary-container/20 text-secondary-fixed flex items-center justify-center font-bold">
+              ✨
+            </div>
+            <div>
+              <p className="text-xs font-extrabold text-white font-display">Ask SchoolGPT Assistant</p>
+              <p className="text-[11px] text-slate-300 font-medium">Instant AI guidance for lesson planning, student alerts, and parent updates.</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab('assistant')}
+              className="bg-white/10 hover:bg-white/20 text-white text-xs px-3.5 py-2 rounded-xl font-semibold border border-white/15 transition-all text-left"
+            >
+              💡 &ldquo;Why is Aarav struggling?&rdquo;
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('assistant')}
+              className="bg-white/10 hover:bg-white/20 text-white text-xs px-3.5 py-2 rounded-xl font-semibold border border-white/15 transition-all text-left"
+            >
+              📝 &ldquo;Draft PTM Summary&rdquo;
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('assistant')}
+              className="bg-secondary-container text-on-secondary-container hover:bg-secondary-fixed text-xs px-4 py-2 rounded-xl font-extrabold transition-all shadow-md ml-auto md:ml-0"
+            >
+              Open Assistant →
+            </button>
+          </div>
+        </motion.div>
+
         {/* 3. STUDENT SUPPORT RADAR CARD (PRIMARY HERO FOCUS) */}
         <motion.section variants={fadeSlideUp} initial="hidden" animate="visible" className="mb-6 rounded-3xl border border-slate-200/80 bg-gradient-to-br from-emerald-50/50 via-white to-sky-50/30 p-6 sm:p-8 shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/60 pb-4">
