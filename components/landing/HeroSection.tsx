@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useLandingModal } from './LandingModalContext';
 
 export function HeroSection() {
-  const { openLeadModal, openDemoModal, openFeatureModal } = useLandingModal();
+  const { openRoleSelector, openLeadModal, openDemoModal, openFeatureModal } = useLandingModal();
 
   return (
     <section className="hero-gradient min-h-[921px] flex items-center relative overflow-hidden rounded-b-[3rem] pb-section-gap pt-20">
@@ -28,13 +28,14 @@ export function HeroSection() {
             Gate entry, classroom attention, live bus tracking, and home-safe confirmation — linked in real time for parents, teachers, and school teams.
           </p>
           <div className="flex flex-wrap gap-4 pt-4">
-            <a
-              href="#school-story"
+            <button
+              type="button"
+              onClick={openRoleSelector}
               className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all shadow-lg flex items-center gap-2 font-bold hover:scale-105 active:scale-95 inline-flex"
             >
-              Start your school story
+              Start Your School Journey
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </a>
+            </button>
           </div>
           <div className="flex gap-6 pt-8 border-t border-white/10">
             <a href="#school-story" className="flex items-center gap-2 cursor-pointer hover:opacity-100 opacity-90 transition-opacity">

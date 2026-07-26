@@ -1,7 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { SchoolStoryModal } from '@/components/onboarding/SchoolStoryModal';
+import { OnboardingMotionProvider } from '@/components/onboarding/motion/OnboardingMotionProvider';
+import type { OnboardingPhase } from '@/components/onboarding/types';
 
 interface FeatureModalInfo {
   title: string;
@@ -51,6 +54,7 @@ const LandingModalContext = createContext<LandingModalContextType | undefined>(u
 
 export function LandingModalProvider({ children }: { children: React.ReactNode }) {
   const [isRoleSelectorOpen, setIsRoleSelectorOpen] = useState(false);
+  const [storyPhase, setStoryPhase] = useState<OnboardingPhase>('closed');
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
   const [leadModalTitle, setLeadModalTitle] = useState('Book a Live School Demo');
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
@@ -61,8 +65,15 @@ export function LandingModalProvider({ children }: { children: React.ReactNode }
   // Lead form state
   const [leadFormSubmitted, setLeadFormSubmitted] = useState(false);
 
-  const openRoleSelector = () => setIsRoleSelectorOpen(true);
-  const closeRoleSelector = () => setIsRoleSelectorOpen(false);
+  const openRoleSelector = useCallback(() => {
+    setStoryPhase('opening');
+    setIsRoleSelectorOpen(true);
+  }, []);
+
+  const closeRoleSelector = useCallback(() => {
+    setIsRoleSelectorOpen(false);
+    setTimeout(() => setStoryPhase('closed'), 320);
+  }, []);
 
   const openLeadModal = (title = 'Book a Live School Demo') => {
     setLeadModalTitle(title);
@@ -102,110 +113,16 @@ export function LandingModalProvider({ children }: { children: React.ReactNode }
     >
       {children}
 
-      {/* ── ROLE SELECTION MODAL ── */}
-      {isRoleSelectorOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 text-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative">
-            <button
-              onClick={closeRoleSelector}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold"
-            >
-              ✕
-            </button>
-            <div className="mb-6">
-              <span className="text-xs font-mono font-bold text-secondary-container uppercase tracking-wider">Select Portal Experience</span>
-              <h3 className="text-2xl font-bold font-display text-white mt-1">Enter ShikshaSetu Ecosystem</h3>
-              <p className="text-sm text-slate-300 mt-1">Select your role to launch the live interactive application environment.</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Link
-                href="/parent"
-                onClick={closeRoleSelector}
-                className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition-all flex items-center gap-4 group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl shrink-0">
-                  👨‍👩‍👧
-                </div>
-                <div>
-                  <h4 className="font-bold text-white group-hover:text-amber-300 transition-colors">Parent Portal</h4>
-                  <p className="text-xs text-slate-400">Live GPS, Gate Alerts &amp; Homework</p>
-                </div>
-              </Link>
-
-              <Link
-                href="/teacher"
-                onClick={closeRoleSelector}
-                className="p-4 rounded-2xl bg-teal-500/10 border border-teal-500/30 hover:bg-teal-500/20 transition-all flex items-center gap-4 group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center text-xl shrink-0">
-                  👩‍🏫
-                </div>
-                <div>
-                  <h4 className="font-bold text-white group-hover:text-teal-300 transition-colors">Teacher Portal</h4>
-                  <p className="text-xs text-slate-400">Lesson AI, Attendance &amp; Quizzes</p>
-                </div>
-              </Link>
-
-              <Link
-                href="/admin"
-                onClick={closeRoleSelector}
-                className="p-4 rounded-2xl bg-primary-fixed/10 border border-primary-fixed/30 hover:bg-primary-fixed/20 transition-all flex items-center gap-4 group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary-fixed/20 text-primary-fixed flex items-center justify-center text-xl shrink-0">
-                  🏛️
-                </div>
-                <div>
-                  <h4 className="font-bold text-white group-hover:text-primary-fixed-dim transition-colors">School Operations</h4>
-                  <p className="text-xs text-slate-400">Campus Telemetry &amp; Fleet Command</p>
-                </div>
-              </Link>
-
-              <Link
-                href="/gate"
-                onClick={closeRoleSelector}
-                className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all flex items-center gap-4 group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl shrink-0">
-                  🚪
-                </div>
-                <div>
-                  <h4 className="font-bold text-white group-hover:text-emerald-300 transition-colors">Gate Security Console</h4>
-                  <p className="text-xs text-slate-400">RFID, QR &amp; Campus ID Scan</p>
-                </div>
-              </Link>
-
-              <Link
-                href="/student"
-                onClick={closeRoleSelector}
-                className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 hover:bg-indigo-500/20 transition-all flex items-center gap-4 group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl shrink-0">
-                  🎓
-                </div>
-                <div>
-                  <h4 className="font-bold text-white group-hover:text-indigo-300 transition-colors">Student Portal</h4>
-                  <p className="text-xs text-slate-400">Quests &amp; Anonymous Worry Jar</p>
-                </div>
-              </Link>
-
-              <Link
-                href="/driver"
-                onClick={closeRoleSelector}
-                className="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/30 hover:bg-sky-500/20 transition-all flex items-center gap-4 group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-xl shrink-0">
-                  🚌
-                </div>
-                <div>
-                  <h4 className="font-bold text-white group-hover:text-sky-300 transition-colors">Driver Transit App</h4>
-                  <p className="text-xs text-slate-400">Route Navigation &amp; Student Boarding</p>
-                </div>
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ── IMMERSIVE SCHOOL STORY ONBOARDING OVERLAY ── */}
+      <OnboardingMotionProvider>
+        <SchoolStoryModal
+          open={isRoleSelectorOpen}
+          phase={storyPhase}
+          onClose={closeRoleSelector}
+          onPhaseChange={setStoryPhase}
+          landingTargetClass="landing-shell"
+        />
+      </OnboardingMotionProvider>
 
       {/* ── LEAD GENERATION / BOOK DEMO MODAL ── */}
       {isLeadModalOpen && (

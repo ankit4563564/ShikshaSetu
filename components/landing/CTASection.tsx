@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { useLandingModal } from './LandingModalContext';
 
 export function CTASection() {
@@ -26,22 +25,23 @@ export function CTASection() {
               Walk a full school day in seven minutes.
             </h2>
             <p className="font-body-lg text-body-lg text-white/90 max-w-xl mx-auto font-medium">
-              Experience the live animated story, or step into any role portal and follow the same chain from gate to home.
+              Start your school journey and step into any role portal to follow the connected chain from gate to home.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4 pt-6">
-              <a
-                href="#school-story"
+              <button
+                type="button"
+                onClick={openRoleSelector}
                 className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all shadow-lg font-bold hover:scale-105 inline-flex items-center gap-2"
               >
-                Start your school story →
-              </a>
+                Start Your School Journey →
+              </button>
               <button
                 type="button"
                 onClick={openRoleSelector}
                 className="bg-white/10 border border-white/30 text-white px-8 py-4 rounded-full font-title-md text-title-md hover:bg-white/20 transition-all font-bold hover:scale-105"
               >
-                Enter a portal
+                Enter Portal
               </button>
             </div>
           </div>
