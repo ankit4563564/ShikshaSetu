@@ -2511,7 +2511,7 @@ export default function ParentTodayClient({
           }`}
         >
           <span className="text-sm">🏠</span>
-          <span className="text-[10px] tracking-tight leading-none">Home</span>
+          <span className="text-[10px] tracking-tight leading-none">{t('nav.home')}</span>
         </button>
 
         {/* Journey Tab */}
@@ -2527,7 +2527,7 @@ export default function ParentTodayClient({
           }`}
         >
           <span className="text-sm">🚌</span>
-          <span className="text-[10px] tracking-tight leading-none">Journey</span>
+          <span className="text-[10px] tracking-tight leading-none">{t('nav.bus')}</span>
         </button>
 
         {/* Homework Tab */}
@@ -2543,7 +2543,7 @@ export default function ParentTodayClient({
           }`}
         >
           <span className="text-sm">📚</span>
-          <span className="text-[10px] tracking-tight leading-none">Homework</span>
+          <span className="text-[10px] tracking-tight leading-none">{t('nav.homework')}</span>
         </button>
 
         {/* Messages Tab */}
@@ -2564,7 +2564,7 @@ export default function ParentTodayClient({
               <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
             )}
           </div>
-          <span className="text-[10px] tracking-tight leading-none">Messages</span>
+          <span className="text-[10px] tracking-tight leading-none">{t('nav.messages')}</span>
         </button>
 
         {/* Attendance Tab */}
@@ -2579,8 +2579,8 @@ export default function ParentTodayClient({
               : 'text-slate-400 font-medium hover:text-white'
           }`}
         >
-          <span className="text-sm font-bold">✓</span>
-          <span className="text-[10px] tracking-tight leading-none">Attend</span>
+          <span className="text-sm">📅</span>
+          <span className="text-[10px] tracking-tight leading-none">{t('nav.attendance')}</span>
         </button>
 
       </nav>

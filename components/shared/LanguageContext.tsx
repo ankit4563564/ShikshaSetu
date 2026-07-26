@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export type Language = 'en' | 'hi' | 'mr';
 
@@ -167,10 +167,31 @@ const translations: Record<Language, Record<string, string>> = {
 };
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>('en');
+
+  // Sync with localStorage on client mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('shikshasetu-lang') as Language;
+      if (saved && (saved === 'en' || saved === 'hi' || saved === 'mr')) {
+        setLanguageState(saved);
+      }
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  }, []);
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    try {
+      localStorage.setItem('shikshasetu-lang', lang);
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  };
 
   const t = (key: string): string => {
-    return translations[language][key] || translations['en'][key] || key;
+    return translations[language]?.[key] || translations['en']?.[key] || key;
   };
 
   return (

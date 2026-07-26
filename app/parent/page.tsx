@@ -3,6 +3,7 @@ import { calculateStudentStatus } from '@/lib/rules-engine/calculateStatus';
 import { generateParentOfflineFallback } from '@/lib/ai-narration/generateParentNote';
 import ParentTodayClient from '@/components/parent/ParentTodayClient';
 import LanguageToggle from '@/components/shared/LanguageToggle';
+import { LanguageProvider } from '@/components/shared/LanguageContext';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { cookies } from 'next/headers';
 import { getDemoSessionFromCookies } from '@/lib/demo/session';
@@ -150,13 +151,15 @@ export default async function ParentPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-100/80 flex items-center justify-center p-0 sm:p-4">
-      <ParentTodayClient
-        studentsData={processedStudents}
-        initialParentType={'sunita'}
-        isClerkActive={!!clerkKey}
-        guardianId={guardianId}
-      />
-    </div>
+    <LanguageProvider>
+      <div className="min-h-screen bg-slate-100/80 flex items-center justify-center p-0 sm:p-4">
+        <ParentTodayClient
+          studentsData={processedStudents}
+          initialParentType={'sunita'}
+          isClerkActive={!!clerkKey}
+          guardianId={guardianId}
+        />
+      </div>
+    </LanguageProvider>
   );
 }
