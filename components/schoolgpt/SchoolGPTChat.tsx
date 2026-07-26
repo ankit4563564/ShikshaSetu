@@ -17,42 +17,44 @@ interface SchoolGPTChatProps {
   placeholder?: string;
 }
 
-const suggestedQuestions: Record<SchoolGPTRole, { title: string; prompt: string; icon: string }[]> = {
-  student: [
-    { title: 'Diagnostic Brief', prompt: 'What is my current attendance and academic standing?', icon: '📊' },
-    { title: 'Safety Journey', prompt: 'Show my safety journey, gate entry, and bus arrival today.', icon: '🛡️' },
-    { title: 'Robotics & Clubs', prompt: 'When is the next Robotics Club meeting and room details?', icon: '🤖' },
-    { title: 'Timetable & Prep', prompt: 'Show tomorrow\'s timetable and homework submission deadlines.', icon: '📅' },
+const suggestedQuestions: Record<SchoolGPTRole, { title: string; prompt: string; icon: string; modeTag: string }[]> = {
+  teacher: [
+    { title: 'Support Radar', prompt: 'Which students need support today?', icon: '🎯', modeTag: 'Action Mode' },
+    { title: 'Student Report', prompt: 'Show Aarav\'s complete report.', icon: '👤', modeTag: 'Student Report Mode' },
+    { title: 'Class Briefing', prompt: 'Summarize today\'s classroom.', icon: '📊', modeTag: 'Class Analytics Mode' },
+    { title: 'Term Comparison', prompt: 'Compare this term with last term.', icon: '📈', modeTag: 'Comparison Mode' },
+    { title: 'Today\'s Timeline', prompt: 'What happened today?', icon: '⏱️', modeTag: 'Timeline Mode' },
+    { title: 'PTM Summary', prompt: 'Generate PTM summary update for Aarav\'s parent.', icon: '✉️', modeTag: 'Parent Summary Mode' },
   ],
   parent: [
-    { title: 'Safety & Transport', prompt: 'Was my child safe today? Show bus telemetry and gate scan timestamps.', icon: '🛡️' },
-    { title: 'Guardian Journey', prompt: 'Show Guardian Journey timeline of homework, attendance and teacher notes.', icon: '💚' },
-    { title: 'Attendance Health', prompt: 'What is my child\'s attendance percentage and monthly trend?', icon: '📈' },
-    { title: 'Teacher Updates', prompt: 'Summarize recent messages and office hours for Ms. Ananya Mehra.', icon: '💬' },
+    { title: 'Child Report', prompt: 'Show Aarav\'s complete report.', icon: '👤', modeTag: 'Student Report Mode' },
+    { title: 'Safety Journey', prompt: 'Was my child safe today? Show arrival telemetry.', icon: '🛡️', modeTag: 'Timeline Mode' },
+    { title: 'Attendance Health', prompt: 'What is my child\'s attendance percentage?', icon: '📈', modeTag: 'Class Analytics Mode' },
+    { title: 'Teacher Updates', prompt: 'Summarize recent messages from Ms. Ananya Mehra.', icon: '💬', modeTag: 'Action Mode' },
   ],
-  teacher: [
-    { title: 'Support Radar', prompt: 'Which students need academic or emotional check-ins today?', icon: '🎯' },
-    { title: 'Arrival Safety', prompt: 'Show today\'s arrival safety checks and unexcused absences.', icon: '⚡' },
-    { title: 'Class Growth', prompt: 'Show class attendance and math mastery trends for Term 3.', icon: '📈' },
-    { title: 'Remediation Sprint', prompt: 'Generate a 10-minute revision plan for Science Forces & Motion.', icon: '🧪' },
+  student: [
+    { title: 'My Performance', prompt: 'Show my complete academic report.', icon: '📊', modeTag: 'Student Report Mode' },
+    { title: 'Today\'s Timeline', prompt: 'What happened today in my timetable?', icon: '⏱️', modeTag: 'Timeline Mode' },
+    { title: 'Robotics & Clubs', prompt: 'When is the next Robotics Club meeting?', icon: '🤖', modeTag: 'Search Mode' },
+    { title: 'Homework Status', prompt: 'Show my homework submission status.', icon: '📅', modeTag: 'Action Mode' },
   ],
   admin: [
-    { title: 'Safety Audits', prompt: 'Show unresolved safety alerts and gate entry logs.', icon: '🚨' },
-    { title: 'School Attendance', prompt: 'Show school-wide attendance trends across Class 6 to 12.', icon: '📊' },
-    { title: 'Upcoming Events', prompt: 'List upcoming school events, exams, and holiday schedules.', icon: '📅' },
-    { title: 'Policy Guidelines', prompt: 'Summarize active campus safety and moderation policies.', icon: '📜' },
+    { title: 'Safety Audits', prompt: 'Show unresolved safety alerts and gate entry logs.', icon: '🚨', modeTag: 'Action Mode' },
+    { title: 'School Attendance', prompt: 'Show school-wide attendance trends across Class 6 to 12.', icon: '📊', modeTag: 'Class Analytics Mode' },
+    { title: 'Term Growth', prompt: 'Compare Term 1 and Term 3 across all grades.', icon: '📈', modeTag: 'Comparison Mode' },
+    { title: 'School Policies', prompt: 'What is the school uniform and gate policy?', icon: '📜', modeTag: 'Search Mode' },
   ],
   driver: [
-    { title: 'Route Telemetry', prompt: 'Show my bus route stops, student pickup status, and ETA.', icon: '🚌' },
-    { title: 'Speed & Safety', prompt: 'What is the speed limit and safety protocol for Saket Route #4?', icon: '⚠️' },
+    { title: 'Route Stops', prompt: 'Show my bus route stops and ETA.', icon: '🚌', modeTag: 'Timeline Mode' },
+    { title: 'Safety Protocol', prompt: 'What is the speed limit for Saket Route #4?', icon: '⚠️', modeTag: 'Search Mode' },
   ],
   gate: [
-    { title: 'Entry Verification', prompt: 'Show gate rules, student RFID scan policies, and visitor logs.', icon: '🔑' },
-    { title: 'Campus Alerts', prompt: 'What announcements or security notices exist for today?', icon: '📢' },
+    { title: 'Entry Verification', prompt: 'Show gate rules and entry policies.', icon: '🔑', modeTag: 'Search Mode' },
+    { title: 'Today\'s Timeline', prompt: 'Show today\'s gate scan timeline.', icon: '⏱️', modeTag: 'Timeline Mode' },
   ],
   vendor: [
-    { title: 'Vendor Guidelines', prompt: 'Show active campus vendor entry rules and payment schedules.', icon: '📄' },
-    { title: 'School Calendar', prompt: 'List school holidays and non-operational campus dates.', icon: '🗓️' },
+    { title: 'Active Rules', prompt: 'Show active campus vendor policies.', icon: '📄', modeTag: 'Search Mode' },
+    { title: 'School Calendar', prompt: 'List school calendar holidays.', icon: '🗓️', modeTag: 'Search Mode' },
   ],
 };
 
@@ -85,7 +87,7 @@ export default function SchoolGPTChat({
           id: 'welcome',
           role: 'assistant',
           content:
-            'SchoolGPT AI Education Workspace is active. Ask any question to retrieve real-time attendance, homework, safety telemetry, academic growth, and class diagnostic summaries.',
+            'SchoolGPT Adaptive AI Education Operating System is active. Tap any query card or ask a custom question to render real-time student reports, class analytics, side-by-side term comparisons, or daily timelines.',
           timestamp: Date.now(),
           sources: ['School Core System', 'Live Telemetry API'],
           suggestedFollowUps: ['Show class diagnostic summary', 'List students needing support'],
@@ -149,7 +151,7 @@ export default function SchoolGPTChat({
         content: response.text,
         timestamp: Date.now(),
         sources: response.sources || ['School Telemetry Database', 'Official School Portal'],
-        suggestedFollowUps: response.suggestedFollowUps || ['Ask for further details', 'Export summary report'],
+        suggestedFollowUps: response.suggestedFollowUps || ['Compare with Class Average', 'Open Student Profile'],
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
@@ -179,40 +181,51 @@ export default function SchoolGPTChat({
   const currentSuggested = suggestedQuestions[role] || suggestedQuestions.student;
 
   return (
-    <div className="flex h-full flex-col justify-between space-y-4">
-      {/* Top Header Banner */}
+    <div className="flex h-full flex-col justify-between space-y-4 font-body">
+      {/* Workspace Header Bar */}
       <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🤖</span>
+        <div className="flex items-center gap-2.5">
+          <span className="text-2xl">🤖</span>
           <div>
             <h3 className="font-display text-sm font-extrabold text-slate-900">
-              SchoolGPT Education Workspace
+              SchoolGPT Adaptive AI Workspace
             </h3>
             <p className="font-body text-[11px] text-slate-500 font-medium">
-              Perplexity &amp; Claude Artifacts-Grade AI Intelligence Operating System
+              Apple &amp; Perplexity-Grade Adaptive AI Response Engine
             </p>
           </div>
         </div>
-        <span className="px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-[10px] font-extrabold uppercase tracking-wider">
-          ● Live Telemetry Active
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 bg-slate-900 text-white rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono">
+            ● 7 Response Modes Active
+          </span>
+        </div>
       </div>
 
-      {/* Suggested Prompt Cards Grid (Displayed Before Conversation) */}
+      {/* PROACTIVE AI WORKSPACE HOME SCREEN (BEFORE CONVERSATION) */}
       {showSuggestions && messages.length <= 2 && (
-        <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
-            Suggested Intelligence Queries
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Popular Adaptive Intelligence Queries
+            </span>
+            <span className="text-[10px] font-bold text-slate-500">Tap to render UI layout</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {currentSuggested.map((card) => (
               <button
                 key={card.title}
                 type="button"
                 onClick={() => handleSend(card.prompt)}
-                className="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 hover:border-slate-300 rounded-2xl text-left transition-all shadow-2xs group flex items-start gap-2.5 active:scale-95"
+                className="p-4 bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 hover:border-slate-300 rounded-2xl text-left transition-all shadow-2xs group flex flex-col justify-between gap-3 active:scale-95"
               >
-                <span className="text-lg shrink-0 group-hover:scale-110 transition-transform">{card.icon}</span>
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-xl shrink-0 group-hover:scale-110 transition-transform">{card.icon}</span>
+                  <span className="px-2 py-0.5 bg-white border border-slate-200 text-slate-600 rounded-full font-mono font-bold text-[9px] uppercase tracking-wider">
+                    {card.modeTag}
+                  </span>
+                </div>
                 <div>
                   <h5 className="font-display text-xs font-extrabold text-slate-900">{card.title}</h5>
                   <p className="font-body text-[11px] text-slate-500 line-clamp-1 mt-0.5">{card.prompt}</p>
@@ -223,12 +236,21 @@ export default function SchoolGPTChat({
         </motion.div>
       )}
 
-      {/* Conversation Workspace Stream */}
+      {/* Conversation Stream & Adaptive Cards */}
       <div className="flex-1 overflow-y-auto space-y-4 pr-1">
         <AnimatePresence initial={false}>
-          {messages.map((msg) => (
-            <SchoolGPTMessage key={msg.id} role={msg.role} content={msg.content} sources={msg.sources} />
-          ))}
+          {messages.map((msg, idx) => {
+            const previousUserMessage = idx > 0 && messages[idx - 1].role === 'user' ? messages[idx - 1].content : '';
+            return (
+              <SchoolGPTMessage
+                key={msg.id}
+                role={msg.role}
+                content={msg.content}
+                userQuery={previousUserMessage}
+                sources={msg.sources}
+              />
+            );
+          })}
         </AnimatePresence>
 
         {isLoading && (
@@ -240,21 +262,28 @@ export default function SchoolGPTChat({
                 <span className="h-2 w-2 animate-bounce rounded-full bg-slate-900" style={{ animationDelay: '300ms' }} />
               </div>
               <span className="text-xs font-mono font-bold text-slate-600">
-                SchoolGPT is retrieving real-time school telemetry…
+                SchoolGPT is selecting optimal response mode &amp; compiling telemetry…
               </span>
             </div>
           </motion.div>
         )}
 
-        {/* Suggested Follow-up Actions */}
-        {!isLoading && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && messages[messages.length - 1].suggestedFollowUps && (
-          <div className="flex flex-wrap gap-2 pt-1 pl-12">
-            {messages[messages.length - 1].suggestedFollowUps?.map((actionText) => (
+        {/* Contextual Smart Follow-up Action Pills */}
+        {!isLoading && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {[
+              'Compare with Class Average',
+              'View Attendance',
+              'Open Homework',
+              'Generate Parent Summary',
+              'Schedule Check-in',
+              'Open Student Profile',
+            ].map((actionText) => (
               <button
                 key={actionText}
                 type="button"
                 onClick={() => handleSend(actionText)}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 shadow-2xs transition-all active:scale-95"
+                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 text-xs font-extrabold text-slate-800 shadow-2xs transition-all active:scale-95"
               >
                 <span>💡</span> {actionText}
               </button>
@@ -285,7 +314,7 @@ export default function SchoolGPTChat({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isLoading ? 'Retrieving school telemetry…' : placeholder}
+            placeholder={isLoading ? 'Compiling telemetry UI…' : placeholder}
             disabled={isLoading}
             className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-slate-900 focus:bg-white font-medium"
           />
@@ -295,7 +324,7 @@ export default function SchoolGPTChat({
             disabled={isLoading || !input.trim()}
             className="rounded-2xl bg-slate-900 px-5 py-3 text-xs sm:text-sm font-extrabold text-white transition-all hover:bg-slate-800 active:scale-95 disabled:opacity-40 shadow-xs"
           >
-            Send ✨
+            Ask ✨
           </button>
         </div>
       </div>
