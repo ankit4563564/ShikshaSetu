@@ -38,6 +38,10 @@ export function resolveContextualReferences(
 ): { resolvedQuery: string; contextNotes: string; memoryContext: MemoryContext; state: ConversationState } {
   const memoryContext: MemoryContext = {};
   const state: ConversationState = {
+    currentStudentId: 'stu-aarav',
+    currentStudentName: 'Aarav Sharma',
+    currentClassGrade: '8',
+    currentClassSection: 'A',
     turnCount: history.length,
   };
 

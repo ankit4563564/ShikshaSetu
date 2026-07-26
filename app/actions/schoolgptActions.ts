@@ -24,6 +24,7 @@ import {
   retrieveNotices,
   retrieveLibrary,
   retrieveRules,
+  retrieveStudentPerformance,
 } from '@/lib/schoolgpt/retrievers';
 
 interface SchoolGPTRequest {
@@ -48,13 +49,15 @@ export async function askSchoolGPTAction(req: SchoolGPTRequest): Promise<SchoolG
   // 2. Intent Classification
   const classified = classifyIntent(resolvedQuery, history);
 
+  const effectiveStudentId = req.studentId || state.currentStudentId || 'stu-aarav';
+
   const brainContext: SchoolBrainContext = {
     role: req.role,
-    studentId: req.studentId || state.currentStudentId,
+    studentId: effectiveStudentId,
     teacherId: req.teacherId,
     childrenIds: req.childrenIds,
-    classGrade: req.classGrade || state.currentClassGrade,
-    classSection: req.classSection || state.currentClassSection,
+    classGrade: req.classGrade || state.currentClassGrade || '8',
+    classSection: req.classSection || state.currentClassSection || 'A',
   };
 
   // 3. Clarification Check (Bypass LLM if query is ambiguous)
@@ -79,24 +82,28 @@ export async function askSchoolGPTAction(req: SchoolGPTRequest): Promise<SchoolG
   let liveDbResult = '';
   try {
     switch (classified.intent) {
+      case 'student_performance':
+      case 'marks':
+        liveDbResult = await retrieveStudentPerformance(effectiveStudentId);
+        break;
       case 'attendance':
-        if (req.role === 'student' && req.studentId) liveDbResult = await retrieveAttendance(req.studentId);
-        else if (req.role === 'teacher' || req.role === 'admin') liveDbResult = await retrieveAttendanceTrends();
+        if (req.role === 'student' || req.role === 'parent') liveDbResult = await retrieveAttendance(effectiveStudentId);
+        else liveDbResult = await retrieveAttendanceTrends();
         break;
       case 'homework':
-        if (req.studentId) liveDbResult = await retrieveHomework(req.studentId);
+        liveDbResult = await retrieveHomework(effectiveStudentId);
         break;
       case 'timetable':
         liveDbResult = await retrieveTimetable(req.classGrade || '8', req.classSection || 'A');
         break;
       case 'exams':
-        liveDbResult = await retrieveExams(req.studentId, req.classGrade || '8');
+        liveDbResult = await retrieveExams(effectiveStudentId, req.classGrade || '8');
         break;
       case 'who_needs_attention':
         liveDbResult = await retrieveStudentNeedingAttention(req.teacherId || 'all');
         break;
       case 'bus':
-        if (req.studentId) liveDbResult = await retrieveBus(req.studentId);
+        liveDbResult = await retrieveBus(effectiveStudentId);
         break;
       case 'events':
         liveDbResult = await retrieveEvents();
@@ -111,7 +118,7 @@ export async function askSchoolGPTAction(req: SchoolGPTRequest): Promise<SchoolG
         liveDbResult = await retrieveRules();
         break;
       case 'clubs':
-        liveDbResult = await retrieveClubs(req.studentId);
+        liveDbResult = await retrieveClubs(effectiveStudentId);
         break;
       case 'faculty':
         liveDbResult = await retrieveTeachers(req.classGrade);
