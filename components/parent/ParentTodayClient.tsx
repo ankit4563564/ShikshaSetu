@@ -105,6 +105,7 @@ export default function ParentTodayClient({
   const [submittedMood, setSubmittedMood] = useState<number | null>(null);
   const [studentTodayMood, setStudentTodayMood] = useState<{ mood_value: number; mood_label: string; note: string | null } | null>(null);
   const [isSubmittingMood, setIsSubmittingMood] = useState(false);
+  const [homeworkFilter, setHomeworkFilter] = useState<'all' | 'pending' | 'completed' | 'math' | 'science'>('all');
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 500);
@@ -1404,164 +1405,244 @@ export default function ParentTodayClient({
           )
         )}
 
-        {/* Tab 2: Homework Tab */}
+        {/* Tab 2: Homework Planning Experience */}
         {activeNav === 'homework' && (
           <div className="space-y-6">
-            {/* Header & Overview */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
+            {/* 1. ACTIONABLE HOMEWORK OVERVIEW & PROGRESS */}
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-display text-xl font-extrabold text-slate-900">
-                    Homework for {activeStudent?.displayName.split(' ')[0] || 'Aarav'}
+                  <h3 className="font-display text-2xl font-extrabold text-slate-900 tracking-tight">
+                    Today&apos;s Homework
                   </h3>
-                  <p className="font-body text-xs text-slate-500 mt-0.5">
-                    Track pending tasks, submitted assignments, and teacher notes
+                  <p className="font-body text-xs font-semibold text-slate-500 mt-1">
+                    1 assignment due today &bull; 2 due tomorrow &bull; Estimated effort: 35 mins
                   </p>
                 </div>
-                <div className="px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-700 rounded-full font-bold text-xs">
-                  2 of 3 Completed
+                <div className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-900 text-white rounded-full font-bold text-xs shadow-xs self-start sm:self-auto">
+                  <span>2 of 3 Finished</span>
                 </div>
               </div>
 
-              {/* Progress Summary bar */}
-              <div className="pt-2 border-t border-slate-100 flex items-center gap-4 text-xs font-semibold text-slate-600">
-                <span className="flex items-center gap-1.5 text-emerald-700 font-bold">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                  2 Submitted
-                </span>
-                <span>&bull;</span>
-                <span className="flex items-center gap-1.5 text-amber-700 font-bold">
-                  <span className="h-2 w-2 rounded-full bg-amber-500" />
-                  1 Pending Today
-                </span>
+              {/* Visual Progress Bar */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span className="text-slate-700">67% Complete</span>
+                  <span className="text-emerald-700 font-mono">1 Task Remaining</span>
+                </div>
+                <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
+                  <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500 w-[67%]" />
+                </div>
               </div>
             </div>
 
+            {/* 2. TODAY'S STUDY PLAN (COMPACT PLANNING CARD) */}
+            <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-sm space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">📅</span>
+                  <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-300">
+                    Today&apos;s Study Plan
+                  </h4>
+                </div>
+                <span className="text-[10px] font-bold text-sky-400 font-mono">Total: 45 min</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                <div className="p-3 bg-slate-800/90 border border-slate-700/80 rounded-2xl space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-emerald-400">1. Mathematics</span>
+                    <span className="text-[10px] font-mono text-slate-400">20 min</span>
+                  </div>
+                  <p className="font-display text-xs font-extrabold text-white">Algebra Practice #4</p>
+                </div>
+
+                <div className="p-3 bg-slate-800/90 border border-slate-700/80 rounded-2xl space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-sky-400">2. Science</span>
+                    <span className="text-[10px] font-mono text-slate-400">15 min</span>
+                  </div>
+                  <p className="font-display text-xs font-extrabold text-white">Chapter 4 Exercise</p>
+                </div>
+
+                <div className="p-3 bg-slate-800/90 border border-slate-700/80 rounded-2xl space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-amber-400">3. English</span>
+                    <span className="text-[10px] font-mono text-slate-400">10 min</span>
+                  </div>
+                  <p className="font-display text-xs font-extrabold text-white">Poetry Reading</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. LIGHTWEIGHT QUICK FILTERS */}
+            <div className="flex flex-wrap items-center gap-2">
+              {[
+                { id: 'all', label: 'All Homework' },
+                { id: 'pending', label: 'Pending (1)' },
+                { id: 'completed', label: 'Completed (2)' },
+                { id: 'math', label: 'Mathematics' },
+                { id: 'science', label: 'Science' },
+              ].map((filter) => {
+                const isActive = homeworkFilter === filter.id;
+                return (
+                  <button
+                    key={filter.id}
+                    type="button"
+                    onClick={() => setHomeworkFilter(filter.id as any)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
+                      isActive
+                        ? 'bg-slate-900 text-white shadow-xs scale-105'
+                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                );
+              })}
+            </div>
+
             {!consentSettings.receiveAcademic ? (
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs text-center py-10">
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs text-center py-10">
                 <p className="font-body text-sm text-slate-500 italic">
                   🔒 Homework updates are hidden because this preference is disabled in settings.
                 </p>
               </div>
             ) : (
               <div className="space-y-6">
-                {/* Section 1: Due Today */}
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">⏱️</span>
-                      <h4 className="font-display text-sm font-extrabold text-slate-900">
-                        Due Today
-                      </h4>
+                {/* SECTION 1: DUE TODAY (HIGHEST PRIORITY) */}
+                {(homeworkFilter === 'all' || homeworkFilter === 'pending' || homeworkFilter === 'math') && (
+                  <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🔥</span>
+                        <h4 className="font-display text-base font-extrabold text-slate-900">
+                          Due Today
+                        </h4>
+                      </div>
+                      <span className="text-[10px] font-extrabold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 uppercase tracking-wider">
+                        Highest Priority
+                      </span>
                     </div>
-                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 uppercase tracking-wider">
-                      Priority Focus
-                    </span>
-                  </div>
 
-                  {homeworkDueToday.length === 0 ? (
-                    <p className="font-body text-xs text-slate-400 italic">No homework due today. All caught up!</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {homeworkDueToday.map((hw) => (
-                        <div key={hw.id} className="p-4 bg-slate-50/80 border border-slate-200 rounded-xl space-y-2">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="checkbox"
-                                checked={hw.isSubmitted}
-                                readOnly
-                                className="rounded border-slate-300 text-slate-900 focus:ring-0 h-5 w-5 cursor-default"
-                              />
-                              <div>
-                                <h5 className="font-display text-sm font-bold text-slate-900">{hw.title}</h5>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold text-[10px]">
-                                    {hw.subject}
-                                  </span>
-                                  <span className="font-body text-[11px] text-slate-500">⏱️ Est: 20 mins</span>
+                    {homeworkDueToday.length === 0 ? (
+                      <div className="p-6 text-center space-y-2 bg-emerald-50/50 rounded-2xl border border-emerald-100">
+                        <span className="text-2xl block">🎉</span>
+                        <p className="font-display text-sm font-extrabold text-emerald-900">No homework due today!</p>
+                        <p className="font-body text-xs text-emerald-700">Enjoy your evening with family.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {homeworkDueToday.map((hw) => (
+                          <div key={hw.id} className="p-5 bg-slate-50/80 border border-slate-200/90 rounded-2xl space-y-3 hover:border-slate-300 transition-all">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-start gap-3">
+                                <input
+                                  type="checkbox"
+                                  checked={hw.isSubmitted}
+                                  readOnly
+                                  className="mt-1 rounded border-slate-300 text-slate-900 focus:ring-0 h-5 w-5 cursor-default"
+                                />
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="px-2.5 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 font-extrabold text-[10px]">
+                                      {hw.subject}
+                                    </span>
+                                    <span className="font-mono text-xs text-slate-500 font-bold">⏱️ 20 min</span>
+                                  </div>
+                                  <h5 className="font-display text-base font-extrabold text-slate-900 mt-1">{hw.title}</h5>
+                                  <p className="font-body text-xs text-slate-600 mt-0.5">Assigned by Ms. Mehra &bull; Practice Questions 1–15 &bull; Due before 8:00 PM</p>
                                 </div>
                               </div>
+                              <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider shrink-0 ${
+                                hw.isSubmitted 
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+                              }`}>
+                                {hw.isSubmitted ? '✓ Submitted' : 'Action Required'}
+                              </span>
                             </div>
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                              hw.isSubmitted 
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                                : 'bg-amber-50 text-amber-700 border border-amber-200'
-                            }`}>
-                              {hw.isSubmitted ? '✓ Submitted' : 'Pending Submission'}
-                            </span>
+
+                            {/* Teacher Feedback snippet */}
+                            <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
+                              <span className="font-body text-slate-500 italic">&ldquo;Great initiative on whiteboard algebra today!&rdquo; &mdash; Ms. Mehra</span>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase">Reviewed</span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Section 2: Due Tomorrow */}
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">📚</span>
-                      <h4 className="font-display text-sm font-extrabold text-slate-900">
-                        Due Tomorrow
-                      </h4>
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200 uppercase tracking-wider">
-                      Upcoming
-                    </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                )}
 
-                  {homeworkDueTomorrow.length === 0 ? (
-                    <p className="font-body text-xs text-slate-400 italic">No homework scheduled for tomorrow.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {homeworkDueTomorrow.map((hw) => (
-                        <div key={hw.id} className="p-4 bg-slate-50/80 border border-slate-200 rounded-xl space-y-2">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="checkbox"
-                                checked={hw.isSubmitted}
-                                readOnly
-                                className="rounded border-slate-300 text-slate-900 focus:ring-0 h-5 w-5 cursor-default"
-                              />
-                              <div>
-                                <h5 className="font-display text-sm font-bold text-slate-900">{hw.title}</h5>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[10px]">
-                                    {hw.subject}
-                                  </span>
-                                  <span className="font-body text-[11px] text-slate-500">⏱️ Est: 15 mins</span>
+                {/* SECTION 2: DUE TOMORROW */}
+                {(homeworkFilter === 'all' || homeworkFilter === 'pending' || homeworkFilter === 'science') && (
+                  <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">📚</span>
+                        <h4 className="font-display text-base font-extrabold text-slate-900">
+                          Due Tomorrow
+                        </h4>
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200 uppercase tracking-wider">
+                        Upcoming
+                      </span>
+                    </div>
+
+                    {homeworkDueTomorrow.length === 0 ? (
+                      <p className="font-body text-xs text-slate-400 italic">No homework scheduled for tomorrow.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {homeworkDueTomorrow.map((hw) => (
+                          <div key={hw.id} className="p-5 bg-slate-50/80 border border-slate-200/90 rounded-2xl space-y-3 hover:border-slate-300 transition-all">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-start gap-3">
+                                <input
+                                  type="checkbox"
+                                  checked={hw.isSubmitted}
+                                  readOnly
+                                  className="mt-1 rounded border-slate-300 text-slate-900 focus:ring-0 h-5 w-5 cursor-default"
+                                />
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="px-2.5 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 font-extrabold text-[10px]">
+                                      {hw.subject}
+                                    </span>
+                                    <span className="font-mono text-xs text-slate-500 font-bold">⏱️ 15 min</span>
+                                  </div>
+                                  <h5 className="font-display text-base font-extrabold text-slate-900 mt-1">{hw.title}</h5>
+                                  <p className="font-body text-xs text-slate-600 mt-0.5">Assigned by Mr. Sharma &bull; Read Chapter 4 &amp; answer end questions</p>
                                 </div>
                               </div>
+                              <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider shrink-0 ${
+                                hw.isSubmitted 
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                                  : 'bg-slate-100 text-slate-600 border border-slate-200'
+                              }`}>
+                                {hw.isSubmitted ? '✓ Submitted' : 'Pending'}
+                              </span>
                             </div>
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                              hw.isSubmitted 
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                                : 'bg-slate-100 text-slate-600 border border-slate-200'
-                            }`}>
-                              {hw.isSubmitted ? '✓ Submitted' : 'Pending'}
-                            </span>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
-                {/* Message Teacher Action */}
+                {/* Direct Teacher Context Action */}
                 <button
                   onClick={() => setActiveNav('messages')}
-                  className="w-full p-4 bg-white border border-slate-200/80 rounded-2xl shadow-xs hover:border-slate-400 transition-all text-left flex items-center justify-between"
+                  className="w-full p-5 bg-white border border-slate-200/80 rounded-3xl shadow-xs hover:border-slate-400 transition-all text-left flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-xl">💬</span>
+                    <span className="text-2xl">💬</span>
                     <div>
-                      <h4 className="font-display text-xs font-bold text-slate-900">Have questions about an assignment?</h4>
-                      <p className="font-body text-[11px] text-slate-500">Send a direct message to Ms. Mehra &rarr;</p>
+                      <h4 className="font-display text-sm font-extrabold text-slate-900">Have questions about an assignment?</h4>
+                      <p className="font-body text-xs text-slate-500">Send a direct message to Ms. Mehra &rarr;</p>
                     </div>
                   </div>
-                  <span className="px-3.5 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-xs">Message Teacher</span>
+                  <span className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-xs shrink-0">Message Teacher</span>
                 </button>
               </div>
             )}
