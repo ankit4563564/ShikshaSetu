@@ -2,6 +2,7 @@ import { getStudentsData } from '@/lib/supabase';
 import { calculateStudentStatus } from '@/lib/rules-engine/calculateStatus';
 import { generateOfflineFallback } from '@/lib/ai-narration/generateExplanation';
 import TeacherDashboardClient from '@/components/teacher/TeacherDashboardClient';
+import TeacherWorkspaceV2 from '@/components/teacher/TeacherWorkspaceV2';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { auth, currentUser } from '@clerk/nextjs/server';
@@ -173,12 +174,7 @@ export default async function TeacherPage() {
   // 7. Render client dashboard grid
   return (
     <ErrorBoundary portalName="Teacher Portal">
-      <TeacherDashboardClient 
-        initialStudents={processedStudents} 
-        rawStudentsData={filteredRawStudents} 
-        teacherId={activeTeacherId}
-        gatePasses={dbPasses || []}
-      />
+      <TeacherWorkspaceV2 />
     </ErrorBoundary>
   );
 }
