@@ -15,18 +15,18 @@ export function LandingNavbar() {
           <span className="font-display-lg text-title-md font-extrabold text-primary">ShikshaSetu</span>
         </Link>
 
-        <nav className="hidden lg:flex gap-6 items-center font-bold text-xs">
-          <Link className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1" href="/parent">
-            👨‍👩‍👧 Parent
+        <nav className="hidden lg:flex gap-7 items-center font-bold text-xs">
+          <Link className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5" href="/parent">
+            👨‍👩‍👧 Parents
           </Link>
-          <Link className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1" href="/teacher">
-            👩‍🏫 Teacher
+          <Link className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5" href="/teacher">
+            👩‍🏫 Teachers
           </Link>
-          <Link className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1" href="/admin">
-            🏫 Admin
-          </Link>
+          <a className="text-on-surface-variant hover:text-primary transition-colors" href="#school-story">
+            Features
+          </a>
           <a className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1" href="#schoolgpt">
-            🤖 SchoolGPT
+            ✨ SchoolGPT
           </a>
           <Link className="text-on-surface-variant hover:text-primary transition-colors" href="/pricing">
             Pricing
