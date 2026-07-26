@@ -2420,229 +2420,245 @@ export default function ParentTodayClient({
           </div>
         )}
 
-        {/* Tab 5: Premium Teacher Communication Workspace */}
+        {/* Tab 5: Premium Teacher Communication Workspace (2-Column Layout) */}
         {activeNav === 'messages' && (
-          <div className="space-y-6">
-            {/* 1. TEACHER PROFILE & WORKSPACE HEADER */}
-            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {/* ── LEFT COLUMN (33%): TEACHER PROFILE & TODAY'S CONTEXT ── */}
+            <div className="lg:col-span-4 space-y-5">
+              
+              {/* 1. TEACHER PROFILE CARD */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white font-display font-extrabold text-xl flex items-center justify-center shadow-xs">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white font-display font-extrabold text-2xl flex items-center justify-center shadow-md">
                       AM
                     </div>
                     <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-display text-lg font-extrabold text-slate-900">
-                        Ms. Ananya Mehra
-                      </h3>
-                      <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold text-[10px] uppercase tracking-wider">
-                        Class Teacher 8A
-                      </span>
-                    </div>
-                    <p className="font-body text-xs font-semibold text-slate-500 mt-0.5">
-                      Mathematics &amp; Academic Coordinator &bull; Classroom 8A
+                    <h3 className="font-display text-xl font-extrabold text-slate-900 leading-tight">
+                      Ms. Ananya Mehra
+                    </h3>
+                    <p className="font-body text-xs font-semibold text-slate-500 mt-1">
+                      Class 8A Coordinator &amp; Math Teacher
                     </p>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-600 bg-slate-50 border border-slate-200/80 p-3 rounded-2xl">
-                  <span className="flex items-center gap-1 text-emerald-700">🟢 Active Now</span>
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-50 border border-slate-200/80 p-3 rounded-2xl">
+                  <span className="text-emerald-700 font-extrabold flex items-center gap-1">🟢 Active Now</span>
                   <span className="text-slate-300">&bull;</span>
                   <span>⏱️ Responds ~15 min</span>
-                  <span className="text-slate-300">&bull;</span>
-                  <span className="text-slate-500 font-mono text-[11px]">Hours: 2:00–3:30 PM</span>
-                </div>
-              </div>
-
-              {/* 2. TODAY'S CONTEXT SNAPSHOT PANEL */}
-              <div className="pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <div className="p-3 bg-slate-50/80 border border-slate-200/60 rounded-2xl flex items-center gap-2.5 text-xs">
-                  <span className="text-base">📍</span>
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Attendance Today</span>
-                    <strong className="font-display font-extrabold text-slate-900">Present (08:18 AM)</strong>
-                  </div>
                 </div>
 
-                <div className="p-3 bg-slate-50/80 border border-slate-200/60 rounded-2xl flex items-center gap-2.5 text-xs">
-                  <span className="text-base">📝</span>
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pending Task</span>
-                    <strong className="font-display font-extrabold text-slate-900">Algebra Practice (Due 8 PM)</strong>
-                  </div>
-                </div>
-
-                <div className="p-3 bg-slate-50/80 border border-slate-200/60 rounded-2xl flex items-center gap-2.5 text-xs">
-                  <span className="text-base">⭐</span>
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Today&apos;s Highlight</span>
-                    <strong className="font-display font-extrabold text-slate-900">Whiteboard Participation</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. SMART QUICK ACTIONS BAR */}
-            <div className="space-y-2">
-              <span className="font-display text-[10px] font-black uppercase tracking-widest text-slate-400 block px-1">
-                Contextual Quick Topic
-              </span>
-              <div className="flex flex-wrap items-center gap-2">
-                {[
-                  { icon: '🏥', label: 'Health & Absence', text: 'Aarav is feeling slightly unwell today.' },
-                  { icon: '📚', label: 'Homework Help', text: 'Could you clarify Question 4 on today’s Algebra practice?' },
-                  { icon: '🎫', label: 'Leave Request', text: 'Requesting early pickup leave for dental appointment tomorrow at 1:30 PM.' },
-                  { icon: '🚌', label: 'Bus / Transport', text: 'Bus #4 telemetry query regarding Saket stop timing.' },
-                  { icon: '🤝', label: '1-on-1 Meeting', text: 'Would love to schedule a brief 10-min meeting during office hours.' },
-                ].map((action) => (
+                {/* Quick Actions Bar */}
+                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
                   <button
-                    key={action.label}
                     type="button"
-                    onClick={() => setChatInputText(action.text)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200/80 hover:border-slate-400 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-2xs active:scale-95"
+                    onClick={() => setToastMessage('🗓️ PTM Slot requested with Ms. Mehra for Friday 2:30 PM')}
+                    className="flex flex-col items-center justify-center p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 rounded-2xl text-[11px] font-extrabold text-slate-700 transition-all text-center"
                   >
-                    <span>{action.icon}</span>
-                    <span>{action.label}</span>
+                    <span className="text-base mb-1">📅</span>
+                    <span>Schedule PTM</span>
                   </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 4. CONVERSATION TIMELINE WORKSPACE */}
-            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
-              {/* Date Separator Header */}
-              <div className="flex items-center justify-center my-1">
-                <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-extrabold uppercase tracking-widest border border-slate-200/60">
-                  Today &middot; Communication Log
-                </span>
-              </div>
-
-              {/* Chat Messages Timeline */}
-              <div className="space-y-4 min-h-[220px] max-h-[360px] overflow-y-auto pr-1 scrollbar-thin">
-                {chatMessages.length === 0 ? (
-                  <div className="py-12 text-center space-y-2 bg-slate-50/50 rounded-2xl border border-slate-100">
-                    <span className="text-3xl block">💬</span>
-                    <h5 className="font-display text-sm font-extrabold text-slate-900">Direct Communication Workspace</h5>
-                    <p className="font-body text-xs text-slate-500">Send a note to Ms. Mehra regarding Aarav&apos;s academics or wellbeing.</p>
-                  </div>
-                ) : (
-                  chatMessages.map((msg) => {
-                    const isMe = msg.senderRole === 'parent';
-                    return (
-                      <div
-                        key={msg.id}
-                        className={`flex flex-col max-w-[85%] sm:max-w-[75%] ${
-                          isMe ? 'ml-auto items-end' : 'items-start'
-                        }`}
-                      >
-                        <div
-                          className={`rounded-2xl px-4 py-3 text-xs leading-relaxed font-medium shadow-xs ${
-                            isMe
-                              ? 'bg-slate-900 text-white rounded-br-xs'
-                              : 'bg-slate-100 text-slate-900 border border-slate-200/80 rounded-bl-xs'
-                          } ${msg.id.startsWith('temp-') ? 'opacity-70 animate-pulse' : ''}`}
-                        >
-                          <p className="whitespace-pre-wrap">{msg.messageText}</p>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 mt-1 px-1">
-                          <span>{isMe ? 'You' : 'Ms. Ananya Mehra'}</span>
-                          <span>&bull;</span>
-                          <span className="font-mono">
-                            {new Date(msg.createdAt).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </span>
-                          {isMe && <span className="text-emerald-600 font-extrabold ml-1">✓✓ Read</span>}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-                <div ref={chatEndRef} />
-              </div>
-
-              {/* 5. AI SUGGESTED MESSAGES (SCHOOLGPT) */}
-              <div className="pt-3 border-t border-slate-100 space-y-2">
-                <span className="font-display text-[10px] font-black uppercase tracking-widest text-slate-400 block">
-                  ✨ SchoolGPT Smart Response Suggestions
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    'Thank you Ms. Mehra! Will ensure Aarav completes Algebra Practice.',
-                    'Could we schedule a 10-min meeting during office hours?',
-                    'Aarav woke up with a mild cough today, please let us know if he feels unwell.',
-                  ].map((suggestedText) => (
-                    <button
-                      key={suggestedText}
-                      type="button"
-                      onClick={() => setChatInputText(suggestedText)}
-                      className="text-left text-xs font-semibold bg-slate-50 border border-slate-200 hover:border-slate-400 p-2.5 rounded-xl text-slate-700 transition-all hover:bg-white active:scale-95 leading-snug"
-                    >
-                      &ldquo;{suggestedText}&rdquo;
-                    </button>
-                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setToastMessage('🎙️ Hold to record voice note for teacher')}
+                    className="flex flex-col items-center justify-center p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 rounded-2xl text-[11px] font-extrabold text-slate-700 transition-all text-center"
+                  >
+                    <span className="text-base mb-1">🎙️</span>
+                    <span>Voice Note</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setToastMessage('👤 Ms. Mehra: Office Hours 2:00-3:30 PM &bull; Room 8A')}
+                    className="flex flex-col items-center justify-center p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 rounded-2xl text-[11px] font-extrabold text-slate-700 transition-all text-center"
+                  >
+                    <span className="text-base mb-1">👤</span>
+                    <span>Profile</span>
+                  </button>
                 </div>
               </div>
 
-              {/* 6. MODERN COMPOSER WORKSPACE */}
-              <div className="pt-2">
-                <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-2.5 space-y-2 shadow-2xs focus-within:border-slate-400 focus-within:bg-white transition-all">
-                  <textarea
-                    rows={2}
-                    value={chatInputText}
-                    onChange={(e) => setChatInputText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendParentMessage(chatInputText);
-                      }
-                    }}
-                    placeholder="Write a message to Ms. Mehra..."
-                    className="w-full bg-transparent text-xs text-slate-900 placeholder-slate-400 focus:outline-none resize-none font-medium leading-relaxed px-1"
-                    disabled={isSendingMessage}
-                  />
+              {/* 2. LIGHTWEIGHT TODAY'S CONTEXT */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-3">
+                <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-400">
+                  Today&apos;s Context
+                </h4>
+                
+                <div className="space-y-2.5 text-xs">
+                  <div className="p-3 bg-slate-50 rounded-2xl flex items-center justify-between">
+                    <span className="text-slate-600 font-semibold">Morning Attendance</span>
+                    <strong className="text-emerald-700 font-bold">Present (08:18 AM)</strong>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-2xl flex items-center justify-between">
+                    <span className="text-slate-600 font-semibold">Math Homework</span>
+                    <strong className="text-slate-900 font-bold">Geometry #4 (Due 8 PM)</strong>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-2xl flex items-center justify-between">
+                    <span className="text-slate-600 font-semibold">Classroom Note</span>
+                    <strong className="text-amber-800 font-bold">Active in Science Lab</strong>
+                  </div>
+                </div>
+              </div>
 
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
-                    <div className="flex items-center gap-1.5">
+            </div>
+
+            {/* ── RIGHT COLUMN (67%): CONVERSATION WORKSPACE ── */}
+            <div className="lg:col-span-8 space-y-5">
+              
+              {/* CONVERSATION MESSAGES CANVAS */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
+                
+                {/* Date Separator */}
+                <div className="flex items-center justify-center my-1">
+                  <span className="px-4 py-1 bg-slate-100 text-slate-500 rounded-full text-[11px] font-extrabold uppercase tracking-widest border border-slate-200/60">
+                    Today &middot; Direct Messages
+                  </span>
+                </div>
+
+                {/* Messages Stream */}
+                <div className="space-y-4 min-h-[260px] max-h-[420px] overflow-y-auto pr-1 scrollbar-thin">
+                  {chatMessages.length === 0 ? (
+                    <div className="py-12 text-center space-y-2 bg-slate-50/50 rounded-2xl border border-slate-100">
+                      <span className="text-3xl block">💬</span>
+                      <h5 className="font-display text-sm font-extrabold text-slate-900">Direct Workspace</h5>
+                      <p className="font-body text-xs text-slate-500">Send a note to Ms. Mehra regarding Aarav&apos;s academics or wellbeing.</p>
+                    </div>
+                  ) : (
+                    chatMessages.map((msg) => {
+                      const isMe = msg.senderRole === 'parent';
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex flex-col max-w-[70%] ${
+                            isMe ? 'ml-auto items-end' : 'items-start'
+                          }`}
+                        >
+                          <div
+                            className={`rounded-2xl px-4 py-3 text-xs leading-relaxed font-medium shadow-xs ${
+                              isMe
+                                ? 'bg-slate-900 text-white rounded-br-xs'
+                                : 'bg-slate-100 text-slate-900 border border-slate-200/80 rounded-bl-xs'
+                            } ${msg.id.startsWith('temp-') ? 'opacity-70 animate-pulse' : ''}`}
+                          >
+                            <p className="whitespace-pre-wrap">{msg.messageText}</p>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 mt-1 px-1">
+                            <span>{isMe ? 'You' : 'Ms. Ananya Mehra'}</span>
+                            <span>&bull;</span>
+                            <span className="font-mono">
+                              {new Date(msg.createdAt).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                            {isMe && <span className="text-emerald-600 font-extrabold ml-1">✓✓ Read</span>}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+
+                {/* 3 HIGH-QUALITY SUGGESTED REPLIES */}
+                <div className="pt-3 border-t border-slate-100 space-y-2.5">
+                  <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-400">
+                    ✨ Suggested Replies
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      '✨ "Aarav will complete the math assignment tonight"',
+                      '✨ "Thank you for the update on Science lab!"',
+                      '✨ "Can we schedule a short 10-min call on Friday?"',
+                    ].map((suggestedText) => (
                       <button
+                        key={suggestedText}
                         type="button"
-                        onClick={() => setToastMessage('📎 Attachment added: Health_Note.pdf')}
-                        className="px-2.5 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-slate-100 transition-all"
+                        onClick={() => setChatInputText(suggestedText.replace(/^✨\s*"/, '').replace(/"$/, ''))}
+                        className="bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-800 text-xs font-semibold px-4 py-2.5 rounded-full transition-all shadow-2xs text-left"
                       >
-                        📎 Attach
+                        {suggestedText}
                       </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* MODERN COMPOSER */}
+                <div className="pt-2">
+                  <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3 space-y-3 shadow-2xs focus-within:border-slate-400 focus-within:bg-white transition-all">
+                    <textarea
+                      rows={3}
+                      value={chatInputText}
+                      onChange={(e) => setChatInputText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendParentMessage(chatInputText);
+                        }
+                      }}
+                      placeholder="Write a message to Ms. Mehra..."
+                      className="w-full bg-transparent text-xs text-slate-900 placeholder-slate-400 focus:outline-none resize-none font-medium leading-relaxed px-1"
+                      disabled={isSendingMessage}
+                    />
+
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setToastMessage('📎 Attachment added: Health_Note.pdf')}
+                          className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-extrabold hover:bg-slate-100 transition-all"
+                        >
+                          📎 Attach
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (chatInputText.trim()) {
+                              setChatInputText(`${chatInputText} — (Kindly let us know if any further action is required.)`);
+                            } else {
+                              setChatInputText("Dear Ms. Mehra, regarding Aarav’s mathematics progress today, kindly let us know if any further action is required.");
+                            }
+                            setToastMessage('✨ Refined message tone with SchoolGPT!');
+                          }}
+                          className="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-[11px] font-extrabold hover:bg-slate-800 transition-all shadow-2xs"
+                        >
+                          ✨ Improve with SchoolGPT
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setToastMessage('🌐 Translated message to Hindi')}
+                          className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-extrabold hover:bg-slate-100 transition-all"
+                        >
+                          🌐 Translate
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setChatInputText(prev => prev + ' 😊')}
+                          className="px-2.5 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-extrabold hover:bg-slate-100 transition-all"
+                        >
+                          😊 Emoji
+                        </button>
+                      </div>
+
                       <button
                         type="button"
-                        onClick={() => {
-                          if (chatInputText.trim()) {
-                            setChatInputText(`${chatInputText} — (Kindly let us know if any further action is required.)`);
-                          } else {
-                            setChatInputText("Dear Ms. Mehra, regarding Aarav’s mathematics progress today, kindly let us know if any further action is required.");
-                          }
-                          setToastMessage('✨ Refined message tone with SchoolGPT!');
-                        }}
-                        className="px-2.5 py-1 bg-slate-900 text-white rounded-lg text-[11px] font-bold hover:bg-slate-800 transition-all shadow-2xs"
+                        onClick={() => handleSendParentMessage(chatInputText)}
+                        disabled={isSendingMessage || !chatInputText.trim()}
+                        className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-display text-xs font-extrabold rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-40 shrink-0"
                       >
-                        ✨ SchoolGPT Refine
+                        Send →
                       </button>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleSendParentMessage(chatInputText)}
-                      disabled={isSendingMessage || !chatInputText.trim()}
-                      className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-display text-xs font-extrabold rounded-xl transition-all shadow-2xs active:scale-95 disabled:opacity-40 shrink-0"
-                    >
-                      Send Message &rarr;
-                    </button>
                   </div>
                 </div>
+
               </div>
+
             </div>
+
           </div>
         )}
 
