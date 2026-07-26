@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { askSchoolGPTAction } from '@/app/actions/schoolgptActions';
 import SchoolGPTMessage from './SchoolGPTMessage';
+import SchoolGPTSpotlight from './SchoolGPTSpotlight';
 import type { SchoolGPTRole, SchoolGPTMessage as SchoolGPTMessageType } from '@/lib/schoolgpt/types';
 
 interface SchoolGPTChatProps {
@@ -98,6 +99,8 @@ export default function SchoolGPTChat({
   const [messages, setMessages] = useState<SchoolGPTMessageType[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
   const [lastQuestion, setLastQuestion] = useState<string | null>(null);
   const [hasError, setHasError] = useState(false);
@@ -108,10 +111,13 @@ export default function SchoolGPTChat({
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Keyboard shortcut '/' to focus search bar
+  // Keyboard shortcuts: '/' to focus search, 'Cmd+K' / 'Ctrl+K' to open Spotlight
   useEffect(() => {
     const handleGlobalKey = (e: KeyboardEvent) => {
-      if (e.key === '/' && document.activeElement !== inputRef.current) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSpotlightOpen((prev) => !prev);
+      } else if (e.key === '/' && document.activeElement !== inputRef.current) {
         e.preventDefault();
         inputRef.current?.focus();
       }
@@ -120,7 +126,7 @@ export default function SchoolGPTChat({
     return () => window.removeEventListener('keydown', handleGlobalKey);
   }, []);
 
-  // Contextual rotating loading messages
+  // Contextual loading messages
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isLoading) {
@@ -131,6 +137,43 @@ export default function SchoolGPTChat({
     }
     return () => clearInterval(interval);
   }, [isLoading]);
+
+  // Voice Search Dictation (Web Speech API)
+  const toggleVoiceDictation = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('Voice dictation is not supported in this browser. Please use Chrome, Edge, or Safari.');
+      return;
+    }
+
+    if (isListening) {
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => setIsListening(true);
+      recognition.onend = () => setIsListening(false);
+      recognition.onerror = () => setIsListening(false);
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        if (transcript) {
+          setInput(transcript);
+        }
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.error('Voice Recognition Error:', err);
+      setIsListening(false);
+    }
+  };
 
   async function handleSend(question: string) {
     const q = question.trim();
@@ -199,12 +242,18 @@ export default function SchoolGPTChat({
   }
 
   const cards = suggestedQuestions[role] || suggestedQuestions.teacher;
-  // Progressive Disclosure: Hide hero greeting and suggested cards after first message
   const showHero = messages.length === 0;
 
   return (
     <div className="w-full max-w-4xl mx-auto py-6 sm:py-10 px-4 sm:px-6 font-body min-h-[85vh] flex flex-col justify-between space-y-8">
-      {/* ── 1. HERO SECTION (Progressive Disclosure: Fades out upon query) ── */}
+      {/* Spotlight Command Palette Component */}
+      <SchoolGPTSpotlight
+        isOpen={isSpotlightOpen}
+        onClose={() => setIsSpotlightOpen(false)}
+        onSelectPrompt={(p) => handleSend(p)}
+      />
+
+      {/* ── 1. HERO SECTION ── */}
       <AnimatePresence>
         {showHero && (
           <motion.div
@@ -224,20 +273,49 @@ export default function SchoolGPTChat({
         )}
       </AnimatePresence>
 
-      {/* ── 2. AI SEARCH FOCAL POINT ── */}
+      {/* ── 2. AI SEARCH FOCAL POINT WITH VOICE DICTATION & SPOTLIGHT ── */}
       <div className="w-full max-w-3xl mx-auto space-y-3">
         <div className="relative flex items-center bg-white border border-slate-200/90 rounded-3xl shadow-sm hover:shadow-md focus-within:shadow-md focus-within:border-slate-900 transition-all p-2 sm:p-2.5">
-          <span className="pl-4 text-slate-400 text-lg">🔍</span>
+          <button
+            type="button"
+            onClick={() => setIsSpotlightOpen(true)}
+            className="pl-3 pr-1 text-slate-400 hover:text-slate-900 text-lg transition-colors"
+            title="Open Spotlight Command Palette (Cmd+K)"
+          >
+            🔍
+          </button>
+
           <input
             ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isLoading ? activeLoadingMessages[loadingMsgIdx] : 'Ask about a student, attendance, homework, or PTM... (Press /)'}
+            placeholder={
+              isListening
+                ? '🎙️ Listening to your voice...'
+                : isLoading
+                ? activeLoadingMessages[loadingMsgIdx]
+                : 'Ask about a student, attendance, or PTM... (Cmd+K or /)'
+            }
             disabled={isLoading}
             className="flex-1 bg-transparent px-3 py-2 sm:py-3 text-sm sm:text-base text-slate-900 placeholder-slate-400 outline-none font-medium"
           />
+
+          {/* Voice Search Dictation Button */}
+          <button
+            type="button"
+            onClick={toggleVoiceDictation}
+            className={`p-2.5 rounded-2xl transition-all mr-1.5 ${
+              isListening
+                ? 'bg-rose-500 text-white animate-pulse shadow-md ring-4 ring-rose-200'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+            }`}
+            title="Voice Search Dictation"
+          >
+            🎙️
+          </button>
+
           <button
             type="button"
             onClick={() => handleSend(input)}
@@ -250,22 +328,33 @@ export default function SchoolGPTChat({
         </div>
 
         {/* Category Shortcuts */}
-        <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-semibold text-slate-500">
-          <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400 mr-1">Shortcuts:</span>
-          {['Ask', 'Analyze', 'Compare', 'Create'].map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => setInput(`${tag} `)}
-              className="px-2.5 py-1 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 text-[11px] font-bold transition-all"
-            >
-              {tag}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-slate-500 px-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400 mr-1">Shortcuts:</span>
+            {['Ask', 'Analyze', 'Compare', 'Create'].map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => setInput(`${tag} `)}
+                className="px-2.5 py-1 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 text-[11px] font-bold transition-all"
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsSpotlightOpen(true)}
+            className="text-[11px] font-mono font-bold text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-1"
+          >
+            <span>Spotlight</span>
+            <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[9px]">Cmd+K</span>
+          </button>
         </div>
       </div>
 
-      {/* ── 3. SUGGESTED QUESTIONS (Progressive Disclosure: Fades out upon query) ── */}
+      {/* ── 3. SUGGESTED QUESTIONS (Progressive Disclosure) ── */}
       <AnimatePresence>
         {showHero && (
           <motion.div
@@ -309,7 +398,7 @@ export default function SchoolGPTChat({
         )}
       </AnimatePresence>
 
-      {/* ── 4. QUICK ACTIONS BAR (Progressive Disclosure) ── */}
+      {/* ── 4. QUICK ACTIONS BAR ── */}
       <AnimatePresence>
         {showHero && (
           <motion.div
@@ -355,7 +444,7 @@ export default function SchoolGPTChat({
           })}
         </AnimatePresence>
 
-        {/* Active Contextual Loading Bar */}
+        {/* Active Loading Bar */}
         {isLoading && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start py-4">
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-2xs flex items-center gap-3">
