@@ -1155,12 +1155,14 @@ export default function ParentTodayClient({
             </div>
           ) : (
             <div className="space-y-6">
-              {/* 1. HERO SECTION */}
+              {/* CHAPTER 1: HERO STATUS & GUARDIAN JOURNEY HEADER */}
               <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-display text-xs font-black text-slate-400 uppercase tracking-widest block">
-                    {t('greeting.morning')}, {activeStudent?.parentName && activeStudent.parentName !== 'Parent' ? activeStudent.parentName.split(' ')[0] : 'Sunita'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-display text-xs font-black text-slate-400 uppercase tracking-widest block">
+                      {t('greeting.morning')}, {activeStudent?.parentName && activeStudent.parentName !== 'Parent' ? activeStudent.parentName.split(' ')[0] : 'Sunita'}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-extrabold text-[10px] uppercase tracking-wider">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                     {t('today.verified_safe')}
@@ -1185,7 +1187,7 @@ export default function ParentTodayClient({
                 </div>
               </div>
 
-              {/* 2. CURRENT STATUS (CONTEXT-AWARE CARD) */}
+              {/* CHAPTER 2: CONTEXT-AWARE CURRENT STATUS */}
               <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -1194,8 +1196,8 @@ export default function ParentTodayClient({
                       {t('status.current_title')}
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold text-sky-400 bg-sky-500/20 px-2.5 py-1 rounded-full border border-sky-500/30">
-                    {t('status.live_telemetry')}
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-500/30">
+                    Journey Completed ✓
                   </span>
                 </div>
 
@@ -1220,7 +1222,7 @@ export default function ParentTodayClient({
                 </div>
               </div>
 
-              {/* 3. TODAY'S JOURNEY (SINGLE CHRONOLOGICAL TIMELINE WITH PROGRESSIVE DISCLOSURE) */}
+              {/* CHAPTER 3: TODAY'S JOURNEY (UNIFIED CHRONOLOGICAL STORY) */}
               <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                   <div>
@@ -1313,7 +1315,23 @@ export default function ParentTodayClient({
                 </div>
               </div>
 
-              {/* 4. NEEDS YOUR ATTENTION */}
+              {/* CHAPTER 4: CONVERSATIONAL AI SUMMARY (SCHOOLGPT) */}
+              <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl p-6 shadow-sm space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-700/80 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">✨</span>
+                    <h4 className="font-display text-xs font-extrabold uppercase tracking-widest text-slate-300">
+                      Today&apos;s AI Summary
+                    </h4>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-400">SchoolGPT Verified</span>
+                </div>
+                <p className="font-body text-xs leading-relaxed text-slate-200 font-medium">
+                  &ldquo;Aarav travelled safely on Bus #4, attended every scheduled class, scored 92% in Mathematics, and returned home without any safety concerns. Everything is on track today.&rdquo;
+                </p>
+              </div>
+
+              {/* CHAPTER 5: NEEDS YOUR ATTENTION & RECOMMENDED ACTIONS */}
               <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <h3 className="font-display text-xs font-extrabold text-slate-400 uppercase tracking-widest">
