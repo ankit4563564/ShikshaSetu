@@ -29,7 +29,7 @@ export function TestimonialsV4() {
   ];
 
   return (
-    <SectionWrapper bg="bg-[#FAFBFF]">
+    <SectionWrapper bg="bg-[#FFFFFF]">
       <div className="space-y-16">
         <SectionHeading
           eyebrow="LOVED BY PARENTS, TEACHERS &amp; PRINCIPALS"

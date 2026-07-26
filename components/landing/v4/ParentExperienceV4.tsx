@@ -14,7 +14,7 @@ export function ParentExperienceV4() {
   ];
 
   return (
-    <SectionWrapper bg="bg-[#FAFBFF]">
+    <SectionWrapper bg="bg-[#F4FBF7]">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Left Column */}
         <div className="lg:col-span-6 space-y-6">
