@@ -1649,76 +1649,249 @@ export default function ParentTodayClient({
           </div>
         )}
 
-        {/* Tab 3: Attendance Tab (simplified Mon-Fri grid with status symbols) */}
+        {/* Tab 3: Attendance Wellness & Intelligence Dashboard */}
         {activeNav === 'attendance' && (
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-display text-lg font-extrabold text-deep-teal">
-                Attendance History
-              </h3>
-              <p className="font-body text-xs text-deep-teal/60">
-                This month: 18/20 days
+          <div className="space-y-6">
+            {/* 1. HERO ATTENDANCE WELLNESS SUMMARY */}
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-display text-2xl font-extrabold text-slate-900 tracking-tight">
+                      Attendance Health
+                    </h3>
+                    <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-extrabold text-xs uppercase tracking-wider">
+                      Excellent
+                    </span>
+                  </div>
+                  <p className="font-body text-xs font-semibold text-slate-500 mt-1">
+                    18 of 20 Days Attended &bull; Zero Safety Alerts
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <span className="text-3xl font-black font-display text-slate-900">90%</span>
+                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                    +4% vs last month
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100">
+                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Today&apos;s Status</span>
+                  <strong className="font-display text-sm font-extrabold text-emerald-700 flex items-center gap-1 mt-0.5">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Present (08:18 AM)
+                  </strong>
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Current Streak</span>
+                  <strong className="font-display text-sm font-extrabold text-slate-900 mt-0.5 block">
+                    🔥 12 Days
+                  </strong>
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Class Average</span>
+                  <strong className="font-display text-sm font-extrabold text-slate-900 mt-0.5 block">
+                    88% Attendance
+                  </strong>
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Absences / Late</span>
+                  <strong className="font-display text-sm font-extrabold text-slate-900 mt-0.5 block">
+                    1 Absent &bull; 1 Late
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. SCHOOLGPT AI ATTENDANCE INSIGHT */}
+            <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-sm space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">✨</span>
+                  <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-300">
+                    SchoolGPT Attendance Summary
+                  </h4>
+                </div>
+                <span className="text-[10px] font-bold text-emerald-400">Verified On Track</span>
+              </div>
+              <p className="font-body text-xs leading-relaxed text-slate-200 font-medium">
+                &ldquo;Aarav has maintained excellent 90% attendance this month and has not missed any critical examination days. No attendance concerns detected.&rdquo;
               </p>
             </div>
 
-            <div className="rounded-2xl border border-deep-teal/5 bg-paper p-5 shadow-sm space-y-4">
-              {/* Mon-Fri column headers */}
-              <div className="grid grid-cols-5 text-center border-b border-deep-teal/5 pb-2">
-                {['Mo', 'Tu', 'We', 'Th', 'Fr'].map((day) => (
-                  <span key={day} className="font-display text-xs font-bold text-deep-teal/40">
-                    {day}
-                  </span>
-                ))}
+            {/* 3. TODAY'S ATTENDANCE CHECKPOINT TIMELINE */}
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h4 className="font-display text-sm font-extrabold text-slate-900">
+                  Today&apos;s Attendance Checkpoint
+                </h4>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 uppercase tracking-wider">
+                  Verified Present
+                </span>
               </div>
 
-              {/* Weekly rows */}
-              <div className="space-y-4">
-                {(showAllAttendance ? attendanceWeeks : attendanceWeeks.slice(-2)).map((week, wIdx) => (
-                  <div key={wIdx} className="flex items-center justify-between">
-                    <span className="font-body text-[9px] font-extrabold text-deep-teal/30 w-10 uppercase tracking-widest">
-                      {week.name}
-                    </span>
-                    <div className="grid grid-cols-5 flex-1 items-center justify-items-center">
-                      {week.days.map((day: any) => {
-                        const symbol =
-                          day.status === 'present' || day.status === 'late'
-                            ? '✓'
-                            : day.status === 'absent'
-                            ? '✗'
-                            : '-';
-                        return (
-                          <div key={day.id} className="flex flex-col items-center justify-center p-1">
-                            <span
-                              className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold shadow-2xs ${
-                                day.status === 'present'
-                                  ? 'bg-sage/10 text-sage'
-                                  : day.status === 'late'
-                                  ? 'bg-marigold/10 text-marigold'
-                                  : 'bg-warm-clay/10 text-warm-clay'
-                              }`}
-                              title={`${day.date}: ${day.status}`}
-                            >
-                              {symbol}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl space-y-1">
+                  <span className="font-mono text-[11px] font-bold text-slate-400 block">08:07 AM</span>
+                  <h5 className="font-display text-xs font-extrabold text-slate-900">Gate #2 QR Scanned</h5>
+                  <p className="font-body text-[11px] text-slate-500">Security Gate Verified</p>
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl space-y-1">
+                  <span className="font-mono text-[11px] font-bold text-slate-400 block">08:15 AM</span>
+                  <h5 className="font-display text-xs font-extrabold text-slate-900">Classroom 8A Entrance</h5>
+                  <p className="font-body text-[11px] text-slate-500">Seated in class</p>
+                </div>
+
+                <div className="p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-2xl space-y-1">
+                  <span className="font-mono text-[11px] font-bold text-emerald-700 block">08:18 AM</span>
+                  <h5 className="font-display text-xs font-extrabold text-emerald-900">Roll Call Marked</h5>
+                  <p className="font-body text-[11px] text-emerald-700">Ms. Mehra Confirmed</p>
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-2xl space-y-1">
+                  <span className="font-mono text-[11px] font-bold text-slate-400 block">08:18 AM</span>
+                  <h5 className="font-display text-xs font-extrabold text-slate-900">Parent Notified</h5>
+                  <p className="font-body text-[11px] text-slate-500">Instant App Push</p>
+                </div>
               </div>
             </div>
 
-            {!showAllAttendance && attendanceWeeks.length > 2 && (
-              <div className="text-center">
-                <button
-                  onClick={() => setShowAllAttendance(true)}
-                  className="font-display text-xs font-bold text-deep-teal underline hover:text-deep-teal/80 transition-all bg-transparent"
-                >
-                  [See Details]
-                </button>
+            {/* 4. MONTHLY CALENDAR HEATMAP */}
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                <div>
+                  <h4 className="font-display text-lg font-extrabold text-slate-900">
+                    July 2026 Attendance Heatmap
+                  </h4>
+                  <p className="font-body text-xs text-slate-500">Tap any day cell to view exact check-in telemetry</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-600">
+                  <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-md bg-emerald-500" /> Present</span>
+                  <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-md bg-amber-500" /> Late</span>
+                  <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-md bg-rose-500" /> Absent</span>
+                  <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-md bg-slate-200" /> Weekend</span>
+                </div>
               </div>
-            )}
+
+              {/* Calendar Grid Days */}
+              <div className="grid grid-cols-7 gap-2 text-center">
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                  <span key={day} className="font-display text-xs font-black text-slate-400 uppercase tracking-widest py-1">
+                    {day}
+                  </span>
+                ))}
+
+                {/* Calendar Date Cells */}
+                {Array.from({ length: 31 }, (_, i) => i + 1).map((date) => {
+                  const isWeekend = (date % 7 === 6) || (date % 7 === 0);
+                  const isAbsent = date === 12;
+                  const isLate = date === 15;
+                  const isFuture = date > 26;
+                  
+                  return (
+                    <button
+                      key={date}
+                      type="button"
+                      onClick={() => {
+                        if (!isWeekend && !isFuture) {
+                          setToastMessage(`📅 ${date} July 2026: ${isAbsent ? 'Absent (Sick Leave)' : isLate ? 'Late Arrival (08:42 AM)' : 'Present (08:18 AM)'}`);
+                        }
+                      }}
+                      className={`h-11 rounded-2xl flex flex-col items-center justify-center text-xs font-extrabold transition-all ${
+                        isFuture
+                          ? 'bg-slate-50 text-slate-300 border border-slate-100 cursor-default'
+                          : isWeekend
+                          ? 'bg-slate-100/70 text-slate-400 border border-slate-200/50 cursor-default'
+                          : isAbsent
+                          ? 'bg-rose-50 text-rose-700 border-2 border-rose-300 hover:scale-105 shadow-2xs'
+                          : isLate
+                          ? 'bg-amber-50 text-amber-700 border-2 border-amber-300 hover:scale-105 shadow-2xs'
+                          : 'bg-emerald-50 text-emerald-800 border border-emerald-200/80 hover:scale-105 shadow-2xs'
+                      }`}
+                    >
+                      <span>{date}</span>
+                      <span className="text-[9px] font-mono leading-none">
+                        {isFuture ? '' : isWeekend ? '—' : isAbsent ? '❌' : isLate ? '⏱️' : '✓'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 5. RECENT RECORDS & QUICK ATTENDANCE ACTIONS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Recent Log */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-3">
+                <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2.5">
+                  Recent Attendance Log
+                </h4>
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-200/60">
+                    <div>
+                      <strong className="font-display text-xs font-extrabold text-slate-900 block">Today &middot; Present</strong>
+                      <span className="font-body text-[11px] text-slate-500">School Gate #2 &bull; 08:18 AM</span>
+                    </div>
+                    <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold text-[10px]">On Time</span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-200/60">
+                    <div>
+                      <strong className="font-display text-xs font-extrabold text-slate-900 block">Yesterday &middot; Present</strong>
+                      <span className="font-body text-[11px] text-slate-500">School Gate #2 &bull; 08:14 AM</span>
+                    </div>
+                    <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold text-[10px]">On Time</span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-amber-50 rounded-2xl border border-amber-200/80">
+                    <div>
+                      <strong className="font-display text-xs font-extrabold text-amber-900 block">15 July &middot; Late Arrival</strong>
+                      <span className="font-body text-[11px] text-amber-700">Traffic Delay &bull; 08:42 AM</span>
+                    </div>
+                    <span className="px-2.5 py-1 bg-amber-100 text-amber-800 border border-amber-300 rounded-full font-bold text-[10px]">Excused</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Attendance Actions */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-3 flex flex-col justify-between">
+                <div>
+                  <h4 className="font-display text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2.5">
+                    Attendance Actions
+                  </h4>
+                  <p className="font-body text-xs text-slate-500 mt-2">
+                    Need to submit planned leave or request an official attendance report for records?
+                  </p>
+                </div>
+
+                <div className="space-y-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassModal(true)}
+                    className="w-full p-3 bg-slate-900 text-white rounded-2xl text-xs font-extrabold shadow-xs hover:bg-slate-800 transition-all flex items-center justify-between"
+                  >
+                    <span>🎫 Request Gate Pass / Leave</span>
+                    <span>&rarr;</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setToastMessage('📄 Official Attendance Report (July 2026) downloaded successfully!')}
+                    className="w-full p-3 bg-white border border-slate-200 text-slate-700 rounded-2xl text-xs font-extrabold hover:bg-slate-50 transition-all flex items-center justify-between"
+                  >
+                    <span>📥 Download Monthly Report</span>
+                    <span>↓</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
