@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SchoolGPTContextCard from './SchoolGPTContextCard';
-import { askSchoolGPTAction } from '@/app/actions/schoolgptActions';
-import type { SchoolRole } from '@/school-brain/models/index';
+import { useAmbientAICore } from './core/AmbientIntelligenceCore';
+import { useContextRegistry } from './context/ContextRegistry';
+import { adaptContextToUI } from './core/PresentationAdapter';
+import SchoolGPTMessage from './SchoolGPTMessage';
 
 interface DrawerProps {
   isOpen: boolean;
@@ -13,297 +15,158 @@ interface DrawerProps {
   role?: string;
   studentName?: string;
   classNameLabel?: string;
-}
-
-const teacherSuggestions = [
-  'Which students need support today?',
-  'How is my class performing?',
-  'Generate today\'s parent summary.',
-  'Explain attendance this week.',
-  'Which students improved the most?',
-];
-
-const parentSuggestions = [
-  'Explain today\'s homework.',
-  'How is my child doing?',
-  'Where is the school bus?',
-  'What should we revise this weekend?',
-  'Summarize this week\'s learning.',
-];
-
-interface ResponseItem {
-  query: string;
-  answer: string;
-  sources: string[];
-  suggestedFollowUps?: string[];
-  actionObject?: any;
+  studentId?: string;
+  classGrade?: string;
+  classSection?: string;
 }
 
 export default function SchoolGPTDrawer({
   isOpen,
   onClose,
   screenName = 'Your Classroom',
-  role = 'Teacher',
-  studentName = 'Aarav Sharma',
-  classNameLabel = 'Class 8A',
 }: DrawerProps) {
+  const { context } = useContextRegistry();
+  const { conversation, ask, isLoading, resetConversation } = useAmbientAICore();
   const [inputVal, setInputVal] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [history, setHistory] = useState<ResponseItem[]>([]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  const uiProps = adaptContextToUI(context);
 
-  const handleTriggerQuery = async (queryText: string) => {
-    const q = queryText.trim();
-    if (!q || isLoading) return;
+  if (!isOpen) return null;
 
+  const handleSend = (query: string) => {
+    if (!query.trim() || isLoading) return;
+    ask(query);
     setInputVal('');
-    setIsLoading(true);
-
-    try {
-      const userRole: SchoolRole = (role.toLowerCase() as SchoolRole) || 'teacher';
-      const res = await askSchoolGPTAction({
-        question: q,
-        role: userRole,
-        history: history.flatMap((item) => [
-          { role: 'user', content: item.query },
-          { role: 'assistant', content: item.answer },
-        ]),
-      });
-
-      setHistory((prev) => [
-        ...prev,
-        {
-          query: q,
-          answer: res.text,
-          sources: res.sources || ['School Database'],
-          suggestedFollowUps: res.suggestedFollowUps,
-          actionObject: (res as any).actionObject,
-        },
-      ]);
-    } catch (err) {
-      console.error('[SchoolGPT Drawer] Error fetching response:', err);
-      setHistory((prev) => [
-        ...prev,
-        {
-          query: q,
-          answer: 'Sorry, I encountered an error executing this request. Please try again.',
-          sources: ['Error Handler'],
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const suggestions = role === 'Parent' ? parentSuggestions : teacherSuggestions;
-
-  const renderFormattedText = (text: string) => {
-    if (!text) return null;
-    return text.split('\n\n').map((para, idx) => (
-      <p key={idx} className="my-2 leading-relaxed font-medium text-slate-700 text-xs sm:text-sm">
-        {para.split(/(\*\*.*?\*\*)/g).map((part, i) => {
-          if (part.startsWith('**') && part.endsWith('**')) {
-            return (
-              <strong key={i} className="font-extrabold text-slate-900">
-                {part.slice(2, -2)}
-              </strong>
-            );
-          }
-          return part;
-        })}
-      </p>
-    ));
   };
 
   return (
     <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm"
-          />
+      <div className="fixed inset-0 z-50 overflow-hidden font-body">
+        {/* Backdrop */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm transition-opacity"
+        />
 
-          {/* Drawer Container */}
+        {/* Floating Side Drawer */}
+        <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
           <motion.div
-            initial={{ x: '100%', opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: '100%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 28, stiffness: 240 }}
-            className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-lg bg-white shadow-2xl flex flex-col justify-between border-l border-slate-200 overflow-hidden font-body"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="w-screen max-w-md bg-white border-l border-slate-200/90 shadow-2xl flex flex-col justify-between"
           >
             {/* Header */}
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
-              <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-2xl bg-slate-900 text-white font-display text-sm font-black flex items-center justify-center shadow-xs">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-2xl bg-slate-900 text-white font-display text-xs font-black flex items-center justify-center">
                   ✨
                 </div>
                 <div>
-                  <h3 className="font-display text-sm font-extrabold text-slate-900">
-                    School Assistant
-                  </h3>
-                  <p className="text-xs font-medium text-slate-500">
-                    {screenName}
-                  </p>
+                  <h3 className="font-display text-sm font-extrabold text-slate-900">SchoolGPT Assistant</h3>
+                  <p className="text-[10px] font-mono font-bold text-slate-400 uppercase">{screenName}</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs transition-all"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={resetConversation}
+                  className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold"
+                  title="Clear Conversation"
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
-            {/* Scrollable Feed */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-5">
-              {/* Natural Context Statement */}
+            {/* Context Card Banner */}
+            <div className="px-5 pt-3">
               <SchoolGPTContextCard
                 screenName={screenName}
-                studentName={studentName}
-                classNameLabel={classNameLabel}
+                studentName={context.studentName || 'Aarav Sharma'}
+                classNameLabel={`Class ${context.classGrade || '8'}${context.classSection || 'A'}`}
               />
+            </div>
 
-              {/* Input Bar */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={inputVal}
-                    onChange={(e) => setInputVal(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && inputVal.trim()) {
-                        handleTriggerQuery(inputVal);
-                      }
-                    }}
-                    placeholder={role === 'Parent' ? 'Ask about your child...' : 'Ask about a student or class...'}
-                    disabled={isLoading}
-                    className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-slate-900 focus:bg-white font-medium shadow-2xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => inputVal.trim() && handleTriggerQuery(inputVal)}
-                    disabled={isLoading || !inputVal.trim()}
-                    className="px-4 py-3 rounded-2xl bg-slate-900 text-white font-extrabold text-xs shadow-xs hover:bg-slate-800 transition-all active:scale-95 shrink-0 disabled:opacity-40"
-                  >
-                    Ask ✨
-                  </button>
-                </div>
-
-                {/* Suggested Questions */}
-                <div className="space-y-1.5 pt-1">
+            {/* Conversation Area */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {conversation.length === 0 ? (
+                <div className="space-y-4 pt-4">
                   <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400 block">
-                    Suggested Questions
+                    Suggested Questions:
                   </span>
-                  <div className="flex flex-wrap gap-2">
-                    {suggestions.map((q) => (
+                  <div className="space-y-2">
+                    {uiProps.suggestions.map((item) => (
                       <button
-                        key={q}
+                        key={item.title}
                         type="button"
-                        onClick={() => handleTriggerQuery(q)}
-                        disabled={isLoading}
-                        className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 text-xs font-semibold transition-all active:scale-95 disabled:opacity-40"
+                        onClick={() => handleSend(item.prompt)}
+                        className="w-full p-3.5 rounded-2xl border border-slate-200/80 bg-white hover:bg-slate-50 text-left transition-all group flex items-center justify-between text-xs font-bold text-slate-800 active:scale-95 shadow-2xs"
                       >
-                        {q}
+                        <span className="flex items-center gap-2">
+                          <span>{item.icon}</span>
+                          <span>{item.title}</span>
+                        </span>
+                        <span className="text-slate-400 group-hover:text-slate-900 transition-colors">&rarr;</span>
                       </button>
                     ))}
                   </div>
                 </div>
-              </div>
-
-              {/* Loading State */}
-              {isLoading && (
-                <div className="p-6 bg-slate-50 border border-slate-200/80 rounded-3xl text-center space-y-3 my-4">
-                  <div className="flex justify-center items-center gap-2">
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-slate-900" style={{ animationDelay: '0ms' }} />
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-slate-900" style={{ animationDelay: '150ms' }} />
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-slate-900" style={{ animationDelay: '300ms' }} />
-                  </div>
-                  <p className="font-body text-xs font-bold text-slate-700">
-                    SchoolGPT is generating answer…
-                  </p>
-                </div>
+              ) : (
+                conversation.map((msg) => (
+                  <SchoolGPTMessage
+                    key={msg.id}
+                    role={msg.role}
+                    content={msg.content}
+                    sources={msg.aiResponse?.evidence.map((e) => e.label)}
+                  />
+                ))
               )}
 
-              {/* Dynamic History Stream */}
-              <div className="space-y-4">
-                {history.map((item, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-5 bg-white border border-slate-200/80 rounded-3xl shadow-xs space-y-3 font-body"
-                  >
-                    <div className="border-b border-slate-100 pb-2">
-                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block">Question</span>
-                      <h4 className="font-display text-xs sm:text-sm font-extrabold text-slate-900">{item.query}</h4>
-                    </div>
+              {isLoading && (
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-slate-900 animate-bounce" />
+                  <span>Looking up student records…</span>
+                </div>
+              )}
+            </div>
 
-                    <div>
-                      {renderFormattedText(item.answer)}
-                    </div>
-
-                    {/* Action Object Payload */}
-                    {item.actionObject && (
-                      <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-2">
-                        <h5 className="font-display text-xs font-extrabold text-white">{item.actionObject.title}</h5>
-                        <p className="text-xs text-slate-300 font-mono bg-slate-800 p-2 rounded-xl">
-                          {item.actionObject.preview}
-                        </p>
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          {item.actionObject.actions?.map((act: string) => (
-                            <button
-                              key={act}
-                              type="button"
-                              onClick={() => alert(`Action executed: ${act}`)}
-                              className="px-3 py-1 bg-white text-slate-900 rounded-lg text-xs font-bold hover:bg-slate-100 transition-all"
-                            >
-                              {act}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Verified Sources */}
-                    {item.sources && item.sources.length > 0 && (
-                      <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-slate-400">Sources:</span>
-                        {item.sources.map((s) => (
-                          <span key={s} className="text-[10px] font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md">
-                            ✓ {s}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
+            {/* Input Bar */}
+            <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+              <div className="flex items-center bg-white border border-slate-200 rounded-2xl p-1.5 shadow-2xs focus-within:border-slate-900 transition-all">
+                <input
+                  type="text"
+                  value={inputVal}
+                  onChange={(e) => setInputVal(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSend(inputVal)}
+                  placeholder={uiProps.placeholder}
+                  disabled={isLoading}
+                  className="flex-1 bg-transparent px-3 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleSend(inputVal)}
+                  disabled={isLoading || !inputVal.trim()}
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs transition-all disabled:opacity-30"
+                >
+                  Send ✨
+                </button>
               </div>
             </div>
-
-            {/* Footer */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between text-xs font-medium text-slate-500">
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                Updated just now
-              </span>
-              <span className="font-bold text-slate-400">ShikshaSetu Assistant</span>
-            </div>
           </motion.div>
-        </>
-      )}
+        </div>
+      </div>
     </AnimatePresence>
   );
 }

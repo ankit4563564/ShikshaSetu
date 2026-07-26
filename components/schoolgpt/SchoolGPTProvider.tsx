@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { ContextRegistryProvider } from './context/ContextRegistry';
+import { AmbientIntelligenceCoreProvider } from './core/AmbientIntelligenceCore';
 import SchoolGPTOrb from './SchoolGPTOrb';
 import SchoolGPTDrawer from './SchoolGPTDrawer';
 
@@ -25,45 +27,64 @@ export function SchoolGPTProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
-  // Detect current screen name from pathname
-  const getScreenDetails = () => {
-    if (pathname.includes('/teacher')) return { name: 'Teacher Dashboard', role: 'Teacher', classGrade: 'Class 8A', studentName: 'Priya Patel' };
-    if (pathname.includes('/parent')) return { name: 'Parent Portal', role: 'Parent', classGrade: 'Class 8A', studentName: 'Aarav Sharma' };
-    if (pathname.includes('/student')) return { name: 'Student Workspace', role: 'Student', classGrade: 'Class 8A', studentName: 'Aarav Sharma' };
-    if (pathname.includes('/admin')) return { name: 'Admin Portal', role: 'Administrator', classGrade: 'All Classes', studentName: 'School Universe' };
-    if (pathname.includes('/driver')) return { name: 'Driver Telemetry', role: 'Driver', classGrade: 'Saket Route #4', studentName: 'Aarav Sharma' };
-    if (pathname.includes('/gate')) return { name: 'Gate Entry Protocol', role: 'Gate Staff', classGrade: 'Main Gate #1', studentName: 'Aarav Sharma' };
-    return { name: 'ShikshaSetu OS', role: 'User', classGrade: 'Class 8A', studentName: 'Aarav Sharma' };
+  const getRoleFromPath = () => {
+    if (pathname.includes('/parent')) return 'parent';
+    if (pathname.includes('/student')) return 'student';
+    if (pathname.includes('/admin')) return 'admin';
+    if (pathname.includes('/driver')) return 'driver';
+    if (pathname.includes('/gate')) return 'gate';
+    if (pathname.includes('/vendor')) return 'vendor';
+    return 'teacher';
   };
 
-  const details = getScreenDetails();
+  const getModuleFromPath = () => {
+    if (pathname.includes('attendance')) return 'attendance';
+    if (pathname.includes('marks')) return 'marks';
+    if (pathname.includes('homework')) return 'homework';
+    if (pathname.includes('growth')) return 'growth';
+    if (pathname.includes('ptm')) return 'ptm';
+    if (pathname.includes('parent')) return 'safety';
+    return 'general';
+  };
 
   return (
-    <SchoolGPTContext.Provider
-      value={{
-        isOpen,
-        openSchoolGPT: () => setIsOpen(true),
-        closeSchoolGPT: () => setIsOpen(false),
+    <ContextRegistryProvider
+      initialContext={{
+        role: getRoleFromPath() as any,
+        module: getModuleFromPath() as any,
+        studentName: 'Aarav Sharma',
+        classGrade: '8',
+        classSection: 'A',
       }}
     >
-      {children}
+      <AmbientIntelligenceCoreProvider>
+        <SchoolGPTContext.Provider
+          value={{
+            isOpen,
+            openSchoolGPT: () => setIsOpen(true),
+            closeSchoolGPT: () => setIsOpen(false),
+          }}
+        >
+          {children}
 
-      {/* Global Floating Glassmorphic AI Orb (Everywhere) */}
-      <SchoolGPTOrb
-        isOpen={isOpen}
-        onToggle={() => setIsOpen(!isOpen)}
-        screenName={details.name}
-      />
+          {/* Global Floating Glassmorphic AI Orb (Everywhere) */}
+          <SchoolGPTOrb
+            isOpen={isOpen}
+            onToggle={() => setIsOpen(!isOpen)}
+            screenName={`${getRoleFromPath().toUpperCase()} Workspace`}
+          />
 
-      {/* Global Intelligence Side Drawer */}
-      <SchoolGPTDrawer
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        screenName={details.name}
-        role={details.role}
-        studentName={details.studentName}
-        classNameLabel={details.classGrade}
-      />
-    </SchoolGPTContext.Provider>
+          {/* Global Intelligence Side Drawer */}
+          <SchoolGPTDrawer
+            isOpen={isOpen}
+            onClose={() => setIsOpen(false)}
+            role={getRoleFromPath() as any}
+            studentId="stu-aarav"
+            classGrade="8"
+            classSection="A"
+          />
+        </SchoolGPTContext.Provider>
+      </AmbientIntelligenceCoreProvider>
+    </ContextRegistryProvider>
   );
 }
