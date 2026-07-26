@@ -1,6 +1,7 @@
 import Navbar from '@/components/landing/Navbar';
 import Hero from '@/components/landing/Hero';
 import SchoolGPTShowcase from '@/components/landing/SchoolGPTShowcase';
+import LiveTransitSection from '@/components/landing/LiveTransitSection';
 import ConnectedJourney from '@/components/landing/ConnectedJourney';
 import PortalGrid from '@/components/landing/PortalGrid';
 import CTA from '@/components/landing/CTA';
@@ -14,6 +15,7 @@ export default function Home() {
         <Navbar />
         <Hero />
         <SchoolGPTShowcase />
+        <LiveTransitSection />
         <ConnectedJourney />
         <PortalGrid />
         <CTA />
