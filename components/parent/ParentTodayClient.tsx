@@ -1158,250 +1158,150 @@ export default function ParentTodayClient({
             </div>
           ) : (
             <div className="space-y-6">
-              {/* CHAPTER 1: HERO STATUS & GUARDIAN JOURNEY HEADER */}
-              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+              {/* BLOCK 1: CHILD STATUS REASSURANCE CARD */}
+              <div className="bg-white border border-emerald-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-3 bg-gradient-to-r from-emerald-50/60 via-white to-emerald-50/20">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-display text-xs font-black text-slate-400 uppercase tracking-widest block">
-                      {t('greeting.morning')}, {activeStudent?.parentName && activeStudent.parentName !== 'Parent' ? activeStudent.parentName.split(' ')[0] : 'Sunita'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-extrabold text-[10px] uppercase tracking-wider">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    {t('today.verified_safe')}
-                  </div>
-                </div>
-
-                <div>
-                  <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
-                    {activeStudent?.displayName.split(' ')[0] || 'Aarav'} {t('greeting.safe_status')}
-                  </h1>
-                  <p className="font-body text-xs font-semibold text-slate-500 mt-1">
-                    {t('hero.subtext')}
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-100 text-xs font-semibold text-slate-600">
-                  <span className="flex items-center gap-1.5 text-slate-800 font-bold">{t('hero.gate')}</span>
-                  <span className="text-slate-300">&bull;</span>
-                  <span className="flex items-center gap-1 text-slate-700">{t('hero.bus')}</span>
-                  <span className="text-slate-300">&bull;</span>
-                  <span className="text-emerald-700 font-bold font-mono text-[11px]">{t('hero.score')}</span>
-                </div>
-              </div>
-
-              {/* CHAPTER 2: CONTEXT-AWARE CURRENT STATUS */}
-              <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping" />
-                    <span className="font-display text-xs font-black uppercase tracking-widest text-slate-400">
-                      {t('status.current_title')}
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-500/30">
-                    Journey Completed ✓
+                  <span className="px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[11px] uppercase tracking-wider border border-emerald-200 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Verified Safe
                   </span>
+                  <span className="text-xs font-mono font-bold text-slate-500">08:17 AM Today</span>
                 </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-display text-xl font-extrabold text-white">
-                      {t('status.math_quiz')}
-                    </h3>
-                    <p className="font-body text-xs text-slate-300 mt-1">
-                      {t('status.math_desc')}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => setActiveNav('bus')}
-                      className="px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-100 rounded-xl text-xs font-bold transition-all shadow-xs"
-                    >
-                      {t('status.track_bus')}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* CHAPTER 3: TODAY'S JOURNEY (UNIFIED CHRONOLOGICAL STORY) */}
-              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <div>
-                    <h3 className="font-display text-xl font-extrabold text-slate-900">
-                      {t('today.journey')}
-                    </h3>
-                    <p className="font-body text-xs text-slate-500">{t('today.journey_sub')}</p>
-                  </div>
-                  <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                    {t('today.live_timeline')}
-                  </span>
-                </div>
-
-                <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
-                  {/* Event 1: Boarded Bus */}
-                  <div className="relative space-y-1">
-                    <div className="absolute -left-6 top-0.5 h-5 w-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] shadow-xs">
-                      🚌
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-display text-sm font-bold text-slate-900">{t('timeline.bus_boarded')}</h4>
-                      <span className="font-mono text-xs font-bold text-slate-400">07:42 AM</span>
-                    </div>
-                    <p className="font-body text-xs text-slate-600">
-                      {t('timeline.bus_desc')}
-                    </p>
-                  </div>
-
-                  {/* Event 2: Reached School */}
-                  <div className="relative space-y-1">
-                    <div className="absolute -left-6 top-0.5 h-5 w-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] shadow-xs">
-                      🏫
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-display text-sm font-bold text-slate-900">{t('timeline.school_reached')}</h4>
-                      <span className="font-mono text-xs font-bold text-slate-400">08:18 AM</span>
-                    </div>
-                    <p className="font-body text-xs text-slate-600">
-                      {t('timeline.school_desc')}
-                    </p>
-                  </div>
-
-                  {/* Event 3: Academic Milestone */}
-                  <div className="relative space-y-1">
-                    <div className="absolute -left-6 top-0.5 h-5 w-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] shadow-xs">
-                      📚
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-display text-sm font-bold text-slate-900">{t('timeline.quiz')}</h4>
-                      <span className="font-mono text-xs font-bold text-slate-400">10:25 AM</span>
-                    </div>
-                    <p className="font-body text-xs text-slate-600">
-                      {t('timeline.quiz_desc')}
-                    </p>
-
-                    {/* Progressive Disclosure: Expandable Detail Drawer */}
-                    <div className="pt-1">
-                      <button
-                        onClick={() => setIsWhyExpanded(prev => !prev)}
-                        className="text-xs font-bold text-slate-700 hover:text-slate-900 flex items-center gap-1 bg-transparent p-0 border-0"
-                      >
-                        <span>{t('timeline.why')}</span>
-                        <svg className={`w-3 h-3 transition-transform ${isWhyExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-
-                      {isWhyExpanded && (
-                        <div className="mt-2 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1 font-body text-xs text-slate-700">
-                          <p className="font-semibold text-slate-900">Teacher recorded note:</p>
-                          <p className="italic text-slate-600">&ldquo;Aarav showed great initiative in solving algebraic equations today.&rdquo; &mdash; Ms. Mehra</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Event 4: Homework Assigned */}
-                  <div className="relative space-y-1">
-                    <div className="absolute -left-6 top-0.5 h-5 w-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] shadow-xs">
-                      📝
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-display text-sm font-bold text-slate-900">{t('timeline.hw')}</h4>
-                      <span className="font-mono text-xs font-bold text-slate-400">01:40 PM</span>
-                    </div>
-                    <p className="font-body text-xs text-slate-600">
-                      {t('timeline.hw_desc')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* CHAPTER 4: CONVERSATIONAL AI SUMMARY (SCHOOLGPT) */}
-              <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl p-6 shadow-sm space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-700/80 pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">✨</span>
-                    <h4 className="font-display text-xs font-extrabold uppercase tracking-widest text-slate-300">
-                      Today&apos;s AI Summary
-                    </h4>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-400">SchoolGPT Verified</span>
-                </div>
-                <p className="font-body text-xs leading-relaxed text-slate-200 font-medium">
-                  &ldquo;Aarav travelled safely on Bus #4, attended every scheduled class, scored 92% in Mathematics, and returned home without any safety concerns. Everything is on track today.&rdquo;
+                <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                  ✅ {activeStudent?.displayName.split(' ')[0] || 'Aarav'} arrived safely.
+                </h1>
+                <p className="font-body text-xs font-bold text-slate-600 flex flex-wrap items-center gap-2 pt-1">
+                  <span>📍 Verified at Gate 2 (RFID Sensor)</span>
+                  <span>&bull;</span>
+                  <span>Classroom 8A</span>
+                  <span>&bull;</span>
+                  <span className="text-emerald-700">Present &amp; Active</span>
                 </p>
               </div>
 
-              {/* CHAPTER 5: NEEDS YOUR ATTENTION & RECOMMENDED ACTIONS */}
-              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <h3 className="font-display text-xs font-extrabold text-slate-400 uppercase tracking-widest">
-                    {t('attention.title')}
-                  </h3>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('attention.items')}</span>
+              {/* BLOCK 2: LIVE BUS TRACKING */}
+              <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-xl space-y-4 border border-slate-800">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                    <span className="text-xs font-mono font-extrabold text-amber-300 uppercase tracking-widest">
+                      LIVE TRANSIT MONITOR &bull; BUS #04
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-slate-400">Route 4 &bull; Saket Stop</span>
                 </div>
 
-                {parentNotifications.length > 0 ? (
-                  <div
-                    onClick={() => setActiveNav('messages')}
-                    className="flex items-center justify-between p-3.5 bg-amber-50 border border-amber-200 rounded-2xl cursor-pointer hover:bg-amber-100/80 transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">✉️</span>
-                      <span className="font-body text-xs font-bold text-amber-900">
-                        New teacher note received from {parentNotifications[parentNotifications.length - 1].senderName}
-                      </span>
-                    </div>
-                    <span className="text-xs font-bold text-amber-700">{t('attention.reply')}</span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                  <div>
+                    <h3 className="font-display text-lg font-extrabold text-white">Next Stop: Saket Community Center</h3>
+                    <p className="text-xs text-slate-400 font-medium mt-0.5">Driver Ramesh Kumar &bull; Vehicle DL 1P 4920 &bull; Speed: 28 km/h</p>
                   </div>
-                ) : activePass && activePass.status === 'pending' ? (
-                  <div className="flex items-center justify-between p-3.5 bg-blue-50 border border-blue-200 rounded-2xl">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">🎫</span>
-                      <span className="font-body text-xs font-bold text-blue-900">
-                        Gate Pass request is currently pending teacher approval
-                      </span>
-                    </div>
-                    <button 
-                      onClick={() => setShowCancelConfirmModal(true)}
-                      className="text-xs font-bold text-blue-700 hover:underline"
-                    >
-                      {t('attention.manage')}
-                    </button>
+                  <div className="bg-slate-800 text-amber-400 px-4 py-2.5 rounded-2xl text-center border border-amber-400/20 shrink-0">
+                    <span className="block text-[9px] font-mono font-bold uppercase text-slate-400">Estimated Arrival</span>
+                    <span className="font-mono text-base font-black">08:42 AM (12 mins)</span>
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2.5 text-emerald-700 bg-emerald-50 border border-emerald-200/80 p-4 rounded-2xl">
-                    <span className="text-lg font-bold">✓</span>
-                    <span className="font-body text-xs font-bold">{t('attention.all_caught_up')}</span>
-                  </div>
-                )}
+                </div>
+
+                <button
+                  onClick={() => setActiveNav('bus')}
+                  className="w-full py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 active:scale-95"
+                >
+                  🚌 Track Bus Live on Full Interactive Map →
+                </button>
               </div>
 
-              {/* QUICK ACTION CAPSULE BAR FOR SECONDARY FEATURES */}
-              <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl">
-                <button
-                  type="button"
-                  onClick={() => setShowPassModal(true)}
-                  className="flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-2xs hover:bg-slate-50 transition-all"
-                >
-                  <span>{t('action.gate_pass')}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSendMorningNote('Had a rough morning')}
-                  className="flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-2xs hover:bg-slate-50 transition-all"
-                >
-                  <span>{t('action.morning_note')}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveNav('messages')}
-                  className="flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-2xs hover:bg-slate-50 transition-all"
-                >
-                  <span>{t('action.message_teacher')}</span>
-                </button>
+              {/* BLOCK 3: IMPORTANT UPDATES (MAX 4 ACTIONABLE CARDS) */}
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h3 className="font-display text-xs font-black uppercase tracking-widest text-slate-400">
+                    Important Updates Today
+                  </h3>
+                  <span className="text-[10px] font-bold text-slate-400 font-mono uppercase">4 Items</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+                    <span className="text-2xl p-2 rounded-xl bg-white shadow-2xs border border-slate-100">📚</span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-extrabold text-slate-900">Math Homework Assigned</h4>
+                        <span className="text-[9px] font-mono font-bold text-slate-400">Due Tomorrow</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 font-medium mt-1">Class 8 Geometry Worksheet #4 (Exercises 1-10)</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+                    <span className="text-2xl p-2 rounded-xl bg-white shadow-2xs border border-slate-100">👩‍🏫</span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-extrabold text-slate-900">Message from Ms. Mehra</h4>
+                        <span className="text-[9px] font-mono font-bold text-slate-400">09:30 AM</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 font-medium mt-1">&ldquo;Aarav participated actively in Science lab today!&rdquo;</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+                    <span className="text-2xl p-2 rounded-xl bg-white shadow-2xs border border-slate-100">🗓️</span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-extrabold text-slate-900">Upcoming PTM Meeting</h4>
+                        <span className="text-[9px] font-mono font-bold text-slate-400">Friday 2:30 PM</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 font-medium mt-1">Quarterly progress check-in with Class Teacher</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+                    <span className="text-2xl p-2 rounded-xl bg-white shadow-2xs border border-slate-100">✅</span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-extrabold text-slate-900">Attendance Logged</h4>
+                        <span className="text-[9px] font-mono font-bold text-emerald-600">100% On Track</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 font-medium mt-1">Class 8A Morning Roll Call Recorded</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* BLOCK 4: SCHOOLGPT CONTEXTUAL ASSISTANT */}
+              <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-xl border border-slate-800 space-y-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl p-2.5 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-400/30">✨</span>
+                  <div>
+                    <h4 className="text-xs font-extrabold text-white font-display">Ask SchoolGPT Assistant</h4>
+                    <p className="text-[11px] text-slate-400 font-medium">Instant answers about Aarav&apos;s bus, homework, or schedule.</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2.5 pt-1">
+                  <button
+                    onClick={() => setActiveNav('bus')}
+                    className="bg-white/10 hover:bg-white/20 text-white text-xs px-3.5 py-2 rounded-xl font-semibold border border-white/15 transition-all text-left"
+                  >
+                    🚌 &ldquo;Where is the bus?&rdquo;
+                  </button>
+                  <button
+                    onClick={() => setActiveNav('homework')}
+                    className="bg-white/10 hover:bg-white/20 text-white text-xs px-3.5 py-2 rounded-xl font-semibold border border-white/15 transition-all text-left"
+                  >
+                    📚 &ldquo;Did Aarav submit homework?&rdquo;
+                  </button>
+                  <button
+                    onClick={() => setActiveNav('messages')}
+                    className="bg-white/10 hover:bg-white/20 text-white text-xs px-3.5 py-2 rounded-xl font-semibold border border-white/15 transition-all text-left"
+                  >
+                    📅 &ldquo;When is the next exam?&rdquo;
+                  </button>
+                  <button
+                    onClick={() => setActiveNav('messages')}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs px-4 py-2 rounded-xl font-extrabold transition-all shadow-md text-left"
+                  >
+                    ✉️ &ldquo;Message class teacher&rdquo;
+                  </button>
+                </div>
               </div>
             </div>
           )
