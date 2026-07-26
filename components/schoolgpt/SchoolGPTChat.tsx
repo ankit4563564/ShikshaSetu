@@ -13,10 +13,8 @@ interface SchoolGPTChatProps {
   childrenIds?: string[];
   classGrade?: string;
   classSection?: string;
-  placeholder?: string;
 }
 
-// 6 Lightweight Suggestion Cards (Design System 2.0: No mode badges, clean, pastel icons)
 const suggestedQuestions: Record<SchoolGPTRole, { title: string; prompt: string; icon: string; bg: string }[]> = {
   teacher: [
     { title: 'Support Radar', prompt: 'Which students need support today?', icon: '🎯', bg: 'bg-rose-50 border-rose-100 text-rose-700' },
@@ -79,6 +77,12 @@ const quickActions = [
   'Schedule Check-in',
 ];
 
+const activeLoadingMessages = [
+  'Analyzing attendance records & student history…',
+  'Reviewing assessment trends & homework submissions…',
+  'Compiling SchoolGPT evidence-based summary…',
+];
+
 function generateId(): string {
   return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
@@ -94,13 +98,39 @@ export default function SchoolGPTChat({
   const [messages, setMessages] = useState<SchoolGPTMessageType[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
   const [lastQuestion, setLastQuestion] = useState<string | null>(null);
   const [hasError, setHasError] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Keyboard shortcut '/' to focus search bar
+  useEffect(() => {
+    const handleGlobalKey = (e: KeyboardEvent) => {
+      if (e.key === '/' && document.activeElement !== inputRef.current) {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKey);
+    return () => window.removeEventListener('keydown', handleGlobalKey);
+  }, []);
+
+  // Contextual rotating loading messages
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isLoading) {
+      setLoadingMsgIdx(0);
+      interval = setInterval(() => {
+        setLoadingMsgIdx((prev) => (prev + 1) % activeLoadingMessages.length);
+      }, 1400);
+    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   async function handleSend(question: string) {
     const q = question.trim();
@@ -139,7 +169,7 @@ export default function SchoolGPTChat({
         role: 'assistant',
         content: response.text,
         timestamp: Date.now(),
-        sources: response.sources || ['School Telemetry Database', 'Official School Portal'],
+        sources: response.sources || ['School Database', 'Official Portal'],
         suggestedFollowUps: response.suggestedFollowUps,
       };
 
@@ -169,40 +199,42 @@ export default function SchoolGPTChat({
   }
 
   const cards = suggestedQuestions[role] || suggestedQuestions.teacher;
+  // Progressive Disclosure: Hide hero greeting and suggested cards after first message
   const showHero = messages.length === 0;
 
   return (
-    <div className="w-full max-w-5xl mx-auto py-6 sm:py-10 px-4 sm:px-6 font-body min-h-[85vh] flex flex-col justify-between space-y-8">
-      {/* ── 1. HERO SECTION (Clean Greeting, Zero Tech Clutter) ── */}
-      {showHero && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-3 pt-4 sm:pt-8"
-        >
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
-            Good Morning, Priya 👋
-          </h1>
-          <p className="font-body text-sm sm:text-base text-slate-500 font-medium max-w-md mx-auto">
-            How can I help you today?
-          </p>
-        </motion.div>
-      )}
+    <div className="w-full max-w-4xl mx-auto py-6 sm:py-10 px-4 sm:px-6 font-body min-h-[85vh] flex flex-col justify-between space-y-8">
+      {/* ── 1. HERO SECTION (Progressive Disclosure: Fades out upon query) ── */}
+      <AnimatePresence>
+        {showHero && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, height: 0, overflow: 'hidden', margin: 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-center space-y-3 pt-4 sm:pt-8"
+          >
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
+              Good Morning, Priya 👋
+            </h1>
+            <p className="font-body text-sm sm:text-base text-slate-500 font-medium max-w-md mx-auto">
+              How can I help you today?
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── 2. AI SEARCH FOCAL POINT ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-3xl mx-auto space-y-3"
-      >
+      <div className="w-full max-w-3xl mx-auto space-y-3">
         <div className="relative flex items-center bg-white border border-slate-200/90 rounded-3xl shadow-sm hover:shadow-md focus-within:shadow-md focus-within:border-slate-900 transition-all p-2 sm:p-2.5">
           <span className="pl-4 text-slate-400 text-lg">🔍</span>
           <input
+            ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isLoading ? 'SchoolGPT is compiling telemetry answer…' : 'Ask about a student, attendance, homework, or PTM...'}
+            placeholder={isLoading ? activeLoadingMessages[loadingMsgIdx] : 'Ask about a student, attendance, homework, or PTM... (Press /)'}
             disabled={isLoading}
             className="flex-1 bg-transparent px-3 py-2 sm:py-3 text-sm sm:text-base text-slate-900 placeholder-slate-400 outline-none font-medium"
           />
@@ -217,7 +249,7 @@ export default function SchoolGPTChat({
           </button>
         </div>
 
-        {/* Subtle Category Action Tags */}
+        {/* Category Shortcuts */}
         <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-semibold text-slate-500">
           <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400 mr-1">Shortcuts:</span>
           {['Ask', 'Analyze', 'Compare', 'Create'].map((tag) => (
@@ -231,77 +263,83 @@ export default function SchoolGPTChat({
             </button>
           ))}
         </div>
-      </motion.div>
+      </div>
 
-      {/* ── 3. SUGGESTED QUESTIONS (6 Lightweight Cards, Zero Badges) ── */}
-      {showHero && (
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="space-y-4 w-full max-w-4xl mx-auto"
-        >
-          <div className="flex items-center justify-between px-1">
-            <span className="text-[11px] font-mono font-extrabold uppercase tracking-widest text-slate-400">
-              Suggested Questions
-            </span>
-            <span className="text-[11px] text-slate-400 font-medium">Select to analyze</span>
-          </div>
+      {/* ── 3. SUGGESTED QUESTIONS (Progressive Disclosure: Fades out upon query) ── */}
+      <AnimatePresence>
+        {showHero && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, height: 0, overflow: 'hidden', margin: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-4 w-full max-w-3xl mx-auto"
+          >
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[11px] font-mono font-extrabold uppercase tracking-widest text-slate-400">
+                Suggested Questions
+              </span>
+              <span className="text-[11px] text-slate-400 font-medium">Select to analyze</span>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {cards.map((card) => (
-              <button
-                key={card.title}
-                type="button"
-                onClick={() => handleSend(card.prompt)}
-                className="p-5 bg-white hover:bg-slate-50/80 border border-slate-200/80 hover:border-slate-300 rounded-3xl text-left transition-all shadow-2xs hover:shadow-xs group flex flex-col justify-between gap-3 active:scale-95"
-              >
-                <div className="flex items-center justify-between w-full">
-                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg border ${card.bg}`}>
-                    {card.icon}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {cards.map((card) => (
+                <button
+                  key={card.title}
+                  type="button"
+                  onClick={() => handleSend(card.prompt)}
+                  className="p-5 bg-white hover:bg-slate-50/80 border border-slate-200/80 hover:border-slate-300 rounded-3xl text-left transition-all shadow-2xs hover:shadow-xs group flex flex-col justify-between gap-3 active:scale-95"
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg border ${card.bg}`}>
+                      {card.icon}
+                    </div>
+                    <span className="text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 transition-all text-sm">
+                      &rarr;
+                    </span>
                   </div>
-                  <span className="text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 transition-all text-sm">
-                    &rarr;
-                  </span>
-                </div>
-                <div>
-                  <h4 className="font-display text-sm font-extrabold text-slate-900">{card.title}</h4>
-                  <p className="font-body text-xs text-slate-500 line-clamp-1 mt-0.5 font-medium">{card.prompt}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </motion.div>
-      )}
+                  <div>
+                    <h4 className="font-display text-sm font-extrabold text-slate-900">{card.title}</h4>
+                    <p className="font-body text-xs text-slate-500 line-clamp-1 mt-0.5 font-medium">{card.prompt}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* ── 4. QUICK ACTIONS BAR (Single Horizontal Scrollable Row) ── */}
-      {showHero && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="w-full max-w-4xl mx-auto pt-2"
-        >
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400 shrink-0 mr-1">
-              Quick Actions:
-            </span>
-            {quickActions.map((act) => (
-              <button
-                key={act}
-                type="button"
-                onClick={() => handleSend(act)}
-                className="px-3.5 py-1.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-xs font-bold transition-all shrink-0 active:scale-95 shadow-2xs"
-              >
-                {act} &rarr;
-              </button>
-            ))}
-          </div>
-        </motion.div>
-      )}
+      {/* ── 4. QUICK ACTIONS BAR (Progressive Disclosure) ── */}
+      <AnimatePresence>
+        {showHero && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, height: 0, overflow: 'hidden', margin: 0 }}
+            transition={{ duration: 0.2 }}
+            className="w-full max-w-3xl mx-auto pt-1"
+          >
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+              <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400 shrink-0 mr-1">
+                Quick Actions:
+              </span>
+              {quickActions.map((act) => (
+                <button
+                  key={act}
+                  type="button"
+                  onClick={() => handleSend(act)}
+                  className="px-3.5 py-1.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-xs font-bold transition-all shrink-0 active:scale-95 shadow-2xs"
+                >
+                  {act} &rarr;
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* ── 5. AI RESPONSE STREAM (Clean Apple/Notion AI Sectioned Containers) ── */}
-      <div className="w-full max-w-4xl mx-auto space-y-6 flex-1">
+      {/* ── 5. AI RESPONSE STREAM ── */}
+      <div className="w-full max-w-3xl mx-auto space-y-6 flex-1">
         <AnimatePresence initial={false}>
           {messages.map((msg, idx) => {
             const prevQuery = idx > 0 && messages[idx - 1].role === 'user' ? messages[idx - 1].content : '';
@@ -317,7 +355,7 @@ export default function SchoolGPTChat({
           })}
         </AnimatePresence>
 
-        {/* Calm Animated Loading Indicator */}
+        {/* Active Contextual Loading Bar */}
         {isLoading && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start py-4">
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-2xs flex items-center gap-3">
@@ -326,9 +364,35 @@ export default function SchoolGPTChat({
                 <span className="h-2 w-2 animate-bounce rounded-full bg-slate-900" style={{ animationDelay: '150ms' }} />
                 <span className="h-2 w-2 animate-bounce rounded-full bg-slate-900" style={{ animationDelay: '300ms' }} />
               </div>
-              <span className="text-xs font-medium text-slate-600">
-                SchoolGPT is evaluating records and generating answer…
+              <span className="text-xs font-medium text-slate-700">
+                {activeLoadingMessages[loadingMsgIdx]}
               </span>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Contextual Follow-up Action Recommendations */}
+        {!isLoading && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
+          <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="pt-2">
+            <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400 block mb-2">
+              Suggested Next Steps:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {[
+                'Compare with Class Average',
+                'Generate Parent Summary',
+                'Schedule Homeroom Check-in',
+                'View Attendance Breakdown',
+              ].map((rec) => (
+                <button
+                  key={rec}
+                  type="button"
+                  onClick={() => handleSend(rec)}
+                  className="px-3.5 py-1.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold transition-all shadow-2xs active:scale-95"
+                >
+                  💡 {rec} &rarr;
+                </button>
+              ))}
             </div>
           </motion.div>
         )}

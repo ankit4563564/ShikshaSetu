@@ -13,13 +13,13 @@ interface SchoolGPTMessageProps {
 export default function SchoolGPTMessage({
   role,
   content,
-  sources = ['School Database', 'Live Student Portal'],
+  sources = ['Attendance Records', 'Gradebook Marks', 'Homework Tracker'],
 }: SchoolGPTMessageProps) {
   const isUser = role === 'user';
 
   // Section Parser: Breaks formatted AI response into Title, Summary, Evidence, Recommendations
   const parseSectionedResponse = (text: string) => {
-    if (!text) return { title: '', body: [] };
+    if (!text) return { title: '', bodyParts: [] };
 
     const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
     let title = '';
@@ -100,7 +100,7 @@ export default function SchoolGPTMessage({
               <span>✨ SchoolGPT Assistant</span>
             </span>
             <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-full">
-              ✓ Verified Data
+              ✓ Verified Evidence
             </span>
           </div>
 
@@ -136,11 +136,11 @@ export default function SchoolGPTMessage({
             })}
           </div>
 
-          {/* Evidence Sources */}
+          {/* Trust & Transparency: Subtle Source Attribution */}
           {sources && sources.length > 0 && (
             <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2">
               <span className="text-[10px] font-mono font-extrabold text-slate-400 uppercase tracking-wider">
-                Sources:
+                Based on:
               </span>
               {sources.map((src) => (
                 <span
