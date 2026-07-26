@@ -22,7 +22,9 @@ export default async function ParentPage() {
   let guardianName: string = 'Sunita Sharma';
   let guardianEmail: string = '';
   let linkedStudentIds: string[] = [];
-  let parentLanguage: string = 'en';
+  const cookieStore = cookies();
+  const langCookie = cookieStore.get('shikshasetu-lang')?.value;
+  let parentLanguage: string = langCookie || 'en';
 
   // Demo mode bypass: use centralized demo session validation
   const demo = await getDemoSessionFromCookies(cookies());
