@@ -43,7 +43,7 @@ export function planQueryExecution(
   const isDeterministic =
     intent === 'canteen' ||
     (intent === 'timetable' && (lowerQuery.includes('today') || lowerQuery.includes('period') || lowerQuery.includes('tomorrow'))) ||
-    (intent === 'bus' && (lowerQuery.includes('bus 1') || lowerQuery.includes('bus 2') || lowerQuery.includes('bus 3') || lowerQuery.includes('driver')));
+    intent === 'bus';
 
   // 3. Determine Goal
   let userGoal: UserGoal = 'lookup';
