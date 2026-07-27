@@ -478,8 +478,8 @@ export default function ParentTodayClient({
         </div>
       </div>
 
-      {/* ── Bottom Navigation Tabs ── */}
-      <nav className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-deep-teal/10 px-1 py-1.5 flex justify-between items-center z-20 shadow-lg">
+      {/* ── Bottom Navigation Tabs (Mobile Optimized & Safe-Area Aware) ── */}
+      <nav className="sticky bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-deep-teal/10 px-2 pt-2 pb-3 flex justify-between items-center z-30 shadow-lg">
         {[
           { id: 'home', label: 'Home', icon: '🏠' },
           { id: 'homework', label: 'Homework', icon: '📚' },
@@ -489,18 +489,19 @@ export default function ParentTodayClient({
         ].map((tab) => (
           <button
             key={tab.id}
+            type="button"
             onClick={() => {
               setActiveNav(tab.id as any);
               setShowSettings(false);
             }}
-            className={`flex flex-col items-center gap-0.5 flex-1 py-1.5 transition-all relative border-b-2 ${
+            className={`flex flex-col items-center justify-center min-h-[44px] gap-1 flex-1 py-1 px-1 rounded-xl transition-all relative outline-none focus-visible:ring-2 focus-visible:ring-deep-teal/30 ${
               activeNav === tab.id
-                ? 'text-deep-teal font-bold border-marigold'
-                : 'text-deep-teal/60 font-medium border-transparent'
+                ? 'text-deep-teal font-extrabold bg-deep-teal/5'
+                : 'text-deep-teal/60 font-medium hover:text-deep-teal hover:bg-slate-50'
             }`}
           >
-            <span className="text-base">{tab.icon}</span>
-            <span className="text-[9px] tracking-tight leading-none text-center">{tab.label}</span>
+            <span className="text-base leading-none">{tab.icon}</span>
+            <span className="text-[10px] tracking-tight leading-none text-center font-bold">{tab.label}</span>
           </button>
         ))}
       </nav>
