@@ -12,7 +12,7 @@ const sizeStyles = {
 export function SecondaryButton({ children, className = '', size = 'md', ...props }: SecondaryButtonProps) {
   return (
     <button
-      className={`pressable inline-flex items-center justify-center gap-1.5 font-display font-bold border border-deep-teal/15 text-deep-teal bg-transparent hover:bg-deep-teal/5 focus-visible:outline-2 focus-visible:outline-deep-teal/30 focus-visible:outline-offset-2 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150 ${sizeStyles[size]} ${className}`}
+      className={`pressable inline-flex items-center justify-center gap-1.5 font-display font-bold border border-deep-teal/15 text-deep-teal bg-transparent hover:bg-deep-teal/5 focus-visible:ring-2 focus-visible:ring-deep-teal/40 focus-visible:outline-none disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 active:scale-[0.98] ${sizeStyles[size]} ${className}`}
       {...props}
     >
       {children}

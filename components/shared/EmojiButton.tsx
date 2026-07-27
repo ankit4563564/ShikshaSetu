@@ -20,7 +20,7 @@ export function EmojiButton({ emoji, label, selected = false, disabled = false, 
       onClick={onClick}
       aria-label={label}
       aria-pressed={selected}
-      className={`pressable flex flex-col items-center justify-center p-2 rounded-xl border transition-all duration-150 focus-visible:outline-2 focus-visible:outline-deep-teal/30 focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+      className={`pressable flex flex-col items-center justify-center p-2 rounded-xl border transition-all duration-150 focus-visible:ring-2 focus-visible:ring-deep-teal/40 focus-visible:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
         selected
           ? 'border-deep-teal/30 bg-deep-teal/[0.04] shadow-sm'
           : 'border-deep-teal/10 hover:border-deep-teal/30 hover:bg-deep-teal/[0.02]'

@@ -26,7 +26,7 @@ export function DisclosureButton({
         onClick={onToggle}
         aria-expanded={isExpanded}
         aria-label={label || (isExpanded ? 'Collapse details' : 'Expand details')}
-        className="pressable inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all duration-150 border border-deep-teal/5 hover:bg-deep-teal/[0.02] focus-visible:outline-2 focus-visible:outline-deep-teal/30 focus-visible:outline-offset-2"
+        className="pressable inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all duration-150 border border-deep-teal/5 hover:bg-deep-teal/[0.02] focus-visible:ring-2 focus-visible:ring-deep-teal/30 focus-visible:outline-none"
         style={{ color }}
       >
         <span>{children}</span>
