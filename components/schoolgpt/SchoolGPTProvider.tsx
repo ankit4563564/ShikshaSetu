@@ -6,6 +6,7 @@ import { ContextRegistryProvider } from './context/ContextRegistry';
 import { AmbientIntelligenceCoreProvider } from './core/AmbientIntelligenceCore';
 import SchoolGPTOrb from './SchoolGPTOrb';
 import SchoolGPTDrawer from './SchoolGPTDrawer';
+import { CopilotDrawer } from '@/components/copilot/CopilotDrawer';
 
 import { useContextRegistry } from './context/ContextRegistry';
 
@@ -124,6 +125,9 @@ export function SchoolGPTProvider({ children }: { children: React.ReactNode }) {
             onClose={() => setIsOpen(false)}
             screenName={getScreenName()}
           />
+
+          {/* Global ShikshaSetu Copilot Drawer (Cmd + K) */}
+          <CopilotDrawer />
         </SchoolGPTContext.Provider>
       </AmbientIntelligenceCoreProvider>
     </ContextRegistryProvider>

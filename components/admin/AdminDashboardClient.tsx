@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { fadeSlideUp, staggerContainer, scaleIn } from '@/lib/animations';
 import AdminRewardsPanel from '@/components/rewards/AdminRewardsPanel';
 import NotificationBell from '@/components/shared/NotificationBell';
+import { PrincipalCopilotStrip } from '@/components/copilot/PrincipalCopilotStrip';
 import { useNotifications } from '@/components/shared/NotificationContext';
 import type { AdminOpsInsight } from '@/lib/product-intelligence';
 import {
@@ -193,6 +194,8 @@ export default function AdminDashboardClient({
           animate="visible"
           className="admin-mission-content px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-8"
         >
+          {/* ShikshaSetu Copilot Strip */}
+          <PrincipalCopilotStrip />
           {/* Hero Banner - Executive Control Overview */}
           <motion.section variants={fadeSlideUp} className="relative overflow-hidden rounded-3xl border border-primary/15 bg-gradient-to-br from-white/90 via-white/75 to-primary/[0.03] p-6 sm:p-8 shadow-md backdrop-blur-xl">
             <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />

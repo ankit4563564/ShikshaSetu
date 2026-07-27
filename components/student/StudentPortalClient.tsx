@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import SchoolMitra from '@/components/student/SchoolMitra';
 import QuestBoard from '@/components/student/QuestBoard';
+import { StudentCopilotStrip } from '@/components/copilot/StudentCopilotStrip';
 import type { StudentWithFlag } from '@/lib/supabase/getStudentsData';
 import {
   TODAYS_SCHEDULE,
@@ -128,6 +129,9 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
               </div>
               <div aria-hidden className="absolute -right-10 -top-12 text-[180px] opacity-10">✦</div>
             </section>
+
+            {/* ShikshaSetu Copilot Strip */}
+            <StudentCopilotStrip />
 
             {/* AI Tip */}
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">

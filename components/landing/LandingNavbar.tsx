@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useLandingModal } from './LandingModalContext';
+import { setDrawerOpen } from '@/lib/copilot/copilotEngine';
 
 export function LandingNavbar() {
   const { openRoleSelector, openDemoModal } = useLandingModal();
@@ -34,6 +35,14 @@ export function LandingNavbar() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            className="hidden sm:inline-flex items-center gap-1.5 bg-[#F4FBF7] text-[#0F766E] border border-[#22C55E]/30 px-3.5 py-1.5 rounded-full font-title-md text-xs hover:bg-[#e6f7ef] transition-all font-bold shadow-xs"
+          >
+            <span>🧠</span> Copilot
+            <span className="text-[9px] font-mono opacity-70 bg-white px-1 rounded border border-[#22C55E]/20">Cmd+K</span>
+          </button>
           <button
             type="button"
             onClick={openDemoModal}

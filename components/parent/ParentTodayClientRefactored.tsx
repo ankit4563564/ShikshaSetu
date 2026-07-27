@@ -22,6 +22,7 @@ import { ParentHomeworkTab } from './ParentHomeworkTab';
 import { ParentAttendanceTab } from './ParentAttendanceTab';
 import { ParentGatePassTab } from './ParentGatePassTab';
 import { ParentBusTrackingTab } from './ParentBusTrackingTab';
+import { ParentCopilotStrip } from '@/components/copilot/ParentCopilotStrip';
 
 const getChildBullets = (name: string, tone: 'positive' | 'neutral' | 'concern') => {
   const lower = name.toLowerCase();
@@ -243,6 +244,11 @@ export default function ParentTodayClient({
         onStudentChange={setSelectedStudentId}
         isLoading={isLoading}
       />
+
+      {/* ShikshaSetu Copilot Strip */}
+      <div className="px-4 sm:px-6">
+        <ParentCopilotStrip />
+      </div>
 
       {/* ── Consent Settings Overlay ── */}
       <AnimatePresence>

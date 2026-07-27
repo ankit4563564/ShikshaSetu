@@ -43,6 +43,7 @@ import { Skeleton } from '@/components/shared/Skeleton';
 import type { StudentProductInsight } from '@/lib/product-intelligence';
 
 import AcademicGrowthAnalytics from '@/components/shared/AcademicGrowthAnalytics';
+import { TeacherCopilotStrip } from '@/components/copilot/TeacherCopilotStrip';
 
 const TeacherMarksPanel = dynamic(() => import('./TeacherMarksPanel'), { ssr: false });
 const SchoolGPTChat = dynamic(() => import('@/components/schoolgpt/SchoolGPTChat'), { ssr: false });
@@ -602,6 +603,9 @@ export default function TeacherDashboardClient({
               </div>
             </div>
           </div>
+
+          {/* ShikshaSetu Copilot Strip */}
+          <TeacherCopilotStrip />
 
           {/* Today's Daily Briefing Bullets */}
           <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 sm:p-5 space-y-2">
