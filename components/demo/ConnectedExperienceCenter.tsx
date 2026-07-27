@@ -41,9 +41,15 @@ export function ConnectedExperienceCenter() {
       setState(newState);
     });
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setActiveModal(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       clearInterval(interval);
       unsubscribe();
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
