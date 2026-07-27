@@ -46,6 +46,24 @@ export async function askSchoolGPTAction(req: SchoolGPTRequest): Promise<SchoolG
   // 1. Context Resolution & Pronoun Memory State
   const { resolvedQuery, state } = resolveContextualReferences(req.question, history);
   
+  // 1.5 Strict Role Boundary Check Interception
+  const { PermissionEngine } = await import('@/lib/schoolgpt/PermissionEngine');
+  const boundaryCheck = PermissionEngine.isQueryInRoleBoundary(resolvedQuery, req.role as any);
+  if (!boundaryCheck.isAllowed) {
+    console.log(`[SchoolGPT Permission Engine] Intercepted out-of-boundary query for role ${req.role}: "${resolvedQuery}"`);
+    return {
+      text: boundaryCheck.refusalReason || "This query falls outside the permissions for your active portal role.",
+      sources: ['Permission Boundary Engine'],
+      suggestedFollowUps: req.role === 'student'
+        ? ['Explain Physics Chapter 4', 'Give me practice quiz', 'What homework is due tomorrow?']
+        : req.role === 'parent'
+        ? ['Where is the bus?', 'Today attendance log', 'Message class teacher']
+        : ['Who needs support today?', 'Draft PTM Summary'],
+      source: 'permission_boundary_engine',
+      confidence: 'HIGH',
+    };
+  }
+
   // 2. Intent Classification
   const classified = classifyIntent(resolvedQuery, history);
 

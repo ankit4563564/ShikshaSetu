@@ -78,6 +78,48 @@ export class PermissionEngine {
     return !perms.blockedFields.some(b => field.toLowerCase().includes(b));
   }
 
+  static isQueryInRoleBoundary(query: string, role: SchoolGPTRole): { isAllowed: boolean; refusalReason?: string } {
+    const q = query.toLowerCase();
+
+    if (role === 'student') {
+      if (q.includes('teacher note') || q.includes('salary') || q.includes('ptm report for') || q.includes('risk score') || q.includes('fee collection') || q.includes('teacher assistant')) {
+        return {
+          isAllowed: false,
+          refusalReason: "As your AI Study Partner, I can help you with homework practice, chapter explanations, study revision, and exam preparation! Administrative teacher tools and internal records are outside my student assistant scope."
+        };
+      }
+    }
+
+    if (role === 'parent') {
+      if (q.includes('internal teacher note') || q.includes('salary') || q.includes('class ranking') || q.includes('other student marks') || q.includes('teacher workstation')) {
+        return {
+          isAllowed: false,
+          refusalReason: "As your Parent Assistant, I can help you with your child's safety, attendance, bus location, homework, and teacher messages. Detailed internal teacher records and classmate data are restricted."
+        };
+      }
+    }
+
+    if (role === 'driver') {
+      if (q.includes('math quiz') || q.includes('homework') || q.includes('ptm note') || q.includes('fee status') || q.includes('teacher assistant')) {
+        return {
+          isAllowed: false,
+          refusalReason: "As the Transit Co-Pilot, I can provide route updates, student pickup rosters, and emergency contacts. Academic grades and homework records are restricted."
+        };
+      }
+    }
+
+    if (role === 'gate') {
+      if (q.includes('homework') || q.includes('exam marks') || q.includes('teacher note')) {
+        return {
+          isAllowed: false,
+          refusalReason: "As the Gate Security Assistant, I can verify digital gate passes, student pickup approvals, and visitor logs. Academic records are restricted."
+        };
+      }
+    }
+
+    return { isAllowed: true };
+  }
+
   static filterDataForRole(data: Record<string, any>, role: SchoolGPTRole): Record<string, any> {
     const perms = this.getPermissions(role);
     const sanitized: Record<string, any> = {};
