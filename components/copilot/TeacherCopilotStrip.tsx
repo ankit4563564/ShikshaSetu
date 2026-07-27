@@ -68,6 +68,16 @@ export function TeacherCopilotStrip() {
         </ul>
       </div>
 
+      {/* Expected Outcome */}
+      <div className="p-3 rounded-xl bg-blue-50/50 border border-blue-200/60 space-y-1 text-xs">
+        <span className="text-[10px] font-mono font-bold text-blue-800 uppercase tracking-wider block">
+          Expected Outcome
+        </span>
+        <p className="text-[#111827] font-medium leading-relaxed">
+          Parent informed today, targeted practice sheet assigned, and teacher check-in scheduled before Friday assessment.
+        </p>
+      </div>
+
       {/* Trust Panel (Explainability Evidence) */}
       <TrustPanel
         signalsUsed={item.trustSignals.used}
