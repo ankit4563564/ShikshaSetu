@@ -22,13 +22,11 @@ const loadingMessages = [
   "Formatting connected response...",
 ];
 
-const experienceCards: { role: SchoolGPTRole; title: string; icon: string; bg: string; border: string; desc: string; portalHref: string }[] = [
+const experienceCards: { role: SchoolGPTRole; title: string; icon: string; desc: string; portalHref: string }[] = [
   {
     role: 'parent',
     title: 'Parent Experience',
     icon: '👨‍👩‍👧',
-    bg: 'bg-emerald-50/80 hover:bg-emerald-100/80',
-    border: 'border-emerald-200/80',
     desc: "Track your child's day, transport, attendance and communication.",
     portalHref: '/parent',
   },
@@ -36,8 +34,6 @@ const experienceCards: { role: SchoolGPTRole; title: string; icon: string; bg: s
     role: 'teacher',
     title: 'Teacher Experience',
     icon: '👩‍🏫',
-    bg: 'bg-indigo-50/80 hover:bg-indigo-100/80',
-    border: 'border-indigo-200/80',
     desc: 'Manage classrooms, identify students needing attention and automate routine work.',
     portalHref: '/teacher',
   },
@@ -45,8 +41,6 @@ const experienceCards: { role: SchoolGPTRole; title: string; icon: string; bg: s
     role: 'admin',
     title: 'School Administration',
     icon: '🏫',
-    bg: 'bg-amber-50/80 hover:bg-amber-100/80',
-    border: 'border-amber-200/80',
     desc: 'Monitor operations, transport, analytics and campus safety.',
     portalHref: '/admin',
   },
@@ -54,8 +48,6 @@ const experienceCards: { role: SchoolGPTRole; title: string; icon: string; bg: s
     role: 'student',
     title: 'Student Experience',
     icon: '🎓',
-    bg: 'bg-sky-50/80 hover:bg-sky-100/80',
-    border: 'border-sky-200/80',
     desc: 'Homework, learning support, attendance and daily school life.',
     portalHref: '/student',
   },
@@ -119,30 +111,34 @@ export default function SchoolGPTDrawer({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-slate-900/30 backdrop-blur-xs transition-opacity"
+          className="absolute inset-0 bg-slate-900/20 backdrop-blur-xs transition-opacity"
         />
 
-        {/* Floating Warm Assistant Side Drawer */}
+        {/* Apple Intelligence Premium Light Side Panel */}
         <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.98, x: '100%' }}
             animate={{ opacity: 1, scale: 1, x: 0 }}
             exit={{ opacity: 0, scale: 0.98, x: '100%' }}
-            transition={{ type: 'spring', damping: 26, stiffness: 220 }}
-            className="w-screen max-w-lg bg-white/95 backdrop-blur-xl border-l border-slate-200/90 shadow-2xl flex flex-col justify-between"
+            transition={{ type: 'spring', damping: 28, stiffness: 240 }}
+            className="w-screen max-w-lg bg-[#FAFBFF] border-l border-[#E5E7EB] shadow-2xl flex flex-col justify-between"
           >
             {/* Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-b from-indigo-50/40 to-transparent">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-display text-lg font-black flex items-center justify-center shadow-md">
+            <div className="p-5 sm:p-6 border-b border-[#E5E7EB] flex items-center justify-between bg-white">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0F766E] to-[#14b8a6] text-white font-display text-lg font-black flex items-center justify-center shadow-sm">
                   ✨
                 </div>
                 <div>
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="font-display text-sm font-black text-slate-900">{uiProps.greeting}</h3>
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-display text-base font-extrabold text-[#111827]">
+                      {isLanding ? '✨ SchoolGPT' : uiProps.greeting}
+                    </h3>
+                    <span className="h-2 w-2 rounded-full bg-[#22C55E] animate-pulse" />
                   </div>
-                  <p className="text-[11px] font-medium text-slate-500">{uiProps.contextBanner}</p>
+                  <p className="text-xs font-medium text-[#6B7280] mt-0.5">
+                    {isLanding ? 'Your AI companion for the connected school ecosystem.' : uiProps.contextBanner}
+                  </p>
                 </div>
               </div>
 
@@ -151,7 +147,7 @@ export default function SchoolGPTDrawer({
                   <button
                     type="button"
                     onClick={resetConversation}
-                    className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold transition-all"
+                    className="px-3 py-1.5 rounded-xl bg-[#F8FAFC] hover:bg-[#E5E7EB] text-[#6B7280] text-xs font-bold transition-all border border-[#E5E7EB]"
                     title="Clear Conversation"
                   >
                     Clear
@@ -160,16 +156,16 @@ export default function SchoolGPTDrawer({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center transition-all"
+                  className="h-9 w-9 rounded-full bg-[#F8FAFC] hover:bg-[#E5E7EB] text-[#111827] font-bold text-xs flex items-center justify-center transition-all border border-[#E5E7EB]"
                 >
                   ✕
                 </button>
               </div>
             </div>
 
-            {/* Context Card for Authenticated / Demo Mode */}
+            {/* Context Card for Authenticated / Portal Mode */}
             {!isLanding && (
-              <div className="px-5 pt-3">
+              <div className="px-6 pt-4">
                 <SchoolGPTContextCard
                   screenName={screenName}
                   studentName={context.studentName || 'Aarav Sharma'}
@@ -179,46 +175,47 @@ export default function SchoolGPTDrawer({
             )}
 
             {/* Main Content Area */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
               {/* LANDING PAGE STATE: Unselected / Welcome Mode */}
               {isLanding && !isDemo && conversation.length === 0 && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="space-y-5"
+                  className="space-y-6"
                 >
-                  <div className="p-4 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 border border-indigo-100 rounded-2xl">
-                    <h4 className="font-display text-sm font-extrabold text-indigo-950">
-                      Your AI companion for the connected school ecosystem.
+                  {/* Clean Light Intro Card */}
+                  <div className="p-5 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm space-y-1.5">
+                    <h4 className="font-display text-sm font-extrabold text-[#111827]">
+                      Choose an experience or ask what SchoolGPT can do.
                     </h4>
-                    <p className="text-xs text-indigo-700 font-medium mt-1">
-                      How would you like to explore ShikshaSetu? Select an experience below or ask what SchoolGPT can do.
+                    <p className="text-xs text-[#6B7280] leading-relaxed">
+                      Step directly into any role or ask product questions to see how ambient AI connects home and campus in real time.
                     </p>
                   </div>
 
                   {/* 4 Role Selection Cards */}
-                  <div>
-                    <h5 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-2.5">
-                      Explore Experiences
+                  <div className="space-y-3">
+                    <h5 className="text-xs font-extrabold uppercase tracking-wider text-[#6B7280]">
+                      Explore Role Experiences
                     </h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {experienceCards.map((card) => (
                         <div
                           key={card.role}
                           onClick={() => handleSelectDemoRole(card.role)}
-                          className={`p-3.5 rounded-2xl border ${card.border} ${card.bg} cursor-pointer transition-all hover:scale-[1.02] shadow-2xs flex flex-col justify-between group`}
+                          className="p-4 rounded-2xl border border-[#E5E7EB] bg-white hover:border-[#0F766E]/50 hover:shadow-md cursor-pointer transition-all flex flex-col justify-between group"
                         >
                           <div>
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xl">{card.icon}</span>
-                              <span className="text-[10px] font-extrabold text-slate-500 group-hover:text-indigo-600">
-                                Try Demo &rarr;
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-2xl">{card.icon}</span>
+                              <span className="text-[11px] font-extrabold text-[#0F766E] opacity-90 group-hover:opacity-100 flex items-center gap-1">
+                                Demo &rarr;
                               </span>
                             </div>
-                            <h6 className="font-display text-xs font-extrabold text-slate-900">
+                            <h6 className="font-display text-sm font-extrabold text-[#111827]">
                               {card.title}
                             </h6>
-                            <p className="text-[10px] text-slate-600 font-medium leading-relaxed mt-1">
+                            <p className="text-xs text-[#6B7280] font-medium leading-relaxed mt-1">
                               {card.desc}
                             </p>
                           </div>
@@ -228,8 +225,8 @@ export default function SchoolGPTDrawer({
                   </div>
 
                   {/* Product Questions */}
-                  <div>
-                    <h5 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-2.5">
+                  <div className="space-y-3">
+                    <h5 className="text-xs font-extrabold uppercase tracking-wider text-[#6B7280]">
                       Suggested Product Questions
                     </h5>
                     <div className="flex flex-wrap gap-2">
@@ -238,9 +235,9 @@ export default function SchoolGPTDrawer({
                           key={q}
                           type="button"
                           onClick={() => handleSend(q)}
-                          className="px-3.5 py-2 rounded-full border border-slate-200/90 bg-white hover:bg-indigo-50 hover:border-indigo-200 text-slate-700 hover:text-indigo-900 text-xs font-extrabold transition-all shadow-2xs active:scale-95 text-left flex items-center gap-1.5"
+                          className="px-3.5 py-2 rounded-full border border-[#E5E7EB] bg-[#F8FAFC] hover:bg-white hover:border-[#0F766E]/40 text-[#111827] text-xs font-bold transition-all shadow-xs active:scale-95 text-left"
                         >
-                          <span>• {q}</span>
+                          • {q}
                         </button>
                       ))}
                     </div>
@@ -251,42 +248,42 @@ export default function SchoolGPTDrawer({
               {/* DEMO MODE: Role Selected on Landing Page */}
               {isLanding && isDemo && conversation.length === 0 && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="space-y-4"
+                  className="space-y-5"
                 >
-                  <div className="p-3.5 bg-emerald-50 border border-emerald-200/90 rounded-2xl flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping" />
-                      <span className="text-xs font-extrabold text-emerald-900">
+                  <div className="p-4 bg-white border border-[#E5E7EB] rounded-2xl flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#22C55E] animate-pulse" />
+                      <span className="text-xs font-extrabold text-[#111827]">
                         {uiProps.contextBanner}
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => setContext({ isDemoMode: false, demoRole: undefined })}
-                      className="text-[10px] font-extrabold text-emerald-800 underline hover:text-emerald-950"
+                      className="text-xs font-bold text-[#0F766E] hover:underline"
                     >
-                      Change Experience
+                      Change Role
                     </button>
                   </div>
 
-                  <p className="text-xs text-slate-600 font-medium">
-                    Try asking any of these contextual questions in Demo Mode:
+                  <p className="text-xs text-[#6B7280] font-medium">
+                    Try asking these contextual questions in Demo Mode:
                   </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {uiProps.suggestions.map((sug) => (
                       <button
                         key={sug.prompt}
                         type="button"
                         onClick={() => handleSend(sug.prompt)}
-                        className={`p-3 rounded-2xl border ${sug.bg} text-left transition-all hover:scale-[1.02] shadow-2xs active:scale-95 flex items-start gap-2.5`}
+                        className="p-3.5 rounded-2xl border border-[#E5E7EB] bg-white text-left transition-all hover:border-[#0F766E]/50 hover:shadow-sm active:scale-95 flex items-start gap-3"
                       >
-                        <span className="text-base shrink-0">{sug.icon}</span>
+                        <span className="text-lg shrink-0">{sug.icon}</span>
                         <div>
-                          <p className="text-xs font-extrabold">{sug.title}</p>
-                          <p className="text-[10px] opacity-80 mt-0.5 line-clamp-1">{sug.prompt}</p>
+                          <p className="text-xs font-extrabold text-[#111827]">{sug.title}</p>
+                          <p className="text-[11px] text-[#6B7280] font-medium mt-0.5 line-clamp-1">{sug.prompt}</p>
                         </div>
                       </button>
                     ))}
@@ -309,50 +306,50 @@ export default function SchoolGPTDrawer({
                 <motion.div
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200/80 text-xs font-bold text-indigo-900 flex items-center gap-2.5 shadow-2xs"
+                  className="p-4 rounded-2xl bg-white border border-[#E5E7EB] text-xs font-bold text-[#0F766E] flex items-center gap-2.5 shadow-sm"
                 >
-                  <span className="h-2.5 w-2.5 rounded-full bg-indigo-600 animate-ping" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#0F766E] animate-ping" />
                   <span>{loadingMessages[loadingIdx]}</span>
                 </motion.div>
               )}
             </div>
 
             {/* ENTER PORTAL CTAs & INPUT BAR */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50/80 space-y-3">
+            <div className="p-5 border-t border-[#E5E7EB] bg-white space-y-4">
               {/* ENTER PORTAL ACTION BAR FOR LANDING PAGE */}
               {isLanding && (
-                <div className="space-y-2 border-b border-slate-200/60 pb-3">
+                <div className="space-y-2.5 border-b border-[#E5E7EB] pb-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    <span className="text-xs font-extrabold uppercase tracking-wider text-[#6B7280]">
                       Want the full experience?
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     <button
                       type="button"
                       onClick={() => handleNavigatePortal('/parent')}
-                      className="px-2.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] transition-all text-center shadow-xs active:scale-95"
+                      className="px-3 py-2.5 rounded-xl bg-[#F8FAFC] hover:bg-[#0F766E] hover:text-white border border-[#E5E7EB] text-[#111827] font-bold text-xs transition-all text-center active:scale-95 shadow-xs"
                     >
                       Parent Portal
                     </button>
                     <button
                       type="button"
                       onClick={() => handleNavigatePortal('/teacher')}
-                      className="px-2.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[11px] transition-all text-center shadow-xs active:scale-95"
+                      className="px-3 py-2.5 rounded-xl bg-[#F8FAFC] hover:bg-[#0F766E] hover:text-white border border-[#E5E7EB] text-[#111827] font-bold text-xs transition-all text-center active:scale-95 shadow-xs"
                     >
                       Teacher Portal
                     </button>
                     <button
                       type="button"
                       onClick={() => handleNavigatePortal('/admin')}
-                      className="px-2.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-[11px] transition-all text-center shadow-xs active:scale-95"
+                      className="px-3 py-2.5 rounded-xl bg-[#F8FAFC] hover:bg-[#0F766E] hover:text-white border border-[#E5E7EB] text-[#111827] font-bold text-xs transition-all text-center active:scale-95 shadow-xs"
                     >
                       Admin Portal
                     </button>
                     <button
                       type="button"
                       onClick={() => handleNavigatePortal('/student')}
-                      className="px-2.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-[11px] transition-all text-center shadow-xs active:scale-95"
+                      className="px-3 py-2.5 rounded-xl bg-[#F8FAFC] hover:bg-[#0F766E] hover:text-white border border-[#E5E7EB] text-[#111827] font-bold text-xs transition-all text-center active:scale-95 shadow-xs"
                     >
                       Student Portal
                     </button>
@@ -361,7 +358,7 @@ export default function SchoolGPTDrawer({
               )}
 
               {/* INPUT BAR */}
-              <div className="flex items-center bg-white border border-slate-200/90 rounded-2xl p-1.5 shadow-2xs focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
+              <div className="flex items-center bg-[#F8FAFC] border border-[#E5E7EB] rounded-2xl p-2 focus-within:border-[#0F766E] focus-within:ring-2 focus-within:ring-[#0F766E]/10 transition-all">
                 <input
                   type="text"
                   value={inputVal}
@@ -369,13 +366,13 @@ export default function SchoolGPTDrawer({
                   onKeyDown={(e) => e.key === 'Enter' && handleSend(inputVal)}
                   placeholder={uiProps.placeholder}
                   disabled={isLoading}
-                  className="flex-1 bg-transparent px-3 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 outline-none"
+                  className="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm font-medium text-[#111827] placeholder-[#6B7280] outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => handleSend(inputVal)}
                   disabled={isLoading || !inputVal.trim()}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs transition-all disabled:opacity-30 shadow-2xs active:scale-95"
+                  className="px-4 py-2 rounded-xl bg-[#0F766E] hover:bg-[#0d665f] text-white font-extrabold text-xs transition-all disabled:opacity-40 shadow-xs active:scale-95"
                 >
                   Send ✨
                 </button>

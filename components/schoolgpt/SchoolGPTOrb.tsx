@@ -16,15 +16,15 @@ export default function SchoolGPTOrb({ isOpen, onToggle, screenName = 'ShikshaSe
         <motion.div
           initial={{ opacity: 0, x: 10 }}
           animate={{ opacity: 1, x: 0 }}
-          className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/95 text-slate-800 shadow-lg backdrop-blur-xl border border-slate-200/80 text-xs font-bold select-none cursor-pointer"
+          className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white text-[#111827] shadow-md border border-[#E5E7EB] text-xs font-extrabold select-none cursor-pointer"
           onClick={onToggle}
         >
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="h-2 w-2 rounded-full bg-[#22C55E] animate-pulse" />
           <span>✨ SchoolGPT Assistant</span>
         </motion.div>
       )}
 
-      {/* Signature Floating Warm Glassmorphic AI Bubble */}
+      {/* Floating Apple Intelligence Light AI Bubble */}
       <motion.button
         type="button"
         onClick={onToggle}
@@ -32,20 +32,20 @@ export default function SchoolGPTOrb({ isOpen, onToggle, screenName = 'ShikshaSe
         whileTap={{ scale: 0.94 }}
         animate={{
           boxShadow: isOpen
-            ? '0 0 0 0 rgba(99, 102, 241, 0)'
+            ? '0 0 0 0 rgba(15, 118, 110, 0)'
             : [
-                '0 8px 24px rgba(99, 102, 241, 0.25)',
-                '0 12px 32px rgba(168, 85, 247, 0.35)',
-                '0 8px 24px rgba(99, 102, 241, 0.25)',
+                '0 8px 24px rgba(15, 118, 110, 0.20)',
+                '0 12px 32px rgba(244, 185, 66, 0.25)',
+                '0 8px 24px rgba(15, 118, 110, 0.20)',
               ],
         }}
         transition={{
           boxShadow: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
         }}
-        className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-emerald-400 p-[2px] shadow-xl flex items-center justify-center cursor-pointer border border-white/60 active:scale-95 transition-all"
-        aria-label="Open SchoolGPT Family Assistant"
+        className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-gradient-to-tr from-[#0F766E] via-[#14b8a6] to-[#F4B942] p-[2px] shadow-lg flex items-center justify-center cursor-pointer border border-white active:scale-95 transition-all"
+        aria-label="Open SchoolGPT Assistant"
       >
-        <div className="h-full w-full rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center text-xl text-indigo-600 font-extrabold shadow-inner">
+        <div className="h-full w-full rounded-full bg-white flex items-center justify-center text-xl text-[#0F766E] font-extrabold shadow-xs">
           {isOpen ? '✕' : '✨'}
         </div>
       </motion.button>
