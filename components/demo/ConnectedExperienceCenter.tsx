@@ -133,27 +133,40 @@ export function ConnectedExperienceCenter() {
         <div>
           <div className="flex items-center gap-2.5">
             <h1 className="font-display text-lg sm:text-xl font-extrabold text-white tracking-tight">
-              ShikshaSetu Operations Center
+              Every important student moment reaches the right people at the right time.
             </h1>
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-[10px] font-semibold">
               LIVE SYNC
             </span>
           </div>
-          <p className="text-xs font-mono text-slate-400 mt-0.5">
-            Real-time multi-stakeholder orchestration &bull; Every event connected across campus
+          <p className="text-xs font-mono text-emerald-400 font-bold mt-0.5">
+            Copilot prepares. Educators decide. &bull; Emotional Anchor: Aarav Sharma (Class 8A)
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="hidden md:inline-flex text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
-            {currentTime || '08:15:00 AM'}
-          </span>
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"
             onClick={handleReset}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all outline-none"
+            className="px-4 py-2 rounded-xl text-xs font-bold bg-[#0F766E] hover:bg-[#0d665f] text-white transition-all outline-none shadow-sm flex items-center gap-1.5"
           >
-            Reset Experience
+            ▶ Start Demo
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveModal('impactSummary' as any)}
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-purple-950/80 hover:bg-purple-900 text-purple-200 border border-purple-800 transition-all outline-none flex items-center gap-1.5"
+          >
+            🏆 Closing Impact
+          </button>
+
+          <button
+            type="button"
+            onClick={handleReset}
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all outline-none"
+          >
+            Reset
           </button>
         </div>
       </header>
@@ -537,13 +550,39 @@ export function ConnectedExperienceCenter() {
                 </div>
               )}
 
-              {activeModal === 'evidence' && (
-                <div className="space-y-3">
-                  <h3 className="font-bold text-sm text-white">School Memory Evidence (28 Cases)</h3>
-                  <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-                    <p className="font-bold text-purple-400">84% Recovery Rate</p>
-                    <p className="text-slate-300">Combining a 1-on-1 teacher check-in with a parent WhatsApp note resolved 84% of similar cases within 5 days.</p>
+              {(activeModal as string) === 'impactSummary' && (
+                <div className="space-y-4 py-2">
+                  <div className="text-center space-y-1">
+                    <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider block">
+                      Daily School Operations Impact Summary
+                    </span>
+                    <h3 className="font-display text-xl font-extrabold text-white">
+                      One Connected School
+                    </h3>
                   </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-center">
+                    <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-0.5">
+                      <span className="text-xl font-extrabold text-emerald-400 font-display block">14</span>
+                      <span className="text-[10px] font-mono text-slate-300 font-bold">Parents Updated</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-0.5">
+                      <span className="text-xl font-extrabold text-blue-400 font-display block">9</span>
+                      <span className="text-[10px] font-mono text-slate-300 font-bold">Students Supported</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-0.5">
+                      <span className="text-xl font-extrabold text-purple-400 font-display block">3</span>
+                      <span className="text-[10px] font-mono text-slate-300 font-bold">Early Interventions</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-0.5">
+                      <span className="text-xl font-extrabold text-amber-400 font-display block">2h 19m</span>
+                      <span className="text-[10px] font-mono text-slate-300 font-bold">Teacher Time Saved</span>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-slate-400 text-center font-mono pt-1">
+                    &ldquo;Copilot prepares. Educators decide.&rdquo;
+                  </p>
                 </div>
               )}
 
