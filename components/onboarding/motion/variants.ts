@@ -17,20 +17,20 @@ export const springSnappy: Transition = {
 };
 
 export const fadeUpVariants: Variants = {
-  hidden: { opacity: 0, y: 22 },
+  hidden: { opacity: 0, y: 16 },
   visible: (delay = 0) => ({
     opacity: 1,
     y: 0,
     transition: {
-      duration: 1.4,
+      duration: 0.4,
       delay,
       ease: premiumEase,
     },
   }),
   exit: {
     opacity: 0,
-    y: -16,
-    transition: { duration: 0.7, ease: premiumEase },
+    y: -12,
+    transition: { duration: 0.25, ease: premiumEase },
   },
 };
 

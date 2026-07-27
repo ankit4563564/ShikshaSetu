@@ -170,7 +170,14 @@ function SchoolStoryModalComponent({
               </button>
             </div>
 
-            <div className="relative flex-1 overflow-y-auto px-5 py-8 sm:px-8 sm:py-10">
+            <div
+              className="relative flex-1 overflow-y-auto px-5 py-8 sm:px-8 sm:py-10 cursor-pointer"
+              onClick={() => {
+                if (phase === 'intro') {
+                  onPhaseChange('roles');
+                }
+              }}
+            >
               <AnimatePresence mode="wait">
                 {phase === 'intro' && <IntroCinematic key="intro" />}
 

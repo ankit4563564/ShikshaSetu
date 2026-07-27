@@ -1,8 +1,8 @@
 import type { SchoolRole, SchoolRoleOption, TimelineStep } from './types';
 
-export const OPEN_DURATION_MS = 900;
-export const INTRO_DURATION_MS = 20000;
-export const TIMELINE_DURATION_MS = 4500;
+export const OPEN_DURATION_MS = 300;
+export const INTRO_DURATION_MS = 4500;
+export const TIMELINE_DURATION_MS = 1800;
 
 export const INTRO_LINES: string[] = [
   'Every school has a story.',

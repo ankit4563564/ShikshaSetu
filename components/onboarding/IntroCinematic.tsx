@@ -38,7 +38,7 @@ function IntroCinematicComponent() {
               <m.p
                 key={line}
                 variants={fadeUpVariants}
-                custom={index * 1.65 + 0.4}
+                custom={index * 0.22 + 0.08}
                 className="pt-6 font-display text-xl sm:text-2xl font-black uppercase tracking-widest text-[#e8a33d] drop-shadow-sm"
               >
                 {line}
@@ -51,7 +51,7 @@ function IntroCinematicComponent() {
               <m.h2
                 key={line}
                 variants={fadeUpVariants}
-                custom={index * 1.65 + 0.4}
+                custom={index * 0.22 + 0.08}
                 className="pt-1 font-display text-2xl sm:text-4xl font-extrabold tracking-tight text-white drop-shadow-md"
               >
                 {line}
@@ -71,7 +71,7 @@ function IntroCinematicComponent() {
               <m.p
                 key={line}
                 variants={fadeUpVariants}
-                custom={index * 1.65 + 0.4}
+                custom={index * 0.22 + 0.08}
                 className={`text-base sm:text-lg ${roleClass} drop-shadow-sm`}
               >
                 {line}
@@ -84,7 +84,7 @@ function IntroCinematicComponent() {
             <m.p
               key={line}
               variants={fadeUpVariants}
-              custom={index * 1.65 + 0.4}
+              custom={index * 0.22 + 0.08}
               className="text-sm sm:text-base font-medium text-white/90 leading-relaxed"
             >
               {line}
