@@ -1,103 +1,132 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
+import { motion } from 'framer-motion';
 
-const TIMELINE_STEPS = [
+const CONNECTED_STORY_NODES = [
   {
-    time: '07:30 AM',
-    title: 'Bus Starts Route',
-    subtitle: 'Morning Transit',
-    desc: 'Live GPS ping active. Parents receive automated arrival ETA on their phone.',
-    icon: 'directions_bus',
-    color: 'bg-amber-500 text-slate-950 border-amber-300'
+    time: '07:20 AM',
+    emoji: '🚌',
+    title: 'Aarav boarded Bus #04.',
+    desc: 'Live GPS telemetry active. Parents receive automated arrival ETA on their phones before even asking.',
+    tag: 'Morning Transit',
+    tagBg: 'bg-amber-50 text-amber-800 border-amber-200/80',
+    iconBg: 'bg-amber-100 text-amber-700',
   },
   {
-    time: '08:15 AM',
-    title: 'Campus Gate Entry',
-    subtitle: 'RFID & QR Pass',
-    desc: 'Instant gate scan. Parent receives instant push notification: "Aarav entered campus safely".',
-    icon: 'sensor_door',
-    color: 'bg-emerald-500 text-slate-950 border-emerald-300'
-  },
-  {
-    time: '08:30 AM',
-    title: 'Classroom & Attendance',
-    subtitle: 'Signal Sync',
-    desc: 'Attendance automatically synced to school dashboard. No manual roll call needed.',
-    icon: 'how_to_reg',
-    color: 'bg-sky-500 text-slate-950 border-sky-300'
+    time: '08:05 AM',
+    emoji: '🏫',
+    title: 'Arrived safely at campus gate.',
+    desc: 'Instant RFID pass scan. Gate security photo verified and instant push signal delivered to parents.',
+    tag: 'Gate Verification',
+    tagBg: 'bg-[#F4FBF7] text-[#0F766E] border-[#22C55E]/30',
+    iconBg: 'bg-[#F4FBF7] text-[#0F766E]',
   },
   {
     time: '10:30 AM',
-    title: 'Teacher AI Insights',
-    subtitle: 'Learning Climate',
-    desc: 'SchoolGPT generates personalized quiz practice and highlights attention peaks.',
-    icon: 'auto_awesome',
-    color: 'bg-indigo-500 text-white border-indigo-300'
+    emoji: '📚',
+    title: 'Classroom roll call & engagement.',
+    desc: 'Attendance automatically synced to register. Teachers save 15 minutes of manual attendance taking.',
+    tag: 'Classroom Signal',
+    tagBg: 'bg-sky-50 text-sky-800 border-sky-200/80',
+    iconBg: 'bg-sky-100 text-sky-700',
   },
   {
-    time: '03:30 PM',
-    title: 'Home-Safe Confirmation',
-    subtitle: 'Evening Drop',
-    desc: 'Final GPS drop-off ping. Parent receives home confirmation. One calm day complete.',
-    icon: 'home',
-    color: 'bg-teal-500 text-slate-950 border-teal-300'
-  }
+    time: '01:15 PM',
+    emoji: '✨',
+    title: 'SchoolGPT suggested a follow-up.',
+    desc: 'Quiet AI radar identifies students needing support and prepares 1-click updates for parents.',
+    tag: 'SchoolGPT AI',
+    tagBg: 'bg-purple-50 text-purple-800 border-purple-200/80',
+    iconBg: 'bg-purple-100 text-purple-700',
+  },
+  {
+    time: '03:35 PM',
+    emoji: '🏠',
+    title: 'Reached home safely.',
+    desc: 'Final GPS drop-off ping confirmed. Parents receive home notification. One calm school day complete.',
+    tag: 'Home Safe',
+    tagBg: 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
+    iconBg: 'bg-emerald-100 text-emerald-700',
+  },
 ];
 
 export function SchoolDayStorySection() {
-  const [activeIdx, setActiveIdx] = useState(1);
-
   return (
-    <section className="py-section-gap bg-slate-950 text-white rounded-[3rem] my-12 relative overflow-hidden" id="story">
-      {/* Ambient background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
-
+    <section className="py-24 bg-[#F4FBF7] rounded-[3rem] my-12 border border-[#E5E7EB] relative overflow-hidden" id="story">
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter relative z-10">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-          <div className="inline-flex items-center gap-2 bg-secondary-container/20 border border-secondary-container/40 px-4 py-1.5 rounded-full">
-            <span className="w-2.5 h-2.5 rounded-full bg-secondary-container animate-pulse" />
-            <span className="font-label-sm text-label-sm text-secondary-fixed tracking-widest uppercase font-bold">The Connected Narrative</span>
+        
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto space-y-4 mb-20">
+          <div className="inline-flex items-center gap-2 bg-white border border-[#22C55E]/30 px-4 py-1.5 rounded-full shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
+            <span className="text-xs font-mono font-extrabold text-[#0F766E] uppercase tracking-widest">
+              GOOGLE MAPS TIMELINE &bull; APPLE STORYTELLING
+            </span>
           </div>
-          <h2 className="font-display-lg text-headline-lg-mobile md:text-headline-lg text-white">
-            One Connected <span className="text-secondary-fixed glow-text">School Day</span>
+          <h2 className="font-display text-3xl md:text-5xl font-extrabold text-[#111827] tracking-tight leading-tight">
+            Every school day tells <span className="text-[#0F766E]">one connected story.</span>
           </h2>
-          <p className="font-body-lg text-body-lg text-slate-300 font-medium">
-            Follow the live chain from morning bus boarding to home-safe arrival.
+          <p className="font-body text-base md:text-lg text-[#6B7280] font-medium max-w-2xl mx-auto leading-relaxed">
+            Follow the live operational chain from morning bus boarding to evening home-safe confirmation.
           </p>
         </div>
 
-        {/* Timeline Desktop/Tablet Horizontal Stepper */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
-          {TIMELINE_STEPS.map((step, idx) => {
-            const isActive = idx === activeIdx;
-            return (
-              <div
-                key={step.time}
-                onClick={() => setActiveIdx(idx)}
-                className={`p-6 rounded-2xl cursor-pointer transition-all duration-300 border flex flex-col justify-between ${
-                  isActive
-                    ? 'bg-slate-900 border-secondary-container shadow-2xl scale-[1.03]'
-                    : 'bg-slate-900/40 border-slate-800 hover:bg-slate-900/70 hover:border-slate-700'
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-mono font-bold text-secondary-fixed">{step.time}</span>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-md ${step.color}`}>
-                      <span className="material-symbols-outlined text-sm">{step.icon}</span>
+        {/* ── VERTICAL CONNECTED TIMELINE STORY ── */}
+        <div className="relative max-w-3xl mx-auto">
+          {/* Animated Connecting Vertical Line */}
+          <div className="absolute left-6 sm:left-1/2 top-4 bottom-4 w-0.5 -translate-x-1/2 bg-gradient-to-b from-[#22C55E] via-[#0F766E] to-[#22C55E] opacity-40 z-0" />
+
+          <div className="space-y-10 sm:space-y-12 relative z-10">
+            {CONNECTED_STORY_NODES.map((node, idx) => {
+              const isEven = idx % 2 === 0;
+
+              return (
+                <motion.div
+                  key={node.time}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ duration: 0.5, delay: idx * 0.12 }}
+                  className={`flex flex-col sm:flex-row items-start sm:items-center gap-6 ${
+                    isEven ? 'sm:flex-row-reverse' : ''
+                  }`}
+                >
+                  {/* Timeline Card */}
+                  <div className="w-full sm:w-[calc(50%-2.5rem)] bg-white rounded-2xl p-6 border border-[#E5E7EB] shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-mono font-extrabold text-[#0F766E] bg-[#F4FBF7] border border-[#22C55E]/30 px-3 py-1 rounded-full">
+                        ⏱️ {node.time}
+                      </span>
+                      <span className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${node.tagBg}`}>
+                        {node.tag}
+                      </span>
                     </div>
+
+                    <h4 className="font-display text-base sm:text-lg font-extrabold text-[#111827] group-hover:text-[#0F766E] transition-colors leading-snug">
+                      {node.title}
+                    </h4>
+
+                    <p className="text-xs sm:text-sm text-[#6B7280] font-medium leading-relaxed mt-2">
+                      {node.desc}
+                    </p>
                   </div>
-                  <h4 className="font-bold text-white text-base font-display mb-1">{step.title}</h4>
-                  <p className="text-xs text-slate-400 font-semibold mb-3">{step.subtitle}</p>
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed border-t border-slate-800 pt-3">{step.desc}</p>
-              </div>
-            );
-          })}
+
+                  {/* Central Node Badge */}
+                  <div className="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white border-2 border-[#0F766E] text-xl shadow-lg z-20 group-hover:scale-110 transition-transform">
+                    {node.emoji}
+                  </div>
+
+                  {/* Spacer for 2-column alternating alignment */}
+                  <div className="hidden sm:block w-[calc(50%-2.5rem)]" />
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
+
       </div>
     </section>
   );
 }
+
