@@ -32,10 +32,12 @@ export function HeroSection() {
               <button
                 type="button"
                 onClick={openRoleSelector}
-                className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all shadow-lg flex items-center gap-2 font-extrabold hover:scale-105 active:scale-95 inline-flex"
+                className="group relative overflow-hidden bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all duration-100 ease-out shadow-lg flex items-center gap-2 font-extrabold hover:scale-105 active:scale-95 active:translate-y-0 inline-flex"
               >
-                🚀 Experience Live Demo
-                <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                <span className="relative z-10 flex items-center gap-2">
+                  🚀 Experience Live Demo
+                  <span className="material-symbols-outlined text-sm transition-transform duration-100 ease-out group-hover:translate-x-1.5">arrow_forward</span>
+                </span>
               </button>
             </div>
 
