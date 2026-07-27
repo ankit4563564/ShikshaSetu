@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Toast } from '@/components/shared/Toast';
+import { TableRowSkeleton } from '@/components/shared/SkeletonLoaders';
 import {
   createExamAction,
   updateMarksAction,
@@ -318,9 +319,7 @@ export default function TeacherMarksPanel({ teacherId }: TeacherMarksPanelProps)
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-deep-teal border-t-transparent" />
-        </div>
+        <TableRowSkeleton rows={4} />
       ) : exams.length === 0 ? (
         <div className="rounded-2xl border border-deep-teal/10 bg-white/50 p-12 text-center">
           <p className="text-lg font-display font-bold text-deep-teal/40">No exams yet</p>

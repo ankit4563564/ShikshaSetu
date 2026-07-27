@@ -7,6 +7,7 @@ import {
   getStudentTrendAction,
 } from '@/app/actions/marksActions';
 import { generatePerformanceSummary } from '@/lib/ai/performanceSummary';
+import { CardSkeleton } from '@/components/shared/SkeletonLoaders';
 import { fadeSlideUp, staggerContainer } from '@/lib/animations';
 
 interface ParentMarksViewProps {
@@ -62,11 +63,7 @@ export default function ParentMarksView({ studentId, studentName }: ParentMarksV
   }, [selectedSubject, studentId, studentName, marks]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-deep-teal border-t-transparent" />
-      </div>
-    );
+    return <CardSkeleton className="my-4" />;
   }
 
   if (marks.length === 0) {

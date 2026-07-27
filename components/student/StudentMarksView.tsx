@@ -1,5 +1,7 @@
 'use client';
 
+import { CardSkeleton } from '@/components/shared/SkeletonLoaders';
+
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -97,11 +99,7 @@ export default function StudentMarksView({ studentId, studentName }: StudentMark
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-deep-teal border-t-transparent" />
-      </div>
-    );
+    return <CardSkeleton className="my-6" />;
   }
 
   if (marks.length === 0) {
