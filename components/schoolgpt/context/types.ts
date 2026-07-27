@@ -1,9 +1,11 @@
-export type SchoolGPTRole = 'teacher' | 'parent' | 'student' | 'admin' | 'driver' | 'gate' | 'vendor';
+export type SchoolGPTRole = 'landing' | 'teacher' | 'parent' | 'student' | 'admin' | 'driver' | 'gate' | 'vendor';
 export type SchoolGPTModule = 'attendance' | 'marks' | 'homework' | 'growth' | 'ptm' | 'safety' | 'general';
 
 export interface DomainContext {
   role: SchoolGPTRole;
   module: SchoolGPTModule;
+  isDemoMode?: boolean;
+  demoRole?: SchoolGPTRole;
   studentId?: string;
   studentName?: string;
   classGrade?: string;

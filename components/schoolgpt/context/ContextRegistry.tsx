@@ -10,12 +10,8 @@ interface ContextRegistryValue {
 }
 
 const defaultContext: DomainContext = {
-  role: 'teacher',
+  role: 'landing',
   module: 'general',
-  classGrade: '8',
-  classSection: 'A',
-  studentId: 'stu-aarav',
-  studentName: 'Aarav Sharma',
 };
 
 const ContextRegistryContext = createContext<ContextRegistryValue | undefined>(undefined);

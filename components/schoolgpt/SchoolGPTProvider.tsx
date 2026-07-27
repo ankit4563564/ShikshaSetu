@@ -7,6 +7,8 @@ import { AmbientIntelligenceCoreProvider } from './core/AmbientIntelligenceCore'
 import SchoolGPTOrb from './SchoolGPTOrb';
 import SchoolGPTDrawer from './SchoolGPTDrawer';
 
+import { useContextRegistry } from './context/ContextRegistry';
+
 interface SchoolGPTContextType {
   isOpen: boolean;
   openSchoolGPT: () => void;
@@ -23,18 +25,46 @@ export function useSchoolGPT() {
   return useContext(SchoolGPTContext);
 }
 
+function ContextPathSync() {
+  const pathname = usePathname();
+  const { setContext } = useContextRegistry();
+
+  React.useEffect(() => {
+    if (pathname.includes('/parent')) {
+      setContext({ role: 'parent', studentName: 'Aarav Sharma', classGrade: '8', classSection: 'A', isDemoMode: false });
+    } else if (pathname.includes('/teacher')) {
+      setContext({ role: 'teacher', studentName: 'Aarav Sharma', classGrade: '8', classSection: 'A', isDemoMode: false });
+    } else if (pathname.includes('/student')) {
+      setContext({ role: 'student', studentName: 'Aarav Sharma', classGrade: '8', classSection: 'A', isDemoMode: false });
+    } else if (pathname.includes('/admin')) {
+      setContext({ role: 'admin', isDemoMode: false });
+    } else if (pathname.includes('/driver')) {
+      setContext({ role: 'driver', isDemoMode: false });
+    } else if (pathname.includes('/gate')) {
+      setContext({ role: 'gate', isDemoMode: false });
+    } else if (pathname.includes('/vendor')) {
+      setContext({ role: 'vendor', isDemoMode: false });
+    } else {
+      setContext({ role: 'landing', studentName: undefined, classGrade: undefined, classSection: undefined, isDemoMode: false, demoRole: undefined });
+    }
+  }, [pathname, setContext]);
+
+  return null;
+}
+
 export function SchoolGPTProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
   const getRoleFromPath = () => {
     if (pathname.includes('/parent')) return 'parent';
+    if (pathname.includes('/teacher')) return 'teacher';
     if (pathname.includes('/student')) return 'student';
     if (pathname.includes('/admin')) return 'admin';
     if (pathname.includes('/driver')) return 'driver';
     if (pathname.includes('/gate')) return 'gate';
     if (pathname.includes('/vendor')) return 'vendor';
-    return 'teacher';
+    return 'landing';
   };
 
   const getModuleFromPath = () => {
@@ -48,26 +78,29 @@ export function SchoolGPTProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getScreenName = () => {
-    if (pathname === '/' || pathname === '') return 'AI Assistant';
+    if (pathname === '/' || pathname === '' || pathname === '/landing') return 'AI Product Guide';
     if (pathname.includes('/parent')) return 'Parent Portal';
     if (pathname.includes('/student')) return 'Student Workspace';
     if (pathname.includes('/admin')) return 'Admin Workspace';
     if (pathname.includes('/driver')) return 'Driver Telemetry';
     if (pathname.includes('/gate')) return 'Gate Protocol';
     if (pathname.includes('/teacher')) return 'Teacher Workspace';
-    return 'AI Assistant';
+    return 'AI Product Guide';
   };
+
+  const currentRole = getRoleFromPath();
 
   return (
     <ContextRegistryProvider
       initialContext={{
-        role: getRoleFromPath() as any,
+        role: currentRole as any,
         module: getModuleFromPath() as any,
-        studentName: 'Aarav Sharma',
-        classGrade: '8',
-        classSection: 'A',
+        studentName: currentRole === 'landing' ? undefined : 'Aarav Sharma',
+        classGrade: currentRole === 'landing' ? undefined : '8',
+        classSection: currentRole === 'landing' ? undefined : 'A',
       }}
     >
+      <ContextPathSync />
       <AmbientIntelligenceCoreProvider>
         <SchoolGPTContext.Provider
           value={{
@@ -89,10 +122,7 @@ export function SchoolGPTProvider({ children }: { children: React.ReactNode }) {
           <SchoolGPTDrawer
             isOpen={isOpen}
             onClose={() => setIsOpen(false)}
-            role={getRoleFromPath() as any}
-            studentId="stu-aarav"
-            classGrade="8"
-            classSection="A"
+            screenName={getScreenName()}
           />
         </SchoolGPTContext.Provider>
       </AmbientIntelligenceCoreProvider>
