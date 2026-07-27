@@ -37,7 +37,7 @@ export default function TeacherMarksPanel({ teacherId }: TeacherMarksPanelProps)
       const data = await getExamsAction(teacherId);
       setExams(data);
     } catch (err: any) {
-      setToast({ message: err.message, type: 'error' });
+      setToast({ message: err.message || 'Unable to connect to school server. Please try again.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -366,7 +366,14 @@ export default function TeacherMarksPanel({ teacherId }: TeacherMarksPanelProps)
         </div>
       )}
 
-      {toast && <Toast message={toast.message} onClose={() => setToast(null)} />}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onRetry={toast.type === 'error' ? loadExams : undefined}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
