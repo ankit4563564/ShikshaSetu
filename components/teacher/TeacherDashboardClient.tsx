@@ -64,72 +64,6 @@ const STATUS_BORDER_L_COLOR = {
   'Needs Attention': 'border-l-warm-clay',
 };
 
-const localSanitizeBulletText = (text: string, studentName: string): string => {
-  const firstName = studentName.split(' ')[0];
-  const cleaned = text.trim();
-
-  // 1. Attendance: "X/Y days present (Z% attendance)"
-  const presenceRegex = /(\d+)\/(\d+)\s+days\s+present\s*\((\d+)%\s+attendance\)/i;
-  if (presenceRegex.test(cleaned)) {
-    const match = cleaned.match(presenceRegex);
-    if (match) {
-      const present = parseInt(match[1]);
-      const total = parseInt(match[2]);
-      const absences = total - present;
-      if (absences === 0) {
-        return `${firstName} attended all scheduled days of classes recently.`;
-      }
-      return `${firstName} missed ${absences === 1 ? 'one day' : absences === 2 ? 'two days' : absences === 3 ? 'three days' : absences + ' days'} of school recently.`;
-    }
-  }
-
-  // 2. Attendance: "Missed X days, arrived late Y times"
-  const lateRegex = /Missed\s+(\d+)\s+days,\s+arrived\s+late\s+(\d+)\s+times/i;
-  if (lateRegex.test(cleaned)) {
-    const match = cleaned.match(lateRegex);
-    if (match) {
-      const absences = parseInt(match[1]);
-      const lates = parseInt(match[2]);
-      if (absences > 0 && lates > 0) {
-        return `${firstName} missed ${absences === 1 ? 'a day' : absences === 2 ? 'two days' : absences === 3 ? 'three days' : absences + ' days'} and arrived late ${lates === 1 ? 'once' : lates === 2 ? 'twice' : lates + ' times'} recently.`;
-      } else if (absences > 0) {
-        return `${firstName} missed ${absences === 1 ? 'one day' : absences === 2 ? 'two days' : absences === 3 ? 'three days' : absences + ' days'} of school recently.`;
-      } else if (lates > 0) {
-        return `${firstName} arrived late ${lates === 1 ? 'once' : lates === 2 ? 'twice' : lates === 3 ? 'three times' : lates + ' times'} recently.`;
-      }
-    }
-  }
-
-  // 3. Homework: "X of Y assignments missed (Z% gap)"
-  const hwRegex = /(\d+)\s+of\s+(\d+)\s+assignments\s+missed\s*\((\d+)%\s+gap\)/i;
-  if (hwRegex.test(cleaned)) {
-    const match = cleaned.match(hwRegex);
-    if (match) {
-      const missed = parseInt(match[1]);
-      const total = parseInt(match[2]);
-      if (missed === 0) {
-        return `${firstName} has submitted all homework assignments on time.`;
-      }
-      return `${firstName} missed submitting ${missed === 1 ? 'one' : missed === 2 ? 'two' : missed === 3 ? 'three' : missed + ' assignments'} of ${total} homework tasks.`;
-    }
-  }
-
-  // 4. Homework streak: "Longest streak of missed homework: X in a row"
-  const hwStreakRegex = /Longest\s+streak\s+of\s+missed\s+homework:\s*(\d+)\s+in\s+a\s+row/i;
-  if (hwStreakRegex.test(cleaned)) {
-    const match = cleaned.match(hwStreakRegex);
-    if (match) {
-      const streak = parseInt(match[1]);
-      return `${firstName} missed completing ${streak === 1 ? 'one assignment' : streak === 2 ? 'two assignments' : streak === 3 ? 'three assignments' : streak + ' assignments'} in a row.`;
-    }
-  }
-
-  // 5. Grades: "Math scores: initial X% -> latest Y% (dropped Z pts)"
-  const gradeDropRegex = /(\w+)\s+scores:\s*initial\s+(\d+)%\s*→\s*latest\s+(\d+)%\s*\((dropped|gained)\s+(\d+)\s+pts\)/i;
-  if (gradeDropRegex.test(cleaned)) {
-    const match = cleaned.match(gradeDropRegex);
-    if (match) {
-      const subject = match[1];
       const direction = match[4].toLowerCase();
       if (direction === 'dropped') {
         return `${firstName}'s ${subject} grade has slipped recently.`;
@@ -1170,7 +1104,7 @@ export default function TeacherDashboardClient({
                                               {item.bullets.map((bullet, idx) => (
                                                 <li key={idx} className="flex items-start gap-1.5 font-body text-[11px] text-deep-teal/75 font-semibold leading-relaxed">
                                                   <span className="text-[9px] mt-0.5 text-deep-teal/40">•</span>
-                                                  <span>{localSanitizeBulletText(bullet, selectedStudent.displayName)}</span>
+                                                  <span>{sanitizeBulletText(bullet)}</span>
                                                 </li>
                                               ))}
                                             </ul>
