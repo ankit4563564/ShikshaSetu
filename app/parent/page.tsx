@@ -1,7 +1,7 @@
 import { getStudentsData } from '@/lib/supabase';
 import { calculateStudentStatus } from '@/lib/rules-engine/calculateStatus';
 import { generateParentOfflineFallback } from '@/lib/ai-narration/generateParentNote';
-import ParentTodayClient from '@/components/parent/ParentTodayClient';
+import ParentTodayClient from '@/components/parent/ParentTodayClientRefactored';
 import LanguageToggle from '@/components/shared/LanguageToggle';
 import { LanguageProvider } from '@/components/shared/LanguageContext';
 import { auth, currentUser } from '@clerk/nextjs/server';

@@ -27,7 +27,9 @@ export function TrustPanel({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-[#F1F5F9] transition-colors"
+        aria-expanded={isOpen}
+        aria-controls="trust-panel-evidence"
+        className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-[#F1F5F9] transition-colors focus-visible:ring-2 focus-visible:ring-[#0F766E] outline-none"
       >
         <div className="flex items-center gap-2">
           <span className="text-xs font-mono font-extrabold text-[#0F766E] uppercase tracking-wider flex items-center gap-1">
@@ -46,6 +48,7 @@ export function TrustPanel({
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            id="trust-panel-evidence"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}

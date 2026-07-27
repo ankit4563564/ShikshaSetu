@@ -55,18 +55,29 @@ export default function AdminDashboardClient({
 
   useEffect(() => {
     const supabase = createClient();
+    let timer: NodeJS.Timeout | null = null;
+    const debouncedRefresh = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        router.refresh();
+      }, 500);
+    };
+
     const channel = supabase
       .channel('mission-control-updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'driver_trips' }, () => router.refresh())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'student_journey' }, () => router.refresh())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'journey_alerts' }, () => router.refresh())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance' }, () => router.refresh())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'status_flags' }, () => router.refresh())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'gate_passes' }, () => router.refresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'driver_trips' }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'student_journey' }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'journey_alerts' }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance' }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'status_flags' }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'gate_passes' }, debouncedRefresh)
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') router.refresh();
+        if (status === 'SUBSCRIBED') debouncedRefresh();
       });
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      if (timer) clearTimeout(timer);
+      supabase.removeChannel(channel);
+    };
   }, [router]);
 
   const totalStudents = Math.max(stats.totalStudents, 1);

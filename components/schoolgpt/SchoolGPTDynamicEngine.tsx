@@ -1,9 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { STUDENTS_DATA } from '@/lib/demo-data/students';
-import { SUPPORT_RADAR_DATA } from '@/lib/demo-data/supportRadar';
-import { GUARDIAN_JOURNEY_DATA } from '@/lib/demo-data/guardianJourney';
+import { STUDENTS } from '@/lib/demo/schoolUniverse';
 
 interface DynamicEngineProps {
   intent: 'STUDENT_REPORT' | 'CLASS_ANALYTICS' | 'COMPARISON' | 'TIMELINE' | 'ACTION' | 'PARENT_SUMMARY' | 'SEARCH';
@@ -12,7 +9,7 @@ interface DynamicEngineProps {
 }
 
 export default function SchoolGPTDynamicEngine({ intent, queryText = '', onSelectAction }: DynamicEngineProps) {
-  const aarav = STUDENTS_DATA[0];
+  const aarav = STUDENTS[0];
 
   const renderFollowUpFooter = (actions: string[]) => (
     <div className="pt-4 border-t border-slate-100 space-y-2.5">
