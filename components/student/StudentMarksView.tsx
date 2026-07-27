@@ -104,8 +104,9 @@ export default function StudentMarksView({ studentId, studentName }: StudentMark
 
   if (marks.length === 0) {
     return (
-      <div className="rounded-2xl border border-deep-teal/10 bg-white/50 p-8 text-center">
-        <p className="text-sm font-semibold text-deep-teal/40">No published marks yet.</p>
+      <div className="rounded-2xl border border-deep-teal/10 bg-[#F8FAFC] p-8 text-center space-y-1">
+        <p className="text-sm font-bold text-deep-teal">✨ You&apos;re All Caught Up!</p>
+        <p className="text-xs text-deep-teal/60">Your exam scores and subject grade feedback will show up here once evaluations are released.</p>
       </div>
     );
   }

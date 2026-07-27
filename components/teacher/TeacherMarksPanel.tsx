@@ -321,10 +321,10 @@ export default function TeacherMarksPanel({ teacherId }: TeacherMarksPanelProps)
       {loading ? (
         <TableRowSkeleton rows={4} />
       ) : exams.length === 0 ? (
-        <div className="rounded-2xl border border-deep-teal/10 bg-white/50 p-12 text-center">
-          <p className="text-lg font-display font-bold text-deep-teal/40">No exams yet</p>
-          <p className="mt-1 text-sm text-deep-teal/30">Create your first exam to start managing marks.</p>
-          <button type="button" onClick={() => setView('create')} className="mt-4 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white hover:bg-primary/90">+ Create Exam</button>
+        <div className="rounded-2xl border border-deep-teal/10 bg-[#F8FAFC] p-10 text-center space-y-2">
+          <p className="text-base font-display font-bold text-deep-teal">📝 Ready to Evaluate Student Growth?</p>
+          <p className="text-xs text-deep-teal/60 max-w-sm mx-auto">Create your first assessment to begin tracking academic mastery and publishing grade feedback.</p>
+          <button type="button" onClick={() => setView('create')} className="mt-3 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-white hover:bg-primary/90 transition-all active:scale-95 shadow-xs">+ Create Assessment</button>
         </div>
       ) : (
         <div className="space-y-3">
