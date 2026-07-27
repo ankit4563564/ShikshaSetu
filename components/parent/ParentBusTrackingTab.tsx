@@ -74,9 +74,9 @@ export function ParentBusTrackingTab({
       <div className="rounded-3xl bg-gradient-to-br from-sage/15 via-white to-primary/5 border border-sage/30 p-6 shadow-md backdrop-blur-xl space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-sage/20 border border-sage/30 flex flex-col items-center justify-center text-sage shrink-0 shadow-inner">
-              <span className="text-[9px] font-black uppercase tracking-widest leading-none">Safety Score</span>
-              <strong className="text-2xl font-black leading-none mt-0.5">98%</strong>
+            <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col items-center justify-center text-emerald-800 shrink-0 shadow-2xs">
+              <span className="text-[9px] font-black uppercase tracking-widest leading-none">Status</span>
+              <strong className="text-xl font-black leading-none mt-1">Verified</strong>
             </div>
             <div>
               <div className="flex items-center gap-2">
