@@ -27,8 +27,11 @@ export function ParentCopilotStrip() {
           </p>
         </div>
       ) : (
-        <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800 text-xs text-slate-400 font-mono">
-          No new alerts. Aarav is attending class normally.
+        <div className="p-3.5 rounded-2xl bg-white border border-deep-teal/10 text-xs text-deep-teal/70 font-semibold shadow-xs flex items-center justify-between">
+          <span>No new alerts. Aarav is attending class normally.</span>
+          <span className="text-[10px] font-mono text-emerald-700 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+            Status: On Track
+          </span>
         </div>
       )}
 

@@ -236,13 +236,29 @@ export default function ParentTodayClient({
   return (
     <div className="parent-portal-shell mx-auto min-h-screen sm:min-h-[calc(100vh-2rem)] w-full max-w-5xl sm:rounded-[2.5rem] sm:shadow-2xl sm:border border-deep-teal/10 bg-paper flex flex-col relative font-body text-deep-teal antialiased overflow-hidden">
       
-      {/* ── Header with Student Selector ── */}
+      {/* ── Header with Student Selector & Header Actions ── */}
       <ParentStudentHeader
         activeStudent={activeStudent}
         currentStudents={currentParentStudents}
         selectedStudentId={selectedStudentId}
         onStudentChange={setSelectedStudentId}
         isLoading={isLoading}
+        rightActions={
+          <div className="flex items-center gap-1.5">
+            <NotificationBell />
+            <button
+              type="button"
+              onClick={() => setShowSettings((prev) => !prev)}
+              className="p-2 rounded-full hover:bg-deep-teal/5 text-deep-teal/60 hover:text-deep-teal transition-all active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-deep-teal/30"
+              aria-label="Consent Settings"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+          </div>
+        }
       />
 
       {/* ShikshaSetu Copilot Strip */}
@@ -358,20 +374,7 @@ export default function ParentTodayClient({
         </div>
       )}
 
-      {/* ── Notification Bell & Settings Button ── */}
-      <div className="absolute top-4 right-5 sm:right-8 flex items-center gap-2 z-20">
-        <NotificationBell />
-        <button
-          onClick={() => setShowSettings(prev => !prev)}
-          className="p-2 rounded-full hover:bg-deep-teal/5 text-deep-teal/60 hover:text-deep-teal transition-all active:scale-95"
-          aria-label="Consent Settings"
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
-      </div>
+
 
       {/* ── Main Viewport (Tab Content) ── */}
       <div className="parent-portal-viewport flex-1 w-full max-w-4xl mx-auto px-5 py-7 sm:px-8 sm:py-9 overflow-y-auto pb-32 space-y-6">
