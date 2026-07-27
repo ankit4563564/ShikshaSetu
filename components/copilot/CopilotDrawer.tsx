@@ -56,7 +56,7 @@ export function CopilotDrawer() {
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
-          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          transition={{ type: 'spring', damping: 30, stiffness: 300 }}
           className="absolute inset-y-0 right-0 max-w-2xl w-full bg-[#FAFBFF] shadow-2xl border-l border-[#E5E7EB] flex flex-col justify-between overflow-y-auto"
         >
           {/* Drawer Header */}

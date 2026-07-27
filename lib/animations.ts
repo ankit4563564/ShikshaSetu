@@ -30,8 +30,8 @@ export const staggerContainer: Variants = {
 };
 
 export const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.92 },
-  visible: { opacity: 1, scale: 1, transition: springTransition },
+  hidden: { opacity: 0, scale: 0.97 },
+  visible: { opacity: 1, scale: 1, transition: normalTransition },
 };
 
 export const pulseOnce: Variants = {
