@@ -484,12 +484,12 @@ export default function TeacherDashboardClient({
     });
   };
 
-  const dashboardSnapshot = {
+  const dashboardSnapshot = useMemo(() => ({
     students: students.length,
     attention: students.filter((student) => student.status === 'Needs Attention').length,
     watching: students.filter((student) => student.status === 'Worth Watching').length,
     pendingReviews: rawStudentsData.reduce((total, student) => total + (student.homework?.filter((item: any) => !item.isSubmitted && !item.submittedAt && !item.submitted_at).length || 0), 0),
-  };
+  }), [students, rawStudentsData]);
   const productQueue = students
     .filter((student) => student.productInsight?.priority !== 'routine')
     .slice()
