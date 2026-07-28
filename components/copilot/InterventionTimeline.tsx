@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { SupportIntervention } from '@/lib/copilot/interventionEngine';
 
 interface InterventionTimelineProps {
@@ -9,14 +10,14 @@ interface InterventionTimelineProps {
 
 export function InterventionTimeline({ intervention }: InterventionTimelineProps) {
   return (
-    <div className="bg-white border border-[#E5E7EB] rounded-2xl p-5 shadow-xs space-y-4">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
+      <div className="flex items-center justify-between border-b border-[#E5E7EB]/40 pb-3">
         <div className="flex items-center gap-2">
-          <span className="text-lg">⏳</span>
+          <span className="text-base">⏳</span>
           <div>
             <h4 className="font-extrabold text-xs text-[#111827]">
-              Living Intervention Lifecycle &bull; {intervention.studentName}
+              Living Intervention Lifecycle · {intervention.studentName}
             </h4>
             <p className="text-[10px] font-medium text-[#6B7280]">
               {intervention.flagTitle}
@@ -29,39 +30,50 @@ export function InterventionTimeline({ intervention }: InterventionTimelineProps
       </div>
 
       {/* Timeline Steps */}
-      <div className="space-y-3 relative before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#E5E7EB]">
-        {intervention.milestones.map((m) => (
-          <div key={m.id} className="flex items-start gap-3 relative z-10">
-            {/* Step Icon */}
+      <div className="space-y-2.5 relative before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#E5E7EB]">
+        {intervention.milestones.map((m, idx) => (
+          <motion.div
+            key={m.id}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: idx * 0.05, duration: 0.2 }}
+            className="flex items-start gap-3 relative z-10"
+          >
+            {/* Icon */}
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 shadow-xs ${
                 m.status === 'completed'
                   ? 'bg-[#22C55E] text-white'
                   : m.status === 'current'
                   ? 'bg-[#0F766E] text-white animate-pulse'
-                  : 'bg-slate-100 text-[#6B7280] border border-[#E5E7EB]'
+                  : 'bg-slate-100 text-[#9CA3AF] border border-[#E5E7EB]'
               }`}
             >
-              {m.status === 'completed' ? '✓' : m.status === 'current' ? '⏱️' : '○'}
+              {m.status === 'completed' ? '✓' : m.status === 'current' ? '●' : '○'}
             </div>
 
-            {/* Step Details */}
+            {/* Details */}
             <div className="flex-1 pt-0.5">
               <div className="flex items-center justify-between gap-2">
                 <span className="font-extrabold text-xs text-[#111827]">{m.title}</span>
-                <span className="text-[9px] font-mono text-[#6B7280]">{m.timestamp}</span>
+                <span className="text-[9px] font-mono text-[#9CA3AF] shrink-0">{m.timestamp}</span>
               </div>
               <p className="text-[10px] text-[#6B7280] font-medium mt-0.5">Actor: {m.actor}</p>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
-      {/* Outcome Footer */}
+      {/* Outcome */}
       {intervention.outcomeSummary && (
-        <div className="pt-2 border-t border-[#E5E7EB] text-center text-xs font-mono font-bold text-[#0F766E]">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="pt-2 border-t border-[#E5E7EB] text-center text-xs font-mono font-bold text-[#0F766E]"
+        >
           🎉 {intervention.outcomeSummary}
-        </div>
+        </motion.div>
       )}
     </div>
   );

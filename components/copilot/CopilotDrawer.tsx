@@ -19,9 +19,7 @@ export function CopilotDrawer() {
   const impactMetrics = getAIImpactMetrics();
 
   useEffect(() => {
-    const unsubscribe = subscribeCopilotState((newState) => {
-      setState(newState);
-    });
+    const unsubscribe = subscribeCopilotState((newState) => setState(newState));
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -48,27 +46,37 @@ export function CopilotDrawer() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setDrawerOpen(false)}
-          className="absolute inset-0 bg-slate-950/40 backdrop-blur-xs"
+          className="absolute inset-0 bg-slate-950/30 backdrop-blur-md"
         />
 
-        {/* Drawer Panel */}
+        {/* Drawer Panel — premium glass */}
         <motion.div
-          initial={{ x: '100%' }}
-          animate={{ x: 0 }}
-          exit={{ x: '100%' }}
-          transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-          className="absolute inset-y-0 right-0 max-w-2xl w-full bg-[#FAFBFF] shadow-2xl border-l border-[#E5E7EB] flex flex-col justify-between overflow-y-auto"
+          initial={{ x: '100%', opacity: 0.8 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: '100%', opacity: 0 }}
+          transition={{ type: 'spring', damping: 32, stiffness: 320, mass: 0.9 }}
+          className="absolute inset-y-0 right-0 max-w-2xl w-full flex flex-col"
+          style={{
+            background: 'linear-gradient(160deg, rgba(250,251,255,0.97) 0%, rgba(241,244,252,0.98) 100%)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            borderLeft: '1px solid rgba(229,231,235,0.7)',
+            boxShadow: '-20px 0 60px rgba(63,81,181,0.08), -4px 0 16px rgba(0,0,0,0.06)',
+          }}
         >
-          {/* Drawer Header */}
-          <div className="p-6 border-b border-[#E5E7EB] bg-white space-y-4 sticky top-0 z-10">
+          {/* Header */}
+          <div className="px-6 py-5 border-b border-[#E5E7EB]/80 bg-white/80 space-y-4 sticky top-0 z-10 backdrop-blur-xl">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="text-2xl p-2 rounded-xl bg-[#F4FBF7] border border-[#22C55E]/30">🧠</span>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-600 to-emerald-400 flex items-center justify-center shadow-md">
+                  <span className="text-lg">🧠</span>
+                </div>
                 <div>
-                  <h3 className="font-display text-xl font-extrabold text-[#111827]">
+                  <h3 className="font-display text-xl font-extrabold text-[#111827] tracking-tight">
                     ShikshaSetu Copilot
                   </h3>
-                  <p className="text-xs font-mono font-medium text-[#0F766E]">
+                  <p className="text-[11px] font-mono font-medium text-[#0F766E] flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Copilot prepares. Educators decide.
                   </p>
                 </div>
@@ -76,14 +84,15 @@ export function CopilotDrawer() {
               <button
                 type="button"
                 onClick={() => setDrawerOpen(false)}
-                className="w-8 h-8 rounded-full bg-[#F8FAFC] border border-[#E5E7EB] text-[#6B7280] font-bold hover:bg-slate-100 flex items-center justify-center"
+                className="w-9 h-9 rounded-full bg-[#F8FAFC] border border-[#E5E7EB] text-[#6B7280] font-bold hover:bg-slate-100 hover:text-[#111827] flex items-center justify-center transition-all text-sm"
+                aria-label="Close Copilot"
               >
                 ✕
               </button>
             </div>
 
-            {/* Role Filter Tabs */}
-            <div className="flex flex-wrap gap-2 pt-1">
+            {/* Role Tabs */}
+            <div className="flex flex-wrap gap-1.5">
               {(['teacher', 'parent', 'student', 'admin'] as const).map((r) => (
                 <button
                   key={r}
@@ -91,36 +100,35 @@ export function CopilotDrawer() {
                   onClick={() => setCopilotRole(r)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition-all border ${
                     state.activeRole === r
-                      ? 'bg-[#111827] text-white border-[#111827] shadow-xs'
-                      : 'bg-[#F8FAFC] text-[#6B7280] border-[#E5E7EB] hover:bg-white'
+                      ? 'bg-[#111827] text-white border-[#111827] shadow-sm'
+                      : 'bg-white text-[#6B7280] border-[#E5E7EB] hover:bg-[#F8FAFC] hover:border-[#D1D5DB]'
                   }`}
                 >
-                  {r === 'admin' ? 'Principal View' : `${r} View`}
+                  {r === 'admin' ? 'Principal' : r.charAt(0).toUpperCase() + r.slice(1)} View
                 </button>
               ))}
             </div>
 
-            {/* Review Queue Status Bar */}
-            <div className="flex items-center justify-between text-xs font-mono bg-[#F8FAFC] p-3 rounded-xl border border-[#E5E7EB]">
-              <span>Prepared: {state.reviewQueue.prepared}</span>
-              <span className="text-amber-700 font-bold">Needs Review: {state.reviewQueue.needsReview}</span>
+            {/* Queue Status */}
+            <div className="flex items-center gap-2 text-xs font-mono bg-[#F8FAFC] px-4 py-2.5 rounded-xl border border-[#E5E7EB]">
+              <span className="text-[#6B7280]">Prepared: <span className="font-bold text-[#111827]">{state.reviewQueue.prepared}</span></span>
+              <span className="text-[#D1D5DB]">·</span>
+              <span className="text-amber-700 font-bold">Review: {state.reviewQueue.needsReview}</span>
+              <span className="text-[#D1D5DB]">·</span>
               <span className="text-[#0F766E] font-bold">Approved: {state.reviewQueue.approved}</span>
-              <span>Edited: {state.reviewQueue.edited}</span>
+              <span className="text-[#D1D5DB]">·</span>
+              <span className="text-[#6B7280]">Edited: {state.reviewQueue.edited}</span>
             </div>
           </div>
 
-          {/* Drawer Body Content */}
-          <div className="p-6 space-y-6 flex-1">
-            {/* Today's AI Impact Widget */}
+          {/* Body */}
+          <div className="p-6 space-y-5 flex-1 overflow-y-auto">
             <AIImpactWidget metrics={impactMetrics} />
-
-            {/* Living Support Intervention Lifecycle */}
             <InterventionTimeline intervention={state.activeIntervention} />
 
-            {/* Prepared Action Cards List */}
-            <div className="space-y-4">
-              <span className="text-xs font-mono font-extrabold text-[#6B7280] uppercase tracking-wider block">
-                📋 Prepared Actions Ready for Review:
+            <div className="space-y-3">
+              <span className="text-[10px] font-mono font-extrabold text-[#6B7280] uppercase tracking-wider block">
+                📋 Actions Ready for Review
               </span>
               {state.items.map((item) => (
                 <CopilotCard key={item.id} item={item} />
@@ -128,9 +136,13 @@ export function CopilotDrawer() {
             </div>
           </div>
 
-          {/* Drawer Footer */}
-          <div className="p-4 border-t border-[#E5E7EB] bg-white text-center text-xs font-mono text-[#6B7280]">
-            <span>Press <kbd className="px-1.5 py-0.5 rounded bg-slate-100 border border-[#E5E7EB] font-bold">Cmd + K</kbd> to toggle anytime</span>
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-[#E5E7EB]/80 bg-white/60 text-center text-[11px] font-mono text-[#9CA3AF]">
+            Press{' '}
+            <kbd className="px-1.5 py-0.5 rounded-md bg-slate-100 border border-[#E5E7EB] font-bold text-[10px] text-[#374151]">
+              Cmd + K
+            </kbd>{' '}
+            to toggle · <span className="text-[#0F766E] font-bold">Live</span>
           </div>
         </motion.div>
       </div>
