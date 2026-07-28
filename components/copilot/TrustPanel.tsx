@@ -10,6 +10,7 @@ interface TrustPanelProps {
   confidenceScore: number;
   reasoning: string;
   historicalEvidence?: HistoricalCase;
+  onOpenMemory?: () => void;
 }
 
 const MEMORY_TIMELINE = [
@@ -26,10 +27,19 @@ export function TrustPanel({
   confidenceScore,
   reasoning,
   historicalEvidence,
+  onOpenMemory,
 }: TrustPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showMemoryPanel, setShowMemoryPanel] = useState(false);
   const [memoryStep, setMemoryStep] = useState(0);
+
+  const handleOpenTimeline = () => {
+    if (onOpenMemory) {
+      onOpenMemory();
+    } else {
+      setShowMemoryPanel(true);
+    }
+  };
 
   useEffect(() => {
     if (showMemoryPanel) {
@@ -48,23 +58,23 @@ export function TrustPanel({
 
   return (
     <>
-      <div className="border border-[#2a3040] rounded-2xl bg-[#0d1117] overflow-hidden">
+      <div className="rounded-2xl bg-slate-900/60 overflow-hidden">
         {/* Toggle Header */}
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           aria-expanded={isOpen}
-          className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-slate-900/60 transition-colors focus-visible:ring-2 focus-visible:ring-teal-600 outline-none"
+          className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-slate-900/80 transition-colors focus-visible:ring-2 focus-visible:ring-teal-600 outline-none"
         >
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-extrabold text-teal-400 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-display font-bold text-teal-300 flex items-center gap-1.5">
               <span>🧠</span> Why did Copilot recommend this?
             </span>
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-800">
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
               {confidenceScore}% confidence
             </span>
           </div>
-          <span className="text-xs font-bold text-slate-500">
+          <span className="text-xs font-bold text-slate-400">
             {isOpen ? '▲' : '▼'}
           </span>
         </button>
@@ -76,21 +86,21 @@ export function TrustPanel({
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.22 }}
-              className="overflow-hidden border-t border-slate-800"
+              className="overflow-hidden border-t border-white/5"
             >
-              <div className="px-4 pb-4 pt-3 space-y-4 text-xs">
+              <div className="px-4 pb-4 pt-3 space-y-3.5 text-xs">
                 {/* Reasoning */}
-                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                <div className="p-3 rounded-xl bg-slate-950/50">
+                  <span className="text-[10px] font-display font-bold text-slate-400 uppercase tracking-wider block mb-1">
                     Copilot Reasoning
                   </span>
                   <p className="text-slate-300 font-medium leading-relaxed">{reasoning}</p>
                 </div>
 
-                {/* Signals */}
+                {/* Signals Used */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                    <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider block mb-1.5">
+                  <div className="p-3 rounded-xl bg-slate-950/50">
+                    <span className="text-[10px] font-display font-bold text-emerald-400 uppercase tracking-wider block mb-1.5">
                       ✓ Signals Used
                     </span>
                     <ul className="space-y-1 text-[11px] text-slate-300">
@@ -101,8 +111,8 @@ export function TrustPanel({
                       ))}
                     </ul>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                    <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                  <div className="p-3 rounded-xl bg-slate-950/50">
+                    <span className="text-[10px] font-display font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
                       ◦ Signals Ignored
                     </span>
                     <ul className="space-y-1 text-[11px] text-slate-500">
@@ -113,32 +123,32 @@ export function TrustPanel({
                           </li>
                         ))
                       ) : (
-                        <li className="italic text-slate-600">None — full telemetry used</li>
+                        <li className="italic text-slate-500">None — full telemetry used</li>
                       )}
                     </ul>
                   </div>
                 </div>
 
-                {/* Historical Evidence + Memory Timeline button */}
+                {/* Historical Evidence */}
                 {historicalEvidence && (
-                  <div className="p-3.5 rounded-xl bg-purple-950/30 border border-purple-800/50">
+                  <div className="p-3.5 rounded-xl bg-purple-950/40 border border-purple-500/20">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-mono font-extrabold text-purple-400 uppercase tracking-wider">
+                      <span className="text-[10px] font-display font-extrabold text-purple-300 uppercase tracking-wider">
                         🏛️ School Memory ({historicalEvidence.count} Similar Cases)
                       </span>
                       <span className="text-[10px] font-bold text-emerald-400">
-                        {historicalEvidence.interventions[0]?.successRate}% Success
+                        {historicalEvidence.interventions[0]?.successRate}% Success Rate
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-300 font-semibold">{historicalEvidence.pattern}</p>
-                    <div className="mt-2 pt-2 border-t border-purple-800/30 flex items-center justify-between">
+                    <div className="mt-2 pt-2 border-t border-purple-500/20 flex items-center justify-between">
                       <p className="text-[10px] text-purple-300">
                         <span className="font-bold">Recommended:</span> {historicalEvidence.recommendedApproach}
                       </p>
                       <button
                         type="button"
-                        onClick={() => setShowMemoryPanel(true)}
-                        className="text-[10px] font-mono font-bold text-purple-400 hover:text-purple-200 underline underline-offset-2 transition-colors ml-2 shrink-0"
+                        onClick={handleOpenTimeline}
+                        className="text-[10px] font-display font-bold text-purple-300 hover:text-purple-100 underline underline-offset-2 transition-colors ml-2 shrink-0"
                       >
                         View Timeline →
                       </button>
@@ -151,7 +161,7 @@ export function TrustPanel({
         </AnimatePresence>
       </div>
 
-      {/* ── School Memory Full Timeline Side Panel ── */}
+      {/* ── School Memory Side Panel ── */}
       <AnimatePresence>
         {showMemoryPanel && (
           <div className="fixed inset-0 z-[60] flex justify-end">
@@ -167,22 +177,22 @@ export function TrustPanel({
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="relative w-full max-w-md bg-[#0D1117] border-l border-slate-700 shadow-2xl flex flex-col overflow-hidden"
+              className="relative w-full max-w-md bg-[#0D1117] border-l border-slate-800 shadow-2xl flex flex-col overflow-hidden"
             >
               {/* Panel Header */}
               <div className="px-6 py-5 border-b border-slate-800 bg-gradient-to-r from-purple-950/60 to-slate-900/60">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] font-mono font-bold text-purple-400 uppercase tracking-wider">
-                      🏛️ School Memory
+                    <span className="text-[10px] font-display font-bold text-purple-400 uppercase tracking-wider">
+                      🏛️ School Memory Flagship
                     </span>
-                    <h3 className="font-display text-lg font-extrabold text-white mt-0.5">Historical Timeline</h3>
+                    <h3 className="font-display text-lg font-extrabold text-white mt-0.5">Historical Intervention Timeline</h3>
                     <p className="text-xs text-slate-400 mt-0.5">Aarav Sharma · Class 8A · Academic Year</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowMemoryPanel(false)}
-                    className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 text-slate-400 hover:text-white flex items-center justify-center"
+                    className="w-9 h-9 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"
                   >
                     ✕
                   </button>
@@ -211,7 +221,7 @@ export function TrustPanel({
 
               {/* Timeline Content */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+                <p className="text-[10px] font-display font-bold text-slate-500 uppercase tracking-widest">
                   Historical Pattern — This School Year
                 </p>
 
@@ -231,7 +241,7 @@ export function TrustPanel({
                               {s.dot}
                             </div>
                             <div className={`flex-1 p-3.5 rounded-2xl border space-y-1.5 ${s.bg}`}>
-                              <span className={`text-[10px] font-mono font-extrabold uppercase tracking-wider ${s.text}`}>
+                              <span className={`text-[10px] font-display font-extrabold uppercase tracking-wider ${s.text}`}>
                                 {entry.month}
                               </span>
                               {entry.events.map((ev, ei) => (
@@ -244,30 +254,6 @@ export function TrustPanel({
                     );
                   })}
                 </div>
-
-                {/* Outcome summary */}
-                {memoryStep >= MEMORY_TIMELINE.length && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.35 }}
-                    className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-800/50 space-y-3"
-                  >
-                    <p className="text-xs font-bold text-emerald-400">✓ Recommended Intervention</p>
-                    <p className="text-[11px] text-slate-300 leading-relaxed">
-                      Parent message + Teacher check-in. This approach resolved{' '}
-                      <span className="text-emerald-300 font-bold">94%</span> of similar cases within 2 weeks.
-                    </p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[{ v: '28', l: 'Similar Cases' }, { v: '94%', l: 'Success Rate' }, { v: '2 wks', l: 'Avg Resolution' }].map((m) => (
-                        <div key={m.l} className="text-center p-2.5 rounded-xl bg-emerald-900/30 border border-emerald-800/40">
-                          <span className="text-sm font-extrabold text-emerald-300 block">{m.v}</span>
-                          <span className="text-[9px] font-mono text-slate-400">{m.l}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
               </div>
             </motion.div>
           </div>
