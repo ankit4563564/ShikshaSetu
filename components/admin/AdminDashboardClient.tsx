@@ -15,6 +15,8 @@ import {
   ADMIN_ACTIVITY_FEED,
   DEPT_SUMMARIES,
   ANNOUNCEMENTS,
+  GATE_ENTRY_LOG,
+  GATE_DAILY_STATS,
 } from '@/lib/demo/schoolUniverse';
 
 /* ── Lucide-style inline SVG icons ─────────────────────────────────── */
@@ -126,7 +128,7 @@ export default function AdminDashboardClient({
 }: AdminDashboardClientProps) {
   const router = useRouter();
   const { registerRecipientId } = useNotifications();
-  const [activeTab, setActiveTab] = useState<'overview' | 'rewards'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'logistics' | 'security' | 'rewards'>('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -257,8 +259,8 @@ export default function AdminDashboardClient({
 
   const sidebarLinks = [
     { label: 'Dashboard', icon: Icon.LayoutDashboard, tab: 'overview' as const },
-    { label: 'Logistics', icon: Icon.Truck, href: '/driver' },
-    { label: 'Security', icon: Icon.Shield, href: '/gate' },
+    { label: 'Logistics', icon: Icon.Truck, tab: 'logistics' as const },
+    { label: 'Security', icon: Icon.Shield, tab: 'security' as const },
     { label: 'Rewards', icon: Icon.Coins, tab: 'rewards' as const },
   ];
 
@@ -308,21 +310,11 @@ export default function AdminDashboardClient({
         </div>
 
         <nav aria-label="Admin navigation" className="flex-1 px-3 space-y-0.5 py-4 overflow-y-auto">
-          {sidebarLinks.map((link) =>
-            'href' in link ? (
-              <Link
-                key={link.label}
-                href={link.href!}
-                className="group flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-medium text-muted/80 hover:text-ink hover:bg-gray-50 transition-all"
-              >
-                <span className="text-muted/50 group-hover:text-primary transition-colors"><link.icon /></span>
-                <span>{link.label}</span>
-              </Link>
-            ) : (
+          {sidebarLinks.map((link) => (
               <button
                 key={link.label}
                 type="button"
-                onClick={() => { setActiveTab(link.tab!); setSidebarOpen(false); }}
+                onClick={() => { setActiveTab(link.tab); setSidebarOpen(false); }}
                 className={`w-full group flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all ${
                   activeTab === link.tab
                     ? 'bg-primary/[0.08] text-primary font-semibold'
@@ -705,6 +697,183 @@ export default function AdminDashboardClient({
                   </div>
                 </div>
               </motion.section>
+            </motion.div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════
+              LOGISTICS TAB — Transport overview
+              ═══════════════════════════════════════════════════════ */}
+          {activeTab === 'logistics' && (
+            <motion.div variants={staggerContainer} className="space-y-6">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted/50">Transport Operations</p>
+                <h2 className="font-display text-xl font-extrabold text-ink">Logistics Overview</h2>
+                <p className="mt-1 text-sm text-muted/60 font-medium">Bus routes, driver status, and student transport tracking.</p>
+              </div>
+
+              {/* Transport KPIs */}
+              <motion.div variants={fadeSlideUp} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { label: 'Active Routes', value: `${stats.activeTrips}`, color: stats.activeTrips > 0 ? 'blue' : 'emerald' },
+                  { label: 'Students On Track', value: `${stats.onTrack}`, color: 'emerald' },
+                  { label: 'Today\'s Scans', value: `${stats.todayScans}`, color: 'blue' },
+                  { label: 'Active Devices', value: `${stats.activeDevices}`, color: 'emerald' },
+                ].map((kpi) => (
+                  <div key={kpi.label} className="rounded-xl bg-white p-4 border border-gray-200/60 shadow-sm">
+                    <p className="text-[11px] font-semibold text-muted/60 uppercase tracking-wider">{kpi.label}</p>
+                    <strong className={`text-2xl font-extrabold block mt-1 ${
+                      kpi.color === 'emerald' ? 'text-emerald-700' : 'text-blue-700'
+                    }`}>{kpi.value}</strong>
+                  </div>
+                ))}
+              </motion.div>
+
+              {/* Route Status */}
+              <motion.section variants={fadeSlideUp} className="rounded-2xl bg-white p-6 shadow-sm border border-gray-200/60">
+                <h3 className="font-display text-base font-extrabold text-ink mb-4">Route Status</h3>
+                <div className="space-y-2">
+                  {[
+                    { route: 'BUS-001', driver: 'Rajesh Kumar', stops: 'Sector 12 → DPS-14', students: '14/14', status: 'Completed' as const },
+                    { route: 'BUS-002', driver: 'Anil Sharma', stops: 'Rajouri Garden → DPS-14', students: '12/12', status: 'Completed' as const },
+                    { route: 'BUS-003', driver: 'Suresh Yadav', stops: 'Paschim Vihar → DPS-14', students: '11/11', status: 'Completed' as const },
+                    { route: 'BUS-004', driver: 'Mohan Das', stops: 'Pitampura → DPS-14', students: '9/10', status: 'Delayed' as const },
+                  ].map((r) => (
+                    <div key={r.route} className={`flex items-center justify-between rounded-xl px-4 py-3 ${
+                      r.status === 'Completed' ? 'bg-emerald-50/50' : 'bg-amber-50/50'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <span className={r.status === 'Completed' ? 'text-emerald-600' : 'text-amber-600'}><Icon.Truck /></span>
+                        <div>
+                          <span className="text-[13px] font-semibold text-ink">{r.route}</span>
+                          <p className="text-[11px] text-muted/50">{r.driver} · {r.stops}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[11px] font-medium text-muted/60">{r.students} students</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          r.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                        }`}>{r.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.section>
+
+              {/* Transport Activity Feed */}
+              <motion.section variants={fadeSlideUp} className="rounded-2xl bg-white p-6 shadow-sm border border-gray-200/60">
+                <h3 className="font-display text-base font-extrabold text-ink mb-4">Transport Activity</h3>
+                <div className="space-y-1">
+                  {ADMIN_ACTIVITY_FEED.filter(e => e.type === 'transport').map((item, i) => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="text-blue-500 flex-shrink-0"><Icon.Truck /></span>
+                      <p className="text-[12px] font-medium text-ink/80 flex-1 min-w-0 truncate">{item.event}</p>
+                      <span className="text-[10px] font-medium text-muted/40 flex-shrink-0 tabular-nums">{item.time}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.section>
+            </motion.div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════
+              SECURITY TAB — Gate & Campus Security
+              ═══════════════════════════════════════════════════════ */}
+          {activeTab === 'security' && (
+            <motion.div variants={staggerContainer} className="space-y-6">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted/50">Campus Security</p>
+                <h2 className="font-display text-xl font-extrabold text-ink">Gate & Security</h2>
+                <p className="mt-1 text-sm text-muted/60 font-medium">Gate entry log, pass management, and campus access control.</p>
+              </div>
+
+              {/* Security KPIs */}
+              <motion.div variants={fadeSlideUp} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { label: 'Total Entries', value: `${GATE_DAILY_STATS.totalEntries}`, color: 'blue' },
+                  { label: 'Students In', value: `${GATE_DAILY_STATS.studentsIn}`, color: 'emerald' },
+                  { label: 'Late Arrivals', value: `${GATE_DAILY_STATS.lateArrivals}`, color: GATE_DAILY_STATS.lateArrivals > 10 ? 'amber' : 'emerald' },
+                  { label: 'Gate Pass Exits', value: `${GATE_DAILY_STATS.gatePassExits}`, color: 'blue' },
+                ].map((kpi) => (
+                  <div key={kpi.label} className="rounded-xl bg-white p-4 border border-gray-200/60 shadow-sm">
+                    <p className="text-[11px] font-semibold text-muted/60 uppercase tracking-wider">{kpi.label}</p>
+                    <strong className={`text-2xl font-extrabold block mt-1 ${
+                      kpi.color === 'emerald' ? 'text-emerald-700' :
+                      kpi.color === 'amber' ? 'text-amber-700' :
+                      'text-blue-700'
+                    }`}>{kpi.value}</strong>
+                  </div>
+                ))}
+              </motion.div>
+
+              {/* Gate Entry Log */}
+              <motion.section variants={fadeSlideUp} className="rounded-2xl bg-white p-6 shadow-sm border border-gray-200/60">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-display text-base font-extrabold text-ink">Today's Entry Log</h3>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/50">
+                    <motion.span
+                      animate={{ scale: [1, 1.4, 1] }}
+                      transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+                      className="h-1.5 w-1.5 rounded-full bg-emerald-500"
+                    />
+                    <span className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">Live</span>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  {GATE_ENTRY_LOG.map((entry, i) => {
+                    const statusColor = entry.status === 'verified' ? 'emerald' :
+                                        entry.status === 'late' ? 'amber' :
+                                        entry.status === 'gate-pass' ? 'blue' : 'purple';
+                    return (
+                      <motion.div
+                        key={entry.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                        className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className={`flex-shrink-0 ${
+                            statusColor === 'emerald' ? 'text-emerald-500' :
+                            statusColor === 'amber' ? 'text-amber-500' :
+                            statusColor === 'blue' ? 'text-blue-500' : 'text-purple-500'
+                          }`}>
+                            <Icon.Shield />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-[12px] font-semibold text-ink truncate">{entry.name}</p>
+                            <p className="text-[10px] text-muted/50">{entry.grade} · {entry.mode === 'entry' ? 'Entry' : 'Exit'}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="text-[10px] font-medium text-muted/40 tabular-nums">{entry.time}</span>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                            statusColor === 'emerald' ? 'bg-emerald-100 text-emerald-700' :
+                            statusColor === 'amber' ? 'bg-amber-100 text-amber-700' :
+                            statusColor === 'blue' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                          }`}>{entry.status === 'verified' ? 'Verified' : entry.status === 'late' ? 'Late' : entry.status === 'gate-pass' ? 'Gate Pass' : 'Visitor'}</span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.section>
+
+              {/* Pending Gate Passes */}
+              {stats.pendingPasses > 0 && (
+                <motion.section variants={fadeSlideUp} className="rounded-2xl bg-amber-50/50 p-6 shadow-sm border border-amber-200/50">
+                  <h3 className="font-display text-base font-extrabold text-ink mb-2">Pending Gate Pass Requests</h3>
+                  <p className="text-[12px] text-muted/60 mb-4">{stats.pendingPasses} request{stats.pendingPasses > 1 ? 's' : ''} awaiting your approval.</p>
+                  <button className="px-4 py-2 rounded-lg bg-amber-600 text-white text-[13px] font-semibold hover:bg-amber-700 transition-all shadow-sm">
+                    Review Requests
+                  </button>
+                </motion.section>
+              )}
             </motion.div>
           )}
 
