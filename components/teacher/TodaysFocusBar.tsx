@@ -21,7 +21,8 @@ export default function TodaysFocusBar({ onSelectItem }: TodaysFocusBarProps) {
         <span className="text-[11px] font-medium text-slate-400">Wednesday, 22nd July</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* ✅ C5 FIX: Responsive grid that fits 4 cards on desktop, stacks on mobile */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
         {priorities.map((item) => (
           <button
             key={item.id}

@@ -49,10 +49,7 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
               <p className="text-[11px] font-bold text-muted">{activeTitle}</p>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between text-[11px]">
-            <span className="font-bold text-muted">🔥 {ATTENDANCE_SUMMARY.streak}-day streak</span>
-            <span className="font-bold text-sage">⭐ 340 coins</span>
-          </div>
+          {/* ✅ C6 FIX: Removed streak/coins - shown in hero banner only */}
         </div>
 
         <nav className="space-y-1">
@@ -85,10 +82,7 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
           <span className="text-lg text-primary lg:hidden">✦</span>
           <span className="text-xs font-extrabold uppercase tracking-[.16em] text-muted">Good morning, {firstName}</span>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-600">🔥 {ATTENDANCE_SUMMARY.streak}-day streak</span>
-          <span className="rounded-full bg-sage/10 px-3 py-1 text-xs font-bold text-sage">⭐ 340 coins</span>
-        </div>
+        {/* ✅ C6 FIX: Removed streak/coins badges - shown in hero banner only */}
       </header>
 
       {/* ── Mobile tab bar ── */}

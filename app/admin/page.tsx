@@ -65,7 +65,8 @@ export default async function AdminPage() {
       }
     });
   });
-  const attendanceRate = totalAttDays > 0 ? (presentAttDays / totalAttDays) * 100 : 96.2;
+  // ✅ C3 FIX: Round attendance rate to 1 decimal place (99.34375% → 99.3%)
+  const attendanceRate = totalAttDays > 0 ? parseFloat(((presentAttDays / totalAttDays) * 100).toFixed(1)) : 96.2;
 
   let totalMoodScore = 0;
   let totalMoodChecks = 0;

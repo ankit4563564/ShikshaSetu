@@ -7,6 +7,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import type { Portal } from '@/types';
 import { useRole } from './RoleContext';
 
@@ -40,6 +41,14 @@ const ROLE_COLORS: Partial<Record<Portal, string>> = {
 // ---------------------------------------------------------------------------
 
 export function RoleSwitcher() {
+  const pathname = usePathname();
+  
+  // ✅ C1 FIX: Hide in production mode OR demo routes
+  // This prevents the DEV badge from appearing in presentations/demos
+  if (process.env.NODE_ENV === 'production' || pathname?.startsWith('/demo')) {
+    return null;
+  }
+
   const { role, setRole } = useRole();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);

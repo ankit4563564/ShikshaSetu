@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
@@ -103,6 +104,11 @@ export default function ParentTodayClient({
   guardianId = null
 }: ParentTodayClientProps) {
   const { t, language } = useLanguage();
+  const pathname = usePathname();
+  
+  // ✅ C4 FIX: Hide Developer Controls in production OR demo routes
+  const isDemoMode = pathname?.startsWith('/demo') || false;
+  const showDeveloperControls = process.env.NODE_ENV === 'development' && !isDemoMode;
   
   // ── Core State Management ──
   const [isLoading, setIsLoading] = useState(true);
@@ -325,7 +331,7 @@ export default function ParentTodayClient({
       </AnimatePresence>
 
       {/* ── Dev Tools (Development only) ── */}
-      {process.env.NODE_ENV === 'development' && (
+      {showDeveloperControls && (
         <div className="bg-deep-teal/5 border-b border-deep-teal/10 z-10">
           <button
             onClick={() => setShowDevTools(prev => !prev)}
@@ -419,6 +425,68 @@ export default function ParentTodayClient({
                   onExpandChange={setIsWhyExpanded}
                   isLoading={isLoading}
                 />
+              )}
+
+              {/* ✅ C2 FIX: Add homework summary to fill viewport */}
+              {activeStudent?.homework && activeStudent.homework.length > 0 && (
+                <div className="relative overflow-hidden rounded-2xl border border-deep-teal/5 bg-paper p-5 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display text-sm font-bold text-deep-teal">📋 Homework Status</h3>
+                    <button
+                      onClick={() => setActiveNav('homework')}
+                      className="text-xs font-semibold text-deep-teal/60 hover:text-deep-teal transition-colors"
+                    >
+                      View all →
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-xl bg-emerald-50 border border-emerald-200/50 p-4">
+                      <p className="text-2xl font-extrabold text-emerald-700">
+                        {activeStudent.homework.filter(h => h.isSubmitted).length}
+                      </p>
+                      <p className="text-xs font-semibold text-emerald-600 mt-1">Completed</p>
+                    </div>
+                    <div className="rounded-xl bg-amber-50 border border-amber-200/50 p-4">
+                      <p className="text-2xl font-extrabold text-amber-700">
+                        {activeStudent.homework.filter(h => !h.isSubmitted).length}
+                      </p>
+                      <p className="text-xs font-semibold text-amber-600 mt-1">Pending</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ✅ C2 FIX: Add attendance summary to fill viewport */}
+              {activeStudent?.attendance && activeStudent.attendance.length > 0 && (
+                <div className="relative overflow-hidden rounded-2xl border border-deep-teal/5 bg-paper p-5 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display text-sm font-bold text-deep-teal">✅ Attendance This Month</h3>
+                    <button
+                      onClick={() => setActiveNav('attendance')}
+                      className="text-xs font-semibold text-deep-teal/60 hover:text-deep-teal transition-colors"
+                    >
+                      View details →
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {activeStudent.attendance.slice(0, 5).map((att, idx) => (
+                      <div key={idx} className="flex items-center justify-between py-2 border-b border-deep-teal/5 last:border-0">
+                        <span className="text-xs font-semibold text-deep-teal/70">{att.date}</span>
+                        <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                          att.status === 'present' ? 'bg-emerald-50 text-emerald-700' :
+                          att.status === 'late' ? 'bg-amber-50 text-amber-700' :
+                          att.status === 'absent' ? 'bg-rose-50 text-rose-700' :
+                          'bg-blue-50 text-blue-700'
+                        }`}>
+                          {att.status === 'present' ? '✓ Present' :
+                           att.status === 'late' ? '⏰ Late' :
+                           att.status === 'absent' ? '✗ Absent' :
+                           '📋 Excused'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           )
