@@ -38,6 +38,8 @@ export function ConnectedExperienceCenter() {
   const [isApproving, setIsApproving] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [showMemory, setShowMemory] = useState(false);
+  const [taskId, setTaskId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const aaravAction = useMemo(() => state.items[0] || null, [state.items]);
   const isApproved = aaravAction?.status === 'approved';
@@ -83,22 +85,91 @@ export function ConnectedExperienceCenter() {
   const handleApprove = async () => {
     if (!aaravAction) {
       console.error('No action item found');
+      setError('No support plan found to approve');
       return;
     }
     setIsApproving(true);
-    await approveCopilotAction(aaravAction.id, CANONICAL_TEACHER_ID);
-    setTimeout(() => setIsApproving(false), 500);
+    setError(null);
+    
+    try {
+      // Call the copilot engine which calls the server action
+      const result = await approveCopilotAction(aaravAction.id, CANONICAL_TEACHER_ID);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to approve support plan');
+      }
+      
+      // Store the task ID for later completion
+      if (result.taskId) {
+        setTaskId(result.taskId);
+      }
+      
+      // Reload copilot items to sync with database
+      await loadCopilotItems();
+      
+      // Refresh live events
+      const events = await getStudentEcosystemEvents(CANONICAL_STUDENT_ID, 10);
+      const simplified: LiveEvent[] = events.map(evt => ({
+        id: evt.id,
+        time: new Date(evt.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        actor: evt.actor_role || 'System',
+        action: evt.title,
+      })).reverse();
+      setLiveEvents(simplified);
+      
+    } catch (err) {
+      console.error('Approval failed:', err);
+      setError('Failed to approve support plan. Please try again.');
+    } finally {
+      setIsApproving(false);
+    }
   };
 
   const handleComplete = async () => {
+    if (!taskId) {
+      console.error('No task ID available');
+      setError('No task found. Please approve a support plan first.');
+      return;
+    }
+    
     setIsCompleting(true);
-    await completeTaskAction({ taskId: 'task_001', studentId: CANONICAL_STUDENT_ID });
-    setTimeout(() => setIsCompleting(false), 500);
+    setError(null);
+    
+    try {
+      const result = await completeTaskAction({ taskId, studentId: CANONICAL_STUDENT_ID });
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to complete task');
+      }
+      
+      // Reload copilot items to sync with database
+      await loadCopilotItems();
+      
+      // Refresh live events
+      const events = await getStudentEcosystemEvents(CANONICAL_STUDENT_ID, 10);
+      const simplified: LiveEvent[] = events.map(evt => ({
+        id: evt.id,
+        time: new Date(evt.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        actor: evt.actor_role || 'System',
+        action: evt.title,
+      })).reverse();
+      setLiveEvents(simplified);
+      
+    } catch (err) {
+      console.error('Task completion failed:', err);
+      setError('Failed to complete task. Please try again.');
+    } finally {
+      setIsCompleting(false);
+    }
   };
 
   const handleReset = () => {
     resetCopilotState();
     setLiveEvents([]);
+    setTaskId(null);
+    setError(null);
+    // Reload copilot items to reset to initial state
+    loadCopilotItems();
   };
 
   return (
@@ -152,6 +223,13 @@ export function ConnectedExperienceCenter() {
               ? 'Mrs. Kavita Rao approved a support plan after 3 consecutive missed assignments.'
               : 'Aarav may need additional support after 3 consecutive missed assignments.'}
           </p>
+        )}
+
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-300 text-sm">
+            {error}
+          </div>
         )}
 
         {/* Main Content */}
@@ -319,10 +397,25 @@ export function ConnectedExperienceCenter() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="relative bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full"
             >
-              <h2 className="text-lg font-semibold text-white mb-4">Previous Support History</h2>
-              <p className="text-sm text-slate-400 mb-4">
-                Based on 28 similar cases, parent communication combined with targeted practice has a 94% success rate.
-              </p>
+              <h2 className="text-lg font-semibold text-white mb-4">Why was this suggested?</h2>
+              <div className="space-y-3 mb-4">
+                {aaravAction?.whyFlagged.map((reason, idx) => (
+                  <div key={idx} className="flex items-start gap-2 text-sm text-slate-300">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>{reason}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-slate-800/50 rounded-lg p-3 mb-4">
+                <p className="text-xs font-medium text-slate-400 mb-1">Recommended response</p>
+                <div className="space-y-1">
+                  {aaravAction?.preparedActions.map((action, idx) => (
+                    <div key={idx} className="text-sm text-slate-300">
+                      ✓ {action.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
               <button
                 onClick={() => setShowMemory(false)}
                 className="w-full px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors"

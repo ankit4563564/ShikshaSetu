@@ -169,12 +169,12 @@ export function setCopilotRole(role: 'teacher' | 'parent' | 'student' | 'admin')
   notifyListeners();
 }
 
-export async function approveCopilotAction(id: string, teacherId: string) {
+export async function approveCopilotAction(id: string, teacherId: string): Promise<{ success: boolean; taskId?: string; error?: string }> {
   const item = globalState.items.find(i => i.id === id);
   
   if (!item) {
     console.error('Item not found:', id);
-    return;
+    return { success: false, error: 'Item not found' };
   }
 
   // Call real server action to approve support plan
@@ -197,7 +197,7 @@ export async function approveCopilotAction(id: string, teacherId: string) {
 
   if (!result.success) {
     console.error('Failed to approve support plan:', result.error);
-    return;
+    return { success: false, error: result.error };
   }
 
   // Update local state
@@ -223,6 +223,8 @@ export async function approveCopilotAction(id: string, teacherId: string) {
   };
 
   notifyListeners();
+  
+  return { success: true, taskId: result.taskId };
 }
 
 export function undoCopilotAction(id: string) {
