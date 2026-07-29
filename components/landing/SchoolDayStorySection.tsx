@@ -53,67 +53,67 @@ const CONNECTED_STORY_NODES = [
 
 export function SchoolDayStorySection() {
   return (
-    <section className="py-24 bg-[#F4FBF7] rounded-[3rem] my-12 border border-[#E5E7EB] relative overflow-hidden" id="story">
+    <section className="pt-10 pb-10 md:pt-12 md:pb-12 bg-[#F4FBF7] rounded-[2rem] my-8 border border-[#E5E7EB] relative overflow-hidden" id="story">
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter relative z-10">
         
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-20">
+        {/* Section Header — tightened bottom margin */}
+        <div className="text-center max-w-3xl mx-auto space-y-2.5 mb-7">
           <div className="inline-flex items-center gap-2 bg-white border border-[#22C55E]/30 px-4 py-1.5 rounded-full shadow-xs">
             <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
-            <span className="text-xs font-mono font-extrabold text-[#0F766E] uppercase tracking-widest">
-              GOOGLE MAPS TIMELINE &bull; APPLE STORYTELLING
+            <span className="text-[13px] font-mono font-extrabold text-[#0F766E] uppercase tracking-widest">
+              CONNECTED STORY
             </span>
           </div>
-          <h2 className="font-display text-3xl md:text-5xl font-extrabold text-[#111827] tracking-tight leading-tight">
+          <h2 className="font-display text-3xl md:text-[2.5rem] font-extrabold text-[#111827] tracking-tight leading-[1.15]">
             Every school day tells <span className="text-[#0F766E]">one connected story.</span>
           </h2>
-          <p className="font-body text-base md:text-lg text-[#6B7280] font-medium max-w-2xl mx-auto leading-relaxed">
+          <p className="font-body text-[15px] md:text-base text-[#4B5563] font-medium max-w-2xl mx-auto leading-relaxed">
             Follow the live operational chain from morning bus boarding to evening home-safe confirmation.
           </p>
         </div>
 
         {/* ── VERTICAL CONNECTED TIMELINE STORY ── */}
-        <div className="relative max-w-3xl mx-auto">
+        <div className="relative max-w-4xl mx-auto">
           {/* Animated Connecting Vertical Line */}
-          <div className="absolute left-6 sm:left-1/2 top-4 bottom-4 w-0.5 -translate-x-1/2 bg-gradient-to-b from-[#22C55E] via-[#0F766E] to-[#22C55E] opacity-40 z-0" />
+          <div className="absolute left-6 sm:left-1/2 top-6 bottom-6 w-1 -translate-x-1/2 bg-gradient-to-b from-[#22C55E] via-[#0F766E] to-[#22C55E] opacity-30 rounded-full z-0" />
 
-          <div className="space-y-10 sm:space-y-12 relative z-10">
+          <div className="space-y-2 sm:space-y-3 relative z-10">
             {CONNECTED_STORY_NODES.map((node, idx) => {
               const isEven = idx % 2 === 0;
 
               return (
                 <motion.div
                   key={node.time}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-50px' }}
-                  transition={{ duration: 0.5, delay: idx * 0.12 }}
-                  className={`flex flex-col sm:flex-row items-start sm:items-center gap-6 ${
+                  viewport={{ once: true, margin: '-40px' }}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
+                  className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 ${
                     isEven ? 'sm:flex-row-reverse' : ''
                   }`}
                 >
                   {/* Timeline Card */}
-                  <div className="w-full sm:w-[calc(50%-2.5rem)] bg-white rounded-2xl p-6 border border-[#E5E7EB] shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-mono font-extrabold text-[#0F766E] bg-[#F4FBF7] border border-[#22C55E]/30 px-3 py-1 rounded-full">
+                  <div className="w-full sm:w-[calc(50%-2.5rem)] bg-white rounded-2xl p-4 sm:p-5 border border-[#E5E7EB] shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[12px] font-mono font-extrabold text-[#0F766E] bg-[#F4FBF7] border border-[#22C55E]/30 px-2.5 py-0.5 rounded-full">
                         ⏱️ {node.time}
                       </span>
-                      <span className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${node.tagBg}`}>
+                      <span className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${node.tagBg}`}>
                         {node.tag}
                       </span>
                     </div>
 
-                    <h4 className="font-display text-base sm:text-lg font-extrabold text-[#111827] group-hover:text-[#0F766E] transition-colors leading-snug">
+                    <h4 className="font-display text-[15px] sm:text-[15px] font-extrabold text-[#111827] group-hover:text-[#0F766E] transition-colors leading-snug mb-1">
                       {node.title}
                     </h4>
 
-                    <p className="text-xs sm:text-sm text-[#6B7280] font-medium leading-relaxed mt-2">
+                    <p className="text-[13px] sm:text-[14px] text-[#4B5563] font-medium leading-relaxed">
                       {node.desc}
                     </p>
                   </div>
 
                   {/* Central Node Badge */}
-                  <div className="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white border-2 border-[#0F766E] text-xl shadow-lg z-20 group-hover:scale-110 transition-transform">
+                  <div className="hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white border-2 border-[#0F766E] text-base shadow-md z-20 transition-transform hover:scale-110">
                     {node.emoji}
                   </div>
 
@@ -129,4 +129,3 @@ export function SchoolDayStorySection() {
     </section>
   );
 }
-

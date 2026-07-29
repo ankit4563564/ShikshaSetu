@@ -38,27 +38,27 @@ export function SchoolGPTSection() {
   const current = INTERACTIVE_DEMOS[activeIdx];
 
   return (
-    <section className="py-24 bg-[#F5F8FF] rounded-[3rem] my-12 border border-[#E5E7EB] relative overflow-hidden" id="schoolgpt">
+    <section className="py-16 md:py-20 bg-[#F5F8FF] rounded-[2rem] my-8 border border-[#E5E7EB] relative overflow-hidden" id="schoolgpt">
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter relative z-10">
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           
           {/* LEFT COLUMN: EDITORIAL STORYTELLING (~5 COLUMNS) */}
           <div className="lg:col-span-5 space-y-8">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 bg-white border border-blue-200 px-4 py-1.5 rounded-full shadow-xs">
                 <span className="text-[#3b82f6]">✨</span>
-                <span className="text-xs font-mono font-extrabold text-[#3b82f6] uppercase tracking-widest">
-                  AMBIENT SCHOOLGPT INTELLIGENCE
+                <span className="text-[13px] font-mono font-extrabold text-[#3b82f6] uppercase tracking-widest">
+                  AMBIENT INTELLIGENCE
                 </span>
               </div>
 
-              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#111827] tracking-tight leading-tight">
+              <h2 className="font-display text-3xl sm:text-4xl md:text-[2.75rem] font-extrabold text-[#111827] tracking-tight leading-[1.15]">
                 One intelligence layer. <br />
                 <span className="text-[#0F766E]">Every school conversation.</span>
               </h2>
 
-              <p className="font-body text-base text-[#6B7280] font-medium leading-relaxed">
+              <p className="font-body text-base md:text-[17px] text-[#4B5563] font-medium leading-relaxed">
                 SchoolGPT quietly understands attendance, academics, transport, communication, and wellbeing—transforming signals into timely actions for every stakeholder.
               </p>
             </div>
@@ -70,8 +70,8 @@ export function SchoolGPTSection() {
                   📊
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-sm text-[#111827]">Understand</h4>
-                  <p className="text-xs text-[#6B7280] font-medium mt-0.5">
+                  <h4 className="font-extrabold text-[15px] text-[#111827]">Understand</h4>
+                  <p className="text-[15px] text-[#4B5563] font-medium mt-0.5 leading-relaxed">
                     Connect attendance, homework, behaviour and communication signals in real time.
                   </p>
                 </div>
@@ -82,8 +82,8 @@ export function SchoolGPTSection() {
                   ✨
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-sm text-[#111827]">Recommend</h4>
-                  <p className="text-xs text-[#6B7280] font-medium mt-0.5">
+                  <h4 className="font-extrabold text-[15px] text-[#111827]">Recommend</h4>
+                  <p className="text-[15px] text-[#4B5563] font-medium mt-0.5 leading-relaxed">
                     Quietly highlight students who may need extra attention before problems grow.
                   </p>
                 </div>
@@ -94,8 +94,8 @@ export function SchoolGPTSection() {
                   ⚡
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-sm text-[#111827]">Act</h4>
-                  <p className="text-xs text-[#6B7280] font-medium mt-0.5">
+                  <h4 className="font-extrabold text-[15px] text-[#111827]">Act</h4>
+                  <p className="text-[15px] text-[#4B5563] font-medium mt-0.5 leading-relaxed">
                     Generate PTM summaries, parent updates, and personalized follow-up plans instantly.
                   </p>
                 </div>
@@ -117,7 +117,7 @@ export function SchoolGPTSection() {
 
           {/* RIGHT COLUMN: FLOATING CONVERSATIONAL WINDOW (~7 COLUMNS) */}
           <div className="lg:col-span-7">
-            <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#E5E7EB] shadow-xl relative space-y-6">
+            <div className="bg-white rounded-2xl p-6 md:p-8 border border-[#E5E7EB] shadow-lg relative space-y-5">
               
               {/* Window Header */}
               <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4">
@@ -174,10 +174,10 @@ export function SchoolGPTSection() {
                     <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-2xl p-4 flex items-start gap-3">
                       <span className="text-lg">👩‍🏫</span>
                       <div>
-                        <span className="text-[10px] font-mono font-bold text-[#6B7280] uppercase tracking-wider block">
+                        <span className="text-[11px] font-mono font-bold text-[#6B7280] uppercase tracking-wider block">
                           Teacher Query
                         </span>
-                        <p className="text-xs sm:text-sm font-bold text-[#111827] mt-0.5">
+                        <p className="text-[15px] sm:text-base font-bold text-[#111827] mt-0.5">
                           &ldquo;{current.question}&rdquo;
                         </p>
                       </div>
@@ -185,11 +185,11 @@ export function SchoolGPTSection() {
 
                     {/* SchoolGPT Response */}
                     <div className="bg-[#F4FBF7] border border-[#22C55E]/30 rounded-2xl p-5 space-y-2 shadow-xs">
-                      <div className="flex items-center justify-between text-[10px] font-mono border-b border-[#22C55E]/20 pb-2">
+                      <div className="flex items-center justify-between text-[11px] font-mono border-b border-[#22C55E]/20 pb-2">
                         <span className="text-[#0F766E] font-bold">✨ SchoolGPT Intelligence</span>
                         <span className="text-[#6B7280]">{current.tag}</span>
                       </div>
-                      <p className="text-xs sm:text-sm font-medium text-[#111827] leading-relaxed">
+                      <p className="text-[15px] sm:text-base font-medium text-[#111827] leading-relaxed">
                         {current.answer}
                       </p>
                     </div>

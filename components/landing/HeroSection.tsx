@@ -8,7 +8,7 @@ export function HeroSection() {
   const { openRoleSelector, openLeadModal, openDemoModal, openFeatureModal } = useLandingModal();
 
   return (
-    <section className="hero-gradient min-h-[921px] flex items-center relative overflow-hidden rounded-b-[3rem] pb-section-gap pt-20">
+    <section className="hero-gradient min-h-[921px] flex items-center relative overflow-hidden rounded-b-[2rem] pb-section-gap pt-20">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/20 to-transparent pointer-events-none" />
       <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-primary-fixed/10 blur-[100px] pointer-events-none" />
@@ -18,7 +18,7 @@ export function HeroSection() {
         <div className="text-white space-y-8">
           <div className="inline-flex items-center gap-2 glass-panel px-4 py-1.5 rounded-full border border-white/20">
             <span className="w-2 h-2 rounded-full bg-secondary-container animate-pulse" />
-            <span className="font-label-sm text-label-sm text-white/90 tracking-wider">ONE SCHOOL DAY. ONE CONNECTED STORY.</span>
+            <span className="font-label-sm text-[13px] text-white/90 tracking-wider">ONE SCHOOL DAY. ONE CONNECTED STORY.</span>
           </div>
           <h1 className="font-display-lg text-headline-lg-mobile md:text-display-lg text-white leading-tight">
             A calmer day<br />

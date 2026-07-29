@@ -74,29 +74,29 @@ export function TestimonialsSection() {
   const { openCaseStudy } = useLandingModal();
 
   return (
-    <section className="py-section-gap bg-surface-container-low rounded-[3rem] my-12" id="testimonials">
+    <section className="py-16 md:py-20 bg-surface-container-low rounded-[2rem] my-8" id="testimonials">
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+        <div className="text-center max-w-3xl mx-auto space-y-3 mb-12">
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 px-3.5 py-1.5 rounded-full">
             <span className="material-symbols-outlined text-primary text-sm">stars</span>
-            <span className="font-label-sm text-label-sm text-primary tracking-widest uppercase font-bold">Proven Campus Impact</span>
+            <span className="font-label-sm text-[13px] text-primary tracking-widest uppercase font-bold">Proven Campus Impact</span>
           </div>
           <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">
             Trusted by Leaders Across <span className="text-primary font-bold">Indian Schools</span>
           </h2>
-          <p className="font-body-lg text-body-lg text-on-surface-variant font-medium">
-            Real outcomes measured across parents, teachers, and school administration teams. (Click any card to read full case study)
+          <p className="font-body-lg text-[17px] text-on-surface-variant font-medium leading-relaxed">
+            Real outcomes measured across parents, teachers, and school administration teams.
           </p>
         </div>
 
         {/* 3 High-Impact Testimonial Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {TESTIMONIALS.map((t) => (
             <div
               key={t.author}
               onClick={() => openCaseStudy(t)}
-              className={`bg-gradient-to-br ${t.color} rounded-[2rem] p-8 border shadow-xl flex flex-col justify-between hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 relative bg-white/90 cursor-pointer group`}
+              className={`bg-gradient-to-br ${t.color} rounded-2xl p-6 md:p-7 border shadow-md flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl transition-all duration-300 relative bg-white/90 cursor-pointer group`}
             >
               {/* Prominent Stat Outcome Badge */}
               <div className="mb-6">
@@ -109,7 +109,7 @@ export function TestimonialsSection() {
               </div>
 
               {/* Quote Body */}
-              <p className="font-body-md text-slate-700 text-sm leading-relaxed mb-8 flex-1 italic">
+              <p className="font-body-md text-[#374151] text-[15px] leading-relaxed mb-6 flex-1 italic">
                 &ldquo;{t.quote}&rdquo;
               </p>
 
@@ -126,11 +126,11 @@ export function TestimonialsSection() {
                     />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 text-sm font-display leading-tight">{t.author}</h4>
-                    <p className="text-xs text-slate-600 font-medium">{t.role}</p>
+                    <h4 className="font-bold text-slate-900 text-[15px] font-display leading-tight">{t.author}</h4>
+                    <p className="text-[13px] text-slate-600 font-medium">{t.role}</p>
                   </div>
                 </div>
-                <span className="text-xs font-bold font-mono text-primary group-hover:translate-x-1 transition-transform">
+                <span className="text-[13px] font-bold font-mono text-primary group-hover:translate-x-1 transition-transform">
                   Read →
                 </span>
               </div>

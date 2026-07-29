@@ -17,7 +17,7 @@ export default function Home() {
       <LandingMotion>
         <div className="bg-background text-on-surface font-body-md antialiased overflow-x-hidden">
           <LandingNavbar />
-          <main className="pt-20 space-y-4">
+          <main className="pt-20">
             {/* 1. High-Energy Hero Section */}
             <HeroSection />
 
@@ -36,11 +36,11 @@ export default function Home() {
             <TransitSection />
 
             {/* 6. Supporting Infrastructure & Admin Automation */}
-            <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter pt-8">
-              <div className="text-center max-w-2xl mx-auto space-y-2 mb-6">
+            <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter pt-12 pb-4">
+              <div className="text-center max-w-2xl mx-auto space-y-3 mb-8">
                 <span className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest">SUPPORTING INFRASTRUCTURE</span>
-                <h3 className="text-2xl font-bold font-display text-slate-900">Everything is Synchronized Automatically</h3>
-                <p className="text-xs text-slate-600 font-medium">Gate security, transport telemetry, fee ledgers, and campus administration run seamlessly behind the scenes.</p>
+                <h3 className="text-2xl md:text-3xl font-bold font-display text-slate-900">Everything is Synchronized Automatically</h3>
+                <p className="text-[15px] text-slate-600 font-medium leading-relaxed">Gate security, transport telemetry, fee ledgers, and campus administration run seamlessly behind the scenes.</p>
               </div>
               <AdminOperationsSection />
             </div>

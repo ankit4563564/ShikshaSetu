@@ -15,19 +15,19 @@ export function Footer() {
         <div className="bg-gradient-to-r from-primary via-slate-900 to-slate-900 rounded-3xl p-8 border border-slate-800 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 mb-16">
           <div className="space-y-1 text-center md:text-left">
             <h3 className="text-2xl font-bold font-display text-white">Ready to see it live?</h3>
-            <p className="text-slate-300 text-sm">Experience a full connected school day walkthrough in 7 minutes.</p>
+            <p className="text-slate-300 text-[15px]">Experience a full connected school day walkthrough in 7 minutes.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={openRoleSelector}
-              className="bg-secondary-container text-on-secondary-container hover:bg-secondary-fixed px-6 py-3 rounded-full font-bold text-sm transition-all shadow-lg shrink-0 flex items-center gap-2"
+              className="bg-secondary-container text-on-secondary-container hover:bg-secondary-fixed px-6 py-3 rounded-full font-bold text-[15px] transition-all shadow-lg shrink-0 flex items-center gap-2"
             >
               Enter Live Portal
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </button>
             <button
               onClick={() => openLeadModal('Request Campus Trial')}
-              className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-full font-bold text-sm transition-all"
+              className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-full font-bold text-[15px] transition-all"
             >
               Book School Demo
             </button>
@@ -52,8 +52,8 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-label-sm text-xs text-secondary-fixed uppercase tracking-wider mb-4 font-bold">Product Navigation</h4>
-            <ul className="space-y-2.5 text-sm text-slate-400">
+            <h4 className="font-label-sm text-[13px] text-secondary-fixed uppercase tracking-wider mb-4 font-bold">Product Navigation</h4>
+            <ul className="space-y-2.5 text-[15px] text-slate-400">
               <li><Link className="hover:text-white transition-colors" href="/parent">Parent Portal</Link></li>
               <li><Link className="hover:text-white transition-colors" href="/teacher">Teacher Workstation</Link></li>
               <li><Link className="hover:text-white transition-colors" href="/admin">School Operations</Link></li>
@@ -63,8 +63,8 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-label-sm text-xs text-secondary-fixed uppercase tracking-wider mb-4 font-bold">Security &amp; Trust</h4>
-            <ul className="space-y-2.5 text-sm text-slate-400">
+            <h4 className="font-label-sm text-[13px] text-secondary-fixed uppercase tracking-wider mb-4 font-bold">Security &amp; Trust</h4>
+            <ul className="space-y-2.5 text-[15px] text-slate-400">
               <li className="flex items-center gap-1.5"><span className="text-emerald-400">✓</span> DPDP Act 2023 Compliant</li>
               <li className="flex items-center gap-1.5"><span className="text-emerald-400">✓</span> ISO 27001 Certified</li>
               <li className="flex items-center gap-1.5"><span className="text-emerald-400">✓</span> 256-bit SSL Encryption</li>
@@ -73,8 +73,8 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-label-sm text-xs text-secondary-fixed uppercase tracking-wider mb-4 font-bold">Resources &amp; Support</h4>
-            <ul className="space-y-2.5 text-sm text-slate-400 mb-4">
+            <h4 className="font-label-sm text-[13px] text-secondary-fixed uppercase tracking-wider mb-4 font-bold">Resources &amp; Support</h4>
+            <ul className="space-y-2.5 text-[15px] text-slate-400 mb-4">
               <li><Link className="hover:text-white transition-colors" href="/resources">Resource Center</Link></li>
               <li><Link className="hover:text-white transition-colors" href="/blog">Blog &amp; Insights</Link></li>
               <li><Link className="hover:text-white transition-colors" href="/support">Help &amp; Documentation</Link></li>
@@ -95,7 +95,7 @@ export function Footer() {
         </div>
 
         {/* Bottom Legal Row */}
-        <div className="mt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500 font-medium">
+        <div className="mt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[13px] text-slate-500 font-medium">
           <p>© 2024 ShikshaSetu Technologies. All rights reserved.</p>
           <div className="flex gap-6">
             <Link className="hover:text-slate-300 transition-colors" href="/privacy">Privacy Policy</Link>

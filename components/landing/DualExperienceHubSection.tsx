@@ -6,27 +6,27 @@ import Link from 'next/link';
 
 export function DualExperienceHubSection() {
   return (
-    <section className="py-24 bg-[#FAFBFF] rounded-[3rem] my-12 border border-[#E5E7EB] relative overflow-hidden" id="dual-experience">
+    <section className="py-16 md:py-20 bg-[#FAFBFF] rounded-[2rem] my-8 border border-[#E5E7EB] relative overflow-hidden" id="dual-experience">
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter relative z-10">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-20">
+        <div className="text-center max-w-3xl mx-auto space-y-3 mb-12 md:mb-14">
           <div className="inline-flex items-center gap-2 bg-[#F4FBF7] border border-[#22C55E]/30 px-4 py-1.5 rounded-full">
             <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
-            <span className="text-xs font-mono font-extrabold text-[#0F766E] uppercase tracking-widest">
+            <span className="text-[13px] font-mono font-extrabold text-[#0F766E] uppercase tracking-widest">
               ONE PLATFORM &bull; TWO EXPERIENCES
             </span>
           </div>
-          <h2 className="font-display text-3xl md:text-5xl font-extrabold text-[#111827] tracking-tight leading-tight">
+          <h2 className="font-display text-3xl md:text-[2.75rem] font-extrabold text-[#111827] tracking-tight leading-[1.15]">
             Two Experiences. <span className="text-[#0F766E]">One Connected Story.</span>
           </h2>
-          <p className="font-body text-base md:text-lg text-[#6B7280] font-medium max-w-2xl mx-auto leading-relaxed">
+          <p className="font-body text-base md:text-[17px] text-[#4B5563] font-medium max-w-2xl mx-auto leading-relaxed">
             ShikshaSetu links home and school seamlessly — keeping parents calm and giving teachers time back to teach.
           </p>
         </div>
 
         {/* ── DUAL EXPERIENCE 2-COLUMN GRID ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-stretch mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch mb-10">
           
           {/* LEFT: Parent Experience Card */}
           <div className="bg-white rounded-[2rem] p-8 md:p-10 border border-[#E5E7EB] shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
@@ -45,19 +45,19 @@ export function DualExperienceHubSection() {
               </h3>
 
               {/* Supporting Copy (Max 3 lines) */}
-              <p className="text-sm text-[#6B7280] font-medium leading-relaxed">
+              <p className="text-base text-[#4B5563] font-medium leading-relaxed">
                 Know when your child boards the bus, reaches school, completes homework, and returns home—all from one connected experience.
               </p>
 
               {/* 3 Core Benefits */}
               <div className="flex flex-wrap gap-2.5 pt-1">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-xs font-bold text-[#111827]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-[13px] font-bold text-[#111827]">
                   <span className="text-[#22C55E]">✓</span> Live Bus Updates
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-xs font-bold text-[#111827]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-[13px] font-bold text-[#111827]">
                   <span className="text-[#22C55E]">✓</span> Instant Gate Signals
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-xs font-bold text-[#111827]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-[13px] font-bold text-[#111827]">
                   <span className="text-[#22C55E]">✓</span> Connected Story
                 </span>
               </div>
@@ -118,19 +118,19 @@ export function DualExperienceHubSection() {
               </h3>
 
               {/* Supporting Copy (Max 3 lines) */}
-              <p className="text-sm text-[#6B7280] font-medium leading-relaxed">
+              <p className="text-base text-[#4B5563] font-medium leading-relaxed">
                 Attendance, communication, classroom insights and AI assistance come together in one calm workspace.
               </p>
 
               {/* 3 Core Benefits */}
               <div className="flex flex-wrap gap-2.5 pt-1">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-xs font-bold text-[#111827]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-[13px] font-bold text-[#111827]">
                   <span className="text-[#22C55E]">✓</span> 1-Tap Attendance
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-xs font-bold text-[#111827]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-[13px] font-bold text-[#111827]">
                   <span className="text-[#22C55E]">✓</span> Quiet AI Radar
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-xs font-bold text-[#111827]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-[13px] font-bold text-[#111827]">
                   <span className="text-[#22C55E]">✓</span> Automated PTM Summaries
                 </span>
               </div>
@@ -178,7 +178,7 @@ export function DualExperienceHubSection() {
         </div>
 
         {/* ── AMBIENT INTELLIGENCE CONNECTOR ── */}
-        <div className="bg-white rounded-[2rem] p-8 md:p-10 border border-[#E5E7EB] shadow-md text-center max-w-3xl mx-auto space-y-3">
+        <div className="bg-white rounded-2xl p-6 md:p-8 border border-[#E5E7EB] shadow-sm text-center max-w-3xl mx-auto space-y-2.5">
           <div className="inline-flex items-center gap-2 bg-[#F8FAFC] border border-[#E5E7EB] px-3.5 py-1.5 rounded-full">
             <span className="text-[#F4B942]">✨</span>
             <span className="text-xs font-mono font-bold text-[#111827] uppercase tracking-wider">
@@ -186,11 +186,11 @@ export function DualExperienceHubSection() {
             </span>
           </div>
 
-          <h3 className="text-xl md:text-2xl font-extrabold text-[#111827] font-display">
+          <h3 className="text-lg md:text-xl font-extrabold text-[#111827] font-display">
             One Shared Platform. Continuous Harmony.
           </h3>
 
-          <p className="text-xs md:text-sm text-[#6B7280] font-medium leading-relaxed max-w-xl mx-auto">
+          <p className="text-[15px] text-[#4B5563] font-medium leading-relaxed max-w-xl mx-auto">
             Linking parent peace of mind with teacher efficiency in real time — because a calm school day benefits every child.
           </p>
         </div>
