@@ -2,12 +2,14 @@
  * Central Copilot State Engine — ShikshaSetu
  * Core Principle: "Copilot prepares. Educators decide."
  *
- * Coordinates review queue states (Needs Review, Approved, Edited),
- * multi-portal real-time action sync, and global drawer visibility.
+ * Deterministic decision-support engine that generates recommendations
+ * from actual student records using the rules-based support signal engine.
+ * No AI/ML - explainable, traceable, data-driven recommendations.
  */
 
-import { HISTORICAL_SIMILAR_CASES } from './memoryEngine';
-import { DEMO_INTERVENTION_AARAV, SupportIntervention } from './interventionEngine';
+import { getCanonicalSupportSignal, type SupportSignal } from '@/lib/support-signals';
+import { getCanonicalStudentState } from '@/lib/canonical';
+import { approveSupportPlanAction, type ApproveSupportPlanInput } from '@/app/actions/interventionActions';
 
 export interface PreparedActionItem {
   id: string;
@@ -32,11 +34,12 @@ export interface PreparedActionItem {
     ignored: string[];
     reasoning: string;
   };
-  historicalEvidence: {
-    casesCount: number;
-    successRate: number;
-    recommendedApproach: string;
-  };
+  signalEvidence: {
+    source: string;
+    description: string;
+    value: any;
+    timestamp: string;
+  }[];
   status: 'needs_review' | 'approved' | 'edited' | 'dismissed';
 }
 
@@ -50,115 +53,48 @@ export interface CopilotState {
     edited: number;
   };
   items: PreparedActionItem[];
-  activeIntervention: SupportIntervention;
   lastActionTimestamp: number | null;
 }
 
-// ─── INITIAL CO-PILOT ITEMS DATASET ─────────────────────────────────────────
-export const INITIAL_COPILOT_ITEMS: PreparedActionItem[] = [
-  {
-    id: 'act_001',
-    studentId: 's001',
-    studentName: 'Aarav Sharma',
-    avatar: '/aarav.png',
-    priority: 'high',
-    title: 'Homework missed for 3 consecutive days',
-    whyFlagged: [
-      'Homework missed for 3 consecutive days',
-      'Attendance dropped from 96% → 89% this week',
-      'Teacher noted reduced classroom participation yesterday',
-    ],
-    confidenceScore: 87,
-    preparedActions: [
-      { label: 'Parent WhatsApp Message Drafted', detail: '"Hi Priya, Aarav missed homework for 3 days..."' },
-      { label: 'Practice Worksheet B Prepared', detail: 'Algebra fractions review sheet auto-assigned' },
-      { label: 'Tomorrow Check-in Scheduled', detail: '10:15 AM advisory slot reserved' },
-    ],
+// ─── Convert Support Signal to Copilot Item ─────────────────────────────────────
+function supportSignalToCopilotItem(signal: SupportSignal): PreparedActionItem {
+  const priority = signal.severity === 'high' ? 'high' : signal.severity === 'medium' ? 'medium' : 'info';
+  const confidenceScore = signal.severity === 'high' ? 92 : signal.severity === 'medium' ? 78 : 65;
+
+  const preparedActions = signal.recommendedActions.map(action => ({
+    label: action.action,
+    detail: action.description,
+  }));
+
+  const whyFlagged = signal.evidence.map(e => e.description);
+
+  return {
+    id: signal.id,
+    studentId: signal.studentId,
+    studentName: signal.studentName,
+    priority,
+    title: signal.signalType === 'homework_gap' ? 'Homework gap detected' :
+           signal.signalType === 'attendance_decline' ? 'Attendance decline detected' :
+           signal.signalType === 'grade_drop' ? 'Grade drop detected' :
+           signal.signalType === 'wellness_concern' ? 'Wellness concern detected' :
+           'Multiple concerning patterns detected',
+    whyFlagged,
+    confidenceScore,
+    preparedActions,
     expectedImpact: {
-      approvalTime: '35 seconds to approve',
+      approvalTime: '30 seconds to approve',
       timeSaved: '45 minutes saved',
-      outcomes: [
-        'Parent informed today via WhatsApp',
-        'Student receives targeted practice sheet',
-        'Teacher follow-up automatically scheduled',
-        'Risk of falling behind reduced before Friday assessment',
-      ],
+      outcomes: preparedActions.map(a => a.label),
     },
     trustSignals: {
-      used: ['Attendance Telemetry', 'Homework Register', 'Teacher Classroom Note'],
-      ignored: ['Mood Check-in (unavailable)'],
-      reasoning: 'Repeated homework misses combined with declining attendance usually indicate a student may benefit from an early teacher check-in.',
-    },
-    historicalEvidence: {
-      casesCount: HISTORICAL_SIMILAR_CASES.count,
-      successRate: HISTORICAL_SIMILAR_CASES.interventions[0].successRate,
-      recommendedApproach: HISTORICAL_SIMILAR_CASES.recommendedApproach,
-    },
-    status: 'needs_review',
-  },
-  {
-    id: 'act_002',
-    studentId: 's003',
-    studentName: 'Rohan Verma',
-    avatar: '/rohan.png',
-    priority: 'medium',
-    title: 'Bus Route #04 Transit Delay Detected',
-    whyFlagged: [
-      'Bus #04 delayed 12 minutes due to Sector 39 rain traffic',
-      'Rohan and 14 other students arriving after 8:15 AM bell',
-    ],
-    confidenceScore: 99,
-    preparedActions: [
-      { label: 'Parent Push Signal Sent', detail: 'Parents automatically notified. No teacher action required.' },
-      { label: 'Gate Scan Tardy Exemption Logged', detail: 'Tardy flag auto-excused by transit telemetry' },
-    ],
-    expectedImpact: {
-      approvalTime: 'Auto-resolved',
-      timeSaved: '15 minutes saved',
-      outcomes: ['Parents notified', 'Student record protected from invalid tardy flag'],
-    },
-    trustSignals: {
-      used: ['GPS Bus Telemetry', 'Weather Signal'],
+      used: signal.evidence.map(e => e.source),
       ignored: [],
-      reasoning: 'Transit delay is weather-related. Auto-notify parents and excuse gate tardy mark.',
+      reasoning: `Based on ${signal.evidence.length} data points from ${[...new Set(signal.evidence.map(e => e.source))].join(', ')}.`,
     },
-    historicalEvidence: {
-      casesCount: 42,
-      successRate: 96,
-      recommendedApproach: 'Auto-excuse transit delays over 10 minutes.',
-    },
-    status: 'approved',
-  },
-  {
-    id: 'act_003',
-    studentId: 's002',
-    studentName: 'Priya Mehta',
-    avatar: '/priya.png',
-    priority: 'info',
-    title: 'PTM 1-Page Summary Briefs Ready',
-    whyFlagged: ['3 PTM meetings scheduled for today 2:00 PM – 3:30 PM'],
-    confidenceScore: 95,
-    preparedActions: [
-      { label: 'PTM Briefing Sheets Generated', detail: 'Synthesized academic, attendance & positive notes' },
-    ],
-    expectedImpact: {
-      approvalTime: 'Instant view',
-      timeSaved: '30 minutes saved',
-      outcomes: ['Clear, structured discussion points ready for parents'],
-    },
-    trustSignals: {
-      used: ['Exam Ledger', 'Attendance Log', 'SchoolGPT Summary Engine'],
-      ignored: [],
-      reasoning: 'Pre-compile 1-page summary briefs before parent-teacher meeting.',
-    },
-    historicalEvidence: {
-      casesCount: 18,
-      successRate: 98,
-      recommendedApproach: 'Provide concise 1-page briefs for PTM meetings.',
-    },
-    status: 'approved',
-  },
-];
+    signalEvidence: signal.evidence,
+    status: signal.status === 'pending' ? 'needs_review' as const : signal.status as any,
+  };
+}
 
 // Simple in-memory reactive store listeners for real-time state sync across portals
 type Listener = (state: CopilotState) => void;
@@ -167,15 +103,39 @@ let globalState: CopilotState = {
   isDrawerOpen: false,
   activeRole: 'teacher',
   reviewQueue: {
-    prepared: 27,
-    needsReview: 1,
-    approved: 25,
-    edited: 1,
+    prepared: 0,
+    needsReview: 0,
+    approved: 0,
+    edited: 0,
   },
-  items: INITIAL_COPILOT_ITEMS,
-  activeIntervention: DEMO_INTERVENTION_AARAV,
+  items: [],
   lastActionTimestamp: Date.now(),
 };
+
+// ─── Load Copilot Items from Support Signals ───────────────────────────────────
+export async function loadCopilotItems() {
+  try {
+    const signal = await getCanonicalSupportSignal();
+    
+    if (signal) {
+      const item = supportSignalToCopilotItem(signal);
+      globalState = {
+        ...globalState,
+        items: [item],
+        reviewQueue: {
+          prepared: 1,
+          needsReview: item.status === 'needs_review' ? 1 : 0,
+          approved: item.status === 'approved' ? 1 : 0,
+          edited: 0,
+        },
+        lastActionTimestamp: Date.now(),
+      };
+      notifyListeners();
+    }
+  } catch (error) {
+    console.error('Failed to load copilot items:', error);
+  }
+}
 
 const listeners = new Set<Listener>();
 
@@ -209,12 +169,43 @@ export function setCopilotRole(role: 'teacher' | 'parent' | 'student' | 'admin')
   notifyListeners();
 }
 
-export function approveCopilotAction(id: string) {
-  const updatedItems = globalState.items.map((item) => {
-    if (item.id === id) {
-      return { ...item, status: 'approved' as const };
+export async function approveCopilotAction(id: string, teacherId: string) {
+  const item = globalState.items.find(i => i.id === id);
+  
+  if (!item) {
+    console.error('Item not found:', id);
+    return;
+  }
+
+  // Call real server action to approve support plan
+  const input: ApproveSupportPlanInput = {
+    studentId: item.studentId,
+    studentName: item.studentName,
+    teacherId,
+    signalId: item.id,
+    signalType: item.signalEvidence[0]?.source || 'unknown',
+    recommendedActions: item.preparedActions.map((a, i) => ({
+      id: `act-${i}`,
+      action: a.label,
+      category: 'academic', // Default for now
+      priority: item.priority,
+      description: a.detail,
+    })),
+  };
+
+  const result = await approveSupportPlanAction(input);
+
+  if (!result.success) {
+    console.error('Failed to approve support plan:', result.error);
+    return;
+  }
+
+  // Update local state
+  const updatedItems = globalState.items.map((i) => {
+    if (i.id === id) {
+      return { ...i, status: 'approved' as const };
     }
-    return item;
+    return i;
   });
 
   const needsReviewCount = updatedItems.filter((i) => i.status === 'needs_review').length;
@@ -264,19 +255,12 @@ export function resetCopilotState() {
     isDrawerOpen: false,
     activeRole: 'teacher',
     reviewQueue: {
-      prepared: 27,
-      needsReview: 1,
-      approved: 25,
-      edited: 1,
+      prepared: 0,
+      needsReview: 0,
+      approved: 0,
+      edited: 0,
     },
-    items: [
-      {
-        ...INITIAL_COPILOT_ITEMS[0],
-        status: 'needs_review',
-      },
-      ...INITIAL_COPILOT_ITEMS.slice(1),
-    ],
-    activeIntervention: DEMO_INTERVENTION_AARAV,
+    items: [],
     lastActionTimestamp: Date.now(),
   };
 

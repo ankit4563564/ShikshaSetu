@@ -1,17 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SchoolMitra from '@/components/student/SchoolMitra';
 import QuestBoard from '@/components/student/QuestBoard';
 import { StudentCopilotStrip } from '@/components/copilot/StudentCopilotStrip';
 import type { StudentWithFlag } from '@/lib/supabase/getStudentsData';
+import { getCanonicalStudentState } from '@/lib/canonical';
+// Fallback to demo universe for data not yet in canonical
 import {
   TODAYS_SCHEDULE,
-  HOMEWORK,
   ACHIEVEMENTS,
   UPCOMING_EXAMS,
   AI_STUDY_TIPS,
-  ATTENDANCE_SUMMARY,
 } from '@/lib/demo/schoolUniverse';
 
 interface StudentPortalClientProps {
@@ -25,10 +25,29 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
   const [activeTab, setActiveTab] = useState<Tab>('Today');
   const [activeAvatar, setActiveAvatar] = useState('🎓');
   const [activeTitle, setActiveTitle] = useState('Level 3 Explorer');
+  const [canonicalState, setCanonicalState] = useState<any>(null);
 
   const firstName = student.displayName.split(' ')[0];
-  const pendingHW = HOMEWORK.filter(h => !h.submitted);
-  const doneHW    = HOMEWORK.filter(h =>  h.submitted);
+
+  useEffect(() => {
+    async function loadCanonicalState() {
+      try {
+        const state = await getCanonicalStudentState();
+        setCanonicalState(state);
+      } catch (error) {
+        console.error('Failed to load canonical state:', error);
+      }
+    }
+    loadCanonicalState();
+  }, []);
+
+  // Use canonical homework if available, otherwise empty array
+  const homework = canonicalState?.homework || [];
+  const pendingHW = homework.filter((h: any) => !h.is_submitted);
+  const doneHW = homework.filter((h: any) => h.is_submitted);
+
+  // Use canonical attendance if available
+  const attendanceSummary = canonicalState?.attendanceSummary || { rate: 0.97, streak: 12 };
 
   return (
     <div className="student-portal-shell min-h-screen bg-paper px-3 py-3 sm:px-6 sm:py-5 lg:pl-72">
@@ -116,8 +135,8 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
                   You have {pendingHW.length} assignment{pendingHW.length !== 1 ? 's' : ''} due soon and your Maths test is in 6 days.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold">📊 97% attendance</span>
-                  <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold">🔥 {ATTENDANCE_SUMMARY.streak}-day streak</span>
+                  <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold">📊 {Math.round(attendanceSummary.rate * 100)}% attendance</span>
+                  <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold">🔥 {attendanceSummary.streak}-day streak</span>
                   <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold">⭐ 340 coins</span>
                 </div>
               </div>
@@ -176,14 +195,14 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
                   <button type="button" onClick={() => setActiveTab('Homework')} className="text-xs font-bold text-primary hover:underline">See all →</button>
                 </div>
                 <div className="space-y-2">
-                  {pendingHW.map(hw => (
+                  {pendingHW.map((hw: any) => (
                     <div key={hw.id} className="flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50/60 px-4 py-3">
                       <span className="h-2 w-2 rounded-full bg-amber-400 shrink-0" />
                       <div className="flex-1">
                         <p className="text-sm font-bold text-deep-teal">{hw.subject}</p>
                         <p className="text-xs text-muted">{hw.title}</p>
                       </div>
-                      <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">Due {hw.dueDate}</span>
+                      <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">Due {hw.due_date}</span>
                     </div>
                   ))}
                 </div>
@@ -258,26 +277,26 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
             <div className="mb-5 space-y-2">
               {pendingHW.length === 0 ? (
                 <p className="rounded-xl bg-sage/10 px-4 py-3 text-sm font-semibold text-sage">🎉 All caught up! No pending assignments.</p>
-              ) : pendingHW.map(hw => (
+              ) : pendingHW.map((hw: any) => (
                 <div key={hw.id} className="flex items-start gap-3 rounded-xl border border-amber-100 bg-amber-50/60 px-4 py-3">
                   <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-amber-400" />
                   <div className="flex-1">
                     <p className="text-sm font-bold text-deep-teal">{hw.title}</p>
                     <p className="text-[11px] text-muted">{hw.subject}</p>
                   </div>
-                  <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 whitespace-nowrap">Due {hw.dueDate}</span>
+                  <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 whitespace-nowrap">Due {hw.due_date}</span>
                 </div>
               ))}
             </div>
             {/* Submitted */}
             <p className="mb-2 text-xs font-extrabold text-sage uppercase tracking-wider">Submitted · {doneHW.length}</p>
             <div className="space-y-2">
-              {doneHW.map(hw => (
+              {doneHW.map((hw: any) => (
                 <div key={hw.id} className="flex items-start gap-3 rounded-xl bg-sage/5 px-4 py-3 opacity-80">
                   <span className="mt-1 text-sage text-sm">✓</span>
                   <div className="flex-1">
                     <p className="text-sm font-bold text-deep-teal">{hw.title}</p>
-                    <p className="text-[11px] text-muted">{hw.subject} · Submitted {hw.submittedAt}</p>
+                    <p className="text-[11px] text-muted">{hw.subject} · Submitted {hw.submitted_at}</p>
                   </div>
                   {hw.grade && (
                     <span className="rounded-full bg-sage/10 px-2.5 py-0.5 text-[10px] font-bold text-sage">{hw.grade}</span>

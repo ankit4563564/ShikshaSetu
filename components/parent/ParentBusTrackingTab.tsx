@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { getCanonicalBusLocation } from '@/lib/canonical';
+import { createClient } from '@/lib/supabase/client';
 
 interface ChatMessage {
   id: string;
@@ -13,24 +15,39 @@ interface ChatMessage {
 }
 
 interface ParentBusTrackingTabProps {
+  studentId: string;
   studentName: string;
   isLoading?: boolean;
   isEnabled?: boolean;
-  busMetrics?: {
-    speed: number;
-    nextStop: string;
-    eta: number;
-  };
-  lastUpdated?: number;
 }
 
 export function ParentBusTrackingTab({
+  studentId,
   studentName,
   isLoading = false,
   isEnabled = true,
-  busMetrics = { speed: 22, nextStop: 'Lodhi Gardens', eta: 4 },
-  lastUpdated = 0,
 }: ParentBusTrackingTabProps) {
+  const [busMetrics, setBusMetrics] = useState<{ speed: number; nextStop: string; eta: number }>({ speed: 0, nextStop: 'Loading...', eta: 0 });
+  const [lastUpdated, setLastUpdated] = useState(0);
+
+  useEffect(() => {
+    async function loadBusData() {
+      try {
+        const busLocation = await getCanonicalBusLocation();
+        if (busLocation) {
+          setBusMetrics({
+            speed: busLocation.speed_kmh,
+            nextStop: busLocation.next_stop,
+            eta: busLocation.eta_minutes,
+          });
+          setLastUpdated(Math.floor((Date.now() - new Date(busLocation.last_updated).getTime()) / 1000));
+        }
+      } catch (error) {
+        console.error('Failed to load bus data:', error);
+      }
+    }
+    loadBusData();
+  }, [studentId]);
   if (!isEnabled) {
     return (
       <div className="space-y-4">
