@@ -204,85 +204,104 @@ export function LandingModalProvider({ children }: { children: React.ReactNode }
       {/* ── WATCH DEMO MODAL ── */}
       {isDemoModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 text-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl relative">
+          <div className="bg-slate-900 border border-slate-800 text-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative">
             <button
               onClick={closeDemoModal}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold"
             >
               ✕
             </button>
             
-            <div className="mb-6">
+            <div className="mb-4">
               <span className="text-xs font-mono font-bold text-teal-400 uppercase tracking-wider">Live Interactive Demo</span>
-              <h3 className="text-2xl font-bold text-white mt-2">See one teacher decision update the entire school.</h3>
-              <p className="text-sm text-slate-300 mt-3 leading-relaxed">
+              <h3 className="text-2xl font-bold text-white mt-1">See one teacher decision update the entire school.</h3>
+              <p className="text-sm text-slate-300 mt-2 leading-relaxed">
                 Aarav has missed three consecutive assignments. ShikshaSetu detects the pattern, prepares coordinated support, and lets the educator make the final decision.
               </p>
             </div>
 
             {/* Connected Workflow Visualization */}
-            <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-6 mb-6">
+            <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-4 mb-4">
               {/* Teacher Card */}
-              <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 mb-4 max-w-xs mx-auto">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center text-xs font-bold">KR</div>
+              <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 mb-3 max-w-[200px] mx-auto">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center text-xs font-bold">KR</div>
                   <div>
                     <p className="text-sm font-semibold text-white">Mrs. Kavita Rao</p>
                     <p className="text-xs text-slate-400">Support plan prepared</p>
                   </div>
                 </div>
-                <button className="w-full bg-teal-600/20 text-teal-400 border border-teal-500/30 py-2 rounded-lg text-xs font-semibold">
-                  Approve
-                </button>
+                <div className="bg-teal-500/10 border border-teal-500/20 rounded px-2 py-1 inline-block">
+                  <span className="text-xs text-teal-400">✓ Support plan ready</span>
+                </div>
               </div>
 
-              {/* Connection */}
-              <div className="flex justify-center mb-4">
-                <div className="w-px h-4 bg-slate-700"></div>
+              {/* Connection Line */}
+              <div className="flex justify-center mb-3">
+                <div className="w-px h-3 bg-slate-600"></div>
               </div>
 
               {/* ShikshaSetu Node */}
-              <div className="flex justify-center mb-4">
-                <div className="bg-purple-500/10 border border-purple-500/30 rounded-full px-4 py-2">
+              <div className="flex justify-center mb-3">
+                <div className="bg-purple-500/10 border border-purple-500/30 rounded-full px-3 py-1.5">
                   <span className="text-xs font-semibold text-purple-400">ShikshaSetu</span>
                 </div>
               </div>
 
-              {/* Branching */}
-              <div className="flex justify-center mb-4">
-                <div className="w-px h-4 bg-slate-700"></div>
+              {/* Branching Lines */}
+              <div className="flex justify-center mb-3">
+                <div className="w-px h-3 bg-slate-600"></div>
+              </div>
+
+              {/* Branch visualization */}
+              <div className="flex justify-center mb-3">
+                <div className="relative w-full max-w-sm h-4">
+                  {/* Vertical line from center */}
+                  <div className="absolute left-1/2 top-0 bottom-0 w-px bg-slate-600 -translate-x-1/2"></div>
+                  {/* Horizontal branch line */}
+                  <div className="absolute left-0 right-0 top-1/2 h-px bg-slate-600"></div>
+                </div>
               </div>
 
               {/* Three Mini Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {/* Parent */}
-                <div className="bg-slate-900 border border-slate-700 rounded-lg p-3">
-                  <p className="text-xs font-semibold text-slate-300 mb-2">PARENT</p>
-                  <p className="text-[10px] text-slate-500 mb-1">Message prepared</p>
-                  <p className="text-[10px] text-slate-400 italic mb-2">"Hi Priya, Aarav needs a little support with this week's homework..."</p>
-                  <p className="text-[10px] text-emerald-400">Ready to send</p>
+                <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 flex flex-col">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <span className="text-emerald-400 text-sm">💬</span>
+                    <p className="text-xs font-semibold text-slate-300">PARENT</p>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mb-1">Message prepared</p>
+                  <p className="text-[11px] text-slate-400 italic mb-2 line-clamp-2">"Hi Priya, Aarav needs a little support with this week's homework..."</p>
+                  <p className="text-[11px] text-emerald-400 mt-auto">Ready</p>
                 </div>
 
                 {/* Student */}
-                <div className="bg-slate-900 border border-slate-700 rounded-lg p-3">
-                  <p className="text-xs font-semibold text-slate-300 mb-2">STUDENT</p>
-                  <p className="text-[10px] text-slate-500 mb-1">Algebra Recovery Practice</p>
-                  <p className="text-[10px] text-slate-400 mb-2">15 min</p>
-                  <p className="text-[10px] text-amber-400">Ready to assign</p>
+                <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 flex flex-col">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <span className="text-amber-400 text-sm">📚</span>
+                    <p className="text-xs font-semibold text-slate-300">STUDENT</p>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mb-1">Algebra Recovery Practice</p>
+                  <p className="text-[11px] text-slate-400 mb-2">15 min</p>
+                  <p className="text-[11px] text-amber-400 mt-auto">Ready</p>
                 </div>
 
                 {/* School */}
-                <div className="bg-slate-900 border border-slate-700 rounded-lg p-3">
-                  <p className="text-xs font-semibold text-slate-300 mb-2">SCHOOL</p>
-                  <p className="text-[10px] text-slate-500 mb-1">Support Case</p>
-                  <p className="text-[10px] text-slate-400 mb-2">Aarav Sharma • Grade 8A</p>
-                  <p className="text-[10px] text-purple-400">Ready to log</p>
+                <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 flex flex-col">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <span className="text-purple-400 text-sm">🏫</span>
+                    <p className="text-xs font-semibold text-slate-300">SCHOOL</p>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mb-1">Support Case #88</p>
+                  <p className="text-[11px] text-slate-400 mb-2">Aarav Sharma • Grade 8A</p>
+                  <p className="text-[11px] text-purple-400 mt-auto">Ready</p>
                 </div>
               </div>
 
               {/* Outcome */}
-              <div className="flex justify-center mt-4 pt-4 border-t border-slate-800">
-                <p className="text-[10px] text-slate-500">Outcome returns to School Memory</p>
+              <div className="flex justify-center mt-3 pt-3 border-t border-slate-800">
+                <p className="text-[11px] text-slate-400">Outcome recorded → <span className="text-purple-400 font-medium">School Memory</span> learns what worked</p>
               </div>
             </div>
 
@@ -290,28 +309,25 @@ export function LandingModalProvider({ children }: { children: React.ReactNode }
             <Link
               href="/demo/connected"
               onClick={closeDemoModal}
-              className="block w-full bg-teal-600 hover:bg-teal-500 text-white py-4 rounded-xl font-bold text-base text-center transition-colors mb-3"
+              className="block w-full bg-teal-600 hover:bg-teal-500 text-white py-3.5 rounded-xl font-bold text-base text-center transition-colors mb-2"
             >
               ▶ Try It Yourself — 60 Seconds
             </Link>
 
             {/* Helper Text */}
-            <p className="text-xs text-slate-500 text-center">
-              No setup required • Fully interactive • You control the workflow
+            <p className="text-xs text-slate-400 text-center mb-2">
+              No setup · Fully interactive · You control the workflow
             </p>
 
             {/* Secondary Action */}
-            <div className="mt-4 pt-4 border-t border-slate-800">
-              <button
-                onClick={() => {
-                  closeDemoModal();
-                  // Trigger role selector for portal exploration
-                }}
-                className="w-full text-slate-400 hover:text-slate-200 text-sm py-2 transition-colors"
-              >
-                Explore Portals
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                closeDemoModal();
+              }}
+              className="text-slate-500 hover:text-slate-300 text-sm transition-colors"
+            >
+              Explore individual portals →
+            </button>
           </div>
         </div>
       )}
