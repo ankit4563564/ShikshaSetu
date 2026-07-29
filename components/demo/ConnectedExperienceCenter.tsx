@@ -8,6 +8,7 @@ import {
   approveCopilotAction,
   undoCopilotAction,
   resetCopilotState,
+  loadCopilotItems,
   CopilotState,
 } from '@/lib/copilot/copilotEngine';
 import { CANONICAL_TEACHER_ID, CANONICAL_STUDENT_ID } from '@/lib/canonical';
@@ -74,9 +75,18 @@ export function ConnectedExperienceCenter() {
     return subscribeCopilotState((s) => setState(s));
   }, []);
 
+  // Load copilot items on mount
+  useEffect(() => {
+    loadCopilotItems();
+  }, []);
+
   const handleApprove = async () => {
+    if (!aaravAction) {
+      console.error('No action item found');
+      return;
+    }
     setIsApproving(true);
-    await approveCopilotAction('act_001', CANONICAL_TEACHER_ID);
+    await approveCopilotAction(aaravAction.id, CANONICAL_TEACHER_ID);
     setTimeout(() => setIsApproving(false), 500);
   };
 
