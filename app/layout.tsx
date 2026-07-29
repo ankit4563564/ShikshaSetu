@@ -8,6 +8,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { CampusIdInitializer } from '@/components/campus-id/CampusIdInitializer';
 import { CommunityProvider } from '@/components/community/CommunityProvider';
 import { SchoolGPTProvider } from '@/components/schoolgpt/SchoolGPTProvider';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'ShikshaSetu',
@@ -27,6 +28,22 @@ export default function RootLayout({
         <a href="#main-content" className="skip-to-content" aria-label="Skip to main content">
           Skip to main content
         </a>
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+            strategy="afterInteractive"
+          />
+        )}
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <Script id="google-analytics" strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+            `}
+          </Script>
+        )}
         <ClerkProvider publishableKey={clerkKey}>
           <LanguageProvider>
             <NotificationProvider>
