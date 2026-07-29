@@ -53,11 +53,11 @@ const CONNECTED_STORY_NODES = [
 
 export function SchoolDayStorySection() {
   return (
-    <section className="pt-10 pb-10 md:pt-12 md:pb-12 bg-[#F4FBF7] rounded-[2rem] my-8 border border-[#E5E7EB] relative overflow-hidden" id="story">
+    <section className="pt-10 pb-16 md:pt-12 md:pb-20 bg-[#F4FBF7] rounded-[2rem] my-8 border border-[#E5E7EB] relative overflow-hidden" id="story">
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter relative z-10">
-        
+
         {/* Section Header — tightened bottom margin */}
-        <div className="text-center max-w-3xl mx-auto space-y-2.5 mb-7">
+        <div className="text-center max-w-3xl mx-auto space-y-2.5 mb-6 md:mb-8">
           <div className="inline-flex items-center gap-2 bg-white border border-[#22C55E]/30 px-4 py-1.5 rounded-full shadow-xs">
             <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
             <span className="text-[13px] font-mono font-extrabold text-[#0F766E] uppercase tracking-widest">
@@ -75,9 +75,9 @@ export function SchoolDayStorySection() {
         {/* ── VERTICAL CONNECTED TIMELINE STORY ── */}
         <div className="relative max-w-4xl mx-auto">
           {/* Animated Connecting Vertical Line */}
-          <div className="absolute left-6 sm:left-1/2 top-6 bottom-6 w-1 -translate-x-1/2 bg-gradient-to-b from-[#22C55E] via-[#0F766E] to-[#22C55E] opacity-30 rounded-full z-0" />
+          <div className="absolute left-6 sm:left-1/2 top-8 bottom-8 w-1 -translate-x-1/2 bg-gradient-to-b from-[#22C55E] via-[#0F766E] to-[#22C55E] opacity-30 rounded-full z-0" />
 
-          <div className="space-y-2 sm:space-y-3 relative z-10">
+          <div className="space-y-3 sm:space-y-4 relative z-10">
             {CONNECTED_STORY_NODES.map((node, idx) => {
               const isEven = idx % 2 === 0;
 
@@ -107,7 +107,7 @@ export function SchoolDayStorySection() {
                       {node.title}
                     </h4>
 
-                    <p className="text-[13px] sm:text-[14px] text-[#4B5563] font-medium leading-relaxed">
+                    <p className="text-[13px] sm:text-[14px] text-[#4B5563] font-medium leading-relaxed break-words">
                       {node.desc}
                     </p>
                   </div>
