@@ -240,7 +240,7 @@ export default function ParentTodayClient({
   }, [activePass]);
 
   return (
-    <div className="parent-portal-shell mx-auto min-h-screen sm:min-h-[calc(100vh-2rem)] w-full max-w-5xl sm:rounded-[2.5rem] sm:shadow-2xl sm:border border-deep-teal/10 bg-paper flex flex-col relative font-body text-deep-teal antialiased overflow-hidden">
+    <div className="parent-portal-shell mx-auto min-h-screen sm:min-h-[calc(100vh-2rem)] w-full max-w-md sm:max-w-5xl sm:rounded-[2.5rem] sm:shadow-2xl sm:border border-deep-teal/10 bg-paper flex flex-col relative font-body text-deep-teal antialiased overflow-hidden">
       
       {/* ── Header with Student Selector & Header Actions ── */}
       <ParentStudentHeader
@@ -383,55 +383,119 @@ export default function ParentTodayClient({
 
 
       {/* ── Main Viewport (Tab Content) ── */}
-      <div className="parent-portal-viewport flex-1 w-full max-w-4xl mx-auto px-5 py-7 sm:px-8 sm:py-9 overflow-y-auto pb-32 space-y-6">
+      <div className="parent-portal-viewport flex-1 w-full max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-6 overflow-y-auto pb-32 space-y-4">
         
         {/* Tab 1: Home */}
         {activeNav === 'home' && (
           isLoading ? (
             <div className="space-y-4">
-              <Skeleton className="h-48 w-full mb-4" />
+              <Skeleton className="h-32 w-full mb-4" />
               <Skeleton className="h-6 w-3/4 mb-2" />
               <Skeleton className="h-6 w-1/2" />
             </div>
           ) : (
-            <div className="space-y-5">
-              <div className="space-y-1">
-                <span className="font-display text-xs font-semibold text-deep-teal/40 uppercase tracking-widest block">Good morning</span>
-                <h1 className="font-display text-3xl font-extrabold text-deep-teal tracking-tight leading-none">
-                  {activeStudent?.displayName.split(' ')[0] || 'Student'}
-                </h1>
+            <div className="space-y-4">
+              {/* Compact Today Summary */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-display text-xs font-semibold text-deep-teal/40 uppercase tracking-widest">Today</span>
+                  <span className="text-[10px] text-deep-teal/50 font-medium">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+                </div>
+
+                {/* Morning Note - Compact */}
+                {!consentSettings.receiveAcademic ? (
+                  <div className="relative overflow-hidden rounded-xl border border-deep-teal/5 bg-white p-4 shadow-sm">
+                    <p className="font-body text-sm text-deep-teal/40 italic py-2">
+                      🔒 Academic updates are hidden because this preference is disabled.
+                    </p>
+                  </div>
+                ) : (
+                  <ParentMorningNote
+                    studentId={activeStudent?.studentId || ''}
+                    studentName={activeStudent?.displayName || ''}
+                    tone={activeStudent?.noteResult.tone || 'positive'}
+                    statusLabel={activeStudent?.noteResult.statusLabel || 'Daily Status'}
+                    headline={activeStudent?.noteResult.tone === 'positive' ? 'Aarav\'s day is going smoothly' : 'Some attention needed today'}
+                    bullets={
+                      activeStudent?.evidence && activeStudent.evidence.length > 0
+                        ? activeStudent.evidence.flatMap(e => e.bullets)
+                        : getChildBullets(activeStudent?.displayName || '', activeStudent?.noteResult.tone || 'positive')
+                    }
+                    isWhyExpanded={isWhyExpanded}
+                    onExpandChange={setIsWhyExpanded}
+                    isLoading={isLoading}
+                  />
+                )}
               </div>
 
-              {/* Morning Note Component */}
-              {!consentSettings.receiveAcademic ? (
-                <div className="relative overflow-hidden rounded-2xl border border-deep-teal/5 bg-paper p-5 shadow-sm">
-                  <p className="font-body text-sm text-deep-teal/40 italic py-2">
-                    🔒 Academic updates are hidden because this preference is disabled.
-                  </p>
+              {/* Today Summary Cards - White/Light Styling */}
+              <div className="grid grid-cols-3 gap-3">
+                {/* Arrival Card */}
+                <div className="bg-white rounded-xl border border-deep-teal/10 p-3 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                      <span className="text-sm">✓</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-deep-teal/60 uppercase tracking-wider">Arrival</span>
+                  </div>
+                  <p className="text-sm font-bold text-deep-teal">8:14 AM</p>
+                  <p className="text-[10px] text-deep-teal/50">Gate 2</p>
                 </div>
-              ) : (
-                <ParentMorningNote
-                  studentId={activeStudent?.studentId || ''}
-                  studentName={activeStudent?.displayName || ''}
-                  tone={activeStudent?.noteResult.tone || 'positive'}
-                  statusLabel={activeStudent?.noteResult.statusLabel || 'Daily Status'}
-                  headline={activeStudent?.noteResult.tone === 'positive' ? 'All work is on track' : 'Homework check-in needed'}
-                  bullets={
-                    activeStudent?.evidence && activeStudent.evidence.length > 0
-                      ? activeStudent.evidence.flatMap(e => e.bullets)
-                      : getChildBullets(activeStudent?.displayName || '', activeStudent?.noteResult.tone || 'positive')
-                  }
-                  isWhyExpanded={isWhyExpanded}
-                  onExpandChange={setIsWhyExpanded}
-                  isLoading={isLoading}
-                />
+
+                {/* Bus Card */}
+                <div className="bg-white rounded-xl border border-deep-teal/10 p-3 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                      <span className="text-sm">🚌</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-deep-teal/60 uppercase tracking-wider">Bus</span>
+                  </div>
+                  <p className="text-sm font-bold text-deep-teal">On time</p>
+                  <p className="text-[10px] text-deep-teal/50">Route 04</p>
+                </div>
+
+                {/* Homework Card */}
+                <div className="bg-white rounded-xl border border-deep-teal/10 p-3 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                      <span className="text-sm">📚</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-deep-teal/60 uppercase tracking-wider">Homework</span>
+                  </div>
+                  <p className="text-sm font-bold text-deep-teal">{activeStudent?.homework?.filter(h => h.isSubmitted).length || 0} completed</p>
+                  <p className="text-[10px] text-deep-teal/50">{activeStudent?.homework?.filter(h => !h.isSubmitted).length || 0} pending</p>
+                </div>
+              </div>
+
+              {/* Action Required Card */}
+              {activeStudent?.homework?.filter(h => !h.isSubmitted && new Date(h.dueDate) <= new Date(Date.now() + 86400000)).length > 0 && (
+                <div className="bg-amber-50 rounded-xl border border-amber-200/50 p-4 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-amber-600">⚠️</span>
+                    <span className="text-xs font-bold text-amber-800 uppercase tracking-wider">Needs your attention</span>
+                  </div>
+                  {activeStudent.homework.filter(h => !h.isSubmitted && new Date(h.dueDate) <= new Date(Date.now() + 86400000)).slice(0, 1).map(hw => (
+                    <div key={hw.id} className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-bold text-deep-teal">{hw.title}</p>
+                        <p className="text-[10px] text-deep-teal/60">Due {new Date(hw.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · {new Date(hw.dueDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</p>
+                      </div>
+                      <button
+                        onClick={() => setActiveNav('homework')}
+                        className="text-xs font-bold text-amber-700 hover:text-amber-800"
+                      >
+                        View homework →
+                      </button>
+                    </div>
+                  ))}
+                </div>
               )}
 
-              {/* ✅ C2 FIX: Add homework summary to fill viewport */}
+              {/* Homework Progress - Compact */}
               {activeStudent?.homework && activeStudent.homework.length > 0 && (
-                <div className="relative overflow-hidden rounded-2xl border border-deep-teal/5 bg-paper p-5 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-display text-sm font-bold text-deep-teal">📋 Homework Status</h3>
+                <div className="bg-white rounded-xl border border-deep-teal/10 p-4 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-display text-sm font-bold text-deep-teal">Homework</h3>
                     <button
                       onClick={() => setActiveNav('homework')}
                       className="text-xs font-semibold text-deep-teal/60 hover:text-deep-teal transition-colors"
@@ -439,28 +503,28 @@ export default function ParentTodayClient({
                       View all →
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-xl bg-emerald-50 border border-emerald-200/50 p-4">
-                      <p className="text-2xl font-extrabold text-emerald-700">
-                        {activeStudent.homework.filter(h => h.isSubmitted).length}
-                      </p>
-                      <p className="text-xs font-semibold text-emerald-600 mt-1">Completed</p>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex-1 h-2 bg-deep-teal/10 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-emerald-500 rounded-full transition-all"
+                        style={{ width: `${(activeStudent.homework.filter(h => h.isSubmitted).length / activeStudent.homework.length) * 100}%` }}
+                      />
                     </div>
-                    <div className="rounded-xl bg-amber-50 border border-amber-200/50 p-4">
-                      <p className="text-2xl font-extrabold text-amber-700">
-                        {activeStudent.homework.filter(h => !h.isSubmitted).length}
-                      </p>
-                      <p className="text-xs font-semibold text-amber-600 mt-1">Pending</p>
-                    </div>
+                    <span className="text-xs font-bold text-deep-teal">
+                      {Math.round((activeStudent.homework.filter(h => h.isSubmitted).length / activeStudent.homework.length) * 100)}%
+                    </span>
                   </div>
+                  <p className="text-xs text-deep-teal/60">
+                    {activeStudent.homework.filter(h => h.isSubmitted).length} of {activeStudent.homework.length} completed · {activeStudent.homework.filter(h => !h.isSubmitted).length} remaining
+                  </p>
                 </div>
               )}
 
-              {/* ✅ C2 FIX: Add attendance summary to fill viewport */}
+              {/* Attendance - Compact */}
               {activeStudent?.attendance && activeStudent.attendance.length > 0 && (
-                <div className="relative overflow-hidden rounded-2xl border border-deep-teal/5 bg-paper p-5 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-display text-sm font-bold text-deep-teal">✅ Attendance This Month</h3>
+                <div className="bg-white rounded-xl border border-deep-teal/10 p-4 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-display text-sm font-bold text-deep-teal">Attendance this month</h3>
                     <button
                       onClick={() => setActiveNav('attendance')}
                       className="text-xs font-semibold text-deep-teal/60 hover:text-deep-teal transition-colors"
@@ -468,11 +532,31 @@ export default function ParentTodayClient({
                       View details →
                     </button>
                   </div>
+                  <div className="grid grid-cols-3 gap-3 mb-3">
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-deep-teal">
+                        {Math.round((activeStudent.attendance.filter(a => a.status === 'present').length / activeStudent.attendance.length) * 100)}%
+                      </p>
+                      <p className="text-[10px] text-deep-teal/50 font-semibold">Rate</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-emerald-600">
+                        {activeStudent.attendance.filter(a => a.status === 'present').length}
+                      </p>
+                      <p className="text-[10px] text-deep-teal/50 font-semibold">Present</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-rose-600">
+                        {activeStudent.attendance.filter(a => a.status === 'absent').length}
+                      </p>
+                      <p className="text-[10px] text-deep-teal/50 font-semibold">Absent</p>
+                    </div>
+                  </div>
                   <div className="space-y-2">
-                    {activeStudent.attendance.slice(0, 5).map((att, idx) => (
-                      <div key={idx} className="flex items-center justify-between py-2 border-b border-deep-teal/5 last:border-0">
-                        <span className="text-xs font-semibold text-deep-teal/70">{att.date}</span>
-                        <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                    {activeStudent.attendance.slice(0, 3).map((att, idx) => (
+                      <div key={idx} className="flex items-center justify-between py-1.5 border-b border-deep-teal/5 last:border-0">
+                        <span className="text-xs font-semibold text-deep-teal/70">{new Date(att.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                           att.status === 'present' ? 'bg-emerald-50 text-emerald-700' :
                           att.status === 'late' ? 'bg-amber-50 text-amber-700' :
                           att.status === 'absent' ? 'bg-rose-50 text-rose-700' :
@@ -550,7 +634,7 @@ export default function ParentTodayClient({
       </div>
 
       {/* ── Bottom Navigation Tabs (Mobile Optimized & Safe-Area Aware) ── */}
-      <nav className="sticky bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-deep-teal/10 px-2 pt-2 pb-3 flex justify-between items-center z-30 shadow-lg">
+      <nav className="sticky bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-deep-teal/10 px-3 pt-2 pb-4 flex justify-between items-center z-30 shadow-lg">
         {[
           { id: 'home', label: 'Home', icon: '🏠' },
           { id: 'homework', label: 'Homework', icon: '📚' },
@@ -565,13 +649,13 @@ export default function ParentTodayClient({
               setActiveNav(tab.id as any);
               setShowSettings(false);
             }}
-            className={`flex flex-col items-center justify-center min-h-[44px] gap-1 flex-1 py-1 px-1 rounded-xl transition-all relative outline-none focus-visible:ring-2 focus-visible:ring-deep-teal/30 ${
+            className={`flex flex-col items-center justify-center min-h-[44px] gap-1 flex-1 py-1.5 px-2 rounded-xl transition-all relative outline-none focus-visible:ring-2 focus-visible:ring-deep-teal/30 ${
               activeNav === tab.id
-                ? 'text-deep-teal font-extrabold bg-deep-teal/5'
-                : 'text-deep-teal/60 font-medium hover:text-deep-teal hover:bg-slate-50'
+                ? 'text-deep-teal font-extrabold bg-deep-teal/10'
+                : 'text-deep-teal/50 font-medium hover:text-deep-teal hover:bg-slate-50'
             }`}
           >
-            <span className="text-base leading-none">{tab.icon}</span>
+            <span className="text-lg leading-none">{tab.icon}</span>
             <span className="text-[10px] tracking-tight leading-none text-center font-bold">{tab.label}</span>
           </button>
         ))}
