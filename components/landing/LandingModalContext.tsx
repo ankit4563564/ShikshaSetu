@@ -222,35 +222,67 @@ export function LandingModalProvider({ children }: { children: React.ReactNode }
 
             {/* Connected Workflow Visualization */}
             <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-6 mb-6">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0 text-sm">
-                <div className="text-center flex-1">
-                  <div className="w-10 h-10 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center mx-auto mb-2 font-bold">1</div>
-                  <span className="text-slate-300 text-xs sm:text-sm">Teacher Decision</span>
+              {/* Teacher Card */}
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 mb-4 max-w-xs mx-auto">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center text-xs font-bold">KR</div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">Mrs. Kavita Rao</p>
+                    <p className="text-xs text-slate-400">Support plan prepared</p>
+                  </div>
                 </div>
-                <span className="text-slate-600 hidden sm:block">↓</span>
-                <span className="text-slate-600 sm:hidden">↓</span>
-                <div className="text-center flex-1">
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-2 font-bold">2</div>
-                  <span className="text-slate-300 text-xs sm:text-sm">Parent Informed</span>
+                <button className="w-full bg-teal-600/20 text-teal-400 border border-teal-500/30 py-2 rounded-lg text-xs font-semibold">
+                  Approve
+                </button>
+              </div>
+
+              {/* Connection */}
+              <div className="flex justify-center mb-4">
+                <div className="w-px h-4 bg-slate-700"></div>
+              </div>
+
+              {/* ShikshaSetu Node */}
+              <div className="flex justify-center mb-4">
+                <div className="bg-purple-500/10 border border-purple-500/30 rounded-full px-4 py-2">
+                  <span className="text-xs font-semibold text-purple-400">ShikshaSetu</span>
                 </div>
-                <span className="text-slate-600 hidden sm:block">↓</span>
-                <span className="text-slate-600 sm:hidden">↓</span>
-                <div className="text-center flex-1">
-                  <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-2 font-bold">3</div>
-                  <span className="text-slate-300 text-xs sm:text-sm">Student Supported</span>
+              </div>
+
+              {/* Branching */}
+              <div className="flex justify-center mb-4">
+                <div className="w-px h-4 bg-slate-700"></div>
+              </div>
+
+              {/* Three Mini Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Parent */}
+                <div className="bg-slate-900 border border-slate-700 rounded-lg p-3">
+                  <p className="text-xs font-semibold text-slate-300 mb-2">PARENT</p>
+                  <p className="text-[10px] text-slate-500 mb-1">Message prepared</p>
+                  <p className="text-[10px] text-slate-400 italic mb-2">"Hi Priya, Aarav needs a little support with this week's homework..."</p>
+                  <p className="text-[10px] text-emerald-400">Ready to send</p>
                 </div>
-                <span className="text-slate-600 hidden sm:block">↓</span>
-                <span className="text-slate-600 sm:hidden">↓</span>
-                <div className="text-center flex-1">
-                  <div className="w-10 h-10 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center mx-auto mb-2 font-bold">4</div>
-                  <span className="text-slate-300 text-xs sm:text-sm">School Updated</span>
+
+                {/* Student */}
+                <div className="bg-slate-900 border border-slate-700 rounded-lg p-3">
+                  <p className="text-xs font-semibold text-slate-300 mb-2">STUDENT</p>
+                  <p className="text-[10px] text-slate-500 mb-1">Algebra Recovery Practice</p>
+                  <p className="text-[10px] text-slate-400 mb-2">15 min</p>
+                  <p className="text-[10px] text-amber-400">Ready to assign</p>
                 </div>
-                <span className="text-slate-600 hidden sm:block">↓</span>
-                <span className="text-slate-600 sm:hidden">↓</span>
-                <div className="text-center flex-1">
-                  <div className="w-10 h-10 rounded-full bg-slate-500/20 text-slate-400 flex items-center justify-center mx-auto mb-2 font-bold">5</div>
-                  <span className="text-slate-300 text-xs sm:text-sm">Outcome Recorded</span>
+
+                {/* School */}
+                <div className="bg-slate-900 border border-slate-700 rounded-lg p-3">
+                  <p className="text-xs font-semibold text-slate-300 mb-2">SCHOOL</p>
+                  <p className="text-[10px] text-slate-500 mb-1">Support Case</p>
+                  <p className="text-[10px] text-slate-400 mb-2">Aarav Sharma • Grade 8A</p>
+                  <p className="text-[10px] text-purple-400">Ready to log</p>
                 </div>
+              </div>
+
+              {/* Outcome */}
+              <div className="flex justify-center mt-4 pt-4 border-t border-slate-800">
+                <p className="text-[10px] text-slate-500">Outcome returns to School Memory</p>
               </div>
             </div>
 
@@ -260,7 +292,7 @@ export function LandingModalProvider({ children }: { children: React.ReactNode }
               onClick={closeDemoModal}
               className="block w-full bg-teal-600 hover:bg-teal-500 text-white py-4 rounded-xl font-bold text-base text-center transition-colors mb-3"
             >
-              ▶ Start 60-Second Live Demo
+              ▶ Try It Yourself — 60 Seconds
             </Link>
 
             {/* Helper Text */}
