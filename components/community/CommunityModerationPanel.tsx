@@ -220,7 +220,7 @@ function FlaggedPostCard({ post, onApprove, onHide, onReveal, showToast }: {
       )}
       <div className="flex gap-2 mt-3">
         <button type="button" onClick={() => act(() => onApprove(post.id))} disabled={actioning}
-          className="rounded-lg bg-sage px-4 py-1.5 text-xs font-bold text-white hover:bg-sage/90 disabled:opacity-40"
+          className="rounded-lg bg-sage px-4 py-1.5 text-xs font-bold text-white hover:bg-sage/90 disabled:opacity-40 shadow-sm"
         >{actioning ? '…' : 'Approve'}</button>
         <button type="button" onClick={() => act(() => onHide(post.id))} disabled={actioning}
           className="rounded-lg border border-warm-clay/20 px-4 py-1.5 text-xs font-bold text-warm-clay hover:bg-warm-clay/5 disabled:opacity-40"
@@ -252,7 +252,7 @@ function ReportCard({ report, onResolve }: {
       {report.description && <p className="text-xs text-deep-teal/60">{report.description}</p>}
       <div className="flex gap-2 mt-3">
         <button type="button" onClick={() => act('actioned')} disabled={actioning}
-          className="rounded-lg bg-sage px-3 py-1.5 text-xs font-bold text-white hover:bg-sage/90 disabled:opacity-40"
+          className="rounded-lg bg-sage px-3 py-1.5 text-xs font-bold text-white hover:bg-sage/90 disabled:opacity-40 shadow-sm"
         >Actioned</button>
         <button type="button" onClick={() => act('dismissed')} disabled={actioning}
           className="rounded-lg border border-deep-teal/10 px-3 py-1.5 text-xs font-bold text-deep-teal/60 disabled:opacity-40"

@@ -351,7 +351,7 @@ export default function SchoolMitra({ studentId, studentName }: SchoolMitraProps
             <button
               type="button"
               onClick={() => handleSendQuery()}
-              className="px-5 py-3 rounded-2xl bg-primary text-white font-extrabold text-xs hover:bg-primary/90 transition-all shadow-md active:scale-95"
+              className="px-5 py-3 rounded-2xl bg-primary text-white font-extrabold text-xs hover:bg-primary/90 transition-all shadow-lg active:scale-95"
             >
               Ask Mitra →
             </button>
@@ -389,7 +389,7 @@ export default function SchoolMitra({ studentId, studentName }: SchoolMitraProps
                     setToast({ message: `🚀 Generated 15-Min Sprint for ${s.subject}! Check step-by-step revision guide.`, type: 'success' });
                     setTimeout(() => setToast(null), 4000);
                   }}
-                  className="w-full mt-2 py-2 rounded-xl bg-primary text-white text-xs font-black hover:bg-primary/90 transition-all shadow-2xs"
+                  className="w-full mt-2 py-2 rounded-xl bg-primary text-white text-xs font-black hover:bg-primary/90 transition-all shadow-md"
                 >
                   Generate Plan →
                 </button>

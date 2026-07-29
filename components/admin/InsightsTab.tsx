@@ -254,7 +254,7 @@ export function InsightsTab({ adminId }: InsightsTabProps) {
         <p className="text-sm text-warm-clay/60 mb-4">{error}</p>
         <button
           onClick={() => fetchInsights(selectedDate)}
-          className="px-5 py-2 rounded-xl bg-warm-clay text-white text-sm font-bold hover:bg-warm-clay/90 transition-colors"
+          className="px-5 py-2 rounded-xl bg-warm-clay text-white text-sm font-bold hover:bg-warm-clay/90 transition-colors shadow-md"
         >
           Retry
         </button>
@@ -331,7 +331,7 @@ export function InsightsTab({ adminId }: InsightsTabProps) {
           <button
             onClick={generateInsights}
             disabled={generating}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-deep-teal text-white text-sm font-bold hover:bg-deep-teal/90 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-deep-teal text-white text-sm font-bold hover:bg-deep-teal/90 disabled:opacity-50 transition-colors shadow-md"
           >
             {generating ? (
               <>

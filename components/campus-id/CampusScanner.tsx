@@ -313,7 +313,7 @@ export function CampusScanner({
           <button
             type="button"
             onClick={startCamera}
-            className="w-full rounded-xl bg-deep-teal px-5 py-4 font-display text-base font-bold text-white shadow-md transition-all hover:bg-deep-teal/90"
+            className="w-full rounded-xl bg-deep-teal px-5 py-4 font-display text-base font-bold text-white shadow-lg transition-all hover:bg-deep-teal/90"
           >
             Start Scanning
           </button>

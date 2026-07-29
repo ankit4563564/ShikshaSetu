@@ -425,7 +425,7 @@ export default function AdminDashboardClient({
                     <span className="text-[12px] font-medium">Estimated review time: <strong className="text-ink font-semibold">{estimatedMinutes} minutes</strong></span>
                   </div>
                   {priorityItems.length > 0 && (
-                    <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-[13px] font-semibold hover:bg-primary/90 transition-all shadow-sm">
+                    <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-[13px] font-semibold hover:bg-primary/90 transition-all shadow-md">
                       Review Today's Priorities
                       <Icon.ArrowRight />
                     </button>

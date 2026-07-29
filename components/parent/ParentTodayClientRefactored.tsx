@@ -321,7 +321,7 @@ export default function ParentTodayClient({
             <div className="flex justify-end pt-1">
               <button
                 onClick={() => setShowSettings(false)}
-                className="bg-deep-teal text-white font-display text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-deep-teal/90 transition-all active:scale-95"
+                className="bg-deep-teal text-white font-display text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-deep-teal/90 transition-all active:scale-95 shadow-md"
               >
                 Close &amp; Apply
               </button>

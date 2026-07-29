@@ -189,7 +189,7 @@ export default function AdminRewardsPanel() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
           <div className="flex gap-2">
             <button type="button" onClick={() => setShowCreate(!showCreate)}
-              className="rounded-lg bg-deep-teal px-4 py-2 text-xs font-bold text-white hover:bg-deep-teal/90"
+              className="rounded-lg bg-deep-teal px-4 py-2 text-xs font-bold text-white hover:bg-deep-teal/90 shadow-sm"
             >{showCreate ? 'Cancel' : '+ New Reward'}</button>
           </div>
 
@@ -207,7 +207,7 @@ export default function AdminRewardsPanel() {
                 <input type="number" placeholder="Cost" value={form.cost || ''} onChange={e => setForm(p => ({ ...p, cost: parseInt(e.target.value) || 0 }))} className="w-20 rounded-lg border border-deep-teal/10 px-3 py-2 text-sm" />
                 <input type="text" placeholder="Stock" value={form.stock} onChange={e => setForm(p => ({ ...p, stock: e.target.value }))} className="w-20 rounded-lg border border-deep-teal/10 px-3 py-2 text-sm" />
               </div>
-              <button type="button" onClick={handleCreateReward} className="rounded-lg bg-sage px-4 py-2 text-xs font-bold text-white hover:bg-sage/90">Create</button>
+              <button type="button" onClick={handleCreateReward} className="rounded-lg bg-sage px-4 py-2 text-xs font-bold text-white hover:bg-sage/90 shadow-sm">Create</button>
             </div>
           )}
 
@@ -224,7 +224,7 @@ export default function AdminRewardsPanel() {
               <input type="number" placeholder="Amount" value={earnForm.amount} onChange={e => setEarnForm(p => ({ ...p, amount: parseInt(e.target.value) || 0 }))} className="w-20 rounded-lg border border-deep-teal/10 px-3 py-2 text-sm" />
             </div>
             <input type="text" placeholder="Description" value={earnForm.description} onChange={e => setEarnForm(p => ({ ...p, description: e.target.value }))} className="w-full rounded-lg border border-deep-teal/10 px-3 py-2 text-sm" />
-            <button type="button" onClick={handleEarnCoins} className="rounded-lg bg-sage px-4 py-2 text-xs font-bold text-white hover:bg-sage/90">Award Coins</button>
+            <button type="button" onClick={handleEarnCoins} className="rounded-lg bg-sage px-4 py-2 text-xs font-bold text-white hover:bg-sage/90 shadow-sm">Award Coins</button>
             {earnResult && <p className="text-sm font-bold text-deep-teal">{earnResult}</p>}
           </div>
 
@@ -268,7 +268,7 @@ export default function AdminRewardsPanel() {
               <input type="number" placeholder="Quantity" value={restockForm.quantity} onChange={e => setRestockForm(p => ({ ...p, quantity: parseInt(e.target.value) || 0 }))} className="w-24 rounded-lg border border-deep-teal/10 px-3 py-2 text-sm" />
               <input type="text" placeholder="Notes" value={restockForm.notes} onChange={e => setRestockForm(p => ({ ...p, notes: e.target.value }))} className="flex-1 rounded-lg border border-deep-teal/10 px-3 py-2 text-sm" />
             </div>
-            <button type="button" onClick={handleRestock} className="rounded-lg bg-sage px-4 py-2 text-xs font-bold text-white hover:bg-sage/90">Restock</button>
+            <button type="button" onClick={handleRestock} className="rounded-lg bg-sage px-4 py-2 text-xs font-bold text-white hover:bg-sage/90 shadow-sm">Restock</button>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -302,7 +302,7 @@ export default function AdminRewardsPanel() {
               <input type="date" placeholder="Start" value={campForm.startDate} onChange={e => setCampForm(p => ({ ...p, startDate: e.target.value }))} className="flex-1 rounded-lg border border-deep-teal/10 px-3 py-2 text-sm" />
               <input type="date" placeholder="End" value={campForm.endDate} onChange={e => setCampForm(p => ({ ...p, endDate: e.target.value }))} className="flex-1 rounded-lg border border-deep-teal/10 px-3 py-2 text-sm" />
             </div>
-            <button type="button" onClick={handleCreateCampaign} className="rounded-lg bg-deep-teal px-4 py-2 text-xs font-bold text-white hover:bg-deep-teal/90">Create Campaign</button>
+            <button type="button" onClick={handleCreateCampaign} className="rounded-lg bg-deep-teal px-4 py-2 text-xs font-bold text-white hover:bg-deep-teal/90 shadow-sm">Create Campaign</button>
           </div>
 
           <div className="space-y-2">
@@ -382,7 +382,7 @@ export default function AdminRewardsPanel() {
               <option value="">Select achievement…</option>
               {achievements.map(a => <option key={a.id} value={a.id}>{a.name} (+{a.coinsReward} coins)</option>)}
             </select>
-            <button type="button" onClick={handleAwardAchievement} className="rounded-lg bg-sage px-4 py-2 text-xs font-bold text-white hover:bg-sage/90">Award</button>
+            <button type="button" onClick={handleAwardAchievement} className="rounded-lg bg-sage px-4 py-2 text-xs font-bold text-white hover:bg-sage/90 shadow-sm">Award</button>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {achievements.map(a => (

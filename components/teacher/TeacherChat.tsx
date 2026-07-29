@@ -224,7 +224,7 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
         <button
           onClick={() => handleSendMessage(inputText)}
           disabled={isSending || !inputText.trim()}
-          className="rounded-lg bg-deep-teal px-4 py-2 text-xs font-bold text-white transition-all hover:bg-deep-teal/90 active:scale-95 disabled:opacity-50"
+          className="rounded-lg bg-deep-teal px-4 py-2 text-xs font-bold text-white transition-all hover:bg-deep-teal/90 active:scale-95 disabled:opacity-50 shadow-md"
         >
           Send
         </button>

@@ -194,7 +194,7 @@ export default function WorryJar({ studentId, studentName }: WorryJarProps) {
               setToast({ message: '🌬️ Breathing exercise started. Inhale slowly...', type: 'success' });
               setTimeout(() => setToast(null), 4000);
             }}
-            className="px-3 py-1.5 rounded-xl bg-sage text-white font-extrabold text-xs shadow-2xs hover:bg-sage/90 transition-all"
+            className="px-3 py-1.5 rounded-xl bg-sage text-white font-extrabold text-xs shadow-2xs hover:bg-sage/90 transition-all shadow-sm"
           >
             Start 60s Breathing
           </button>

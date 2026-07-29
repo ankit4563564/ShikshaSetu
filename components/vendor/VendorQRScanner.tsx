@@ -57,7 +57,7 @@ export default function VendorQRScanner({ vendorId, onScanComplete }: VendorQRSc
             type="button"
             onClick={handleScan}
             disabled={scanning || !tokenInput.trim()}
-            className="rounded-xl bg-deep-teal px-5 py-3 text-sm font-bold text-white transition-all hover:bg-deep-teal/90 active:scale-95 disabled:opacity-40"
+            className="rounded-xl bg-deep-teal px-5 py-3 text-sm font-bold text-white transition-all hover:bg-deep-teal/90 active:scale-95 disabled:opacity-40 shadow-md"
           >
             {scanning ? '…' : 'Verify'}
           </button>

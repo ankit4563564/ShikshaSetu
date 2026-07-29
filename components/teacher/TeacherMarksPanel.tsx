@@ -161,7 +161,7 @@ export default function TeacherMarksPanel({ teacherId }: TeacherMarksPanelProps)
               <input type="text" name="classSection" placeholder="e.g. A (optional)" className="mt-1 w-full rounded-xl border border-deep-teal/20 bg-white px-4 py-3 text-sm font-semibold text-deep-teal" />
             </div>
           </div>
-          <button type="submit" className="w-full rounded-xl bg-primary px-5 py-4 font-display text-base font-bold text-white shadow-md transition-all hover:bg-primary/90">Create Exam & Initialize Marks</button>
+          <button type="submit" className="w-full rounded-xl bg-primary px-5 py-4 font-display text-base font-bold text-white shadow-lg transition-all hover:bg-primary/90">Create Exam & Initialize Marks</button>
         </form>
         {toast && <Toast message={toast.message} onClose={() => setToast(null)} />}
       </motion.div>
@@ -182,7 +182,7 @@ export default function TeacherMarksPanel({ teacherId }: TeacherMarksPanelProps)
           <div className="flex gap-2">
             <button type="button" onClick={() => setView('list')} className="rounded-xl border border-deep-teal/20 bg-white px-4 py-2 text-xs font-bold text-deep-teal hover:bg-deep-teal/5">← Back</button>
             {!selectedExam.isPublished && (
-              <button type="button" onClick={handlePublish} className="rounded-xl bg-sage px-4 py-2 text-xs font-bold text-white hover:bg-sage/90">Publish Marks</button>
+              <button type="button" onClick={handlePublish} className="rounded-xl bg-sage px-4 py-2 text-xs font-bold text-white hover:bg-sage/90 shadow-sm">Publish Marks</button>
             )}
           </div>
         </div>
@@ -263,7 +263,7 @@ export default function TeacherMarksPanel({ teacherId }: TeacherMarksPanelProps)
 
         {!selectedExam.isPublished && (
           <div className="flex gap-3">
-            <button type="button" onClick={handleSaveMarks} className="flex-1 rounded-xl bg-primary px-5 py-4 font-display text-base font-bold text-white shadow-md transition-all hover:bg-primary/90">Save Marks</button>
+            <button type="button" onClick={handleSaveMarks} className="flex-1 rounded-xl bg-primary px-5 py-4 font-display text-base font-bold text-white shadow-lg transition-all hover:bg-primary/90">Save Marks</button>
             <button type="button" onClick={handlePublish} className="flex-1 rounded-xl bg-sage px-5 py-4 font-display text-base font-bold text-white shadow-md transition-all hover:bg-sage/90">Publish to Parents & Students</button>
           </div>
         )}
@@ -314,7 +314,7 @@ export default function TeacherMarksPanel({ teacherId }: TeacherMarksPanelProps)
         </div>
         <div className="flex gap-2">
           <button type="button" onClick={() => setView('analytics')} className="rounded-xl border border-deep-teal/20 bg-white px-4 py-2 text-xs font-bold text-deep-teal hover:bg-deep-teal/5">Analytics</button>
-          <button type="button" onClick={() => setView('create')} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-primary/90">+ New Exam</button>
+          <button type="button" onClick={() => setView('create')} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-primary/90 shadow-sm">+ New Exam</button>
         </div>
       </div>
 
@@ -324,7 +324,7 @@ export default function TeacherMarksPanel({ teacherId }: TeacherMarksPanelProps)
         <div className="rounded-2xl border border-deep-teal/10 bg-[#F8FAFC] p-10 text-center space-y-2">
           <p className="text-base font-display font-bold text-deep-teal">📝 Ready to Evaluate Student Growth?</p>
           <p className="text-xs text-deep-teal/60 max-w-sm mx-auto">Create your first assessment to begin tracking academic mastery and publishing grade feedback.</p>
-          <button type="button" onClick={() => setView('create')} className="mt-3 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-white hover:bg-primary/90 transition-all active:scale-95 shadow-xs">+ Create Assessment</button>
+          <button type="button" onClick={() => setView('create')} className="mt-3 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-white hover:bg-primary/90 transition-all active:scale-95 shadow-sm">+ Create Assessment</button>
         </div>
       ) : (
         <div className="space-y-3">

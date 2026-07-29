@@ -761,7 +761,7 @@ function ActionsTabContent({ insight }: { insight: AiInsight }) {
           <div className="flex-1">
             <p className="text-sm font-medium text-deep-teal">{action}</p>
             <div className="mt-2.5 flex gap-2">
-              <button className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-primary text-white hover:bg-primary/90 transition-colors">
+              <button className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-primary text-white hover:bg-primary/90 transition-colors shadow-sm">
                 Assign
               </button>
               <button className="px-3 py-1.5 rounded-lg text-[10px] font-bold border border-deep-teal/15 hover:bg-deep-teal/5 transition-colors">

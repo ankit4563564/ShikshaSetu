@@ -183,7 +183,7 @@ export default function TeacherCommunityPanel({ teacherId }: TeacherCommunityPan
             <span className="text-[10px] text-deep-teal/30">{answerBody.length}/5000</span>
             <button type="button" onClick={handleAnswer}
               disabled={createAnswer.isPending || !answerBody.trim()}
-              className="rounded-lg bg-deep-teal px-5 py-2 text-xs font-bold text-white hover:bg-deep-teal/90 disabled:opacity-40"
+              className="rounded-lg bg-deep-teal px-5 py-2 text-xs font-bold text-white hover:bg-deep-teal/90 disabled:opacity-40 shadow-sm"
             >{createAnswer.isPending ? 'Posting…' : 'Post Answer as Teacher'}</button>
           </div>
         </div>
@@ -219,7 +219,7 @@ function TeacherAnswerCard({ answer, onAccept, onVerify }: {
         {!answer.isAccepted && (
           <button type="button" onClick={() => { setActioning('accept'); onAccept(answer.id); setActioning(null); }}
             disabled={actioning === 'accept'}
-            className="rounded-lg bg-sage px-3 py-1.5 text-xs font-bold text-white hover:bg-sage/90 disabled:opacity-40"
+            className="rounded-lg bg-sage px-3 py-1.5 text-xs font-bold text-white hover:bg-sage/90 disabled:opacity-40 shadow-sm"
           >Accept as Answer</button>
         )}
         {!answer.isVerified && (

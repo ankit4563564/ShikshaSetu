@@ -57,8 +57,8 @@ export default function VoiceQuickLog({ teacherId }: VoiceQuickLogProps) {
         {isListening && <div className="absolute right-2 top-2 rounded-full border border-deep-teal/10 bg-white/95 px-2 py-1 text-[10px] font-bold text-sage">Listening{interim ? `: ${interim}` : '...'}</div>}
       </div>
       <div className="flex gap-3">
-        <button onClick={isListening ? () => service.current?.stop() : startListening} disabled={isProcessing} className={`flex-1 rounded-xl py-3 text-xs font-bold text-white disabled:opacity-50 ${isListening ? 'bg-warm-clay' : 'bg-deep-teal'}`}>{isListening ? 'Stop recording' : 'Start recording'}</button>
-        <button onClick={submit} disabled={!transcript.trim() || isListening || isProcessing} className="flex-1 rounded-xl bg-sage py-3 text-xs font-bold text-white disabled:opacity-50">{isProcessing ? 'Processing language and evidence...' : 'Log evidence'}</button>
+        <button onClick={isListening ? () => service.current?.stop() : startListening} disabled={isProcessing} className={`flex-1 rounded-xl py-3 text-xs font-bold text-white disabled:opacity-50 shadow-md ${isListening ? 'bg-warm-clay' : 'bg-deep-teal'}`}>{isListening ? 'Stop recording' : 'Start recording'}</button>
+        <button onClick={submit} disabled={!transcript.trim() || isListening || isProcessing} className="flex-1 rounded-xl bg-sage py-3 text-xs font-bold text-white disabled:opacity-50 shadow-md">{isProcessing ? 'Processing language and evidence...' : 'Log evidence'}</button>
       </div>
       <AnimatePresence>{result && <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`rounded-xl border p-3 text-xs font-semibold ${result.success ? 'border-sage/20 bg-sage/10 text-sage' : 'border-warm-clay/20 bg-warm-clay/10 text-warm-clay'}`}>{result.message}</motion.div>}</AnimatePresence>
       {service.current && !service.current.isSupported() && <p className="rounded-lg border border-warm-clay/15 bg-warm-clay/5 px-3 py-2 text-[10px] font-semibold text-warm-clay">Voice recognition is unavailable in this browser. Type your observation instead.</p>}

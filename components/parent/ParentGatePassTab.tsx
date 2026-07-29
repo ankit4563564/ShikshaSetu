@@ -41,7 +41,7 @@ export function ParentGatePassTab({
         <button
           onClick={onRequestPass}
           disabled={isLoading}
-          className="bg-deep-teal text-white font-display text-2xs font-bold py-2.5 px-4 rounded-xl hover:bg-deep-teal/90 active:scale-95 transition-all shadow-sm disabled:opacity-50"
+          className="bg-deep-teal text-white font-display text-2xs font-bold py-2.5 px-4 rounded-xl hover:bg-deep-teal/90 active:scale-95 transition-all shadow-md disabled:opacity-50"
         >
           Request Pass
         </button>

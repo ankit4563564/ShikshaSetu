@@ -98,7 +98,7 @@ export default function SchoolCalendarView({ isEditable = false }: SchoolCalenda
         {isEditable && !showAddForm && (
           <button
             onClick={() => setShowAddForm(true)}
-            className="px-4 py-2 bg-deep-teal text-white rounded-xl text-xs font-bold hover:bg-deep-teal/90 transition-all shadow-sm"
+            className="px-4 py-2 bg-deep-teal text-white rounded-xl text-xs font-bold hover:bg-deep-teal/90 transition-all shadow-md"
           >
             + Add Calendar Event
           </button>
@@ -198,7 +198,7 @@ export default function SchoolCalendarView({ isEditable = false }: SchoolCalenda
 
           <button
             type="submit"
-            className="w-full py-2 bg-deep-teal text-white rounded-xl text-xs font-bold hover:bg-deep-teal/90 transition-all shadow-sm"
+            className="w-full py-2 bg-deep-teal text-white rounded-xl text-xs font-bold hover:bg-deep-teal/90 transition-all shadow-md"
           >
             Save Event
           </button>

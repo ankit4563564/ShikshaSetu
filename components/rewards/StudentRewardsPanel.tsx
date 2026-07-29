@@ -281,7 +281,7 @@ export default function StudentRewardsPanel({ studentId }: StudentRewardsPanelPr
                   </div>
                   <button type="button" onClick={() => handleRedeem(reward.id)} disabled={disabled}
                     className={`mt-3 w-full rounded-lg py-2 text-xs font-bold transition-all active:scale-95 ${
-                      disabled ? 'bg-deep-teal/5 text-deep-teal/30 cursor-not-allowed' : 'bg-deep-teal text-white hover:bg-deep-teal/90'
+                      disabled ? 'bg-deep-teal/5 text-deep-teal/30 cursor-not-allowed' : 'bg-deep-teal text-white hover:bg-deep-teal/90 shadow-md'
                     }`}
                   >
                     {alreadyRedeemed ? 'Already Redeemed' : outOfStock || unavailable ? 'Unavailable' : 'Redeem'}
@@ -331,7 +331,7 @@ export default function StudentRewardsPanel({ studentId }: StudentRewardsPanelPr
                             )}
                             <div className="flex gap-2">
                               <button type="button" onClick={handleBookFacility} disabled={!selectedSlot || !bookingDate}
-                                className="flex-1 rounded-lg bg-sage py-2 text-xs font-bold text-white hover:bg-sage/90 disabled:opacity-40"
+                                className="flex-1 rounded-lg bg-sage py-2 text-xs font-bold text-white hover:bg-sage/90 disabled:opacity-40 shadow-sm"
                               >
                                 Book Now ({reward.cost} 🪙)
                               </button>

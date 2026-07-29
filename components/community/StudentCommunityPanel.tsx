@@ -261,7 +261,7 @@ export default function StudentCommunityPanel({ studentId: sid }: StudentCommuni
 
               <button type="button" onClick={handleAsk}
                 disabled={createPost.isPending || !askForm.categoryId || !askForm.title.trim() || !askForm.body.trim()}
-                className="w-full rounded-xl bg-deep-teal py-3 text-sm font-bold text-white hover:bg-deep-teal/90 disabled:opacity-40 transition-all"
+                className="w-full rounded-xl bg-deep-teal py-3 text-sm font-bold text-white hover:bg-deep-teal/90 disabled:opacity-40 transition-all shadow-md"
               >{createPost.isPending ? 'Posting…' : 'Submit to Community'}</button>
 
               <p className="text-[10px] text-deep-teal/30 leading-relaxed">
@@ -362,7 +362,7 @@ export default function StudentCommunityPanel({ studentId: sid }: StudentCommuni
                     <span className="text-[10px] text-deep-teal/30">{answerBody.length}/5000</span>
                     <button type="button" onClick={handleAnswer}
                       disabled={createAnswer.isPending || !answerBody.trim()}
-                      className="rounded-lg bg-deep-teal px-5 py-2 text-xs font-bold text-white hover:bg-deep-teal/90 disabled:opacity-40"
+                      className="rounded-lg bg-deep-teal px-5 py-2 text-xs font-bold text-white hover:bg-deep-teal/90 disabled:opacity-40 shadow-sm"
                     >{createAnswer.isPending ? 'Posting…' : 'Post Answer'}</button>
                   </div>
                 </div>

@@ -231,7 +231,7 @@ export default function QuestBoard({ student, setActiveAvatar, setActiveTitle, a
                     {quest.status === 'completed' && (
                       <button
                         onClick={() => handleClaimPoints(quest.id, quest.points)}
-                        className="text-[10px] font-bold text-white bg-sage hover:bg-sage/90 px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm transition-all active:scale-95 animate-pulse"
+                        className="text-[10px] font-bold text-white bg-sage hover:bg-sage/90 px-4 py-1.5 rounded-full uppercase tracking-wider shadow-md transition-all active:scale-95 animate-pulse"
                       >
                         Claim XP
                       </button>
