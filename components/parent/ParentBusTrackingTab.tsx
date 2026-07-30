@@ -117,9 +117,56 @@ export function ParentBusTrackingTab({
           </span>
         </div>
 
-        {/* Map placeholder */}
-        <div className="h-[250px] w-full rounded-lg bg-paper border border-deep-teal/5 animate-pulse flex items-center justify-center text-xs text-deep-teal/30">
-          Loading map layer...
+        {/* Simple bus route visualization */}
+        <div className="h-[250px] w-full rounded-lg bg-gradient-to-br from-slate-50 to-slate-100 border border-deep-teal/5 relative overflow-hidden">
+          {/* Route line */}
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 250">
+            {/* Background grid */}
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" strokeWidth="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+            
+            {/* Route path */}
+            <path d="M 50 200 Q 100 150 150 120 T 250 80 T 350 50" 
+                  fill="none" 
+                  stroke="#0F766E" 
+                  strokeWidth="3" 
+                  strokeDasharray="8,4"
+                  strokeLinecap="round"/>
+            
+            {/* Stop markers */}
+            <circle cx="50" cy="200" r="6" fill="#0F766E" />
+            <circle cx="150" cy="120" r="6" fill="#0F766E" />
+            <circle cx="250" cy="80" r="6" fill="#0F766E" />
+            <circle cx="350" cy="50" r="6" fill="#0F766E" />
+            
+            {/* Bus icon on route */}
+            <g transform="translate(200, 95)">
+              <rect x="-12" y="-8" width="24" height="16" rx="3" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5"/>
+              <circle cx="-6" cy="8" r="3" fill="#1F2937"/>
+              <circle cx="6" cy="8" r="3" fill="#1F2937"/>
+              <rect x="-8" y="-4" width="16" height="6" rx="1" fill="#FEF3C7"/>
+            </g>
+            
+            {/* Stop labels */}
+            <text x="50" y="220" fontSize="10" fill="#64748B" textAnchor="middle">Sector 12</text>
+            <text x="150" y="140" fontSize="10" fill="#64748B" textAnchor="middle">Rajouri Garden</text>
+            <text x="250" y="100" fontSize="10" fill="#64748B" textAnchor="middle">Paschim Vihar</text>
+            <text x="350" y="70" fontSize="10" fill="#64748B" textAnchor="middle">School</text>
+          </svg>
+          
+          {/* Legend */}
+          <div className="absolute bottom-2 left-2 bg-white/90 rounded-lg px-3 py-1.5 shadow-xs border border-slate-200">
+            <div className="flex items-center gap-2 text-[10px]">
+              <div className="w-3 h-3 rounded-full bg-[#0F766E]"></div>
+              <span className="text-slate-600 font-medium">Bus Route</span>
+              <div className="w-4 h-3 rounded bg-[#F59E0B] border border-[#B45309]"></div>
+              <span className="text-slate-600 font-medium">Bus #4</span>
+            </div>
+          </div>
         </div>
 
         {/* Map Footer Information */}

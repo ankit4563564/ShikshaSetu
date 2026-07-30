@@ -75,7 +75,7 @@ export function LiveDemoSimulator() {
                   <span className="text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded text-[10px]">✓ PRESENT (Auto-Gate)</span>
                 </div>
               </div>
-              <p className="text-xs text-slate-300">Ms. Ananya Mehra&apos;s roster updated automatically in real-time.</p>
+              <p className="text-xs text-slate-300">Ms. Ananya Mehra&apos;s roster updated automatically.</p>
             </motion.div>
           ) : stepId === 5 || stepId === 7 ? (
             /* Parent Mobile Push Notification Simulator */

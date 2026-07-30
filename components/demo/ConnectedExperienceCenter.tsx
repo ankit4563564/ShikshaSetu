@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar } from '@/components/shared/Avatar';
 import { approveSupportPlanAction, completeTaskAction } from '@/app/actions/interventionActions';
 import { resetDemoDataAction } from '@/app/actions/demoResetActions';
+import { getSchoolMemoryAction } from '@/app/actions/schoolMemoryActions';
 import { getCanonicalStudentState, CANONICAL_STUDENT_ID, CANONICAL_TEACHER_ID, CANONICAL_GUARDIAN_ID } from '@/lib/canonical';
 import { getCanonicalSupportSignal } from '@/lib/support-signals';
 
@@ -15,11 +16,19 @@ export function ConnectedExperienceCenter() {
   const [error, setError] = useState<string | null>(null);
   const [taskId, setTaskId] = useState<string | null>(null);
   const [canonicalData, setCanonicalData] = useState<any>(null);
+  const [schoolMemory, setSchoolMemory] = useState<any>(null);
 
   useEffect(() => {
     // Load canonical data on mount
     loadCanonicalData();
   }, []);
+
+  useEffect(() => {
+    // Load school memory when step changes to completed
+    if (step === 'completed') {
+      loadSchoolMemory();
+    }
+  }, [step]);
 
   const loadCanonicalData = async () => {
     try {
@@ -32,6 +41,17 @@ export function ConnectedExperienceCenter() {
         homeworkSummary: { consecutiveMissed: 3 },
         attendanceSummary: { rate: 0.89 },
       });
+    }
+  };
+
+  const loadSchoolMemory = async () => {
+    try {
+      const memory = await getSchoolMemoryAction();
+      setSchoolMemory(memory);
+    } catch (err) {
+      console.error('Failed to load school memory:', err);
+      // Fallback to empty state
+      setSchoolMemory(null);
     }
   };
 
@@ -92,21 +112,14 @@ export function ConnectedExperienceCenter() {
           })),
         });
       } catch (dbError) {
-        console.error('Database unavailable, simulating approval:', dbError);
-        // Fallback: simulate successful approval for demo
-        result = {
-          success: true,
-          taskId: 'demo-task-fallback-' + Date.now(),
-        };
+        console.error('Database unavailable:', dbError);
+        throw new Error('Database unavailable. Please check your connection and try again.');
       }
 
       // Handle case where result is undefined or empty object (server action failure)
       if (!result || Object.keys(result).length === 0) {
-        console.error('Server action returned empty result, using fallback');
-        result = {
-          success: true,
-          taskId: 'demo-task-fallback-' + Date.now(),
-        };
+        console.error('Server action returned empty result');
+        throw new Error('Server error. Please try again.');
       }
 
       if (!result.success) {
@@ -141,9 +154,8 @@ export function ConnectedExperienceCenter() {
           studentId: CANONICAL_STUDENT_ID,
         });
       } catch (dbError) {
-        console.error('Database unavailable, simulating completion:', dbError);
-        // Fallback: simulate successful completion for demo
-        result = { success: true };
+        console.error('Database unavailable:', dbError);
+        throw new Error('Database unavailable. Please check your connection and try again.');
       }
 
       if (!result.success) {
@@ -161,6 +173,9 @@ export function ConnectedExperienceCenter() {
   };
 
   const handleReset = async () => {
+    // Prevent reset during active operations
+    if (loading) return;
+    
     setLoading(true);
     setError(null);
     
@@ -198,11 +213,11 @@ export function ConnectedExperienceCenter() {
         <div className="flex items-start justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
-              {step === 'completed' ? 'Aarav is back on track' : 'Helping Aarav get back on track'}
+              {step === 'completed' ? 'Aarav is back on track' : 'Aarav needs support'}
             </h1>
             {step === 'completed' && (
               <p className="text-base text-slate-300 max-w-lg">
-                Support reached Aarav early — before a small gap became a bigger one.
+                Early support prevented a small gap from becoming a bigger one.
               </p>
             )}
             <div className="flex items-center gap-3 text-slate-400">
@@ -318,26 +333,26 @@ export function ConnectedExperienceCenter() {
                 <Avatar src={null} alt="Teacher" size="md" fallback="👩‍🏫" />
               </div>
               <div className="flex-1">
-                <p className="text-sm text-slate-400 mb-1">Mrs. Ananya Mehra sees this pattern</p>
-                <p className="text-base text-white font-medium">"Aarav may need a little support."</p>
+                <p className="text-sm text-slate-400 mb-1">Mrs. Ananya Mehra</p>
+                <p className="text-base text-white font-medium">"Aarav needs support."</p>
               </div>
             </div>
 
             {/* Proposed Support */}
             <div className="space-y-2">
-              <p className="text-xs text-slate-500 font-semibold">Ready to coordinate</p>
+              <p className="text-xs text-slate-500 font-semibold">Support plan</p>
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-sm text-slate-300">
                   <span className="w-5 h-5 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-xs">1</span>
-                  <span>Inform parent Sunita Sharma</span>
+                  <span>Inform parent</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-300">
                   <span className="w-5 h-5 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-xs">2</span>
-                  <span>Assign 15-min Algebra practice</span>
+                  <span>Assign practice</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-300">
                   <span className="w-5 h-5 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-xs">3</span>
-                  <span>Schedule tomorrow check-in</span>
+                  <span>Schedule check-in</span>
                 </div>
               </div>
             </div>
@@ -491,45 +506,87 @@ export function ConnectedExperienceCenter() {
             </div>
 
             <div className="space-y-3">
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-                className="flex items-center gap-3"
-              >
-                <span className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm">✓</span>
-                <p className="text-sm text-white">Short Algebra recovery practice</p>
-              </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className="flex items-center gap-3"
-              >
-                <span className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm">✓</span>
-                <p className="text-sm text-white">Parent informed early</p>
-              </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex items-center gap-3"
-              >
-                <span className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm">✓</span>
-                <p className="text-sm text-white">Teacher follow-up</p>
-              </motion.div>
+              {schoolMemory?.recentOutcomes && schoolMemory.recentOutcomes.length > 0 ? (
+                schoolMemory.recentOutcomes.slice(0, 3).map((outcome: any, index: number) => (
+                  <motion.div
+                    key={outcome.taskTitle || index}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 + (index * 0.1) }}
+                    className="flex items-center gap-3"
+                  >
+                    <span className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm">✓</span>
+                    <p className="text-sm text-white">{outcome.taskTitle}</p>
+                  </motion.div>
+                ))
+              ) : (
+                // Fallback to hardcoded values if no data yet
+                <>
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="flex items-center gap-3"
+                  >
+                    <span className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm">✓</span>
+                    <p className="text-sm text-white">Short Algebra recovery practice</p>
+                  </motion.div>
+                  
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="flex items-center gap-3"
+                  >
+                    <span className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm">✓</span>
+                    <p className="text-sm text-white">Parent informed early</p>
+                  </motion.div>
+                  
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="flex items-center gap-3"
+                  >
+                    <span className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm">✓</span>
+                    <p className="text-sm text-white">Teacher follow-up</p>
+                  </motion.div>
+                </>
+              )}
             </div>
 
             <div className="pt-4 border-t border-purple-500/20">
-              <p className="text-xs text-purple-400 font-semibold mb-2">Saved for future support</p>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                Next time Aarav shows a similar pattern, his school doesn't start from zero.
-              </p>
+              <p className="text-xs text-purple-400 font-semibold mb-2">School Memory</p>
+              {schoolMemory ? (
+                <div className="space-y-2">
+                  {schoolMemory.interventions.length > 0 ? (
+                    <p className="text-sm text-slate-300 leading-relaxed">
+                      {schoolMemory.interventions.length} intervention(s) recorded
+                    </p>
+                  ) : (
+                    <p className="text-sm text-slate-400 leading-relaxed">
+                      No interventions recorded yet
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-400 leading-relaxed">
+                  Loading School Memory...
+                </p>
+              )}
             </div>
           </motion.div>
         )}
+
+        {/* What Happens After Approval */}
+        <div className="p-3.5 rounded-2xl bg-slate-900/40 space-y-1 text-xs">
+          <span className="text-[10px] font-mono font-bold text-teal-300 uppercase tracking-wider block">
+            After approval
+          </span>
+          <p className="text-slate-300 font-medium leading-relaxed">
+            Parent informed, practice assigned, check-in scheduled.
+          </p>
+        </div>
 
         {/* Timeline */}
         <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-4">
