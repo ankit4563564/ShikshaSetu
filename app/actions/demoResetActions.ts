@@ -4,8 +4,8 @@ import { createClient } from '@/lib/supabase/client';
 import { revalidatePath } from 'next/cache';
 
 // Canonical student ID for Aarav Sharma
-const CANONICAL_STUDENT_ID = 's0000000-0000-4000-8000-000000000001';
-const CANONICAL_TEACHER_ID = 't0000000-0000-4000-8000-000000000001';
+const CANONICAL_STUDENT_ID = '00000000-0000-4000-8000-000000000001';
+const CANONICAL_TEACHER_ID = '00000000-0000-4000-8000-000000000002';
 
 export interface DemoResetResult {
   success: boolean;

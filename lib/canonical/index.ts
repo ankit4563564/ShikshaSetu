@@ -4,18 +4,18 @@
  * This module provides the authoritative source for Aarav Sharma's demo data.
  * All portals should use these functions to access canonical student state.
  * 
- * Canonical Student ID: s0000000-0000-4000-8000-000000000001
- * Canonical Teacher ID: t0000000-0000-4000-8000-000000000001
- * Canonical Guardian ID: g0000000-0000-4000-8000-000000000001
+ * Canonical Student ID: 00000000-0000-4000-8000-000000000001
+ * Canonical Teacher ID: 00000000-0000-4000-8000-000000000002
+ * Canonical Guardian ID: 00000000-0000-4000-8000-000000000003
  */
 
 import { createClient } from '@/lib/supabase/client';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 
 // Canonical IDs
-export const CANONICAL_STUDENT_ID = 's0000000-0000-4000-8000-000000000001';
-export const CANONICAL_TEACHER_ID = 't0000000-0000-4000-8000-000000000001';
-export const CANONICAL_GUARDIAN_ID = 'g0000000-0000-4000-8000-000000000001';
+export const CANONICAL_STUDENT_ID = '00000000-0000-4000-8000-000000000001';
+export const CANONICAL_TEACHER_ID = '00000000-0000-4000-8000-000000000002';
+export const CANONICAL_GUARDIAN_ID = '00000000-0000-4000-8000-000000000003';
 
 // ============================================================================
 // Canonical Student Profile
