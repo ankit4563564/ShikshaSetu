@@ -157,9 +157,6 @@ export function ConnectedExperienceCenter() {
         throw new Error(result.error || 'Failed to complete task');
       }
       
-      // Reload copilot items to sync with database
-      await loadCopilotItems();
-      
       // Refresh live events
       const events = await getStudentEcosystemEvents(CANONICAL_STUDENT_ID, 10);
       const simplified: LiveEvent[] = events.map(evt => ({
