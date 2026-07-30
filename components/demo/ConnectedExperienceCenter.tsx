@@ -75,14 +75,12 @@ export function ConnectedExperienceCenter() {
     loadEvents();
   }, [isApproved, isCompleted]);
 
-  useEffect(() => {
-    return subscribeCopilotState((s) => setState(s));
-  }, []);
-
   // Load copilot items on mount
   useEffect(() => {
     loadCopilotItems().then(() => {
-      console.log('Copilot items loaded:', state.items);
+      const initialState = getCopilotState();
+      setState(initialState);
+      console.log('Copilot items loaded:', initialState.items);
     });
   }, []);
 
@@ -122,6 +120,12 @@ export function ConnectedExperienceCenter() {
       if (result.taskId) {
         setTaskId(result.taskId);
       }
+      
+      // Update local state manually
+      const updatedItems = state.items.map((item) => 
+        item.id === aaravAction.id ? { ...item, status: 'approved' as const } : item
+      );
+      setState({ ...state, items: updatedItems });
       
       // Refresh live events
       const events = await getStudentEcosystemEvents(CANONICAL_STUDENT_ID, 10);
@@ -165,8 +169,11 @@ export function ConnectedExperienceCenter() {
         throw new Error(result.error || 'Failed to complete task');
       }
       
-      // Update global copilot state to mark as completed
-      await completeCopilotAction(aaravAction.id);
+      // Update local state manually
+      const updatedItems = state.items.map((item) => 
+        item.id === aaravAction.id ? { ...item, status: 'completed' as const } : item
+      );
+      setState({ ...state, items: updatedItems });
       
       // Refresh live events
       const events = await getStudentEcosystemEvents(CANONICAL_STUDENT_ID, 10);
