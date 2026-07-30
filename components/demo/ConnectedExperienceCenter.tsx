@@ -14,6 +14,7 @@ import {
 import { CANONICAL_TEACHER_ID, CANONICAL_STUDENT_ID } from '@/lib/canonical';
 import { getStudentEcosystemEvents } from '@/app/actions/ecosystemActions';
 import { completeTaskAction } from '@/app/actions/interventionActions';
+import { resetDemoDataAction } from '@/app/actions/demoResetActions';
 
 // ─── Simplified Event Interface ──────────────────────────────────────
 
@@ -48,7 +49,7 @@ export function ConnectedExperienceCenter() {
   // Lifecycle stages
   const lifecycle: LifecycleStage[] = useMemo(() => [
     { id: 'signal', label: 'Signal Detected', status: 'completed' },
-    { id: 'teacher', label: 'Teacher Approved', status: isApproved ? 'completed' : isApproving ? 'active' : 'active' },
+    { id: 'teacher', label: isApproved ? 'Teacher Approved' : 'Awaiting Teacher', status: isApproved ? 'completed' : isApproving ? 'active' : 'active' },
     { id: 'parent', label: 'Parent Informed', status: isApproved ? 'completed' : 'pending' },
     { id: 'student', label: 'Practice Assigned', status: isApproved ? 'active' : 'pending' },
     { id: 'outcome', label: 'Outcome Tracked', status: isCompleted ? 'completed' : 'pending' },
@@ -172,13 +173,31 @@ export function ConnectedExperienceCenter() {
     }
   };
 
-  const handleReset = () => {
-    resetCopilotState();
-    setLiveEvents([]);
-    setTaskId(null);
+  const handleReset = async () => {
+    setIsApproving(true); // Use loading state
     setError(null);
-    // Reload copilot items to reset to initial state
-    loadCopilotItems();
+    
+    try {
+      const result = await resetDemoDataAction();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to reset demo');
+      }
+      
+      // Reset local state
+      resetCopilotState();
+      setLiveEvents([]);
+      setTaskId(null);
+      
+      // Reload copilot items to reset to initial state
+      await loadCopilotItems();
+      
+    } catch (err) {
+      console.error('Reset failed:', err);
+      setError('Failed to reset demo. Please try again.');
+    } finally {
+      setIsApproving(false);
+    }
   };
 
   return (
