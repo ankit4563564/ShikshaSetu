@@ -6,6 +6,7 @@ import {
   getCopilotState,
   subscribeCopilotState,
   approveCopilotAction,
+  completeCopilotAction,
   undoCopilotAction,
   resetCopilotState,
   loadCopilotItems,
@@ -147,23 +148,25 @@ export function ConnectedExperienceCenter() {
       return;
     }
     
+    if (!aaravAction) {
+      console.error('No action item found');
+      setError('No action found to complete');
+      return;
+    }
+    
     setIsCompleting(true);
     setError(null);
     
     try {
+      // Call server action to complete task
       const result = await completeTaskAction({ taskId, studentId: CANONICAL_STUDENT_ID });
       
       if (!result.success) {
         throw new Error(result.error || 'Failed to complete task');
       }
       
-      // Update local state to mark as completed
-      if (aaravAction) {
-        const updatedItems = state.items.map((item) => 
-          item.id === aaravAction.id ? { ...item, status: 'completed' as const } : item
-        );
-        setState({ ...state, items: updatedItems });
-      }
+      // Update global copilot state to mark as completed
+      await completeCopilotAction(aaravAction.id);
       
       // Refresh live events
       const events = await getStudentEcosystemEvents(CANONICAL_STUDENT_ID, 10);

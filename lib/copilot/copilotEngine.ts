@@ -324,3 +324,44 @@ export function resetCopilotState() {
   notifyListeners();
 }
 
+export async function completeCopilotAction(id: string): Promise<{ success: boolean; error?: string }> {
+  console.log('[Copilot Engine] completeCopilotAction called with:', { id });
+  
+  const item = globalState.items.find(i => i.id === id);
+  
+  if (!item) {
+    console.error('[Copilot Engine] Item not found:', id);
+    return { success: false, error: 'Item not found' };
+  }
+
+  console.log('[Copilot Engine] Found item:', item);
+
+  // Update local state to mark as completed
+  const updatedItems = globalState.items.map((i) => {
+    if (i.id === id) {
+      return { ...i, status: 'completed' as const };
+    }
+    return i;
+  });
+
+  const needsReviewCount = updatedItems.filter((i) => i.status === 'needs_review').length;
+  const approvedCount = updatedItems.filter((i) => i.status === 'approved').length;
+  const completedCount = updatedItems.filter((i) => i.status === 'completed').length;
+
+  globalState = {
+    ...globalState,
+    items: updatedItems,
+    reviewQueue: {
+      ...globalState.reviewQueue,
+      needsReview: needsReviewCount,
+      approved: approvedCount,
+      edited: completedCount, // Use edited count for completed for now
+    },
+    lastActionTimestamp: Date.now(),
+  };
+
+  notifyListeners();
+  
+  return { success: true };
+}
+
