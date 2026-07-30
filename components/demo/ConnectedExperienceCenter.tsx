@@ -31,7 +31,18 @@ export function ConnectedExperienceCenter() {
   const [showMemory, setShowMemory] = useState(false);
   const [taskId, setTaskId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [currentStatus, setCurrentStatus] = useState<'needs_review' | 'approved' | 'completed'>('needs_review');
+  const [currentStatus, setCurrentStatus] = useState<'needs_review' | 'approved' | 'completed'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('demoStatus');
+      return (saved as any) || 'needs_review';
+    }
+    return 'needs_review';
+  });
+
+  // Save status to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('demoStatus', currentStatus);
+  }, [currentStatus]);
 
   const isApproved = currentStatus === 'approved';
   const isCompleted = currentStatus === 'completed';
@@ -143,6 +154,9 @@ export function ConnectedExperienceCenter() {
       setCurrentStatus('needs_review');
       setLiveEvents([]);
       setTaskId(null);
+      
+      // Clear localStorage
+      localStorage.removeItem('demoStatus');
       
     } catch (err) {
       console.error('Reset failed:', err);
