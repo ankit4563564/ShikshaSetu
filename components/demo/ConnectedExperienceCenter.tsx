@@ -382,59 +382,148 @@ export function ConnectedExperienceCenter() {
           </div>
         </div>
 
-        {/* Teacher Decision Panel */}
+        {/* Teacher Decision Panel - Act 1: Notice */}
         {step === 'initial' && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 space-y-4"
+            className="bg-slate-900/50 border-2 border-amber-500/30 rounded-2xl p-6 space-y-6"
           >
-            <div className="space-y-2">
-              <h2 className="text-xl font-semibold text-white">Mrs. Ananya Mehra</h2>
-              <p className="text-base text-slate-300">"Aarav may need a little support."</p>
+            {/* Pattern Detection Header */}
+            <div className="text-center space-y-2">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/20 rounded-full"
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-sm font-semibold text-amber-300">PATTERN DETECTED</span>
+              </motion.div>
+              <h2 className="text-2xl font-bold text-white">Aarav needs support</h2>
+              <p className="text-base text-slate-300">3 consecutive signals suggest Aarav may need help</p>
             </div>
             
-            {/* Evidence Cards */}
+            {/* Evidence Cards with Animation */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-                <p className="text-sm text-slate-500 mb-2">HOMEWORK</p>
-                <p className="text-2xl font-semibold text-amber-400">
-                  {canonicalData?.homeworkSummary?.consecutiveMissed || 3} missed
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 text-center"
+              >
+                <p className="text-xs text-amber-400 mb-2 font-semibold">HOMEWORK</p>
+                <div className="flex justify-center gap-1 mb-2">
+                  {[1, 2, 3].map((i) => (
+                    <motion.span
+                      key={i}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.2 + (i * 0.1) }}
+                      className="w-3 h-3 rounded-full bg-amber-400"
+                    />
+                  ))}
+                </div>
+                <p className="text-2xl font-bold text-amber-300">
+                  {canonicalData?.homeworkSummary?.consecutiveMissed || 3}
                 </p>
+                <p className="text-xs text-amber-400 mt-1">missed</p>
+              </motion.div>
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 text-center"
+              >
+                <p className="text-xs text-amber-400 mb-2 font-semibold">ATTENDANCE</p>
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="text-sm text-slate-400">96%</span>
+                  <span className="text-amber-400">→</span>
+                  <span className="text-sm font-bold text-amber-300">
+                    {canonicalData?.attendanceSummary 
+                      ? `${Math.round(canonicalData.attendanceSummary.rate * 100)}%` 
+                      : '89%'}
+                  </span>
+                </div>
+                <p className="text-xs text-amber-400">declining</p>
+              </motion.div>
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 text-center"
+              >
+                <p className="text-xs text-amber-400 mb-2 font-semibold">CLASSROOM</p>
+                <div className="flex justify-center mb-2">
+                  <motion.span
+                    initial={{ rotate: 0 }}
+                    animate={{ rotate: -15 }}
+                    className="text-2xl"
+                  >
+                    📉
+                  </motion.span>
+                </div>
+                <p className="text-xs text-amber-400">lower activity</p>
+              </motion.div>
+            </div>
+
+            {/* Teacher's Decision */}
+            <div className="bg-slate-800/50 rounded-xl p-5 space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl">👩‍🏫</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-slate-400 mb-1">Mrs. Ananya Mehra sees this pattern</p>
+                  <p className="text-lg text-white font-medium">"Aarav may need a little support."</p>
+                </div>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-                <p className="text-sm text-slate-500 mb-2">ATTENDANCE</p>
-                <p className="text-2xl font-semibold text-amber-400">
-                  {canonicalData?.attendanceSummary 
-                    ? `${Math.round(canonicalData.attendanceSummary.rate * 100)}%` 
-                    : '96%'}
-                </p>
-              </div>
-              <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-                <p className="text-sm text-slate-500 mb-2">CLASSROOM</p>
-                <p className="text-2xl font-semibold text-amber-400">↓ activity</p>
+
+              {/* Prepared Support Actions */}
+              <div className="pt-3 border-t border-slate-700">
+                <p className="text-xs text-slate-500 mb-3 font-semibold">READY TO COORDINATE SUPPORT</p>
+                <div className="space-y-2">
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="flex items-center gap-3 text-sm text-slate-300"
+                  >
+                    <span className="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-xs">1</span>
+                    <span>Inform parent Sunita Sharma</span>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="flex items-center gap-3 text-sm text-slate-300"
+                  >
+                    <span className="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-xs">2</span>
+                    <span>Assign 15-min Algebra practice</span>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="flex items-center gap-3 text-sm text-slate-300"
+                  >
+                    <span className="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-xs">3</span>
+                    <span>Schedule tomorrow check-in</span>
+                  </motion.div>
+                </div>
               </div>
             </div>
 
-            {/* Prepared Support */}
-            <div className="pt-2">
-              <p className="text-sm text-slate-500 mb-3">READY TO HELP</p>
-              <div className="flex gap-2 flex-wrap">
-                <span className="px-4 py-2 bg-slate-800 rounded-full text-sm text-slate-300">Parent update</span>
-                <span className="px-4 py-2 bg-slate-800 rounded-full text-sm text-slate-300">15-min Algebra practice</span>
-                <span className="px-4 py-2 bg-slate-800 rounded-full text-sm text-slate-300">Tomorrow check-in</span>
-              </div>
-            </div>
-
-            {/* Button Preview */}
-            <div className="bg-slate-800/30 rounded-lg p-3">
-              <p className="text-xs text-slate-500 mb-2">ONE APPROVAL WILL:</p>
-              <div className="flex items-center gap-2 text-sm text-slate-300">
-                <span>Parent informed</span>
+            {/* Impact Preview */}
+            <div className="bg-gradient-to-r from-teal-500/10 to-emerald-500/10 border border-teal-500/30 rounded-lg p-4">
+              <p className="text-xs text-teal-400 mb-2 font-semibold">ONE DECISION WILL:</p>
+              <div className="flex items-center justify-center gap-2 text-sm text-slate-300">
+                <span className="text-teal-300">Parent</span>
                 <span className="text-slate-600">→</span>
-                <span>Practice assigned</span>
+                <span className="text-teal-300">Practice</span>
                 <span className="text-slate-600">→</span>
-                <span>School updated</span>
+                <span className="text-teal-300">School Memory</span>
               </div>
             </div>
 
@@ -445,9 +534,9 @@ export function ConnectedExperienceCenter() {
                 whileTap={{ scale: 0.98 }}
                 onClick={handleApprove}
                 disabled={loading}
-                className="flex-1 px-6 py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-xl font-semibold text-lg transition-colors disabled:opacity-50"
+                className="flex-1 px-6 py-4 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-xl font-semibold text-lg transition-colors disabled:opacity-50 shadow-lg shadow-teal-500/20"
               >
-                {loading ? 'Approving...' : 'Approve Support'}
+                {loading ? 'Coordinating...' : 'Coordinate Support'}
               </motion.button>
               <button
                 onClick={() => setShowExplanation(true)}
@@ -459,66 +548,212 @@ export function ConnectedExperienceCenter() {
           </motion.div>
         )}
 
-        {/* Student Practice Panel */}
+        {/* Student Practice Panel - Act 2: Support */}
         {step === 'approved' && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 space-y-4"
+            className="bg-slate-900/50 border-2 border-teal-500/30 rounded-2xl p-6 space-y-6"
           >
-            <div className="text-center py-4">
-              <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-4xl">📘</span>
-              </div>
-              <h2 className="text-2xl font-semibold text-white">Algebra Recovery Practice</h2>
-              <p className="text-base text-slate-400">15 min</p>
-              <p className="text-base text-slate-300 mt-3 max-w-md mx-auto">
-                A short practice to help Aarav catch up.
-              </p>
+            {/* Ripple Effect Header */}
+            <div className="text-center space-y-2">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-teal-500/20 rounded-full"
+              >
+                <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+                <span className="text-sm font-semibold text-teal-300">SUPPORT COORDINATED</span>
+              </motion.div>
+              <h2 className="text-2xl font-bold text-white">One decision, three actions</h2>
+              <p className="text-base text-slate-300">Mrs. Ananya Mehra's approval triggered support across school and home</p>
             </div>
 
+            {/* Ripple Effect Visualization */}
+            <div className="relative py-8">
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full border-2 border-teal-500/20" />
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border-2 border-teal-500/10" />
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full border-2 border-teal-500/5" />
+              
+              <div className="flex justify-center items-center gap-8 relative z-10">
+                {/* Parent */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-center"
+                >
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center mx-auto mb-2">
+                    <span className="text-2xl">�</span>
+                  </div>
+                  <p className="text-sm font-semibold text-emerald-300">Parent Informed</p>
+                  <p className="text-xs text-slate-500">Sunita Sharma</p>
+                </motion.div>
+
+                {/* Practice */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-center"
+                >
+                  <div className="w-20 h-20 rounded-full bg-teal-500/20 border-2 border-teal-500 flex items-center justify-center mx-auto mb-2">
+                    <span className="text-3xl">📘</span>
+                  </div>
+                  <p className="text-sm font-semibold text-teal-300">Practice Assigned</p>
+                  <p className="text-xs text-slate-500">15 min Algebra</p>
+                </motion.div>
+
+                {/* School */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6 }}
+                  className="text-center"
+                >
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center mx-auto mb-2">
+                    <span className="text-2xl">🏫</span>
+                  </div>
+                  <p className="text-sm font-semibold text-emerald-300">School Updated</p>
+                  <p className="text-xs text-slate-500">Memory recorded</p>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Student Practice Card */}
+            <div className="bg-slate-800/50 rounded-xl p-5 space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center">
+                  <span className="text-2xl font-bold text-white">AS</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-slate-400 mb-1">Aarav's task</p>
+                  <p className="text-lg text-white font-medium">Algebra Recovery Practice</p>
+                  <p className="text-sm text-slate-500">15 minutes • Self-paced</p>
+                </div>
+              </div>
+
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                <p className="text-xs text-amber-400 mb-1">WHY THIS HELPS</p>
+                <p className="text-sm text-slate-300">Short practice helps Aarav catch up on missed concepts without overwhelming him</p>
+              </div>
+            </div>
+
+            {/* Complete Action */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleComplete}
               disabled={loading}
-              className="w-full px-6 py-4 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-semibold text-lg transition-colors disabled:opacity-50"
+              className="w-full px-6 py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white rounded-xl font-semibold text-lg transition-colors disabled:opacity-50 shadow-lg shadow-amber-500/20"
             >
               {loading ? 'Completing...' : 'Mark Practice Complete'}
             </motion.button>
           </motion.div>
         )}
 
-        {/* Completion Panel */}
+        {/* Completion Panel - Act 3: Remember */}
         {step === 'completed' && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-900/50 border border-emerald-500/30 rounded-2xl p-6 space-y-6"
+            className="bg-slate-900/50 border-2 border-emerald-500/30 rounded-2xl p-6 space-y-6"
           >
-            <div className="text-center">
-              <div className="w-24 h-24 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+            {/* Success Header */}
+            <div className="text-center space-y-3">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30"
+              >
                 <span className="text-5xl">✓</span>
-              </div>
-              <h2 className="text-3xl font-bold text-emerald-300 mb-2">Support Loop Complete</h2>
+              </motion.div>
+              <h2 className="text-3xl font-bold text-emerald-300">Support Loop Complete</h2>
               <p className="text-xl text-white">Aarav is back on track.</p>
-              <p className="text-base text-slate-400 mt-3 max-w-md mx-auto">
-                One teacher decision coordinated Aarav's support across school and home.
+              <p className="text-base text-slate-400 max-w-md mx-auto">
+                One teacher decision coordinated support across school and home.
               </p>
             </div>
 
-            {/* School Memory */}
-            <div className="bg-slate-800/50 rounded-xl p-5">
-              <p className="text-sm font-semibold text-slate-400 mb-3">SCHOOL MEMORY</p>
-              <p className="text-base text-slate-300 mb-3">What helped Aarav</p>
-              <div className="space-y-2">
-                <p className="text-base text-emerald-400">✓ Short Algebra practice</p>
-                <p className="text-base text-emerald-400">✓ Parent update</p>
-                <p className="text-base text-emerald-400">✓ Teacher follow-up</p>
+            {/* School Memory - The Core Value */}
+            <div className="bg-gradient-to-br from-emerald-500/10 to-green-500/10 border-2 border-emerald-500/30 rounded-xl p-6 space-y-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                  <span className="text-xl">🧠</span>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-emerald-300">SCHOOL MEMORY</p>
+                  <p className="text-xs text-slate-500">ShikshaSetu remembers what works</p>
+                </div>
               </div>
-              <p className="text-sm text-slate-500 mt-4">
-                Saved for future support
-              </p>
+
+              <div className="space-y-3">
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex items-center gap-3 bg-slate-800/50 rounded-lg p-3"
+                >
+                  <span className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm">✓</span>
+                  <div>
+                    <p className="text-sm text-white font-medium">Short Algebra practice</p>
+                    <p className="text-xs text-slate-500">15 minutes • Effective for Aarav</p>
+                  </div>
+                </motion.div>
+                
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex items-center gap-3 bg-slate-800/50 rounded-lg p-3"
+                >
+                  <span className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm">✓</span>
+                  <div>
+                    <p className="text-sm text-white font-medium">Parent communication</p>
+                    <p className="text-xs text-slate-500">Sunita Sharma • Home support</p>
+                  </div>
+                </motion.div>
+                
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex items-center gap-3 bg-slate-800/50 rounded-lg p-3"
+                >
+                  <span className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm">✓</span>
+                  <div>
+                    <p className="text-sm text-white font-medium">Teacher follow-up</p>
+                    <p className="text-xs text-slate-500">Mrs. Ananya Mehra • Check-in scheduled</p>
+                  </div>
+                </motion.div>
+              </div>
+
+              <div className="pt-3 border-t border-emerald-500/20">
+                <p className="text-xs text-emerald-400 font-semibold mb-2">FUTURE VALUE</p>
+                <p className="text-sm text-slate-300">
+                  This pattern is now saved. Next time Aarav shows similar signals, ShikshaSetu will suggest this same support approach.
+                </p>
+              </div>
+            </div>
+
+            {/* Impact Summary */}
+            <div className="bg-slate-800/50 rounded-xl p-5">
+              <p className="text-sm font-semibold text-slate-400 mb-3">IMPACT SUMMARY</p>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-2xl font-bold text-emerald-300">1</p>
+                  <p className="text-xs text-slate-500">Teacher decision</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-emerald-300">3</p>
+                  <p className="text-xs text-slate-500">Coordinated actions</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-emerald-300">∞</p>
+                  <p className="text-xs text-slate-500">Future reuse</p>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
