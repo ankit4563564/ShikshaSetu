@@ -167,7 +167,11 @@ export async function getLongitudinalPerformance(studentId: string, days: number
     const recentGrades = avgRecent(recentData.map(d => d.averageGrade));
     const olderGrades = olderData.length > 0 ? avgRecent(olderData.map(d => d.averageGrade)) : recentGrades;
 
-    const trends = {
+    const trends: {
+      attendance: 'stable' | 'improving' | 'declining';
+      homework: 'stable' | 'improving' | 'declining';
+      grades: 'stable' | 'improving' | 'declining';
+    } = {
       attendance: recentAttendance > olderAttendance + 5 ? 'improving' : recentAttendance < olderAttendance - 5 ? 'declining' : 'stable',
       homework: recentHomework > olderHomework + 5 ? 'improving' : recentHomework < olderHomework - 5 ? 'declining' : 'stable',
       grades: recentGrades > olderGrades + 5 ? 'improving' : recentGrades < olderGrades - 5 ? 'declining' : 'stable',

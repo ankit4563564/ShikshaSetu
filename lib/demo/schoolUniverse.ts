@@ -19,14 +19,14 @@ export const SCHOOL = {
 
 // ─── STUDENTS ──────────────────────────────────────────────────────────────
 export const STUDENTS = [
-  { id: 's001', name: 'Aarav Sharma',    grade: '8A', rollNo: 'DPS14/8A/01', coins: 340, streak: 14, avatar: '/aarav.png',  busStop: 'Sector 12 Market',   house: 'Ashoka' },
-  { id: 's002', name: 'Priya Mehta',     grade: '8A', rollNo: 'DPS14/8A/02', coins: 210, streak: 7,  avatar: '/priya.png',  busStop: 'Rajouri Garden',     house: 'Chanakya' },
-  { id: 's003', name: 'Rohan Verma',     grade: '8B', rollNo: 'DPS14/8B/03', coins: 155, streak: 3,  avatar: '/rohan.png',  busStop: 'Paschim Vihar',     house: 'Tagore' },
-  { id: 's004', name: 'Ananya Singh',    grade: '9A', rollNo: 'DPS14/9A/04', coins: 420, streak: 21, avatar: '/ananya.png', busStop: 'Sector 12 Market',   house: 'Ashoka' },
-  { id: 's005', name: 'Kabir Malhotra',  grade: '9B', rollNo: 'DPS14/9B/05', coins: 90,  streak: 2,  avatar: '/kabir.png',  busStop: 'Pitampura Station',  house: 'Chanakya' },
-  { id: 's006', name: 'Ishaan Gupta',    grade: '7C', rollNo: 'DPS14/7C/06', coins: 275, streak: 10, avatar: null,          busStop: 'Paschim Vihar',     house: 'Tagore' },
-  { id: 's007', name: 'Meera Joshi',     grade: '7C', rollNo: 'DPS14/7C/07', coins: 190, streak: 8,  avatar: null,          busStop: 'Sector 12 Market',   house: 'Bose' },
-  { id: 's008', name: 'Arjun Kapoor',    grade: '10A', rollNo: 'DPS14/10A/08', coins: 510, streak: 28, avatar: null,         busStop: 'Rajouri Garden',     house: 'Bose' },
+  { id: 's001', name: 'Aarav Sharma',    grade: '8A', rollNo: 'DPS14/8A/01', coins: 340, streak: 14, avatar: '/aarav.png',  busStop: 'Sector 12 Market',   house: 'Ashoka', overallTerm3Average: 87, attendancePct: 96, homeworkCompletionPct: 78, growthTrendPct: 12, behaviourStatus: 'Excellent' },
+  { id: 's002', name: 'Priya Mehta',     grade: '8A', rollNo: 'DPS14/8A/02', coins: 210, streak: 7,  avatar: '/priya.png',  busStop: 'Rajouri Garden',     house: 'Chanakya', overallTerm3Average: 92, attendancePct: 98, homeworkCompletionPct: 85, growthTrendPct: 8, behaviourStatus: 'Good' },
+  { id: 's003', name: 'Rohan Verma',     grade: '8B', rollNo: 'DPS14/8B/03', coins: 155, streak: 3,  avatar: '/rohan.png',  busStop: 'Paschim Vihar',     house: 'Tagore', overallTerm3Average: 74, attendancePct: 89, homeworkCompletionPct: 65, growthTrendPct: -3, behaviourStatus: 'Needs Improvement' },
+  { id: 's004', name: 'Ananya Singh',    grade: '9A', rollNo: 'DPS14/9A/04', coins: 420, streak: 21, avatar: '/ananya.png', busStop: 'Sector 12 Market',   house: 'Ashoka', overallTerm3Average: 95, attendancePct: 99, homeworkCompletionPct: 92, growthTrendPct: 15, behaviourStatus: 'Excellent' },
+  { id: 's005', name: 'Kabir Malhotra',  grade: '9B', rollNo: 'DPS14/9B/05', coins: 90,  streak: 2,  avatar: '/kabir.png',  busStop: 'Pitampura Station',  house: 'Chanakya', overallTerm3Average: 68, attendancePct: 82, homeworkCompletionPct: 55, growthTrendPct: -8, behaviourStatus: 'Needs Attention' },
+  { id: 's006', name: 'Ishaan Gupta',    grade: '7C', rollNo: 'DPS14/7C/06', coins: 275, streak: 10, avatar: null,          busStop: 'Paschim Vihar',     house: 'Tagore', overallTerm3Average: 81, attendancePct: 94, homeworkCompletionPct: 73, growthTrendPct: 5, behaviourStatus: 'Good' },
+  { id: 's007', name: 'Meera Joshi',     grade: '7C', rollNo: 'DPS14/7C/07', coins: 190, streak: 8,  avatar: null,          busStop: 'Sector 12 Market',   house: 'Bose', overallTerm3Average: 79, attendancePct: 91, homeworkCompletionPct: 70, growthTrendPct: 2, behaviourStatus: 'Good' },
+  { id: 's008', name: 'Arjun Kapoor',    grade: '10A', rollNo: 'DPS14/10A/08', coins: 510, streak: 28, avatar: null,         busStop: 'Rajouri Garden',     house: 'Bose', overallTerm3Average: 88, attendancePct: 97, homeworkCompletionPct: 88, growthTrendPct: 10, behaviourStatus: 'Excellent' },
 ];
 
 export const PRIMARY_STUDENT = STUDENTS[0]; // Aarav — the "logged-in" student

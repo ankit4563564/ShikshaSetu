@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useTransition, Fragment } from 'react';
+import { useState, useEffect, useRef, useTransition, Fragment, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -62,66 +62,6 @@ const STATUS_BORDER_L_COLOR = {
   'On Track': 'border-l-sage',
   'Worth Watching': 'border-l-marigold',
   'Needs Attention': 'border-l-warm-clay',
-};
-
-      const direction = match[4].toLowerCase();
-      if (direction === 'dropped') {
-        return `${firstName}'s ${subject} grade has slipped recently.`;
-      } else {
-        return `${firstName}'s ${subject} grade has improved recently.`;
-      }
-    }
-  }
-
-  // 6. Mood: "Average mood rating: X/5"
-  const moodRatingRegex = /Average\s+mood\s+rating:\s*([\d\.]+)\/5/i;
-  if (moodRatingRegex.test(cleaned)) {
-    const match = cleaned.match(moodRatingRegex);
-    if (match) {
-      const rating = parseFloat(match[1]);
-      if (rating >= 4.0) {
-        return `${firstName} has shown positive daily check-in patterns.`;
-      } else if (rating >= 3.0) {
-        return `${firstName}'s emotional check-ins show some mixed patterns.`;
-      } else {
-        return `${firstName}'s daily wellness check-ins suggest they are feeling down.`;
-      }
-    }
-  }
-
-  // 7. Mood: "Had X check-ins marked as low or sad"
-  const moodSadRegex = /Had\s+(\d+)\s+check-ins\s+marked\s+as\s+low\s+or\s+sad/i;
-  if (moodSadRegex.test(cleaned)) {
-    const match = cleaned.match(moodSadRegex);
-    if (match) {
-      const count = parseInt(match[1]);
-      return `${firstName} shared feeling sad or overwhelmed during ${count === 1 ? 'one check-in' : count === 2 ? 'two check-ins' : count === 3 ? 'three check-ins' : count + ' check-ins'} this week.`;
-    }
-  }
-
-  // Fallbacks: if we have plain text or partially unformatted text
-  if (cleaned.toLowerCase().includes('grade has slipped')) {
-    return `${firstName}'s grade has slipped since last month.`;
-  }
-  if (cleaned.toLowerCase().includes('missed days')) {
-    return `${firstName} missed school days recently.`;
-  }
-  if (cleaned.toLowerCase().includes('arrived late')) {
-    return `${firstName} arrived late recently.`;
-  }
-
-  // General fallback
-  // Make sure it starts with the first name and ends with a period
-  let result = cleaned;
-  if (!result.startsWith(firstName)) {
-    const firstChar = result.charAt(0);
-    const rest = result.slice(1);
-    result = `${firstName} ${firstChar.toLowerCase()}${rest}`;
-  }
-  if (!result.endsWith('.')) {
-    result += '.';
-  }
-  return result;
 };
 
 export interface TeacherDashboardClientProps {

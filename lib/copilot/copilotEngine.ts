@@ -40,7 +40,12 @@ export interface PreparedActionItem {
     value: any;
     timestamp: string;
   }[];
-  status: 'needs_review' | 'approved' | 'edited' | 'dismissed';
+  historicalEvidence?: {
+    casesCount: number;
+    successRate: number;
+    recommendedApproach: string;
+  };
+  status: 'needs_review' | 'approved' | 'edited' | 'dismissed' | 'completed';
 }
 
 export interface CopilotState {
@@ -54,6 +59,7 @@ export interface CopilotState {
   };
   items: PreparedActionItem[];
   lastActionTimestamp: number | null;
+  activeIntervention?: any;
 }
 
 // ─── Convert Support Signal to Copilot Item ─────────────────────────────────────

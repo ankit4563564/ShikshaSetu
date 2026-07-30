@@ -599,6 +599,7 @@ export default function ParentTodayClient({
         {/* Tab 4: Bus Tracking */}
         {activeNav === 'bus' && (
           <ParentBusTrackingTab
+            studentId={activeStudent?.studentId || ''}
             studentName={activeStudent?.displayName.split(' ')[0] || 'Student'}
             isLoading={isLoading}
             isEnabled={consentSettings.receiveBus}
