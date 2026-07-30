@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/client';
+import { createClient as createServerClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { recordEcosystemEvent } from '@/app/actions/ecosystemActions';
 
@@ -46,7 +46,7 @@ export interface ApproveSupportPlanResult {
 export async function approveSupportPlanAction(
   input: ApproveSupportPlanInput
 ): Promise<ApproveSupportPlanResult> {
-  const supabase = createClient();
+  const supabase = createServerClient();
 
   console.log('[Server Action] approveSupportPlanAction called with:', input);
 
@@ -193,6 +193,7 @@ export async function approveSupportPlanAction(
 
   } catch (error) {
     console.error('Approve support plan failed:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -219,7 +220,7 @@ export interface CompleteTaskResult {
 export async function completeTaskAction(
   input: CompleteTaskInput
 ): Promise<CompleteTaskResult> {
-  const supabase = createClient();
+  const supabase = createServerClient();
 
   try {
     // Update task status
