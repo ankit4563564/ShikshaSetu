@@ -101,13 +101,21 @@ export function ConnectedExperienceCenter() {
     setIsApproving(true);
     setError(null);
     
+    console.log('[Approve] Starting approval for action:', aaravAction.id);
+    console.log('[Approve] Action details:', aaravAction);
+    
     try {
       // Call the copilot engine which calls the server action
       const result = await approveCopilotAction(aaravAction.id, CANONICAL_TEACHER_ID);
       
+      console.log('[Approve] Result from copilot engine:', result);
+      
       if (!result.success) {
+        console.error('[Approve] Server action failed:', result.error);
         throw new Error(result.error || 'Failed to approve support plan');
       }
+      
+      console.log('[Approve] Task ID received:', result.taskId);
       
       // Store the task ID for later completion
       if (result.taskId) {
@@ -128,7 +136,7 @@ export function ConnectedExperienceCenter() {
       setLiveEvents(simplified);
       
     } catch (err) {
-      console.error('Approval failed:', err);
+      console.error('[Approve] Approval failed:', err);
       setError('Failed to approve support plan. Please try again.');
     } finally {
       setIsApproving(false);

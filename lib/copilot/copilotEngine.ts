@@ -216,12 +216,17 @@ export function setCopilotRole(role: 'teacher' | 'parent' | 'student' | 'admin')
 }
 
 export async function approveCopilotAction(id: string, teacherId: string): Promise<{ success: boolean; taskId?: string; error?: string }> {
+  console.log('[Copilot Engine] approveCopilotAction called with:', { id, teacherId });
+  console.log('[Copilot Engine] Current globalState.items:', globalState.items);
+  
   const item = globalState.items.find(i => i.id === id);
   
   if (!item) {
-    console.error('Item not found:', id);
+    console.error('[Copilot Engine] Item not found:', id);
     return { success: false, error: 'Item not found' };
   }
+
+  console.log('[Copilot Engine] Found item:', item);
 
   // Call real server action to approve support plan
   const input: ApproveSupportPlanInput = {
@@ -239,10 +244,14 @@ export async function approveCopilotAction(id: string, teacherId: string): Promi
     })),
   };
 
+  console.log('[Copilot Engine] Calling server action with input:', input);
+
   const result = await approveSupportPlanAction(input);
 
+  console.log('[Copilot Engine] Server action result:', result);
+
   if (!result.success) {
-    console.error('Failed to approve support plan:', result.error);
+    console.error('[Copilot Engine] Failed to approve support plan:', result.error);
     return { success: false, error: result.error };
   }
 

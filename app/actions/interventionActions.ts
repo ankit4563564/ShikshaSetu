@@ -48,8 +48,11 @@ export async function approveSupportPlanAction(
 ): Promise<ApproveSupportPlanResult> {
   const supabase = createClient();
 
+  console.log('[Server Action] approveSupportPlanAction called with:', input);
+
   try {
     // Start transaction
+    console.log('[Server Action] Creating intervention...');
     const { data: intervention, error: interventionError } = await supabase
       .from('interventions')
       .insert({
@@ -64,6 +67,8 @@ export async function approveSupportPlanAction(
       })
       .select()
       .single();
+
+    console.log('[Server Action] Intervention result:', { intervention, error: interventionError });
 
     if (interventionError) throw interventionError;
 
