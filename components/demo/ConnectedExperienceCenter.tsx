@@ -157,6 +157,14 @@ export function ConnectedExperienceCenter() {
         throw new Error(result.error || 'Failed to complete task');
       }
       
+      // Update local state to mark as completed
+      if (aaravAction) {
+        const updatedItems = state.items.map((item) => 
+          item.id === aaravAction.id ? { ...item, status: 'completed' as const } : item
+        );
+        setState({ ...state, items: updatedItems });
+      }
+      
       // Refresh live events
       const events = await getStudentEcosystemEvents(CANONICAL_STUDENT_ID, 10);
       const simplified: LiveEvent[] = events.map(evt => ({
