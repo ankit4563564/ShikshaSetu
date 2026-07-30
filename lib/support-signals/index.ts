@@ -50,6 +50,8 @@ export interface RecommendedAction {
 async function detectHomeworkGap(studentId: string, studentName: string): Promise<SupportSignal | null> {
   const supabase = createClient();
   
+  console.log('[Homework Gap] Checking for student:', studentId);
+  
   // Get homework records, sorted by due date
   const { data: homework, error } = await supabase
     .from('homework')
@@ -58,13 +60,19 @@ async function detectHomeworkGap(studentId: string, studentName: string): Promis
     .gte('due_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
     .order('due_date', { ascending: false });
 
-  if (error || !homework) return null;
+  console.log('[Homework Gap] Homework query result:', { error, count: homework?.length, homework });
+  
+  if (error || !homework) {
+    console.error('[Homework Gap] Query failed or no homework found');
+    return null;
+  }
 
   // Find consecutive missed assignments
   let consecutiveMissed = 0;
   const missedAssignments: any[] = [];
   
   for (const hw of homework) {
+    console.log('[Homework Gap] Checking assignment:', hw.title, 'submitted_at:', hw.submitted_at, 'is_submitted:', hw.is_submitted, 'due_date:', hw.due_date);
     if (!hw.is_submitted && new Date(hw.due_date) < new Date()) {
       consecutiveMissed++;
       missedAssignments.push(hw);
@@ -73,7 +81,12 @@ async function detectHomeworkGap(studentId: string, studentName: string): Promis
     }
   }
 
-  if (consecutiveMissed < 3) return null;
+  console.log('[Homework Gap] Consecutive missed:', consecutiveMissed, 'Required: 3');
+  
+  if (consecutiveMissed < 3) {
+    console.log('[Homework Gap] Not enough consecutive misses');
+    return null;
+  }
 
   // Build evidence
   const evidence: EvidenceItem[] = missedAssignments.map(hw => ({
@@ -418,9 +431,14 @@ export async function detectSupportSignals(studentId: string, studentName: strin
  */
 export async function getCanonicalSupportSignal(): Promise<SupportSignal | null> {
   const state = await getCanonicalStudentState();
-  if (!state.student) return null;
+  if (!state.student) {
+    console.error('[Support Signals] No canonical student found');
+    return null;
+  }
 
+  console.log('[Support Signals] Detecting signals for:', state.student.id, state.student.display_name);
   const signals = await detectSupportSignals(state.student.id, state.student.display_name);
+  console.log('[Support Signals] Detected signals:', signals.length, signals);
   
   // Return highest severity signal, or composite if available
   const composite = signals.find(s => s.signalType === 'composite');

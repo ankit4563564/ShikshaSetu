@@ -79,8 +79,17 @@ export function ConnectedExperienceCenter() {
 
   // Load copilot items on mount
   useEffect(() => {
-    loadCopilotItems();
+    loadCopilotItems().then(() => {
+      console.log('Copilot items loaded:', state.items);
+    });
   }, []);
+
+  // Debug: log aaravAction changes
+  useEffect(() => {
+    console.log('aaravAction changed:', aaravAction);
+    console.log('isApproved:', isApproved);
+    console.log('isCompleted:', isCompleted);
+  }, [aaravAction, isApproved, isCompleted]);
 
   const handleApprove = async () => {
     if (!aaravAction) {

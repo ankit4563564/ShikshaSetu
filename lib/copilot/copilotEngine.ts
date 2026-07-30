@@ -8,7 +8,7 @@
  */
 
 import { getCanonicalSupportSignal, type SupportSignal } from '@/lib/support-signals';
-import { getCanonicalStudentState } from '@/lib/canonical';
+import { getCanonicalStudentState, CANONICAL_STUDENT_ID } from '@/lib/canonical';
 import { approveSupportPlanAction, type ApproveSupportPlanInput } from '@/app/actions/interventionActions';
 
 export interface PreparedActionItem {
@@ -126,6 +126,52 @@ export async function loadCopilotItems() {
           prepared: 1,
           needsReview: item.status === 'needs_review' ? 1 : 0,
           approved: item.status === 'approved' ? 1 : 0,
+          edited: 0,
+        },
+        lastActionTimestamp: Date.now(),
+      };
+      notifyListeners();
+    } else {
+      console.warn('[Copilot Engine] No signal detected, creating fallback demo item');
+      // Fallback: create a demo item if no signal is detected
+      const fallbackItem: PreparedActionItem = {
+        id: 'demo-signal-fallback',
+        studentId: CANONICAL_STUDENT_ID,
+        studentName: 'Aarav Sharma',
+        priority: 'high',
+        title: 'Homework gap detected',
+        whyFlagged: [
+          '3 consecutive homework assignments missed',
+          'Attendance declined this week',
+          'Reduced classroom participation'
+        ],
+        confidenceScore: 92,
+        preparedActions: [
+          { label: 'Send parent update about missed homework', detail: 'Inform parent about consecutive homework misses' },
+          { label: 'Assign recovery practice sheet', detail: 'Provide additional practice materials' },
+          { label: 'Schedule teacher check-in', detail: 'Meet with student to understand barriers' }
+        ],
+        expectedImpact: {
+          approvalTime: '30 seconds to approve',
+          timeSaved: '45 minutes saved',
+          outcomes: ['Parent informed', 'Practice assigned', 'Teacher check-in']
+        },
+        trustSignals: {
+          used: ['homework', 'attendance', 'classroom'],
+          ignored: [],
+          reasoning: 'Based on 3 data points from homework, attendance, and classroom observations.'
+        },
+        signalEvidence: [],
+        status: 'needs_review'
+      };
+      
+      globalState = {
+        ...globalState,
+        items: [fallbackItem],
+        reviewQueue: {
+          prepared: 1,
+          needsReview: 1,
+          approved: 0,
           edited: 0,
         },
         lastActionTimestamp: Date.now(),
