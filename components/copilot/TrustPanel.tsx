@@ -16,9 +16,9 @@ interface TrustPanelProps {
 const MEMORY_TIMELINE = [
   { month: 'September', type: 'warning' as const, events: ['Algebra homework declined 3 days', 'Grade dropped: A → B+'] },
   { month: 'October', type: 'recovery' as const, events: ['Teacher check-in triggered', 'Targeted worksheet assigned', 'Homework fully recovered'] },
-  { month: 'November', type: 'warning' as const, events: ['Exam week — attendance dipped', 'SchoolGPT early flag triggered'] },
+  { month: 'November', type: 'warning' as const, events: ['Exam week — attendance dipped', 'Pattern detected'] },
   { month: 'December', type: 'recovery' as const, events: ['PTM meeting scheduled', 'Attendance recovered', 'End-of-term: A grade restored'] },
-  { month: 'Today', type: 'today' as const, events: ['Pattern matches previous cases', '28 similar cases found', 'Confidence: 92%'] },
+  { month: 'Today', type: 'today' as const, events: ['Pattern detected in current records', 'School Memory: Available', 'Evidence Level: High'] },
 ];
 
 export function TrustPanel({
@@ -68,10 +68,10 @@ export function TrustPanel({
         >
           <div className="flex items-center gap-2">
             <span className="text-xs font-display font-bold text-teal-300 flex items-center gap-1.5">
-              <span>🧠</span> Why did Copilot recommend this?
+              <span>🧠</span> Why was this signal detected?
             </span>
             <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-              {confidenceScore}% confidence
+              Evidence Level: High
             </span>
           </div>
           <span className="text-xs font-bold text-slate-400">
@@ -92,7 +92,7 @@ export function TrustPanel({
                 {/* Reasoning */}
                 <div className="p-3 rounded-xl bg-slate-950/50">
                   <span className="text-[10px] font-display font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                    Copilot Reasoning
+                    Signal Detection Reasoning
                   </span>
                   <p className="text-slate-300 font-medium leading-relaxed">{reasoning}</p>
                 </div>
@@ -198,23 +198,23 @@ export function TrustPanel({
                   </button>
                 </div>
 
-                {/* Confidence bar */}
+                {/* Evidence Level bar */}
                 <div className="mt-4 space-y-1.5">
                   <div className="flex justify-between text-[10px] font-mono">
-                    <span className="text-slate-400">Confidence Score</span>
-                    <span className="text-emerald-400 font-bold">92%</span>
+                    <span className="text-slate-400">Evidence Level</span>
+                    <span className="text-emerald-400 font-bold">High</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: '92%' }}
+                      animate={{ width: '85%' }}
                       transition={{ duration: 1, ease: 'easeOut', delay: 0.4 }}
                       className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
                     />
                   </div>
                   <div className="flex justify-between text-[10px] font-mono text-slate-500">
-                    <span>28 historical cases matched</span>
-                    <span className="text-purple-400">94% success rate</span>
+                    <span>Multiple data sources</span>
+                    <span className="text-purple-400">Pattern detected</span>
                   </div>
                 </div>
               </div>
