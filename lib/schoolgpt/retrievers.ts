@@ -49,6 +49,8 @@ export async function retrieveAttendanceTrends() {
 }
 
 export async function retrieveHomework(studentId: string) {
+  console.log('[SchoolGPT Retriever] Querying homework for studentId:', studentId);
+  
   const { data, error } = await adminDb
     .from('homework')
     .select('subject, title, due_date, is_submitted')
@@ -56,15 +58,21 @@ export async function retrieveHomework(studentId: string) {
     .order('due_date', { ascending: false })
     .limit(20);
 
+  console.log('[SchoolGPT Retriever] Homework query result:', { error, recordCount: data?.length || 0 });
+
   if (error || !data || data.length === 0) return 'No homework records found.';
 
   const pending = data.filter((h: any) => !h.is_submitted);
   const submitted = data.filter((h: any) => h.is_submitted);
+  const total = data.length;
+  
+  console.log('[SchoolGPT Retriever] Homework stats:', { total, submitted: submitted.length, pending: pending.length });
+  
   const lines = data.slice(0, 10).map((h: any) =>
     `${h.is_submitted ? '✓' : '○'} ${h.subject}: ${h.title} (due ${h.due_date})`
   );
 
-  return `Homework (${submitted.length} submitted, ${pending.length} pending):\n${lines.join('\n')}`;
+  return `Homework Summary\n• Total assignments: ${total}\n• Completed: ${submitted.length}\n• Pending: ${pending.length}\n\nRecent assignments:\n${lines.join('\n')}`;
 }
 
 export async function retrieveTimetable(classGrade: string, classSection?: string) {

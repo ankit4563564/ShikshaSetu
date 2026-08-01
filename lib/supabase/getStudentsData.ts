@@ -235,6 +235,8 @@ export async function getStudentsData(): Promise<StudentWithFlag[]> {
     const studentIds = students.map((student) => student.id);
 
     // 2. Fetch each relation once for the whole roster.
+    console.log('[getStudentsData] Fetching data for studentIds:', studentIds);
+    
     const [
       { data: attendance, error: attendanceError },
       { data: homework, error: homeworkError },
@@ -259,6 +261,8 @@ export async function getStudentsData(): Promise<StudentWithFlag[]> {
         .in('student_id', studentIds)
         .order('created_at', { ascending: false }),
     ]);
+
+    console.log('[getStudentsData] Homework query result:', { error: homeworkError, recordCount: homework?.length || 0 });
 
     const relatedError = attendanceError || homeworkError || gradesError || moodError || flagsError;
     if (relatedError) {
