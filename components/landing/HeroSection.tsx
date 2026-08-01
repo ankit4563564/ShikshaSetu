@@ -25,13 +25,13 @@ export function HeroSection() {
             for <span className="text-secondary-fixed glow-text">every child.</span>
           </h1>
           <p className="font-body-lg text-body-lg text-white/80 max-w-xl">
-            Gate entry, classroom attention, bus tracking, and home-safe confirmation — connected for parents, teachers, and school teams.
+            Gate entry, classroom attention, live bus tracking, and home-safe confirmation — linked in real time for parents, teachers, and school teams.
           </p>
           <div className="flex flex-col gap-4 pt-4">
             <div className="flex flex-wrap gap-4">
               <button
                 type="button"
-                onClick={openDemoModal}
+                onClick={openRoleSelector}
                 className="group relative overflow-hidden bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all duration-100 ease-out shadow-lg flex items-center gap-2 font-extrabold hover:scale-105 active:scale-95 active:translate-y-0 inline-flex"
               >
                 <span className="relative z-10 flex items-center gap-2">

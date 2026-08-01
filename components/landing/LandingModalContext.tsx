@@ -213,7 +213,7 @@ export function LandingModalProvider({ children }: { children: React.ReactNode }
             </button>
             
             <div className="mb-4">
-              <span className="text-xs font-mono font-bold text-teal-400 uppercase tracking-wider">Interactive Demo</span>
+              <span className="text-xs font-mono font-bold text-teal-400 uppercase tracking-wider">Live Interactive Demo</span>
               <h3 className="text-2xl font-bold text-white mt-1">See one teacher decision update the entire school.</h3>
               <p className="text-sm text-slate-300 mt-2 leading-relaxed">
                 Aarav has missed three consecutive assignments. ShikshaSetu detects the pattern, prepares coordinated support, and lets the educator make the final decision.

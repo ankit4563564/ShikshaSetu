@@ -37,18 +37,12 @@ export async function resetDemoDataAction(): Promise<DemoResetResult> {
     }
 
     // Delete intervention milestones for canonical student
-    // First get intervention IDs, then delete milestones
-    const { data: interventionIds } = await supabase
-      .from('interventions')
-      .select('id')
-      .eq('student_id', CANONICAL_STUDENT_ID);
-    
-    const interventionIdList = interventionIds?.map(i => i.id) || [];
-    
     const { error: milestonesError } = await supabase
       .from('intervention_milestones')
       .delete()
-      .in('intervention_id', interventionIdList);
+      .in('intervention_id', 
+        supabase.from('interventions').select('id').eq('student_id', CANONICAL_STUDENT_ID)
+      );
 
     if (milestonesError && milestonesError.code !== 'PGRST116') {
       console.error('Failed to delete milestones:', milestonesError);

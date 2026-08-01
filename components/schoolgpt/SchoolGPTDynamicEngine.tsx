@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { STUDENTS } from '@/lib/demo/schoolUniverse';
 
 interface DynamicEngineProps {
@@ -11,22 +10,6 @@ interface DynamicEngineProps {
 
 export default function SchoolGPTDynamicEngine({ intent, queryText = '', onSelectAction }: DynamicEngineProps) {
   const aarav = STUDENTS[0];
-
-  // Demo data constants for SchoolGPT
-  const GUARDIAN_JOURNEY_DATA = [
-    { timestamp: '08:14 AM', stepName: 'Gate Entry', details: 'RFID scan verified', location: 'Main Gate' },
-    { timestamp: '08:30 AM', stepName: 'Classroom Arrival', details: 'On time for Mathematics', location: 'R-201' },
-    { timestamp: '10:15 AM', stepName: 'Break', details: 'Cafeteria lunch', location: 'Cafeteria' },
-    { timestamp: '02:15 PM', stepName: 'Bus Boarding', details: 'Boarded Bus #4', location: 'Sector 12' },
-    { timestamp: '03:45 PM', stepName: 'Home Arrival', details: 'Parent confirmed', location: 'Home' },
-    { timestamp: '04:00 PM', stepName: 'Homework Started', details: 'Mathematics practice', location: 'Home' },
-  ];
-
-  const SUPPORT_RADAR_DATA = [
-    { studentId: 's003', studentName: 'Rohan Verma', recommendation: 'Missed 3 homework assignments', suggestedAction: 'Check-in' },
-    { studentId: 's005', studentName: 'Kabir Malhotra', recommendation: 'Attendance dropped to 82%', suggestedAction: 'Notify Parent' },
-    { studentId: 's007', studentName: 'Meera Joshi', recommendation: 'Low mood check-ins', suggestedAction: 'Counselor Review' },
-  ];
 
   const renderFollowUpFooter = (actions: string[]) => (
     <div className="pt-4 border-t border-slate-100 space-y-2.5">
@@ -60,7 +43,7 @@ export default function SchoolGPTDynamicEngine({ intent, queryText = '', onSelec
                 </div>
                 <div>
                   <h4 className="font-display text-base font-extrabold text-slate-900">{aarav.name}</h4>
-                  <p className="text-xs font-medium text-slate-500">Class 8A &bull; Roll #{aarav.rollNo}</p>
+                  <p className="text-xs font-medium text-slate-500">Class 8A &bull; Roll #{aarav.rollNumber}</p>
                 </div>
               </div>
               <span className="px-3.5 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-xs font-extrabold">

@@ -1,705 +1,470 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Avatar } from '@/components/shared/Avatar';
-import { approveSupportPlanAction, completeTaskAction } from '@/app/actions/interventionActions';
+import {
+  getCopilotState,
+  subscribeCopilotState,
+  approveCopilotAction,
+  completeCopilotAction,
+  undoCopilotAction,
+  resetCopilotState,
+  loadCopilotItems,
+  CopilotState,
+} from '@/lib/copilot/copilotEngine';
+import { CANONICAL_TEACHER_ID, CANONICAL_STUDENT_ID } from '@/lib/canonical';
+import { getStudentEcosystemEvents } from '@/app/actions/ecosystemActions';
+import { completeTaskAction } from '@/app/actions/interventionActions';
 import { resetDemoDataAction } from '@/app/actions/demoResetActions';
-import { getSchoolMemoryAction } from '@/app/actions/schoolMemoryActions';
-import { getCanonicalStudentState, CANONICAL_STUDENT_ID, CANONICAL_TEACHER_ID, CANONICAL_GUARDIAN_ID } from '@/lib/canonical';
-import { getCanonicalSupportSignal } from '@/lib/support-signals';
+
+// ─── Simplified Event Interface ──────────────────────────────────────
+
+interface LiveEvent {
+  id: string;
+  time: string;
+  actor: string;
+  action: string;
+}
+
+// ─── Lifecycle Stage ──────────────────────────────────────
+
+interface LifecycleStage {
+  id: string;
+  label: string;
+  status: 'pending' | 'active' | 'completed';
+}
 
 export function ConnectedExperienceCenter() {
-  const [step, setStep] = useState<'initial' | 'approved' | 'completed'>('initial');
-  const [loading, setLoading] = useState(false);
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [state, setState] = useState<CopilotState>(getCopilotState());
+  const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
+  const [isApproving, setIsApproving] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [showMemory, setShowMemory] = useState(false);
   const [taskId, setTaskId] = useState<string | null>(null);
-  const [canonicalData, setCanonicalData] = useState<any>(null);
-  const [schoolMemory, setSchoolMemory] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const aaravAction = useMemo(() => state.items[0] || null, [state.items]);
+  const isApproved = aaravAction?.status === 'approved';
+  const isCompleted = aaravAction?.status === 'completed';
+
+  // Lifecycle stages
+  const lifecycle: LifecycleStage[] = useMemo(() => [
+    { id: 'signal', label: 'Signal Detected', status: 'completed' },
+    { id: 'teacher', label: isApproved ? 'Teacher Approved' : 'Awaiting Teacher', status: isApproved ? 'completed' : isApproving ? 'active' : 'active' },
+    { id: 'parent', label: 'Parent Informed', status: isApproved ? 'completed' : 'pending' },
+    { id: 'student', label: 'Practice Assigned', status: isApproved ? 'active' : 'pending' },
+    { id: 'outcome', label: 'Outcome Tracked', status: isCompleted ? 'completed' : 'pending' },
+  ], [isApproved, isApproving, isCompleted]);
+
+  // Load real ecosystem events
+  useEffect(() => {
+    async function loadEvents() {
+      try {
+        const events = await getStudentEcosystemEvents(CANONICAL_STUDENT_ID, 10);
+        const simplified: LiveEvent[] = events.map(evt => ({
+          id: evt.id,
+          time: new Date(evt.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          actor: evt.actor_role || 'System',
+          action: evt.title,
+        })).reverse();
+        setLiveEvents(simplified);
+      } catch (error) {
+        console.error('Failed to load events:', error);
+      }
+    }
+    loadEvents();
+  }, [isApproved, isCompleted]);
 
   useEffect(() => {
-    // Load canonical data on mount
-    loadCanonicalData();
+    return subscribeCopilotState((s) => setState(s));
   }, []);
 
+  // Load copilot items on mount
   useEffect(() => {
-    // Load school memory when step changes to completed
-    if (step === 'completed') {
-      loadSchoolMemory();
-    }
-  }, [step]);
+    loadCopilotItems().then(() => {
+      console.log('Copilot items loaded:', state.items);
+    });
+  }, []);
 
-  const loadCanonicalData = async () => {
-    try {
-      const state = await getCanonicalStudentState();
-      setCanonicalData(state);
-    } catch (err) {
-      console.error('Failed to load canonical data:', err);
-      // Fallback to hardcoded data for demo
-      setCanonicalData({
-        homeworkSummary: { consecutiveMissed: 3 },
-        attendanceSummary: { rate: 0.89 },
-      });
-    }
-  };
-
-  const loadSchoolMemory = async () => {
-    try {
-      const memory = await getSchoolMemoryAction();
-      setSchoolMemory(memory);
-    } catch (err) {
-      console.error('Failed to load school memory:', err);
-      // Fallback to empty state
-      setSchoolMemory(null);
-    }
-  };
+  // Debug: log aaravAction changes
+  useEffect(() => {
+    console.log('aaravAction changed:', aaravAction);
+    console.log('isApproved:', isApproved);
+    console.log('isCompleted:', isCompleted);
+  }, [aaravAction, isApproved, isCompleted]);
 
   const handleApprove = async () => {
-    setLoading(true);
+    if (!aaravAction) {
+      console.error('No action item found');
+      setError('No support plan found to approve');
+      return;
+    }
+    setIsApproving(true);
     setError(null);
     
+    console.log('[Approve] Starting approval for action:', aaravAction.id);
+    console.log('[Approve] Action details:', aaravAction);
+    
     try {
-      // Use fallback signal directly for demo (database unavailable)
-      const signal = {
-        id: 'demo-signal-fallback',
-        studentId: CANONICAL_STUDENT_ID,
-        studentName: 'Aarav Sharma',
-        signalType: 'homework_gap',
-        severity: 'medium',
-        detectedAt: new Date().toISOString(),
-        evidence: [],
-        recommendedActions: [
-          {
-            id: 'act-1',
-            action: 'Send parent update about missed homework',
-            category: 'communication',
-            priority: 'high',
-            description: 'Inform parent about consecutive homework misses and request support at home',
-          },
-          {
-            id: 'act-2',
-            action: 'Assign recovery practice sheet',
-            category: 'academic',
-            priority: 'medium',
-            description: 'Provide additional practice materials for missed topics',
-          },
-          {
-            id: 'act-3',
-            action: 'Schedule teacher check-in',
-            category: 'intervention',
-            priority: 'medium',
-            description: 'Meet with student to understand barriers to homework completion',
-          },
-        ],
-        status: 'pending',
-      };
+      // Call the copilot engine which calls the server action
+      const result = await approveCopilotAction(aaravAction.id, CANONICAL_TEACHER_ID);
       
-      let result;
-      try {
-        result = await approveSupportPlanAction({
-          studentId: CANONICAL_STUDENT_ID,
-          studentName: 'Aarav Sharma',
-          teacherId: CANONICAL_TEACHER_ID,
-          signalId: signal.id,
-          signalType: signal.signalType,
-          recommendedActions: signal.recommendedActions.map((a, i) => ({
-            id: `act-${i}`,
-            action: a.action,
-            category: a.category,
-            priority: a.priority,
-            description: a.description,
-          })),
-        });
-      } catch (dbError) {
-        console.error('Database unavailable:', dbError);
-        throw new Error('Database unavailable. Please check your connection and try again.');
-      }
-
-      // Handle case where result is undefined or empty object (server action failure)
-      if (!result || Object.keys(result).length === 0) {
-        console.error('Server action returned empty result');
-        throw new Error('Server error. Please try again.');
-      }
-
+      console.log('[Approve] Result from copilot engine:', result);
+      
       if (!result.success) {
+        console.error('[Approve] Server action failed:', result.error);
         throw new Error(result.error || 'Failed to approve support plan');
       }
-
-      setTaskId(result.taskId || null);
-      setStep('approved');
+      
+      console.log('[Approve] Task ID received:', result.taskId);
+      
+      // Store the task ID for later completion
+      if (result.taskId) {
+        setTaskId(result.taskId);
+      }
+      
+      // Refresh live events
+      const events = await getStudentEcosystemEvents(CANONICAL_STUDENT_ID, 10);
+      const simplified: LiveEvent[] = events.map(evt => ({
+        id: evt.id,
+        time: new Date(evt.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        actor: evt.actor_role || 'System',
+        action: evt.title,
+      })).reverse();
+      setLiveEvents(simplified);
+      
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
-      console.error('Approval failed:', err);
+      console.error('[Approve] Approval failed:', err);
+      setError('Failed to approve support plan. Please try again.');
     } finally {
-      setLoading(false);
+      setIsApproving(false);
     }
   };
 
   const handleComplete = async () => {
     if (!taskId) {
-      setError('No task ID available');
+      console.error('No task ID available');
+      setError('No task found. Please approve a support plan first.');
       return;
     }
-
-    setLoading(true);
+    
+    if (!aaravAction) {
+      console.error('No action item found');
+      setError('No action found to complete');
+      return;
+    }
+    
+    setIsCompleting(true);
     setError(null);
     
     try {
-      let result;
-      try {
-        result = await completeTaskAction({
-          taskId,
-          studentId: CANONICAL_STUDENT_ID,
-        });
-      } catch (dbError) {
-        console.error('Database unavailable:', dbError);
-        throw new Error('Database unavailable. Please check your connection and try again.');
-      }
-
+      // Call server action to complete task
+      const result = await completeTaskAction({ taskId, studentId: CANONICAL_STUDENT_ID });
+      
       if (!result.success) {
         throw new Error(result.error || 'Failed to complete task');
       }
-
-      setStep('completed');
+      
+      // Update global copilot state to mark as completed
+      await completeCopilotAction(aaravAction.id);
+      
+      // Refresh live events
+      const events = await getStudentEcosystemEvents(CANONICAL_STUDENT_ID, 10);
+      const simplified: LiveEvent[] = events.map(evt => ({
+        id: evt.id,
+        time: new Date(evt.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        actor: evt.actor_role || 'System',
+        action: evt.title,
+      })).reverse();
+      setLiveEvents(simplified);
+      
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
-      console.error('Completion failed:', err);
+      console.error('Task completion failed:', err);
+      setError('Failed to complete task. Please try again.');
     } finally {
-      setLoading(false);
+      setIsCompleting(false);
     }
   };
 
   const handleReset = async () => {
-    // Prevent reset during active operations
-    if (loading) return;
-    
-    setLoading(true);
+    setIsApproving(true); // Use loading state
     setError(null);
     
     try {
-      let result;
-      try {
-        result = await resetDemoDataAction();
-      } catch (dbError) {
-        console.error('Database unavailable, simulating reset:', dbError);
-        // Fallback: simulate successful reset for demo
-        result = { success: true, message: 'Demo reset (simulated)' };
-      }
-
+      const result = await resetDemoDataAction();
+      
       if (!result.success) {
         throw new Error(result.error || 'Failed to reset demo');
       }
-
-      setStep('initial');
+      
+      // Reset local state
+      resetCopilotState();
+      setLiveEvents([]);
       setTaskId(null);
-      await loadCanonicalData();
+      
+      // Reload copilot items to reset to initial state
+      await loadCopilotItems();
+      
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
       console.error('Reset failed:', err);
+      setError('Failed to reset demo. Please try again.');
     } finally {
-      setLoading(false);
+      setIsApproving(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased p-6 lg:p-10">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-8">
         
-        {/* Header with Dynamic Headline */}
+        {/* Case Header */}
         <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
-              {step === 'completed' ? 'Aarav is back on track' : 'Aarav needs support'}
-            </h1>
-            {step === 'completed' && (
-              <p className="text-base text-slate-300 max-w-lg">
-                Early support prevented a small gap from becoming a bigger one.
-              </p>
-            )}
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold text-white tracking-tight">LIVE STUDENT SUPPORT</h1>
             <div className="flex items-center gap-3 text-slate-400">
               <span className="text-lg">Aarav Sharma</span>
-              <span className="text-slate-600">•</span>
+              <span className="text-slate-600">·</span>
               <span className="text-base">Grade 8A</span>
+              <span className="text-slate-600">·</span>
+              <span className="text-base">Homework support case</span>
             </div>
           </div>
           <button
             onClick={handleReset}
-            disabled={loading}
-            className="text-sm text-slate-500 hover:text-slate-300 transition-colors disabled:opacity-50"
+            className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
           >
             Reset Demo
           </button>
         </div>
 
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-            <p className="text-sm text-red-300">{error}</p>
-          </div>
-        )}
-
-        {/* Aarav Hero - Center Stage */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center space-y-4"
-        >
-          <div className="relative">
-            <Avatar
-              src={null}
-              alt="Aarav Sharma"
-              size="xl"
-              fallback="AS"
-              showBorder={step === 'completed'}
-              className={`${
-                step === 'completed' ? 'border-2 border-emerald-500/50' : ''
-              }`}
-            />
-            {step === 'completed' && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg"
-              >
-                <span className="text-white text-sm">✓</span>
-              </motion.div>
-            )}
-          </div>
-          
-          <div className="text-center space-y-1">
-            <h2 className="text-2xl font-bold text-white">Aarav Sharma</h2>
-            <p className="text-base text-slate-400">Grade 8A</p>
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className={`text-lg font-semibold ${
-                step === 'initial' ? 'text-amber-400' : 
-                step === 'approved' ? 'text-teal-400' : 
-                'text-emerald-400'
-              }`}
-            >
-              {step === 'initial' ? 'Needs support' : 
-               step === 'approved' ? 'Getting help' : 
-               '✓ Back on track'}
-            </motion.p>
-          </div>
-        </motion.div>
-
-        {/* Teacher Decision Panel - Act 1: Notice */}
-        {step === 'initial' && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 space-y-4"
-          >
-            {/* Pattern Detection */}
-            <div className="flex items-center gap-2 mb-4">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-sm font-semibold text-amber-300">Pattern detected</span>
-            </div>
-
-            {/* Evidence Summary */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-center">
-                <p className="text-xs text-amber-400 mb-1">HOMEWORK</p>
-                <p className="text-xl font-bold text-amber-300">
-                  {canonicalData?.homeworkSummary?.consecutiveMissed || 3}
-                </p>
-                <p className="text-xs text-amber-400">missed</p>
+        {/* Lifecycle */}
+        <div className="flex items-center gap-2 py-4">
+          {lifecycle.map((stage, idx) => (
+            <React.Fragment key={stage.id}>
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+                stage.status === 'completed' ? 'bg-emerald-500/10 text-emerald-300' :
+                stage.status === 'active' ? 'bg-teal-500/10 text-teal-300' :
+                'bg-slate-800/50 text-slate-500'
+              }`}>
+                {stage.status === 'completed' && <span className="text-sm">✓</span>}
+                {stage.status === 'active' && <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />}
+                <span className="text-sm font-medium">{stage.label}</span>
               </div>
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-center">
-                <p className="text-xs text-amber-400 mb-1">ATTENDANCE</p>
-                <p className="text-xl font-bold text-amber-300">
-                  {canonicalData?.attendanceSummary 
-                    ? `${Math.round(canonicalData.attendanceSummary.rate * 100)}%` 
-                    : '89%'}
-                </p>
-                <p className="text-xs text-amber-400">declining</p>
-              </div>
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-center">
-                <p className="text-xs text-amber-400 mb-1">CLASSROOM</p>
-                <p className="text-xl font-bold text-amber-300">↓</p>
-                <p className="text-xs text-amber-400">activity</p>
-              </div>
-            </div>
-
-            {/* Teacher's Decision */}
-            <div className="flex items-start gap-3 bg-slate-800/50 rounded-lg p-4">
-              <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
-                <Avatar src={null} alt="Teacher" size="md" fallback="👩‍🏫" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-slate-400 mb-1">Mrs. Ananya Mehra</p>
-                <p className="text-base text-white font-medium">"Aarav needs support."</p>
-              </div>
-            </div>
-
-            {/* Proposed Support */}
-            <div className="space-y-2">
-              <p className="text-xs text-slate-500 font-semibold">Support plan</p>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm text-slate-300">
-                  <span className="w-5 h-5 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-xs">1</span>
-                  <span>Inform parent</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-300">
-                  <span className="w-5 h-5 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-xs">2</span>
-                  <span>Assign practice</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-300">
-                  <span className="w-5 h-5 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-xs">3</span>
-                  <span>Schedule check-in</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 pt-2">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleApprove}
-                disabled={loading}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-xl font-semibold text-base transition-colors disabled:opacity-50"
-              >
-                {loading ? 'Coordinating...' : 'Coordinate Support'}
-              </motion.button>
-              <button
-                onClick={() => setShowExplanation(true)}
-                className="px-4 py-3 text-slate-400 hover:text-slate-200 text-sm transition-colors"
-              >
-                Why this suggestion?
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Visual Journey - What Happened */}
-        {(step === 'approved' || step === 'completed') && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-4"
-          >
-            <h3 className="text-lg font-semibold text-slate-400 text-center">What happened</h3>
-            
-            <div className="flex items-center justify-between gap-2">
-              {/* Teacher */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-                className="flex-1 text-center"
-              >
-                <div className="w-16 h-16 rounded-full bg-slate-800 border-2 border-emerald-500/50 flex items-center justify-center mx-auto mb-2">
-                  <Avatar src={null} alt="Teacher" size="md" fallback="👩‍🏫" />
-                </div>
-                <p className="text-sm font-semibold text-white">Mrs. Ananya Mehra</p>
-                <p className="text-xs text-emerald-400">✓ Approved</p>
-              </motion.div>
-
-              <span className="text-slate-600 text-xl">→</span>
-
-              {/* Parent */}
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className="flex-1 text-center"
-              >
-                <div className="w-16 h-16 rounded-full bg-slate-800 border-2 border-emerald-500/50 flex items-center justify-center mx-auto mb-2">
-                  <Avatar src={null} alt="Parent" size="md" fallback="👩" />
-                </div>
-                <p className="text-sm font-semibold text-white">Sunita Sharma</p>
-                <p className="text-xs text-emerald-400">✓ Informed</p>
-              </motion.div>
-
-              <span className="text-slate-600 text-xl">→</span>
-
-              {/* Practice */}
-              <motion.div
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex-1 text-center"
-              >
-                <div className="w-16 h-16 rounded-full bg-slate-800 border-2 border-emerald-500/50 flex items-center justify-center mx-auto mb-2">
-                  <span className="text-2xl">📘</span>
-                </div>
-                <p className="text-sm font-semibold text-white">Algebra Practice</p>
-                <p className="text-xs text-emerald-400">✓ Completed</p>
-              </motion.div>
-
-              <span className="text-slate-600 text-xl">→</span>
-
-              {/* School */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                className="flex-1 text-center"
-              >
-                <div className="w-16 h-16 rounded-full bg-slate-800 border-2 border-emerald-500/50 flex items-center justify-center mx-auto mb-2">
-                  <span className="text-2xl">🏫</span>
-                </div>
-                <p className="text-sm font-semibold text-white">School</p>
-                <p className="text-xs text-emerald-400">✓ Recorded</p>
-              </motion.div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Student Practice Panel - Act 2: Support */}
-        {step === 'approved' && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 space-y-4"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-teal-500/20 flex items-center justify-center">
-                <span className="text-2xl">📘</span>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-slate-400 mb-1">Aarav's task</p>
-                <p className="text-lg text-white font-medium">Algebra Recovery Practice</p>
-                <p className="text-sm text-slate-500">15 minutes • Self-paced</p>
-              </div>
-            </div>
-
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
-              <p className="text-xs text-amber-400 mb-1">Why this helps</p>
-              <p className="text-sm text-slate-300">Short practice helps Aarav catch up on missed concepts without overwhelming him</p>
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleComplete}
-              disabled={loading}
-              className="w-full px-6 py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white rounded-xl font-semibold text-lg transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Completing...' : 'Mark Practice Complete'}
-            </motion.button>
-          </motion.div>
-        )}
-
-        {/* School Memory - What Helped Aarav */}
-        {step === 'completed' && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-purple-500/10 to-violet-500/10 border-2 border-purple-500/30 rounded-xl p-6 space-y-4"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                <span className="text-xl">🧠</span>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-purple-300">SCHOOL MEMORY</p>
-                <p className="text-xs text-slate-500">What helped Aarav</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {schoolMemory?.recentOutcomes && schoolMemory.recentOutcomes.length > 0 ? (
-                schoolMemory.recentOutcomes.slice(0, 3).map((outcome: any, index: number) => (
-                  <motion.div
-                    key={outcome.taskTitle || index}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 + (index * 0.1) }}
-                    className="flex items-center gap-3"
-                  >
-                    <span className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm">✓</span>
-                    <p className="text-sm text-white">{outcome.taskTitle}</p>
-                  </motion.div>
-                ))
-              ) : (
-                // Fallback to hardcoded values if no data yet
-                <>
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="flex items-center gap-3"
-                  >
-                    <span className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm">✓</span>
-                    <p className="text-sm text-white">Short Algebra recovery practice</p>
-                  </motion.div>
-                  
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="flex items-center gap-3"
-                  >
-                    <span className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm">✓</span>
-                    <p className="text-sm text-white">Parent informed early</p>
-                  </motion.div>
-                  
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="flex items-center gap-3"
-                  >
-                    <span className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm">✓</span>
-                    <p className="text-sm text-white">Teacher follow-up</p>
-                  </motion.div>
-                </>
+              {idx < lifecycle.length - 1 && (
+                <span className="text-slate-600">→</span>
               )}
-            </div>
-
-            <div className="pt-4 border-t border-purple-500/20">
-              <p className="text-xs text-purple-400 font-semibold mb-2">School Memory</p>
-              {schoolMemory ? (
-                <div className="space-y-2">
-                  {schoolMemory.interventions.length > 0 ? (
-                    <p className="text-sm text-slate-300 leading-relaxed">
-                      {schoolMemory.interventions.length} intervention(s) recorded
-                    </p>
-                  ) : (
-                    <p className="text-sm text-slate-400 leading-relaxed">
-                      No interventions recorded yet
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-slate-400 leading-relaxed">
-                  Loading School Memory...
-                </p>
-              )}
-            </div>
-          </motion.div>
-        )}
-
-        {/* What Happens After Approval */}
-        <div className="p-3.5 rounded-2xl bg-slate-900/40 space-y-1 text-xs">
-          <span className="text-[10px] font-mono font-bold text-teal-300 uppercase tracking-wider block">
-            After approval
-          </span>
-          <p className="text-slate-300 font-medium leading-relaxed">
-            Parent informed, practice assigned, check-in scheduled.
-          </p>
+            </React.Fragment>
+          ))}
         </div>
 
-        {/* Timeline */}
-        <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-4">
-          <p className="text-sm font-semibold text-slate-500 mb-4">TODAY</p>
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex-1 text-center">
-              <div className="w-3 h-3 rounded-full bg-slate-600 mx-auto mb-2" />
-              <p className="text-xs text-slate-400">09:12</p>
-              <p className="text-sm text-slate-300">Pattern noticed</p>
+        {/* Context */}
+        {!isCompleted && (
+          <p className="text-base text-slate-300">
+            {isApproved 
+              ? 'Mrs. Kavita Rao approved a support plan after 3 consecutive missed assignments.'
+              : 'Aarav may need additional support after 3 consecutive missed assignments.'}
+          </p>
+        )}
+
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-300 text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Left: Main Story */}
+          <div className="lg:col-span-2 space-y-4">
+            
+            {/* Teacher Card */}
+            {!isApproved ? (
+              <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 space-y-4">
+                <h2 className="text-xl font-semibold text-white">Teacher Review</h2>
+                <p className="text-slate-300">Aarav may need additional support</p>
+                
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-slate-400">Evidence:</p>
+                  <ul className="space-y-1 text-sm text-slate-300">
+                    <li>• 3 consecutive homework misses</li>
+                    <li>• Attendance declined this week</li>
+                    <li>• Reduced classroom participation</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-slate-400">Prepared support:</p>
+                  <ul className="space-y-1 text-sm text-slate-300">
+                    <li>✓ Parent update drafted</li>
+                    <li>✓ Algebra recovery practice prepared</li>
+                    <li>✓ 10-minute check-in suggested</li>
+                  </ul>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleApprove}
+                    disabled={isApproving}
+                    className="px-6 py-3 bg-teal-600 hover:bg-teal-500 text-white rounded-xl font-medium transition-colors disabled:opacity-50"
+                  >
+                    {isApproving ? 'Approving...' : 'Approve Support Plan'}
+                  </motion.button>
+                  <button
+                    onClick={() => setShowMemory(true)}
+                    className="px-4 py-3 text-slate-400 hover:text-slate-200 text-sm transition-colors"
+                  >
+                    Why was this suggested?
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">✓</span>
+                  <div>
+                    <h2 className="text-lg font-semibold text-emerald-300">Support plan approved</h2>
+                    <p className="text-sm text-slate-400">Mrs. Kavita Rao • Approved just now</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Post-approval cards */}
+            {isApproved && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Parent */}
+                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400">✓</span>
+                    <span className="text-sm font-medium text-slate-400">Parent Informed</span>
+                  </div>
+                  <p className="text-sm text-slate-300">New update from Mrs. Rao</p>
+                  <p className="text-xs text-slate-500">Support message delivered</p>
+                </div>
+
+                {/* Student */}
+                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400">✓</span>
+                    <span className="text-sm font-medium text-slate-400">Student Supported</span>
+                  </div>
+                  <p className="text-sm text-slate-300">Algebra Practice Sheet B</p>
+                  <p className="text-xs text-slate-500">Assigned to today's roadmap</p>
+                  {!isCompleted && (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleComplete}
+                      disabled={isCompleting}
+                      className="w-full px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                    >
+                      {isCompleting ? 'Completing...' : 'Mark Task Complete'}
+                    </motion.button>
+                  )}
+                </div>
+
+                {/* Principal */}
+                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400">✓</span>
+                    <span className="text-sm font-medium text-slate-400">School Updated</span>
+                  </div>
+                  <p className="text-sm text-slate-300">Intervention #88</p>
+                  <p className="text-xs text-slate-500">Active support case logged</p>
+                </div>
+              </div>
+            )}
+
+            {/* Connected Impact */}
+            {isApproved && (
+              <div className="bg-slate-900/30 border border-slate-800 rounded-2xl p-5">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">Connected Impact</p>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-slate-400">Teacher Decision</span>
+                  <span className="text-slate-600">→</span>
+                  <span className="text-emerald-400">Parent Informed</span>
+                  <span className="text-slate-600">→</span>
+                  <span className="text-amber-400">Student Assigned</span>
+                  <span className="text-slate-600">→</span>
+                  <span className="text-purple-400">School Updated</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right: Live Activity */}
+          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-4">Live Activity</p>
+            <div className="space-y-3">
+              {liveEvents.length === 0 ? (
+                <p className="text-sm text-slate-500">Waiting for events...</p>
+              ) : (
+                liveEvents.map((evt) => (
+                  <div key={evt.id} className="flex items-start gap-3 pb-3 border-b border-slate-800/50 last:border-0">
+                    <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs text-slate-400 shrink-0">
+                      {evt.actor[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-300 truncate">{evt.actor}</p>
+                      <p className="text-xs text-slate-500 truncate">{evt.action}</p>
+                      <p className="text-[11px] text-slate-600">{evt.time}</p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-            {step !== 'initial' && (
-              <>
-                <div className="flex-1 text-center">
-                  <div className="w-3 h-3 rounded-full bg-emerald-500 mx-auto mb-2" />
-                  <p className="text-xs text-slate-400">09:14</p>
-                  <p className="text-sm text-slate-300">Mrs. Mehra approved</p>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="w-3 h-3 rounded-full bg-emerald-500 mx-auto mb-2" />
-                  <p className="text-xs text-slate-400">09:14</p>
-                  <p className="text-sm text-slate-300">Parent informed</p>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="w-3 h-3 rounded-full bg-emerald-500 mx-auto mb-2" />
-                  <p className="text-xs text-slate-400">09:15</p>
-                  <p className="text-sm text-slate-300">Practice assigned</p>
-                </div>
-              </>
-            )}
-            {step === 'completed' && (
-              <>
-                <div className="flex-1 text-center">
-                  <div className="w-3 h-3 rounded-full bg-emerald-500 mx-auto mb-2" />
-                  <p className="text-xs text-slate-400">10:02</p>
-                  <p className="text-sm text-slate-300">Practice completed</p>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="w-3 h-3 rounded-full bg-emerald-500 mx-auto mb-2" />
-                  <p className="text-xs text-slate-400">10:02</p>
-                  <p className="text-sm text-slate-300">Back on track</p>
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Explanation Modal */}
+      {/* Memory Modal */}
       <AnimatePresence>
-        {showExplanation && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowExplanation(false)}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          >
+        {showMemory && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMemory(false)}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+            />
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              onClick={(e) => e.stopPropagation()}
               className="relative bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full"
             >
-              <h2 className="text-xl font-semibold text-white mb-4">Why Aarav was flagged</h2>
-              
-              <div className="space-y-4 mb-4">
-                <div>
-                  <p className="text-sm text-slate-500 mb-2">HOMEWORK</p>
-                  <div className="flex gap-2">
-                    <span className="w-4 h-4 rounded-full bg-amber-400" />
-                    <span className="w-4 h-4 rounded-full bg-amber-400" />
-                    <span className="w-4 h-4 rounded-full bg-amber-400" />
+              <h2 className="text-lg font-semibold text-white mb-4">Why was this suggested?</h2>
+              <div className="space-y-3 mb-4">
+                {aaravAction?.whyFlagged.map((reason, idx) => (
+                  <div key={idx} className="flex items-start gap-2 text-sm text-slate-300">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>{reason}</span>
                   </div>
-                  <p className="text-base text-slate-300 mt-2">3 consecutive misses</p>
-                </div>
-                
-                <div>
-                  <p className="text-sm text-slate-500 mb-2">ATTENDANCE</p>
-                  <div className="flex items-center gap-3">
-                    <span className="text-base text-slate-400">96%</span>
-                    <span className="text-slate-600">──────→</span>
-                    <span className="text-base text-amber-400">89%</span>
-                  </div>
-                </div>
-                
-                <div>
-                  <p className="text-sm text-slate-500 mb-2">CLASS PARTICIPATION</p>
-                  <div className="flex items-center gap-3">
-                    <span className="text-base text-slate-400">Normal</span>
-                    <span className="text-slate-600">──────→</span>
-                    <span className="text-base text-amber-400">Lower</span>
-                  </div>
-                </div>
+                ))}
               </div>
-
-              <div className="bg-slate-800/50 rounded-lg p-4 mb-4">
-                <p className="text-sm font-semibold text-slate-400 mb-2">Suggested response</p>
+              <div className="bg-slate-800/50 rounded-lg p-3 mb-4">
+                <p className="text-xs font-medium text-slate-400 mb-1">Recommended response</p>
                 <div className="space-y-1">
-                  <p className="text-base text-slate-300">Parent communication</p>
-                  <p className="text-base text-slate-300">+ Short recovery practice</p>
-                  <p className="text-base text-slate-300">+ Teacher check-in</p>
+                  {aaravAction?.preparedActions.map((action, idx) => (
+                    <div key={idx} className="text-sm text-slate-300">
+                      ✓ {action.label}
+                    </div>
+                  ))}
                 </div>
               </div>
-
               <button
-                onClick={() => setShowExplanation(false)}
-                className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-base font-medium transition-colors"
+                onClick={() => setShowMemory(false)}
+                className="w-full px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors"
               >
                 Close
               </button>
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

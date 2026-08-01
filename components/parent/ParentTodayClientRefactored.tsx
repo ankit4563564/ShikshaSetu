@@ -272,60 +272,88 @@ export default function ParentTodayClient({
         <ParentCopilotStrip />
       </div>
 
-      {/* ── Consent Settings Overlay ── */}
+      {/* ── Settings Modal ── */}
       <AnimatePresence>
         {showSettings && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-white border-b border-deep-teal/10 p-5 space-y-4 shadow-sm z-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm"
+            onClick={() => setShowSettings(false)}
           >
-            <div>
-              <h3 className="font-display text-sm font-extrabold text-deep-teal">
-                Privacy Settings
-              </h3>
-              <p className="font-body text-[10px] text-deep-teal/50">
-                Manage your data sharing and notification preferences.
-              </p>
-            </div>
-            <div className="space-y-3 pt-1">
-              <label className="flex items-center justify-between cursor-pointer">
-                <span className="font-body text-xs font-semibold text-deep-teal/80">Share Mood Check-ins</span>
-                <input
-                  type="checkbox"
-                  checked={consentSettings.shareMood}
-                  onChange={(e) => setConsentSettings(prev => ({ ...prev, shareMood: e.target.checked }))}
-                  className="rounded border-deep-teal/20 text-deep-teal focus:ring-deep-teal/20 h-4 w-4"
-                />
-              </label>
-              <label className="flex items-center justify-between cursor-pointer">
-                <span className="font-body text-xs font-semibold text-deep-teal/80">Receive Bus Notifications</span>
-                <input
-                  type="checkbox"
-                  checked={consentSettings.receiveBus}
-                  onChange={(e) => setConsentSettings(prev => ({ ...prev, receiveBus: e.target.checked }))}
-                  className="rounded border-deep-teal/20 text-deep-teal focus:ring-deep-teal/20 h-4 w-4"
-                />
-              </label>
-              <label className="flex items-center justify-between cursor-pointer">
-                <span className="font-body text-xs font-semibold text-deep-teal/80">Receive Academic Updates</span>
-                <input
-                  type="checkbox"
-                  checked={consentSettings.receiveAcademic}
-                  onChange={(e) => setConsentSettings(prev => ({ ...prev, receiveAcademic: e.target.checked }))}
-                  className="rounded border-deep-teal/20 text-deep-teal focus:ring-deep-teal/20 h-4 w-4"
-                />
-              </label>
-            </div>
-            <div className="flex justify-end pt-1">
-              <button
-                onClick={() => setShowSettings(false)}
-                className="bg-deep-teal text-white font-display text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-deep-teal/90 transition-all active:scale-95 shadow-md"
-              >
-                Close &amp; Apply
-              </button>
-            </div>
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-display text-lg font-extrabold text-deep-teal">
+                    Settings
+                  </h3>
+                  <p className="font-body text-xs text-deep-teal/50 mt-0.5">
+                    Manage your preferences
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="p-2 rounded-full hover:bg-deep-teal/5 text-deep-teal/40 hover:text-deep-teal transition-all"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="space-y-4">
+                <label className="flex items-center justify-between p-3 rounded-xl bg-deep-teal/5 hover:bg-deep-teal/10 transition-all cursor-pointer">
+                  <div>
+                    <span className="font-body text-sm font-semibold text-deep-teal">Share Mood Check-ins</span>
+                    <p className="font-body text-[10px] text-deep-teal/50 mt-0.5">Allow teachers to see wellness updates</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={consentSettings.shareMood}
+                    onChange={(e) => setConsentSettings(prev => ({ ...prev, shareMood: e.target.checked }))}
+                    className="rounded-full border-deep-teal/20 text-deep-teal focus:ring-deep-teal/20 h-5 w-5"
+                  />
+                </label>
+                <label className="flex items-center justify-between p-3 rounded-xl bg-deep-teal/5 hover:bg-deep-teal/10 transition-all cursor-pointer">
+                  <div>
+                    <span className="font-body text-sm font-semibold text-deep-teal">Receive Bus Notifications</span>
+                    <p className="font-body text-[10px] text-deep-teal/50 mt-0.5">Get alerts for bus delays and arrivals</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={consentSettings.receiveBus}
+                    onChange={(e) => setConsentSettings(prev => ({ ...prev, receiveBus: e.target.checked }))}
+                    className="rounded-full border-deep-teal/20 text-deep-teal focus:ring-deep-teal/20 h-5 w-5"
+                  />
+                </label>
+                <label className="flex items-center justify-between p-3 rounded-xl bg-deep-teal/5 hover:bg-deep-teal/10 transition-all cursor-pointer">
+                  <div>
+                    <span className="font-body text-sm font-semibold text-deep-teal">Receive Academic Updates</span>
+                    <p className="font-body text-[10px] text-deep-teal/50 mt-0.5">Show homework and attendance info</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={consentSettings.receiveAcademic}
+                    onChange={(e) => setConsentSettings(prev => ({ ...prev, receiveAcademic: e.target.checked }))}
+                    className="rounded-full border-deep-teal/20 text-deep-teal focus:ring-deep-teal/20 h-5 w-5"
+                  />
+                </label>
+              </div>
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="bg-deep-teal text-white font-display text-sm font-bold px-6 py-2.5 rounded-xl hover:bg-deep-teal/90 transition-all active:scale-95 shadow-lg"
+                >
+                  Done
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -383,7 +411,7 @@ export default function ParentTodayClient({
 
 
       {/* ── Main Viewport (Tab Content) ── */}
-      <div className="parent-portal-viewport flex-1 w-full max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-6 overflow-y-auto pb-32 space-y-4">
+      <div className="parent-portal-viewport flex-1 w-full max-w-4xl mx-auto px-4 py-6 sm:px-6 sm:py-8 overflow-y-auto pb-32 space-y-6">
         
         {/* Tab 1: Home */}
         {activeNav === 'home' && (
@@ -395,107 +423,76 @@ export default function ParentTodayClient({
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Compact Today Summary */}
-              <div className="space-y-3">
+              {/* Today's Story Hero */}
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="font-display text-xs font-semibold text-deep-teal/40 uppercase tracking-widest">Today</span>
                   <span className="text-[10px] text-deep-teal/50 font-medium">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
                 </div>
 
-                {/* Morning Note - Compact */}
                 {!consentSettings.receiveAcademic ? (
-                  <div className="relative overflow-hidden rounded-xl border border-deep-teal/5 bg-white p-4 shadow-sm">
+                  <div className="relative overflow-hidden rounded-2xl border border-deep-teal/5 bg-white p-6 shadow-sm">
                     <p className="font-body text-sm text-deep-teal/40 italic py-2">
                       🔒 Academic updates are hidden because this preference is disabled.
                     </p>
                   </div>
                 ) : (
-                  <ParentMorningNote
-                    studentId={activeStudent?.studentId || ''}
-                    studentName={activeStudent?.displayName || ''}
-                    tone={activeStudent?.noteResult.tone || 'positive'}
-                    statusLabel={activeStudent?.noteResult.statusLabel || 'Daily Status'}
-                    headline={activeStudent?.noteResult.tone === 'positive' ? 'Aarav\'s day is going smoothly' : 'Some attention needed today'}
-                    bullets={
-                      activeStudent?.evidence && activeStudent.evidence.length > 0
-                        ? activeStudent.evidence.flatMap(e => e.bullets)
-                        : getChildBullets(activeStudent?.displayName || '', activeStudent?.noteResult.tone || 'positive')
-                    }
-                    isWhyExpanded={isWhyExpanded}
-                    onExpandChange={setIsWhyExpanded}
-                    isLoading={isLoading}
-                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-deep-teal to-teal-700 p-6 shadow-lg"
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+                    <div className="relative">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="font-display text-xs font-bold text-white/80 uppercase tracking-wider">
+                          {activeStudent?.noteResult.tone === 'positive' ? 'Everything is on track' : 'Needs attention today'}
+                        </span>
+                      </div>
+                      
+                      <h2 className="font-display text-2xl font-extrabold text-white mb-2 leading-tight">
+                        {activeStudent?.displayName.split(' ')[0] || 'Your child'} safely entered school at 8:14 AM.
+                      </h2>
+                      
+                      <p className="font-body text-sm text-white/70 mb-6">
+                        Bus is on schedule. Homework reminder available.
+                      </p>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
+                          <span className="text-emerald-300">✓</span>
+                          <span className="font-body text-xs font-semibold text-white">At School</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
+                          <span>🚌</span>
+                          <span className="font-body text-xs font-semibold text-white">Bus On Time</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
+                          <span>📚</span>
+                          <span className="font-body text-xs font-semibold text-white">{activeStudent?.homework?.filter(h => h.isSubmitted).length || 0} Completed</span>
+                        </div>
+                        {activeStudent?.homework?.filter(h => !h.isSubmitted && new Date(h.dueDate) <= new Date(Date.now() + 86400000)).length > 0 && (
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/20 backdrop-blur-sm border border-amber-400/30">
+                            <span>⚠</span>
+                            <span className="font-body text-xs font-semibold text-amber-200">Needs Attention</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
                 )}
               </div>
 
-              {/* Today Summary Cards - White/Light Styling */}
-              <div className="grid grid-cols-3 gap-3">
-                {/* Arrival Card */}
-                <div className="bg-white rounded-xl border border-deep-teal/10 p-3 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-                      <span className="text-sm">✓</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-deep-teal/60 uppercase tracking-wider">Arrival</span>
-                  </div>
-                  <p className="text-sm font-bold text-deep-teal">8:14 AM</p>
-                  <p className="text-[10px] text-deep-teal/50">Gate 2</p>
-                </div>
 
-                {/* Bus Card */}
-                <div className="bg-white rounded-xl border border-deep-teal/10 p-3 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                      <span className="text-sm">🚌</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-deep-teal/60 uppercase tracking-wider">Bus</span>
-                  </div>
-                  <p className="text-sm font-bold text-deep-teal">On time</p>
-                  <p className="text-[10px] text-deep-teal/50">Route 04</p>
-                </div>
-
-                {/* Homework Card */}
-                <div className="bg-white rounded-xl border border-deep-teal/10 p-3 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
-                      <span className="text-sm">📚</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-deep-teal/60 uppercase tracking-wider">Homework</span>
-                  </div>
-                  <p className="text-sm font-bold text-deep-teal">{activeStudent?.homework?.filter(h => h.isSubmitted).length || 0} completed</p>
-                  <p className="text-[10px] text-deep-teal/50">{activeStudent?.homework?.filter(h => !h.isSubmitted).length || 0} pending</p>
-                </div>
-              </div>
-
-              {/* Action Required Card */}
-              {activeStudent?.homework?.filter(h => !h.isSubmitted && new Date(h.dueDate) <= new Date(Date.now() + 86400000)).length > 0 && (
-                <div className="bg-amber-50 rounded-xl border border-amber-200/50 p-4 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-amber-600">⚠️</span>
-                    <span className="text-xs font-bold text-amber-800 uppercase tracking-wider">Needs your attention</span>
-                  </div>
-                  {activeStudent.homework.filter(h => !h.isSubmitted && new Date(h.dueDate) <= new Date(Date.now() + 86400000)).slice(0, 1).map(hw => (
-                    <div key={hw.id} className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-bold text-deep-teal">{hw.title}</p>
-                        <p className="text-[10px] text-deep-teal/60">Due {new Date(hw.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · {new Date(hw.dueDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</p>
-                      </div>
-                      <button
-                        onClick={() => setActiveNav('homework')}
-                        className="text-xs font-bold text-amber-700 hover:text-amber-800"
-                      >
-                        View homework →
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Homework Progress - Compact */}
+              {/* Homework Section */}
               {activeStudent?.homework && activeStudent.homework.length > 0 && (
-                <div className="bg-white rounded-xl border border-deep-teal/10 p-4 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-display text-sm font-bold text-deep-teal">Homework</h3>
+                <div className="bg-white rounded-2xl border border-deep-teal/10 p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-display text-lg font-bold text-deep-teal">Homework Progress</h3>
+                      <p className="font-body text-xs text-deep-teal/50 mt-0.5">{activeStudent.homework.filter(h => h.isSubmitted).length} of {activeStudent.homework.length} completed</p>
+                    </div>
                     <button
                       onClick={() => setActiveNav('homework')}
                       className="text-xs font-semibold text-deep-teal/60 hover:text-deep-teal transition-colors"
@@ -503,28 +500,106 @@ export default function ParentTodayClient({
                       View all →
                     </button>
                   </div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="flex-1 h-2 bg-deep-teal/10 rounded-full overflow-hidden">
+                  
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="flex-1 h-3 bg-deep-teal/10 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-emerald-500 rounded-full transition-all"
+                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
                         style={{ width: `${(activeStudent.homework.filter(h => h.isSubmitted).length / activeStudent.homework.length) * 100}%` }}
                       />
                     </div>
-                    <span className="text-xs font-bold text-deep-teal">
+                    <span className="font-display text-2xl font-extrabold text-deep-teal">
                       {Math.round((activeStudent.homework.filter(h => h.isSubmitted).length / activeStudent.homework.length) * 100)}%
                     </span>
                   </div>
-                  <p className="text-xs text-deep-teal/60">
-                    {activeStudent.homework.filter(h => h.isSubmitted).length} of {activeStudent.homework.length} completed · {activeStudent.homework.filter(h => !h.isSubmitted).length} remaining
-                  </p>
+                  
+                  {activeStudent.homework.filter(h => !h.isSubmitted).length > 0 && (
+                    <div className="bg-deep-teal/5 rounded-xl p-4">
+                      <p className="font-display text-xs font-semibold text-deep-teal/60 uppercase tracking-wider mb-3">Next Due</p>
+                      {activeStudent.homework
+                        .filter(h => !h.isSubmitted)
+                        .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+                        .slice(0, 1)
+                        .map(hw => (
+                          <div key={hw.id} className="flex items-center justify-between">
+                            <div>
+                              <p className="font-body text-sm font-semibold text-deep-teal">{hw.title}</p>
+                              <p className="font-body text-xs text-deep-teal/50 mt-0.5">
+                                {hw.subject} · Due {new Date(hw.dueDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {new Date(hw.dueDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => setActiveNav('homework')}
+                              className="px-4 py-2 rounded-xl bg-deep-teal text-white font-display text-xs font-bold hover:bg-deep-teal/90 transition-all active:scale-95 shadow-md"
+                            >
+                              Open →
+                            </button>
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Attendance - Compact */}
+
+              {/* Today's Journey Timeline */}
+              <div className="bg-white rounded-2xl border border-deep-teal/10 p-5 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="font-display text-lg font-bold text-deep-teal">Today's Journey</h3>
+                    <p className="font-body text-xs text-deep-teal/50 mt-0.5">Following {activeStudent?.displayName.split(' ')[0] || 'your child'}'s day</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-0">
+                  {[
+                    { time: '08:14', event: 'Entered School', icon: '🏫', status: 'completed' },
+                    { time: '08:15', event: 'Attendance Recorded', icon: '✓', status: 'completed' },
+                    { time: '10:30', event: 'Homework Assigned', icon: '📚', status: 'completed' },
+                    { time: '12:30', event: 'Lunch Break', icon: '🍽️', status: 'completed' },
+                    { time: '15:30', event: 'School Dismissal', icon: '🔔', status: 'pending' },
+                    { time: '16:00', event: 'Boarding Bus', icon: '🚌', status: 'pending' },
+                    { time: '16:45', event: 'Expected Home Arrival', icon: '🏠', status: 'pending' },
+                  ].map((item, idx) => (
+                    <div key={idx} className="relative">
+                      {idx !== 0 && (
+                        <div className="absolute left-4 -top-3 w-0.5 h-6 bg-deep-teal/10" />
+                      )}
+                      <div className="flex items-start gap-4 pb-4 last:pb-0">
+                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                          item.status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-deep-teal/5 text-deep-teal/40'
+                        }`}>
+                          {item.icon}
+                        </div>
+                        <div className="flex-1 pt-0.5">
+                          <div className="flex items-center justify-between">
+                            <p className={`font-body text-sm font-semibold ${
+                              item.status === 'completed' ? 'text-deep-teal' : 'text-deep-teal/50'
+                            }`}>
+                              {item.event}
+                            </p>
+                            <span className={`font-display text-xs font-bold ${
+                              item.status === 'completed' ? 'text-deep-teal/60' : 'text-deep-teal/30'
+                            }`}>
+                              {item.time}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+
+              {/* Attendance Section */}
               {activeStudent?.attendance && activeStudent.attendance.length > 0 && (
-                <div className="bg-white rounded-xl border border-deep-teal/10 p-4 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-display text-sm font-bold text-deep-teal">Attendance this month</h3>
+                <div className="bg-white rounded-2xl border border-deep-teal/10 p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-display text-lg font-bold text-deep-teal">Attendance</h3>
+                      <p className="font-body text-xs text-deep-teal/50 mt-0.5">This month</p>
+                    </div>
                     <button
                       onClick={() => setActiveNav('attendance')}
                       className="text-xs font-semibold text-deep-teal/60 hover:text-deep-teal transition-colors"
@@ -532,44 +607,64 @@ export default function ParentTodayClient({
                       View details →
                     </button>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 mb-3">
+                  
+                  <div className="flex items-center gap-6 mb-5">
                     <div className="text-center">
-                      <p className="text-lg font-bold text-deep-teal">
+                      <p className="font-display text-3xl font-extrabold text-deep-teal">
                         {Math.round((activeStudent.attendance.filter(a => a.status === 'present').length / activeStudent.attendance.length) * 100)}%
                       </p>
-                      <p className="text-[10px] text-deep-teal/50 font-semibold">Rate</p>
+                      <p className="font-body text-xs text-deep-teal/50 font-semibold mt-1">Rate</p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-lg font-bold text-emerald-600">
-                        {activeStudent.attendance.filter(a => a.status === 'present').length}
-                      </p>
-                      <p className="text-[10px] text-deep-teal/50 font-semibold">Present</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-lg font-bold text-rose-600">
-                        {activeStudent.attendance.filter(a => a.status === 'absent').length}
-                      </p>
-                      <p className="text-[10px] text-deep-teal/50 font-semibold">Absent</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    {activeStudent.attendance.slice(0, 3).map((att, idx) => (
-                      <div key={idx} className="flex items-center justify-between py-1.5 border-b border-deep-teal/5 last:border-0">
-                        <span className="text-xs font-semibold text-deep-teal/70">{new Date(att.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                          att.status === 'present' ? 'bg-emerald-50 text-emerald-700' :
-                          att.status === 'late' ? 'bg-amber-50 text-amber-700' :
-                          att.status === 'absent' ? 'bg-rose-50 text-rose-700' :
-                          'bg-blue-50 text-blue-700'
-                        }`}>
-                          {att.status === 'present' ? '✓ Present' :
-                           att.status === 'late' ? '⏰ Late' :
-                           att.status === 'absent' ? '✗ Absent' :
-                           '📋 Excused'}
-                        </span>
+                    <div className="flex-1 h-px bg-deep-teal/10" />
+                    <div className="flex gap-4">
+                      <div className="text-center">
+                        <p className="font-display text-xl font-bold text-emerald-600">
+                          {activeStudent.attendance.filter(a => a.status === 'present').length}
+                        </p>
+                        <p className="font-body text-[10px] text-deep-teal/50 font-semibold mt-0.5">Present</p>
                       </div>
-                    ))}
+                      <div className="text-center">
+                        <p className="font-display text-xl font-bold text-rose-600">
+                          {activeStudent.attendance.filter(a => a.status === 'absent').length}
+                        </p>
+                        <p className="font-body text-[10px] text-deep-teal/50 font-semibold mt-0.5">Absent</p>
+                      </div>
+                    </div>
                   </div>
+                  
+                  {/* Weekly Pills */}
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {activeStudent.attendance.slice(0, 7).map((att, idx) => {
+                      const dayName = new Date(att.date).toLocaleDateString('en-US', { weekday: 'short' });
+                      const dayNum = new Date(att.date).getDate();
+                      return (
+                        <div
+                          key={idx}
+                          className={`flex-shrink-0 w-12 h-16 rounded-xl flex flex-col items-center justify-center border ${
+                            att.status === 'present' ? 'bg-emerald-50 border-emerald-200' :
+                            att.status === 'late' ? 'bg-amber-50 border-amber-200' :
+                            att.status === 'absent' ? 'bg-rose-50 border-rose-200' :
+                            'bg-blue-50 border-blue-200'
+                          }`}
+                        >
+                          <span className="font-body text-[10px] font-semibold text-deep-teal/60">{dayName}</span>
+                          <span className="font-display text-sm font-bold text-deep-teal mt-0.5">{dayNum}</span>
+                          <span className="mt-1">
+                            {att.status === 'present' ? '✓' :
+                             att.status === 'late' ? '⏰' :
+                             att.status === 'absent' ? '✗' : '📋'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {activeStudent.attendance.filter(a => a.status === 'present').length === activeStudent.attendance.length && (
+                    <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200">
+                      <span className="text-emerald-600">🎉</span>
+                      <span className="font-body text-xs font-semibold text-emerald-700">Perfect Attendance</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -599,7 +694,6 @@ export default function ParentTodayClient({
         {/* Tab 4: Bus Tracking */}
         {activeNav === 'bus' && (
           <ParentBusTrackingTab
-            studentId={activeStudent?.studentId || ''}
             studentName={activeStudent?.displayName.split(' ')[0] || 'Student'}
             isLoading={isLoading}
             isEnabled={consentSettings.receiveBus}
@@ -634,32 +728,34 @@ export default function ParentTodayClient({
         </div>
       </div>
 
-      {/* ── Bottom Navigation Tabs (Mobile Optimized & Safe-Area Aware) ── */}
-      <nav className="sticky bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-deep-teal/10 px-3 pt-2 pb-4 flex justify-between items-center z-30 shadow-lg">
-        {[
-          { id: 'home', label: 'Home', icon: '🏠' },
-          { id: 'homework', label: 'Homework', icon: '📚' },
-          { id: 'attendance', label: 'Attend', icon: '✓' },
-          { id: 'bus', label: 'Bus', icon: '🚌' },
-          { id: 'messages', label: 'Messages', icon: '💬' }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => {
-              setActiveNav(tab.id as any);
-              setShowSettings(false);
-            }}
-            className={`flex flex-col items-center justify-center min-h-[44px] gap-1 flex-1 py-1.5 px-2 rounded-xl transition-all relative outline-none focus-visible:ring-2 focus-visible:ring-deep-teal/30 ${
-              activeNav === tab.id
-                ? 'text-deep-teal font-extrabold bg-deep-teal/10'
-                : 'text-deep-teal/50 font-medium hover:text-deep-teal hover:bg-slate-50'
-            }`}
-          >
-            <span className="text-lg leading-none">{tab.icon}</span>
-            <span className="text-[10px] tracking-tight leading-none text-center font-bold">{tab.label}</span>
-          </button>
-        ))}
+      {/* ── Floating Dock Navigation ── */}
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
+        <div className="bg-white/90 backdrop-blur-xl border border-deep-teal/10 rounded-2xl shadow-2xl px-2 py-2 flex items-center gap-1">
+          {[
+            { id: 'home', label: 'Home', icon: '🏠' },
+            { id: 'homework', label: 'Homework', icon: '📚' },
+            { id: 'attendance', label: 'Attend', icon: '✓' },
+            { id: 'bus', label: 'Bus', icon: '🚌' },
+            { id: 'messages', label: 'Messages', icon: '💬' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => {
+                setActiveNav(tab.id as any);
+                setShowSettings(false);
+              }}
+              className={`flex flex-col items-center justify-center min-h-[44px] gap-1 px-4 py-2 rounded-xl transition-all relative outline-none focus-visible:ring-2 focus-visible:ring-deep-teal/30 ${
+                activeNav === tab.id
+                  ? 'text-deep-teal bg-deep-teal/10 shadow-sm'
+                  : 'text-deep-teal/50 hover:text-deep-teal hover:bg-deep-teal/5'
+              }`}
+            >
+              <span className="text-lg leading-none">{tab.icon}</span>
+              <span className="text-[10px] tracking-tight leading-none text-center font-bold">{tab.label}</span>
+            </button>
+          ))}
+        </div>
       </nav>
 
       {/* ── Toast Notification ── */}

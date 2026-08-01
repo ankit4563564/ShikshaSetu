@@ -85,7 +85,7 @@ if (!exists) {
   return (
     <div className="demo-portal-status rounded-2xl border border-white/80 bg-white/70 p-4 backdrop-blur-xl">
       <div className="flex items-center justify-between mb-3">
-        <p className="font-display text-sm font-extrabold text-deep-teal">Portal Updates</p>
+        <p className="font-display text-sm font-extrabold text-deep-teal">Live Portal Updates</p>
         <div className="flex items-center gap-2 text-[10px] font-bold text-deep-teal/50">
           <span className={`h-2 w-2 rounded-full ${isRunning && !isPaused ? 'bg-sage animate-pulse' : 'bg-deep-teal/30'}`} />
           {isRunning ? (isPaused ? 'Paused' : 'Live') : 'Idle'}
@@ -169,8 +169,8 @@ if (!exists) {
           className="text-center py-8 text-deep-teal/30"
         >
           <p className="text-lg mb-1">🎬</p>
-          <p className="text-sm font-medium">Start the demo to see updates</p>
-          <p className="text-[10px] mt-1">Each portal will show activity</p>
+          <p className="text-sm font-medium">Start the demo to see live updates</p>
+          <p className="text-[10px] mt-1">Each portal will show real-time activity</p>
         </motion.div>
       )}
     </div>

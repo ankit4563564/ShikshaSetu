@@ -9,9 +9,10 @@ const THINKING_STEPS = [
   { label: 'Analyzing Attendance Records', duration: 500 },
   { label: 'Analyzing Homework History', duration: 600 },
   { label: 'Analyzing Teacher Notes', duration: 500 },
-  { label: 'Checking School Memory', duration: 700 },
-  { label: 'Reviewing Historical Patterns', duration: 600 },
-  { label: 'Preparing Support Options', duration: 500 },
+  { label: 'Searching School Memory', duration: 700 },
+  { label: 'Matching Historical Cases', duration: 600 },
+  { label: 'Calculating Confidence Score', duration: 400 },
+  { label: 'Preparing Recommendations', duration: 500 },
 ];
 
 interface TeacherCopilotStripProps {
@@ -193,6 +194,15 @@ export function TeacherCopilotStrip({ skipThinking = false, onOpenMemory }: Teac
               confidenceScore={item.confidenceScore}
               reasoning={item.trustSignals.reasoning}
               onOpenMemory={onOpenMemory}
+              historicalEvidence={{
+                id: 'h1',
+                pattern: item.trustSignals.reasoning,
+                count: item.historicalEvidence.casesCount,
+                interventions: [
+                  { name: 'Parent Message + Teacher Check-in', successRate: item.historicalEvidence.successRate, description: '' },
+                ],
+                recommendedApproach: item.historicalEvidence.recommendedApproach,
+              }}
             />
           </motion.div>
         )}

@@ -108,7 +108,7 @@ export function CopilotCard({ item }: CopilotCardProps) {
         signalsIgnored={item.trustSignals.ignored}
         confidenceScore={item.confidenceScore}
         reasoning={item.trustSignals.reasoning}
-        historicalEvidence={item.historicalEvidence ? {
+        historicalEvidence={{
           id: 'hist_1',
           pattern: item.trustSignals.reasoning,
           count: item.historicalEvidence.casesCount,
@@ -120,7 +120,7 @@ export function CopilotCard({ item }: CopilotCardProps) {
             },
           ],
           recommendedApproach: item.historicalEvidence.recommendedApproach,
-        } : undefined}
+        }}
       />
 
       {/* CONTROLS */}
@@ -142,7 +142,7 @@ export function CopilotCard({ item }: CopilotCardProps) {
           <div className="flex items-center gap-3 w-full justify-end">
             <button
               type="button"
-              onClick={() => approveCopilotAction(item.id, 't001')}
+              onClick={() => approveCopilotAction(item.id)}
               className="px-6 py-2.5 rounded-xl font-bold text-xs bg-[#0F766E] hover:bg-[#0d665f] text-white shadow-sm hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-1.5"
             >
               ✓ Approve All Actions
