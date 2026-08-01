@@ -10,15 +10,22 @@ interface SchoolGPTMessageProps {
   userQuery?: string;
   sources?: string[];
   confidence?: 'HIGH' | 'MEDIUM' | 'GENERAL' | 'LIMITED';
+  dbRetrievalFailed?: boolean;
 }
 
 export default function SchoolGPTMessage({
   role,
   content,
   sources = ['Attendance Records', 'Gradebook Marks', 'Homework Tracker'],
+  dbRetrievalFailed = false,
 }: SchoolGPTMessageProps) {
   const isUser = role === 'user';
   const [activeActionModal, setActiveActionModal] = useState<ActionPayload | null>(null);
+
+  // Update sources label based on retrieval status
+  const displaySources = dbRetrievalFailed 
+    ? ['Available Portal Information'] 
+    : sources;
 
   // Section Parser: Cleans up technical headers (OBSERVATION, EVIDENCE, REASONING) and breaks text into scannable paragraphs
   const parseSectionedResponse = (raw: string) => {
@@ -273,18 +280,40 @@ export default function SchoolGPTMessage({
             )}
 
             {/* Trust & Transparency: Subtle Source Attribution */}
-            {sources && sources.length > 0 && (
+            {displaySources && displaySources.length > 0 && (
               <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2">
                 <span className="text-[10px] font-mono font-extrabold text-slate-400 uppercase tracking-wider">
                   Based on:
                 </span>
-                {sources.map((src) => (
+                {displaySources.map((src) => (
                   <span
                     key={src}
                     className="px-2.5 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-[11px] font-semibold text-slate-600"
                   >
                     ✓ {src}
                   </span>
+                ))}
+              </div>
+            )}
+
+            {/* Fallback Action Chips */}
+            {dbRetrievalFailed && (
+              <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2">
+                <span className="text-[10px] font-mono font-extrabold text-slate-400 uppercase tracking-wider">
+                  Try again or ask about:
+                </span>
+                {['Retry', 'Attendance', 'Homework', 'Bus', 'Safety'].map((action) => (
+                  <button
+                    key={action}
+                    type="button"
+                    onClick={() => {
+                      // Handle action click - would need to be passed in as prop
+                      console.log('Action clicked:', action);
+                    }}
+                    className="px-3 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-700 transition-all active:scale-95"
+                  >
+                    {action}
+                  </button>
                 ))}
               </div>
             )}

@@ -298,6 +298,7 @@ export default function SchoolGPTDrawer({
                   role={msg.role}
                   content={msg.content}
                   sources={msg.aiResponse?.evidence.map((e) => e.label)}
+                  dbRetrievalFailed={msg.aiResponse?.confidence === 'LIMITED'}
                 />
               ))}
 
@@ -310,6 +311,28 @@ export default function SchoolGPTDrawer({
                 >
                   <span className="h-2.5 w-2.5 rounded-full bg-[#0F766E] animate-ping" />
                   <span>{loadingMessages[loadingIdx]}</span>
+                </motion.div>
+              )}
+
+              {/* ERROR RECOVERY STATE */}
+              {!isLoading && conversation.length > 0 && conversation[conversation.length - 1].role === 'assistant' && conversation[conversation.length - 1].content.includes('temporarily unable') && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="pt-2"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const lastUserMsg = [...conversation].reverse().find(m => m.role === 'user');
+                      if (lastUserMsg) {
+                        handleSend(lastUserMsg.content);
+                      }
+                    }}
+                    className="flex items-center gap-1.5 rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] px-4 py-2 text-xs font-bold text-[#111827] transition-all hover:bg-[#E5E7EB] active:scale-95"
+                  >
+                    <span>🔄 Retry</span>
+                  </button>
                 </motion.div>
               )}
             </div>

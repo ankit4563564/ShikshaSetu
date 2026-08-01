@@ -96,71 +96,115 @@ export async function askSchoolGPTAction(req: SchoolGPTRequest): Promise<SchoolG
   const actionObject = generateActionObject(classified.intent, resolvedQuery, '', req.role);
 
 
-  // 4. Live DB Retrieval Attempt
+  // 4. Live DB Retrieval Attempt with Auto-Retry
   let liveDbResult = '';
+  let dbRetrievalFailed = false;
+  let dbRetrievalError: Error | null = null;
+
+  const retrieveWithRetry = async (retriever: () => Promise<string>, maxRetries = 2): Promise<string> => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await retriever();
+      } catch (e) {
+        const error = e as Error;
+        console.error(`[SchoolGPT Actions] DB retrieval attempt ${attempt}/${maxRetries} failed:`, error);
+        if (attempt === maxRetries) {
+          throw error;
+        }
+        // Wait 500ms before retry
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+    return '';
+  };
+
   try {
     switch (classified.intent) {
       case 'student_performance':
       case 'marks':
-        liveDbResult = await retrieveStudentPerformance(effectiveStudentId);
+        liveDbResult = await retrieveWithRetry(() => retrieveStudentPerformance(effectiveStudentId));
         break;
       case 'attendance':
-        if (req.role === 'student' || req.role === 'parent') liveDbResult = await retrieveAttendance(effectiveStudentId);
-        else liveDbResult = await retrieveAttendanceTrends();
+        if (req.role === 'student' || req.role === 'parent') liveDbResult = await retrieveWithRetry(() => retrieveAttendance(effectiveStudentId));
+        else liveDbResult = await retrieveWithRetry(() => retrieveAttendanceTrends());
         break;
       case 'homework':
-        liveDbResult = await retrieveHomework(effectiveStudentId);
+        liveDbResult = await retrieveWithRetry(() => retrieveHomework(effectiveStudentId));
         break;
       case 'timetable':
-        liveDbResult = await retrieveTimetable(req.classGrade || '8', req.classSection || 'A');
+        liveDbResult = await retrieveWithRetry(() => retrieveTimetable(req.classGrade || '8', req.classSection || 'A'));
         break;
       case 'exams':
-        liveDbResult = await retrieveExams(effectiveStudentId, req.classGrade || '8');
+        liveDbResult = await retrieveWithRetry(() => retrieveExams(effectiveStudentId, req.classGrade || '8'));
         break;
       case 'who_needs_attention':
-        liveDbResult = await retrieveStudentNeedingAttention(req.teacherId || 'all');
+        liveDbResult = await retrieveWithRetry(() => retrieveStudentNeedingAttention(req.teacherId || 'all'));
         break;
       case 'bus':
-        liveDbResult = await retrieveBus(effectiveStudentId);
+        liveDbResult = await retrieveWithRetry(() => retrieveBus(effectiveStudentId));
         break;
       case 'events':
-        liveDbResult = await retrieveEvents();
+        liveDbResult = await retrieveWithRetry(() => retrieveEvents());
         break;
       case 'announcements':
-        liveDbResult = await retrieveNotices();
+        liveDbResult = await retrieveWithRetry(() => retrieveNotices());
         break;
       case 'library':
-        liveDbResult = await retrieveLibrary();
+        liveDbResult = await retrieveWithRetry(() => retrieveLibrary());
         break;
       case 'rules':
-        liveDbResult = await retrieveRules();
+        liveDbResult = await retrieveWithRetry(() => retrieveRules());
         break;
       case 'clubs':
-        liveDbResult = await retrieveClubs(effectiveStudentId);
+        liveDbResult = await retrieveWithRetry(() => retrieveClubs(effectiveStudentId));
         break;
       case 'faculty':
-        liveDbResult = await retrieveTeachers(req.classGrade);
+        liveDbResult = await retrieveWithRetry(() => retrieveTeachers(req.classGrade));
         break;
     }
   } catch (e) {
-    console.warn('[SchoolGPT Actions] Live DB retriever fallback triggered:', e);
+    dbRetrievalFailed = true;
+    dbRetrievalError = e as Error;
+    console.error('[SchoolGPT Actions] DB retrieval failed after retries:', e);
   }
 
   // 5. Targeted Hybrid Retrieval
   const retrievalResult = await executeHybridRetrieval(classified, resolvedQuery, brainContext, liveDbResult, queryPlan);
 
   // 6. Synthesize Final Response
-  const res = await generateSchoolGPTResponse(
-    resolvedQuery,
-    retrievalResult.data,
-    req.role,
-    history,
-    classified.intent,
-    retrievalResult.confidence,
-    retrievalResult.modulesConsulted,
-    brainContext,
-    queryPlan
-  );
+  let res;
+  if (dbRetrievalFailed) {
+    // Fallback: Use portal context when DB fails
+    console.log('[SchoolGPT Actions] Using fallback response due to DB failure');
+    res = await generateSchoolGPTResponse(
+      resolvedQuery,
+      retrievalResult.data,
+      req.role,
+      history,
+      classified.intent,
+      'MEDIUM', // Lower confidence when using fallback
+      retrievalResult.modulesConsulted,
+      brainContext,
+      queryPlan
+    );
+    
+    // Add fallback indicator to response
+    res.text = res.text + '\n\n*Using available portal information*';
+    res.sources = ['Available Portal Information'];
+    res.confidence = 'MEDIUM';
+  } else {
+    res = await generateSchoolGPTResponse(
+      resolvedQuery,
+      retrievalResult.data,
+      req.role,
+      history,
+      classified.intent,
+      retrievalResult.confidence,
+      retrievalResult.modulesConsulted,
+      brainContext,
+      queryPlan
+    );
+  }
 
   // 7. Role Security & Permission Guard Inspection
   const { ResponseGuard } = await import('@/lib/schoolgpt/ResponseGuard');
@@ -170,6 +214,7 @@ export async function askSchoolGPTAction(req: SchoolGPTRequest): Promise<SchoolG
     ...res,
     text: sanitizedText,
     actionObject,
+    dbRetrievalFailed, // Pass this flag to UI for fallback UI
   };
 }
 

@@ -212,8 +212,12 @@ export default function SchoolGPTChat({
         role: 'assistant',
         content: response.text,
         timestamp: Date.now(),
-        sources: response.sources || ['School Database', 'Official Portal'],
-        suggestedFollowUps: response.suggestedFollowUps,
+        sources: response.dbRetrievalFailed 
+          ? ['Available Portal Information'] 
+          : response.sources || ['School Database', 'Official Portal'],
+        suggestedFollowUps: response.dbRetrievalFailed
+          ? ['Retry', 'Attendance', 'Homework', 'Bus', 'Safety']
+          : response.suggestedFollowUps,
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
@@ -225,8 +229,10 @@ export default function SchoolGPTChat({
         {
           id: generateId(),
           role: 'assistant',
-          content: 'Sorry, I encountered an error retrieving data. Please try again.',
+          content: "I'm temporarily unable to reach school records. Please try again in a moment.",
           timestamp: Date.now(),
+          sources: [],
+          suggestedFollowUps: ['Retry', 'Attendance', 'Homework', 'Bus', 'Safety'],
         },
       ]);
     } finally {

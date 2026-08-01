@@ -17,6 +17,7 @@ export interface SchoolGPTResponse {
   suggestedFollowUps?: string[];
   source: string;
   confidence?: ConfidenceLevel;
+  dbRetrievalFailed?: boolean;
 }
 
 async function groqGenerate(system: string, history: any[], user: string): Promise<string | null> {

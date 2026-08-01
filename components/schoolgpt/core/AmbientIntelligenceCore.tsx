@@ -156,8 +156,13 @@ export function AmbientIntelligenceCoreProvider({ children }: { children: React.
           {
             id: `msg-${Date.now()}`,
             role: 'assistant',
-            content: 'Sorry, I encountered an error looking up data. Please try again.',
+            content: "I'm temporarily unable to reach school records. Please try again in a moment.",
             timestamp: Date.now(),
+            aiResponse: parseToAIResponse(
+              "I'm temporarily unable to reach school records. Please try again in a moment.",
+              'LIMITED',
+              []
+            ),
           },
         ]);
       } finally {
