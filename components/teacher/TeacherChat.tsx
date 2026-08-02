@@ -17,6 +17,9 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [isUserNearBottom, setIsUserNearBottom] = useState(true);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -85,8 +88,47 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
     };
   }, [studentId, studentName]);
 
+  // Track scroll position to detect if user is near bottom
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = chatContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      const isNearBottom = distanceFromBottom < 100;
+      setIsUserNearBottom(isNearBottom);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check
+
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Auto-scroll logic
+  useEffect(() => {
+    if (!shouldAutoScroll && !isUserNearBottom) return;
+
+    const container = chatContainerRef.current;
+    if (!container) return;
+
+    // Smooth scroll to bottom
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: shouldAutoScroll ? 'smooth' : 'auto'
+    });
+  }, [messages, shouldAutoScroll, isUserNearBottom]);
+
+  // Always auto-scroll when user sends a message
+  useEffect(() => {
+    if (messages.length > 0 && messages[messages.length - 1].senderRole === 'teacher') {
+      setShouldAutoScroll(true);
+      const container = chatContainerRef.current;
+      if (container) {
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+      }
+    }
   }, [messages]);
 
   const filteredMessages = messages.filter((msg) =>
@@ -139,7 +181,7 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
   ];
 
   return (
-    <div className="flex h-full min-h-[340px] flex-col justify-between">
+    <div className="relative flex h-full min-h-[340px] flex-col justify-between">
       <div className="mb-3 border-b border-deep-teal/10 pb-2 flex items-center justify-between gap-2">
         <h4 className="font-display text-[11px] font-black uppercase tracking-[0.14em] text-deep-teal/72">
           Chat with Parent
@@ -154,7 +196,7 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
         />
       </div>
 
-      <div className="mb-3 flex-1 overflow-y-auto space-y-2 pr-1 text-xs scrollbar-thin">
+      <div ref={chatContainerRef} className="mb-3 flex-1 overflow-y-auto space-y-2 pr-1 text-xs scrollbar-thin scroll-smooth">
         {filteredMessages.length === 0 ? (
           <div className="py-10 text-center italic text-deep-teal/54 font-medium">
             {searchQuery ? 'No messages matching search.' : 'No messages yet. Send a quick update below.'}
@@ -191,6 +233,23 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
         )}
         <div ref={chatEndRef} />
       </div>
+
+      {/* Scroll to Bottom Button */}
+      {!isUserNearBottom && (
+        <button
+          type="button"
+          onClick={() => {
+            setShouldAutoScroll(true);
+            chatContainerRef.current?.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior: 'smooth' });
+          }}
+          className="absolute bottom-20 right-2 bg-deep-teal hover:bg-deep-teal/90 text-white p-2 rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 z-10"
+          title="Scroll to bottom"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </button>
+      )}
 
       <div className="mb-3 space-y-1.5">
         <span className="text-[10px] font-black uppercase tracking-[0.14em] text-deep-teal/64">

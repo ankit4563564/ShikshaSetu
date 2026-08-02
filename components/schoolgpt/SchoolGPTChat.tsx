@@ -106,9 +106,51 @@ export default function SchoolGPTChat({
   const [hasError, setHasError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [isUserNearBottom, setIsUserNearBottom] = useState(true);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
+  // Track scroll position to detect if user is near bottom
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      const isNearBottom = distanceFromBottom < 100;
+      setIsUserNearBottom(isNearBottom);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check
+
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Auto-scroll logic
+  useEffect(() => {
+    if (!shouldAutoScroll && !isUserNearBottom) return;
+
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    // Smooth scroll to bottom
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: shouldAutoScroll ? 'smooth' : 'auto'
+    });
+  }, [messages, shouldAutoScroll, isUserNearBottom]);
+
+  // Always auto-scroll when user sends a message
+  useEffect(() => {
+    if (messages.length > 0 && messages[messages.length - 1].role === 'user') {
+      setShouldAutoScroll(true);
+      const container = messagesContainerRef.current;
+      if (container) {
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+      }
+    }
   }, [messages]);
 
   // Keyboard shortcuts: '/' to focus search, 'Cmd+K' / 'Ctrl+K' to open Spotlight
@@ -434,7 +476,7 @@ export default function SchoolGPTChat({
       </AnimatePresence>
 
       {/* ── 5. AI RESPONSE STREAM ── */}
-      <div className="w-full max-w-3xl mx-auto space-y-6 flex-1">
+      <div ref={messagesContainerRef} className="w-full max-w-3xl mx-auto space-y-6 flex-1 overflow-y-auto scroll-smooth">
         <AnimatePresence initial={false}>
           {messages.map((msg, idx) => {
             const prevQuery = idx > 0 && messages[idx - 1].role === 'user' ? messages[idx - 1].content : '';
@@ -506,6 +548,23 @@ export default function SchoolGPTChat({
 
         <div ref={endRef} />
       </div>
+
+      {/* Scroll to Bottom Button */}
+      {!isUserNearBottom && (
+        <button
+          type="button"
+          onClick={() => {
+            setShouldAutoScroll(true);
+            messagesContainerRef.current?.scrollTo({ top: messagesContainerRef.current.scrollHeight, behavior: 'smooth' });
+          }}
+          className="fixed bottom-24 right-6 sm:right-12 bg-slate-900 hover:bg-slate-800 text-white p-3 rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 z-40"
+          title="Scroll to bottom"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
