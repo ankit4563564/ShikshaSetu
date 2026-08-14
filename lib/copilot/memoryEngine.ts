@@ -135,7 +135,7 @@ export async function getStudentLongitudinalMemory(studentId: string): Promise<S
     const timeline = (interventions || []).map(inv => {
       const date = new Date(inv.created_at);
       const month = date.toLocaleString('default', { month: 'long' });
-      const type = inv.status === 'completed' ? 'milestone' : 'challenge';
+      const type = (inv.status === 'completed' ? 'milestone' : 'challenge') as 'milestone' | 'challenge';
       return {
         month,
         event: inv.title || 'Support intervention',

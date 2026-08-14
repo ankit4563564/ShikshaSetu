@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getDemoSessionFromCookies } from '@/lib/demo/session';
 
+import { CANONICAL_STUDENT_ID, CANONICAL_TEACHER_ID, CANONICAL_GUARDIAN_ID } from '@/lib/canonical';
+
 export type PortalRole = 'teacher' | 'student' | 'parent' | 'driver' | 'admin' | 'vendor' | 'gate';
 
 interface AuthenticatedUser {
@@ -25,10 +27,15 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
   const { userId } = await auth();
   if (!userId) {
     const demo = await getDemoSessionFromCookies(cookies());
+    const role = (demo?.role as PortalRole) || 'parent';
+    let dbUserId = 'demo';
+    if (role === 'teacher') dbUserId = CANONICAL_TEACHER_ID;
+    else if (role === 'parent') dbUserId = CANONICAL_GUARDIAN_ID;
+    else if (role === 'student') dbUserId = CANONICAL_STUDENT_ID;
     return {
       clerkId: 'demo',
-      role: (demo?.role as PortalRole) || 'parent',
-      dbUserId: 'demo',
+      role,
+      dbUserId,
     };
   }
 

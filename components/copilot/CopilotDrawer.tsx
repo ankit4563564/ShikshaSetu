@@ -10,6 +10,7 @@ import {
   CopilotState,
 } from '@/lib/copilot/copilotEngine';
 import { getAIImpactMetrics } from '@/lib/copilot/impactEngine';
+import { getDemoIntervention } from '@/lib/copilot/interventionEngine';
 import { CopilotCard } from './CopilotCard';
 import { AIImpactWidget } from './AIImpactWidget';
 import { InterventionTimeline } from './InterventionTimeline';
@@ -17,6 +18,7 @@ import { InterventionTimeline } from './InterventionTimeline';
 export function CopilotDrawer() {
   const [state, setState] = useState<CopilotState>(getCopilotState());
   const impactMetrics = getAIImpactMetrics();
+  const demoIntervention = getDemoIntervention();
 
   useEffect(() => {
     const unsubscribe = subscribeCopilotState((newState) => setState(newState));
@@ -124,7 +126,7 @@ export function CopilotDrawer() {
           {/* Body */}
           <div className="p-6 space-y-5 flex-1 overflow-y-auto">
             <AIImpactWidget metrics={impactMetrics} />
-            <InterventionTimeline intervention={state.activeIntervention} />
+            <InterventionTimeline intervention={demoIntervention} />
 
             <div className="space-y-3">
               <span className="text-[10px] font-mono font-extrabold text-[#6B7280] uppercase tracking-wider block">

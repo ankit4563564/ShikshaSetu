@@ -26,6 +26,26 @@ export async function resetDemoDataAction(): Promise<DemoResetResult> {
   const supabase = createClient();
 
   try {
+    // Fetch intervention IDs first before deleting
+    const { data: userInterventions } = await supabase
+      .from('interventions')
+      .select('id')
+      .eq('student_id', CANONICAL_STUDENT_ID);
+
+    const interventionIds = (userInterventions || []).map(i => i.id);
+
+    if (interventionIds.length > 0) {
+      // Delete milestones first due to foreign key constraints
+      const { error: milestonesError } = await supabase
+        .from('intervention_milestones')
+        .delete()
+        .in('intervention_id', interventionIds);
+
+      if (milestonesError && milestonesError.code !== 'PGRST116') {
+        console.error('Failed to delete milestones:', milestonesError);
+      }
+    }
+
     // Delete interventions for canonical student
     const { error: interventionsError } = await supabase
       .from('interventions')
@@ -34,18 +54,6 @@ export async function resetDemoDataAction(): Promise<DemoResetResult> {
 
     if (interventionsError && interventionsError.code !== 'PGRST116') {
       console.error('Failed to delete interventions:', interventionsError);
-    }
-
-    // Delete intervention milestones for canonical student
-    const { error: milestonesError } = await supabase
-      .from('intervention_milestones')
-      .delete()
-      .in('intervention_id', 
-        supabase.from('interventions').select('id').eq('student_id', CANONICAL_STUDENT_ID)
-      );
-
-    if (milestonesError && milestonesError.code !== 'PGRST116') {
-      console.error('Failed to delete milestones:', milestonesError);
     }
 
     // Delete student tasks for canonical student

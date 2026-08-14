@@ -171,7 +171,7 @@ export async function getLongitudinalPerformance(studentId: string, days: number
       attendance: recentAttendance > olderAttendance + 5 ? 'improving' : recentAttendance < olderAttendance - 5 ? 'declining' : 'stable',
       homework: recentHomework > olderHomework + 5 ? 'improving' : recentHomework < olderHomework - 5 ? 'declining' : 'stable',
       grades: recentGrades > olderGrades + 5 ? 'improving' : recentGrades < olderGrades - 5 ? 'declining' : 'stable',
-    };
+    } as const;
 
     return {
       studentId,

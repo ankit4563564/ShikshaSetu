@@ -365,6 +365,7 @@ export async function getCanonicalBusLocation(): Promise<BusLocation | null> {
   };
 }
 
+
 // ============================================================================
 // Canonical Complete State (for portals)
 // ============================================================================

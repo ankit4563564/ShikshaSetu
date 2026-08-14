@@ -40,7 +40,12 @@ export interface PreparedActionItem {
     value: any;
     timestamp: string;
   }[];
-  status: 'needs_review' | 'approved' | 'edited' | 'dismissed';
+  status: 'needs_review' | 'approved' | 'edited' | 'dismissed' | 'completed';
+  historicalEvidence: {
+    casesCount: number;
+    successRate: number;
+    recommendedApproach: string;
+  };
 }
 
 export interface CopilotState {
@@ -93,6 +98,11 @@ function supportSignalToCopilotItem(signal: SupportSignal): PreparedActionItem {
     },
     signalEvidence: signal.evidence,
     status: signal.status === 'pending' ? 'needs_review' as const : signal.status as any,
+    historicalEvidence: {
+      casesCount: 12,
+      successRate: 85,
+      recommendedApproach: 'Early interventions with parental notice show positive outcomes.'
+    }
   };
 }
 
@@ -162,7 +172,12 @@ export async function loadCopilotItems() {
           reasoning: 'Based on 3 data points from homework, attendance, and classroom observations.'
         },
         signalEvidence: [],
-        status: 'needs_review'
+        status: 'needs_review',
+        historicalEvidence: {
+          casesCount: 8,
+          successRate: 94,
+          recommendedApproach: 'Direct teacher-parent-student check-in works best for homework gaps.'
+        }
       };
       
       globalState = {

@@ -1,6 +1,9 @@
 'use client';
 
-import { STUDENTS } from '@/lib/demo/schoolUniverse';
+import { motion } from 'framer-motion';
+import { STUDENTS_DATA } from '@/lib/demo-data/students';
+import { GUARDIAN_JOURNEY_DATA } from '@/lib/demo-data/guardianJourney';
+import { SUPPORT_RADAR_DATA } from '@/lib/demo-data/supportRadar';
 
 interface DynamicEngineProps {
   intent: 'STUDENT_REPORT' | 'CLASS_ANALYTICS' | 'COMPARISON' | 'TIMELINE' | 'ACTION' | 'PARENT_SUMMARY' | 'SEARCH';
@@ -9,7 +12,7 @@ interface DynamicEngineProps {
 }
 
 export default function SchoolGPTDynamicEngine({ intent, queryText = '', onSelectAction }: DynamicEngineProps) {
-  const aarav = STUDENTS[0];
+  const aarav = STUDENTS_DATA[0];
 
   const renderFollowUpFooter = (actions: string[]) => (
     <div className="pt-4 border-t border-slate-100 space-y-2.5">
@@ -137,7 +140,7 @@ export default function SchoolGPTDynamicEngine({ intent, queryText = '', onSelec
             </div>
 
             <div className="relative border-l-2 border-slate-200 pl-4 space-y-4 font-body">
-              {GUARDIAN_JOURNEY_DATA.map((evt, idx) => (
+              {GUARDIAN_JOURNEY_DATA.map((evt: any, idx: number) => (
                 <div key={idx} className="relative group">
                   <div className="absolute -left-[21px] top-1.5 h-3 w-3 rounded-full bg-slate-900 ring-4 ring-white" />
                   <div className="flex items-start justify-between gap-2">
@@ -172,7 +175,7 @@ export default function SchoolGPTDynamicEngine({ intent, queryText = '', onSelec
               </span>
             </div>
 
-            {SUPPORT_RADAR_DATA.map((sig) => (
+            {SUPPORT_RADAR_DATA.map((sig: any) => (
               <div key={sig.studentId} className="p-4 bg-amber-50/80 border border-amber-200/80 rounded-2xl flex items-center justify-between gap-3">
                 <div>
                   <h5 className="font-display text-xs font-extrabold text-amber-900">{sig.studentName}</h5>
