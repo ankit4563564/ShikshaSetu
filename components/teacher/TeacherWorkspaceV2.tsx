@@ -10,16 +10,17 @@ import HomeworkWidget from './widgets/HomeworkWidget';
 import ScheduleCalendarWidget from './widgets/ScheduleCalendarWidget';
 import SchoolGPTSpotlight from '../schoolgpt/SchoolGPTSpotlight';
 import SchoolGPTDrawer from '../schoolgpt/SchoolGPTDrawer';
+import Student360Modal from './Student360Modal';
 import { useAmbientAICore } from '../schoolgpt/core/AmbientIntelligenceCore';
 import { useContextRegistry } from '../schoolgpt/context/ContextRegistry';
 
 const suggestedCards = [
   { title: 'Support Radar', prompt: 'Which students need support today?', icon: '🎯', bg: 'bg-rose-50 border-rose-100 text-rose-700' },
-  { title: "Aarav's Report", prompt: "Show Aarav's complete academic report.", icon: '👤', bg: 'bg-purple-50 border-purple-100 text-purple-700' },
+  { title: 'Student Report', prompt: 'Show complete academic report for student needing support.', icon: '👤', bg: 'bg-purple-50 border-purple-100 text-purple-700' },
   { title: 'Class Performance', prompt: 'How is my class performing this week?', icon: '📊', bg: 'bg-sky-50 border-sky-100 text-sky-700' },
   { title: 'Attendance Summary', prompt: "Summarize today's attendance.", icon: '📅', bg: 'bg-emerald-50 border-emerald-100 text-emerald-700' },
   { title: 'Homework Today', prompt: "What's the homework for today?", icon: '📖', bg: 'bg-amber-50 border-amber-100 text-amber-700' },
-  { title: 'PTM Draft', prompt: "Generate PTM summary for Aarav's parent.", icon: '✉️', bg: 'bg-pink-50 border-pink-100 text-pink-700' },
+  { title: 'PTM Draft', prompt: "Generate PTM summary for parent update.", icon: '✉️', bg: 'bg-pink-50 border-pink-100 text-pink-700' },
 ];
 
 const quickActions = [
@@ -31,10 +32,15 @@ const quickActions = [
   'Open Student Profile',
 ];
 
-export default function TeacherWorkspaceV2() {
+interface TeacherWorkspaceV2Props {
+  readonly teacherName?: string;
+}
+
+export default function TeacherWorkspaceV2({ teacherName }: TeacherWorkspaceV2Props) {
   const [activeTab, setActiveTab] = useState('today');
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const { ask, isLoading } = useAmbientAICore();
   const { setContext } = useContextRegistry();
 
@@ -50,6 +56,8 @@ export default function TeacherWorkspaceV2() {
     else if (tab === 'students') setContext({ module: 'general' });
   };
 
+  const displayName = teacherName || 'Teacher';
+
   return (
     <div className="flex min-h-screen bg-slate-50 font-body text-slate-900 overflow-x-hidden">
       {/* Left Task-Oriented Sidebar */}
@@ -57,6 +65,7 @@ export default function TeacherWorkspaceV2() {
         activeTab={activeTab}
         onTabChange={handleTabChange}
         onOpenSpotlight={() => setIsSpotlightOpen(true)}
+        teacherName={displayName}
       />
 
       {/* Main Hero Workspace */}
@@ -64,7 +73,7 @@ export default function TeacherWorkspaceV2() {
         {/* Header Greeting */}
         <div className="space-y-1">
           <h1 className="font-display text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            Good morning, Ms. Priya 👋
+            Good morning, {displayName} 👋
           </h1>
           <p className="text-sm font-medium text-slate-500">How can I help you today?</p>
         </div>
@@ -134,13 +143,24 @@ export default function TeacherWorkspaceV2() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <SupportRadarWidget onAskWhy={(q) => handleQuerySend(q)} />
+            <SupportRadarWidget
+              onAskWhy={(q) => handleQuerySend(q)}
+              onSelectStudent={(id) => setSelectedStudentId(id)}
+            />
             <AttendanceWidget onAskExplain={(q) => handleQuerySend(q)} />
             <HomeworkWidget onDraftReminder={(q) => handleQuerySend(q)} />
             <ScheduleCalendarWidget />
           </div>
         </div>
       </main>
+
+      {/* Student 360 Viewport Modal */}
+      {selectedStudentId && (
+        <Student360Modal
+          studentId={selectedStudentId}
+          onClose={() => setSelectedStudentId(null)}
+        />
+      )}
 
       {/* Floating Spotlight Command Palette */}
       <SchoolGPTSpotlight

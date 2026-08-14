@@ -13,9 +13,10 @@ interface StudentStatus {
 
 interface SupportRadarWidgetProps {
   onAskWhy: (studentName: string) => void;
+  onSelectStudent?: (studentId: string) => void;
 }
 
-export default function SupportRadarWidget({ onAskWhy }: SupportRadarWidgetProps) {
+export default function SupportRadarWidget({ onAskWhy, onSelectStudent }: SupportRadarWidgetProps) {
   const [students, setStudents] = useState<StudentStatus[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -146,14 +147,25 @@ export default function SupportRadarWidget({ onAskWhy }: SupportRadarWidgetProps
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => onAskWhy(`Why does ${s.name} need attention?`)}
-                className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-[11px] transition-all active:scale-95 shadow-2xs flex items-center gap-1"
-              >
-                <span>Ask Why</span>
-                <span className="text-[10px]">✨</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {onSelectStudent && (
+                  <button
+                    type="button"
+                    onClick={() => onSelectStudent(s.id)}
+                    className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-[11px] transition-all active:scale-95 border border-indigo-200"
+                  >
+                    View 360
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onAskWhy(`Why does ${s.name} need attention?`)}
+                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-[11px] transition-all active:scale-95 shadow-2xs flex items-center gap-1"
+                >
+                  <span>Ask Why</span>
+                  <span className="text-[10px]">✨</span>
+                </button>
+              </div>
             </div>
           ))}
         </div>

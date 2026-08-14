@@ -84,7 +84,7 @@ export default async function ParentPage() {
   const supabase = createClient();
   const studentIdsList = myStudents.map((s) => s.studentId);
   const [{ data: allDbLogs }, { data: allGatePasses }] = await Promise.all([
-    supabase.from('evidence_logs').select('id, source_type, headline, bullets, raw_data, student_id').in('student_id', studentIdsList).order('generated_at', { ascending: false }),
+    supabase.from('evidence_logs').select('id, source_type, headline, bullets, raw_data, student_id').in('student_id', studentIdsList).eq('is_parent_visible', true).order('generated_at', { ascending: false }),
     supabase.from('gate_passes').select('id, status, pickup_window_start, pickup_window_end, pass_code, reason, used_at, rejection_reason, student_id').in('student_id', studentIdsList).order('created_at', { ascending: false }),
   ]);
 

@@ -171,10 +171,30 @@ export default async function TeacherPage() {
     };
   });
 
+  // Query database to fetch linked teacher record details
+  let teacherDisplayName = 'Teacher';
+  if (clerkKey && !demo?.active) {
+    const { userId } = await auth();
+    if (userId) {
+      const adminDb = createAdminClient();
+      const { data: teacher } = await adminDb
+        .from('teachers')
+        .select('id, first_name, last_name, display_name')
+        .eq('clerk_user_id', userId)
+        .limit(1)
+        .maybeSingle();
+
+      if (teacher) {
+        activeTeacherId = teacher.id;
+        teacherDisplayName = teacher.display_name || `${teacher.first_name || ''} ${teacher.last_name || ''}`.trim() || 'Teacher';
+      }
+    }
+  }
+
   // 7. Render client dashboard grid
   return (
     <ErrorBoundary portalName="Teacher Portal">
-      <TeacherWorkspaceV2 />
+      <TeacherWorkspaceV2 teacherName={teacherDisplayName} />
     </ErrorBoundary>
   );
 }

@@ -38,18 +38,20 @@ export async function approveSupportPlanAction(
   requirePermission(context, 'interventions:approve');
 
   const scopedDb = createScopedClient(context);
-  const supabase = createServerClient();
 
   console.log('[Server Action] approveSupportPlanAction called with:', input);
 
   try {
+    // Authenticated teacher identity from context
+    const activeTeacherId = context.userId;
+
     // Start transaction pre-scoped to school_id
     console.log('[Server Action] Creating intervention...');
     const { data: intervention, error: interventionError } = await scopedDb
       .from('interventions')
       .insert({
         student_id: input.studentId,
-        teacher_id: input.teacherId || context.userId,
+        teacher_id: activeTeacherId,
         signal_id: input.signalId,
         signal_type: input.signalType,
         title: `Support Plan: ${input.signalType.replace('_', ' ')}`,
@@ -64,8 +66,8 @@ export async function approveSupportPlanAction(
 
     if (interventionError) throw interventionError;
 
-    // Create initial milestone for approval
-    const { error: milestoneError } = await supabase
+    // Create initial milestone for approval via scoped client
+    const { error: milestoneError } = await scopedDb
       .from('intervention_milestones')
       .insert({
         intervention_id: intervention.id,
@@ -73,16 +75,16 @@ export async function approveSupportPlanAction(
         description: `Teacher approved support plan based on ${input.signalType} signal`,
         status: 'completed',
         actor: 'teacher',
-        actor_id: input.teacherId,
+        actor_id: activeTeacherId,
         completed_at: new Date().toISOString(),
       });
 
     if (milestoneError) throw milestoneError;
 
-    // Create student task from first recommended action
+    // Create student task from first recommended action via scoped client
     const primaryAction = input.recommendedActions.find(a => a.category === 'academic') || input.recommendedActions[0];
     
-    const { data: task, error: taskError } = await supabase
+    const { data: task, error: taskError } = await scopedDb
       .from('student_tasks')
       .insert({
         student_id: input.studentId,
@@ -98,8 +100,8 @@ export async function approveSupportPlanAction(
 
     if (taskError) throw taskError;
 
-    // Create milestone for task assignment
-    const { error: taskMilestoneError } = await supabase
+    // Create milestone for task assignment via scoped client
+    const { error: taskMilestoneError } = await scopedDb
       .from('intervention_milestones')
       .insert({
         intervention_id: intervention.id,
@@ -112,8 +114,8 @@ export async function approveSupportPlanAction(
 
     if (taskMilestoneError) throw taskMilestoneError;
 
-    // Get guardian ID for notification
-    const { data: guardianAccess, error: guardianError } = await supabase
+    // Get guardian ID for notification via scoped client
+    const { data: guardianAccess, error: guardianError } = await scopedDb
       .from('guardian_access')
       .select('guardian_id')
       .eq('student_id', input.studentId)
@@ -121,8 +123,8 @@ export async function approveSupportPlanAction(
       .single();
 
     if (!guardianError && guardianAccess) {
-      // Create parent notification
-      const { error: parentNotifError } = await supabase
+      // Create parent notification via scoped client
+      const { error: parentNotifError } = await scopedDb
         .from('notifications')
         .insert({
           recipient_id: guardianAccess.guardian_id,
@@ -137,13 +139,10 @@ export async function approveSupportPlanAction(
       if (parentNotifError) console.error('Failed to create parent notification:', parentNotifError);
     }
 
-    // Note: Student notifications would need a students table reference or different recipient handling
-    // Skipping for now as notifications table references teachers/guardians
-
     // Record ecosystem event
     await recordEcosystemEvent({
       event_type: 'intervention_approved',
-      actor_id: input.teacherId,
+      actor_id: activeTeacherId,
       actor_role: 'teacher',
       student_id: input.studentId,
       title: `Support intervention approved for ${input.studentName}`,
@@ -156,12 +155,12 @@ export async function approveSupportPlanAction(
       },
     });
 
-    // Update status flag if exists
-    const { error: statusFlagError } = await supabase
+    // Update status flag if exists via scoped client
+    const { error: statusFlagError } = await scopedDb
       .from('status_flags')
       .update({
         action_status: 'action_taken',
-        acted_by: input.teacherId,
+        acted_by: activeTeacherId,
         acted_at: new Date().toISOString(),
       })
       .eq('student_id', input.studentId)
@@ -212,11 +211,14 @@ export interface CompleteTaskResult {
 export async function completeTaskAction(
   input: CompleteTaskInput
 ): Promise<CompleteTaskResult> {
-  const supabase = createServerClient();
+  const context = await getAuthContext();
+  requirePermission(context, 'tasks:complete');
+
+  const scopedDb = createScopedClient(context);
 
   try {
-    // Update task status
-    const { data: task, error: taskError } = await supabase
+    // Update task status via scoped client
+    const { data: task, error: taskError } = await scopedDb
       .from('student_tasks')
       .update({
         status: 'completed',
@@ -229,9 +231,9 @@ export async function completeTaskAction(
 
     if (taskError) throw taskError;
 
-    // Create milestone
+    // Create milestone via scoped client
     if (task.intervention_id) {
-      const { error: milestoneError } = await supabase
+      const { error: milestoneError } = await scopedDb
         .from('intervention_milestones')
         .insert({
           intervention_id: task.intervention_id,
@@ -239,7 +241,7 @@ export async function completeTaskAction(
           description: task.description,
           status: 'completed',
           actor: 'student',
-          actor_id: input.studentId,
+          actor_id: context.userId,
           completed_at: new Date().toISOString(),
         });
 
