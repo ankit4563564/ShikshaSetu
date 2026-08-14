@@ -1,6 +1,8 @@
 'use server';
 
 import { createClient as createServerClient } from '@/lib/supabase/server';
+import { createScopedClient } from '@/lib/supabase/scoped';
+import { getAuthContext, requirePermission } from '@/lib/auth/getAuthContext';
 import { revalidatePath } from 'next/cache';
 import { recordEcosystemEvent } from '@/app/actions/ecosystemActions';
 
@@ -28,36 +30,26 @@ export interface ApproveSupportPlanResult {
 
 /**
  * Approve Support Plan Transaction
- * 
- * This is the critical transaction that makes the Copilot "Approve Support Plan"
- * button actually do something real. It:
- * 
- * 1. Creates intervention record
- * 2. Creates student support task
- * 3. Creates parent notification
- * 4. Creates student notification
- * 5. Creates ecosystem event
- * 6. Records teacher approval
- * 7. Updates support signal status
- * 8. Writes intervention milestone
- * 
- * All in a single transaction for consistency.
  */
 export async function approveSupportPlanAction(
   input: ApproveSupportPlanInput
 ): Promise<ApproveSupportPlanResult> {
+  const context = await getAuthContext();
+  requirePermission(context, 'interventions:approve');
+
+  const scopedDb = createScopedClient(context);
   const supabase = createServerClient();
 
   console.log('[Server Action] approveSupportPlanAction called with:', input);
 
   try {
-    // Start transaction
+    // Start transaction pre-scoped to school_id
     console.log('[Server Action] Creating intervention...');
-    const { data: intervention, error: interventionError } = await supabase
+    const { data: intervention, error: interventionError } = await scopedDb
       .from('interventions')
       .insert({
         student_id: input.studentId,
-        teacher_id: input.teacherId,
+        teacher_id: input.teacherId || context.userId,
         signal_id: input.signalId,
         signal_type: input.signalType,
         title: `Support Plan: ${input.signalType.replace('_', ' ')}`,

@@ -3,6 +3,8 @@
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createScopedClient } from '@/lib/supabase/scoped';
+import { getAuthContext, requirePermission } from '@/lib/auth/getAuthContext';
 import { revalidatePath } from 'next/cache';
 import {
   createEcosystemNotifications,
@@ -56,11 +58,10 @@ async function getTeacherId(): Promise<string | null> {
 }
 
 export async function createExamAction(formData: FormData) {
-  const teacherId = await getTeacherId();
-  if (!teacherId) throw new Error('Unauthorized');
+  const context = await getAuthContext();
+  requirePermission(context, 'marks:write');
 
-  const supabase = createClient();
-  const adminDb = createAdminClient();
+  const scopedDb = createScopedClient(context);
 
   const subject = formData.get('subject') as string;
   const examName = formData.get('examName') as string;
@@ -73,7 +74,7 @@ export async function createExamAction(formData: FormData) {
     return { error: 'Missing required fields' };
   }
 
-  const { data: exam, error } = await adminDb
+  const { data: exam, error } = await scopedDb
     .from('exams')
     .insert({
       subject,
@@ -82,7 +83,7 @@ export async function createExamAction(formData: FormData) {
       exam_date: examDate,
       class_grade: classGrade,
       class_section: classSection,
-      created_by: teacherId,
+      created_by: context.userId,
     })
     .select('id')
     .single();
@@ -91,8 +92,8 @@ export async function createExamAction(formData: FormData) {
     return { error: error?.message || 'Failed to create exam' };
   }
 
-  // Fetch all students in this class/section and create empty grade rows
-  let query = supabase
+  // Fetch all students in this class/section pre-scoped to school_id
+  let query = scopedDb
     .from('students')
     .select('id')
     .eq('grade', classGrade);
@@ -115,12 +116,12 @@ export async function createExamAction(formData: FormData) {
       score: 0,
       max_score: maxScore,
       assessment_date: examDate,
-      recorded_by: teacherId,
+      recorded_by: context.userId,
       exam_id: exam.id,
       is_published: false,
     }));
 
-    const { error: insertError } = await adminDb
+    const { error: insertError } = await scopedDb
       .from('grades')
       .insert(gradeRows);
 

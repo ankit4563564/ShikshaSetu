@@ -1,6 +1,8 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createScopedClient } from '@/lib/supabase/scoped';
+import { getAuthContext, requirePermission, validateParentStudentAccess } from '@/lib/auth/getAuthContext';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@clerk/nextjs/server';
 import {
@@ -31,31 +33,16 @@ export async function requestGatePassAction(
   pickupWindowStart: string,
   pickupWindowEnd: string
 ) {
-  const supabase = createClient();
-  const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  let requestedBy = 'c1000000-0000-4000-8000-000000000001'; // Default seed Sunita Sharma
-  let performer = 'dev-system';
+  const context = await getAuthContext();
+  requirePermission(context, 'gate_pass:request');
+  validateParentStudentAccess(context, studentId);
 
-  if (clerkKey) {
-    const { userId } = await auth();
-    if (userId) {
-      performer = userId;
-      // Resolve guardian UUID from clerk_user_id
-      const { data: guardian } = await supabase
-        .from('guardians')
-        .select('id')
-        .eq('clerk_user_id', userId)
-        .limit(1)
-        .maybeSingle();
+  const scopedDb = createScopedClient(context);
+  let requestedBy = context.userId;
+  let performer = context.clerkUserId;
 
-      if (guardian) {
-        requestedBy = guardian.id;
-      }
-    }
-  }
-
-  // Fetch student details for notification and audit
-  const { data: student } = await supabase
+  // Fetch student details pre-scoped to school_id
+  const { data: student } = await scopedDb
     .from('students')
     .select('display_name, class_teacher_id')
     .eq('id', studentId)
@@ -64,8 +51,8 @@ export async function requestGatePassAction(
   const studentName = student?.display_name || 'Student';
   const teacherId = student?.class_teacher_id;
 
-  // 1. Insert the gate pass
-  const { data: pass, error: passError } = await supabase
+  // 1. Insert the gate pass pre-scoped to school_id
+  const { data: pass, error: passError } = await scopedDb
     .from('gate_passes')
     .insert({
       student_id: studentId,
@@ -82,8 +69,8 @@ export async function requestGatePassAction(
     throw new Error(passError?.message || 'Failed to request gate pass');
   }
 
-  // 2. Insert audit log
-  await supabase
+  // 2. Insert audit log pre-scoped to school_id
+  await scopedDb
     .from('gate_pass_audit_logs')
     .insert({
       pass_id: pass.id,
@@ -93,9 +80,9 @@ export async function requestGatePassAction(
       details: `Gate pass requested for ${studentName}. Reason: ${reason}.`,
     });
 
-  // 3. Send notification to the class teacher
+  // 3. Send notification to the class teacher pre-scoped to school_id
   if (teacherId) {
-    await supabase
+    await scopedDb
       .from('notifications')
       .insert({
         recipient_id: teacherId,
