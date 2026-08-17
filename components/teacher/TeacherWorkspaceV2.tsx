@@ -84,7 +84,6 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
     } else if (tab === 'students') setContext({ module: 'general' });
   };
 
-  const displayName = teacherName || 'Teacher';
 
   return (
     <div className="flex min-h-screen bg-slate-50 font-body text-slate-900 overflow-x-hidden">
