@@ -151,7 +151,11 @@ export async function getAuthContext(): Promise<AuthContext> {
     throw new Error('FORBIDDEN: User does not have an active school tenant mapping');
   }
 
-  const role = (userMapping.role as PortalRole) || 'parent';
+  if (!userMapping.role) {
+    throw new Error('FORBIDDEN: User does not have an assigned portal role');
+  }
+
+  const role = userMapping.role as PortalRole;
   const schoolId = userMapping.school_id;
   let linkedStudentIds: string[] | undefined = undefined;
 
