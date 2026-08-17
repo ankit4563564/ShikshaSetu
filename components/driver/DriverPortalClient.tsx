@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { SignOutButton } from '@clerk/nextjs';
+import { SignOutButton } from '@/components/auth/SignOutButton';
 import { boardStudent, deboardStudent, endTrip, raiseAlert, startTrip, updateLiveBusLocation } from '@/lib/journey';
 import { createClient } from '@/lib/supabase/client';
 
@@ -768,18 +768,12 @@ export default function DriverPortalClient() {
 
       <header className="driver-portal-header mb-7 rounded-[2rem] border border-white/80 bg-white/70 p-6 text-center shadow-[0_18px_45px_rgba(63,81,181,.09)] backdrop-blur-xl sm:p-8 relative">
         <div className="absolute top-4 right-4">
-          <SignOutButton redirectUrl="/login">
-            <button
-              type="button"
-              onClick={async () => {
-                await fetch('/api/auth/demo-session', { method: 'DELETE' }).catch(() => {});
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-display text-xs font-bold transition-all border border-rose-200/60"
-              title="Sign Out"
-            >
-              <span>🚪</span>
-              <span>Sign Out</span>
-            </button>
+          <SignOutButton
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-display text-xs font-bold transition-all border border-rose-200/60"
+            title="Sign Out"
+          >
+            <span>🚪</span>
+            <span>Sign Out</span>
           </SignOutButton>
         </div>
         <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-deep-teal/45">Bus Transit & Conductor Console</p>

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { SignOutButton } from '@clerk/nextjs';
+import { SignOutButton } from '@/components/auth/SignOutButton';
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -334,17 +334,9 @@ export default function AdminDashboardClient({
             <Icon.HelpCircle />
             <span>Support</span>
           </Link>
-          <SignOutButton redirectUrl="/login">
-            <button
-              type="button"
-              onClick={async () => {
-                await fetch('/api/auth/demo-session', { method: 'DELETE' }).catch(() => {});
-              }}
-              className="w-full group flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-semibold text-rose-600 hover:bg-rose-50 transition-all"
-            >
-              <span>🚪</span>
-              <span>Sign Out</span>
-            </button>
+          <SignOutButton className="w-full group flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-semibold text-rose-600 hover:bg-rose-50 transition-all">
+            <span>🚪</span>
+            <span>Sign Out</span>
           </SignOutButton>
         </div>
       </aside>

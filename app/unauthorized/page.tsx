@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { SignOutButton } from '@clerk/nextjs';
+import { SignOutButton } from '@/components/auth/SignOutButton';
 import Link from 'next/link';
 
 function UnauthorizedContent() {
@@ -56,16 +56,8 @@ function UnauthorizedContent() {
           >
             {primaryActionLabel}
           </Link>
-          <SignOutButton redirectUrl="/login">
-            <button
-              type="button"
-              onClick={async () => {
-                await fetch('/api/auth/demo-session', { method: 'DELETE' }).catch(() => {});
-              }}
-              className="w-full rounded-xl border border-deep-teal/15 bg-white hover:bg-deep-teal/5 text-deep-teal/70 font-display text-xs font-semibold py-2.5 transition-all active:scale-98"
-            >
-              Sign Out
-            </button>
+          <SignOutButton className="w-full rounded-xl border border-deep-teal/15 bg-white hover:bg-deep-teal/5 text-deep-teal/70 font-display text-xs font-semibold py-2.5 transition-all active:scale-98">
+            Sign Out
           </SignOutButton>
         </div>
       </div>

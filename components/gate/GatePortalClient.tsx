@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { SignOutButton } from '@clerk/nextjs';
+import { SignOutButton } from '@/components/auth/SignOutButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CampusScanner } from '@/components/campus-id/CampusScanner';
 import {
@@ -153,18 +153,12 @@ export default function GatePortalClient() {
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
             Online-First Verification Active
           </span>
-          <SignOutButton redirectUrl="/login">
-            <button
-              type="button"
-              onClick={async () => {
-                await fetch('/api/auth/demo-session', { method: 'DELETE' }).catch(() => {});
-              }}
-              className="bg-rose-950/60 text-rose-300 border border-rose-500/40 hover:bg-rose-900/60 text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5"
-              title="Sign Out"
-            >
-              <span>🚪</span>
-              <span className="hidden sm:inline">Sign Out</span>
-            </button>
+          <SignOutButton
+            className="bg-rose-950/60 text-rose-300 border border-rose-500/40 hover:bg-rose-900/60 text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5"
+            title="Sign Out"
+          >
+            <span>🚪</span>
+            <span className="hidden sm:inline">Sign Out</span>
           </SignOutButton>
         </div>
       </header>
