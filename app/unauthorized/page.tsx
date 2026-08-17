@@ -59,6 +59,9 @@ function UnauthorizedContent() {
           <SignOutButton redirectUrl="/login">
             <button
               type="button"
+              onClick={async () => {
+                await fetch('/api/auth/demo-session', { method: 'DELETE' }).catch(() => {});
+              }}
               className="w-full rounded-xl border border-deep-teal/15 bg-white hover:bg-deep-teal/5 text-deep-teal/70 font-display text-xs font-semibold py-2.5 transition-all active:scale-98"
             >
               Sign Out

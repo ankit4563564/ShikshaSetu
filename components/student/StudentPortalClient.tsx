@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { SignOutButton } from '@clerk/nextjs';
 import SchoolMitra from '@/components/student/SchoolMitra';
 import QuestBoard from '@/components/student/QuestBoard';
 import { StudentCopilotStrip } from '@/components/copilot/StudentCopilotStrip';
@@ -107,9 +108,25 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
           ))}
         </nav>
 
-        <div className="mt-auto rounded-2xl bg-secondary/10 p-4">
-          <p className="text-xs font-extrabold text-secondary">Maths test in 6 days</p>
-          <p className="mt-1 text-[11px] leading-5 text-muted">Ch.5–7 · Start revising today for best results.</p>
+        <div className="mt-auto pt-4 space-y-3">
+          <div className="rounded-2xl bg-secondary/10 p-3">
+            <p className="text-[11px] font-bold text-[#1f4e5f]">Grade {studentGrade}{studentSection} · Roll #{studentRoll}</p>
+          </div>
+          <SignOutButton redirectUrl="/login">
+            <button
+              type="button"
+              onClick={async () => {
+                await fetch('/api/auth/demo-session', { method: 'DELETE' }).catch(() => {});
+              }}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-display text-xs font-bold transition-all border border-rose-200/60"
+            >
+              <span className="flex items-center gap-2">
+                <span>🚪</span>
+                <span>Sign Out</span>
+              </span>
+              <span className="text-[10px] text-rose-500 font-mono">→</span>
+            </button>
+          </SignOutButton>
         </div>
       </aside>
 

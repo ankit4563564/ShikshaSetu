@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { SignOutButton } from '@clerk/nextjs';
 
 interface TeacherSidebarProps {
   activeTab: string;
@@ -95,8 +96,23 @@ export default function TeacherSidebar({
             <h4 className="font-display text-xs font-extrabold text-slate-900 truncate">{displayName}</h4>
             <p className="text-[10px] text-slate-500 truncate font-medium">Class Teacher</p>
           </div>
-          <span className="text-xs text-slate-400">⌄</span>
         </div>
+
+        <SignOutButton redirectUrl="/login">
+          <button
+            type="button"
+            onClick={async () => {
+              await fetch('/api/auth/demo-session', { method: 'DELETE' }).catch(() => {});
+            }}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-rose-50/80 hover:bg-rose-100 text-rose-700 font-display text-xs font-bold transition-all border border-rose-200/60"
+          >
+            <span className="flex items-center gap-2">
+              <span>🚪</span>
+              <span>Sign Out</span>
+            </span>
+            <span className="text-[10px] text-rose-500 font-mono">→</span>
+          </button>
+        </SignOutButton>
       </div>
     </aside>
   );

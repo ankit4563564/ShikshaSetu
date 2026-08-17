@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { SignOutButton } from '@clerk/nextjs';
 
 interface Student {
   studentId: string;
@@ -69,6 +70,19 @@ export function ParentStudentHeader({
 
       <div className="flex items-center gap-2">
         {rightActions}
+        <SignOutButton redirectUrl="/login">
+          <button
+            type="button"
+            onClick={async () => {
+              await fetch('/api/auth/demo-session', { method: 'DELETE' }).catch(() => {});
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-display text-xs font-bold transition-all border border-rose-200/60"
+            title="Sign Out"
+          >
+            <span>🚪</span>
+            <span className="hidden sm:inline">Sign Out</span>
+          </button>
+        </SignOutButton>
       </div>
     </header>
   );
