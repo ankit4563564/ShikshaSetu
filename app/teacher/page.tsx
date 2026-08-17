@@ -1,200 +1,95 @@
-import { getStudentsData } from '@/lib/supabase';
 import { calculateStudentStatus } from '@/lib/rules-engine/calculateStatus';
 import { generateOfflineFallback } from '@/lib/ai-narration/generateExplanation';
-import TeacherDashboardClient from '@/components/teacher/TeacherDashboardClient';
 import TeacherWorkspaceV2 from '@/components/teacher/TeacherWorkspaceV2';
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth } from '@clerk/nextjs/server';
 import { cookies } from 'next/headers';
 import { getDemoSessionFromCookies } from '@/lib/demo/session';
-import { linkClerkUser } from '@/lib/auth/authOnboarding';
-import { redirect } from 'next/navigation';
-import { buildStudentProductInsight } from '@/lib/product-intelligence';
-import { shouldSuppressAlerts } from '@/lib/calendar/checkCalendar';
-import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { getStudentsForTeacher } from '@/lib/supabase/getStudentsData';
+import type { StudentWithFlag } from '@/lib/supabase/getStudentsData';
 
 // Ensure the page is rendered dynamically to fetch fresh DB data
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+
+export interface TeacherClassContext {
+  teacherId: string;
+  teacherName: string;
+  grade: string;
+  section: string;
+  students: StudentWithFlag[];
+}
 
 export default async function TeacherPage() {
   const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  let activeTeacherId = 'a1000000-0000-4000-8000-000000000001'; // Default seeded Ananya Mehra
 
-  // Demo mode bypass: use centralized demo session validation
+  // ─── Default context (demo / seed-aligned) ───────────────────────────────
+  // Matches seed.sql: Ananya Mehra, class 8A, 5 seed students
+  let teacherId = 'a1000000-0000-4000-8000-000000000001';
+  let teacherName = 'Ananya Mehra';
+  let teacherGrade = '8';
+  let teacherSection = 'A';
+
+  // ─── Demo mode ────────────────────────────────────────────────────────────
   const demo = await getDemoSessionFromCookies(cookies());
 
-  // 1. Clerk Authentication Check & Onboarding Link
+  // ─── Clerk Auth: resolve real teacher identity ────────────────────────────
   if (clerkKey && !demo?.active) {
     const { userId } = await auth();
     if (userId) {
-      const user = await currentUser();
-      const email = user?.emailAddresses[0]?.emailAddress || '';
-
-      // Idempotent account onboarding linking on first login
-      const onboarding = await linkClerkUser(userId, email);
-      if (!onboarding.success) {
-        console.warn('[Teacher Onboarding] Warning:', onboarding.error);
-      }
-
-      // Query database to fetch linked teacher record (admin client bypasses RLS)
       const adminDb = createAdminClient();
+
+      // Try to find teacher by clerk_user_id
       const { data: teacher } = await adminDb
         .from('teachers')
-        .select('id')
+        .select('id, first_name, last_name, display_name, grade, section, clerk_user_id')
         .eq('clerk_user_id', userId)
         .limit(1)
         .maybeSingle();
 
       if (teacher) {
-        activeTeacherId = teacher.id;
+        teacherId = teacher.id;
+        teacherName =
+          teacher.display_name ||
+          `${teacher.first_name || ''} ${teacher.last_name || ''}`.trim() ||
+          'Teacher';
+        // Use teacher's assigned class if present in DB
+        if (teacher.grade) teacherGrade = teacher.grade;
+        if (teacher.section) teacherSection = teacher.section;
       }
+      // If no teacher found for this Clerk user, defaults remain (demo seed)
     }
   }
 
-  // 2. Fetch raw student data from Supabase (falls back to seeds if connection offline)
-  const studentsRaw = await getStudentsData();
+  // ─── Load students for this teacher's class ───────────────────────────────
+  // getStudentsForTeacher returns [] if nothing found — never fabricates students.
+  let classStudents = await getStudentsForTeacher(teacherId);
 
-  // 3. Fetch latest morning context notes (Parent heads-up per Section 16)
-  const supabase = createClient();
-  const { data: dbNotes } = await supabase
-    .from('chat_messages')
-    .select('student_id, content')
-    .eq('is_context_flag', true)
-    .order('created_at', { ascending: false });
-
-  const morningNotesMap: Record<string, string> = {};
-  if (dbNotes) {
-    dbNotes.forEach((note: any) => {
-      if (!morningNotesMap[note.student_id]) {
-        morningNotesMap[note.student_id] = note.content;
-      }
-    });
-  }
-
-  // If Clerk key is defined and a teacher record is found, we filter students to only show their assigned class students
-  let filteredRawStudents = clerkKey
-    ? studentsRaw.filter((s) => s.classTeacherId === activeTeacherId || !s.classTeacherId)
-    : studentsRaw;
-
-  // Fallback to full roster if filtering returned zero students
-  if (!filteredRawStudents || filteredRawStudents.length === 0) {
-    filteredRawStudents = studentsRaw;
-  }
-
-  // 4.5 Fetch gate pass requests for class students
-  const { data: dbPasses } = await supabase
-    .from('gate_passes')
-    .select(`
-      id,
-      student_id,
-      status,
-      pickup_window_start,
-      pickup_window_end,
-      reason,
-      pass_code,
-      used_at,
-      students (
-        display_name
-      ),
-      guardians (
-        first_name,
-        last_name
-      )
-    `)
-    .in('student_id', filteredRawStudents.map((s) => s.studentId))
-    .order('created_at', { ascending: false });
-
-  const passesByStudent = new Map<string, any[]>();
-  (dbPasses || []).forEach((pass: any) => {
-    const existing = passesByStudent.get(pass.student_id) || [];
-    existing.push(pass);
-    passesByStudent.set(pass.student_id, existing);
-  });
-
-  // 4. Check if alerts should be suppressed (exam period/holiday)
-  const suppressAlerts = await shouldSuppressAlerts();
-
-  // 5. Fetch all evidence_logs in one batch query (FIX: N+1 queries resolved)
-  // VERIFIED: This batches all evidence logs in a single query instead of per-student
-  const studentIds = filteredRawStudents.map((s) => s.studentId);
-  const { data: allDbLogs } = await supabase
-    .from('evidence_logs')
-    .select('id, source_type, headline, bullets, student_id')
-    .in('student_id', studentIds)
-    .order('generated_at', { ascending: false });
-
-  // Group logs by student for O(1) lookup
-  const logsByStudent = new Map<string, any[]>();
-  (allDbLogs || []).forEach((log: any) => {
-    const existing = logsByStudent.get(log.student_id) || [];
-    existing.push(log);
-    logsByStudent.set(log.student_id, existing);
-  });
-
-  // 6. Evaluate rules engine and trigger AI narration generator
-  const processedStudents = filteredRawStudents.map((student) => {
-    const evaluation = calculateStudentStatus(student, suppressAlerts);
-
-    const dbLogs = logsByStudent.get(student.studentId) || [];
-
-    const customEvidenceItems = (dbLogs || []).map((log: any) => ({
-      id: `db-log-${log.id}`,
-      status: (log.source_type === 'academic' || log.source_type === 'homework') ? 'on-track' as 'on-track' | 'worth-watching' | 'needs-attention' : 'worth-watching' as 'on-track' | 'worth-watching' | 'needs-attention',
-      headline: log.headline,
-      bullets: Array.isArray(log.bullets) ? log.bullets : [log.bullets],
-    }));
-
-    const combinedEvidence = [...customEvidenceItems, ...evaluation.evidence];
-
-    const explanation = generateOfflineFallback(student.displayName, combinedEvidence);
-
-    const statusOverride = student.activeStatusFlag?.isCorrected ? 'On Track' : evaluation.status;
-    const finalEvaluation = { ...evaluation, status: statusOverride };
-
+  // Enrich each student with rules engine status + AI narration
+  const processedStudents = classStudents.map((st) => {
+    const computedStatus = calculateStudentStatus(st.attendance, st.homework, st.grades);
+    const aiNarration = generateOfflineFallback(st.displayName, computedStatus.evidence);
     return {
-      ...student,
-      ...evaluation,
-      evidence: combinedEvidence,
-      status: statusOverride,
-      photoUrl: null,
-      explanation,
-      activeStatusFlag: student.activeStatusFlag || null,
-      morningNote: morningNotesMap[student.studentId] || null,
-      productInsight: buildStudentProductInsight({
-        student,
-        evaluation: finalEvaluation,
-        evidence: combinedEvidence,
-        gatePasses: passesByStudent.get(student.studentId) || [],
-        morningNote: morningNotesMap[student.studentId] || null,
-      }),
+      ...st,
+      status: computedStatus.finalStatus,
+      statusReasons: computedStatus.reasons,
+      aiExplanation: aiNarration,
     };
   });
 
-  // Query database to fetch linked teacher record details
-  let teacherDisplayName = 'Teacher';
-  if (clerkKey && !demo?.active) {
-    const { userId } = await auth();
-    if (userId) {
-      const adminDb = createAdminClient();
-      const { data: teacher } = await adminDb
-        .from('teachers')
-        .select('id, first_name, last_name, display_name')
-        .eq('clerk_user_id', userId)
-        .limit(1)
-        .maybeSingle();
-
-      if (teacher) {
-        activeTeacherId = teacher.id;
-        teacherDisplayName = teacher.display_name || `${teacher.first_name || ''} ${teacher.last_name || ''}`.trim() || 'Teacher';
-      }
-    }
+  // Derive grade/section from students if teacher row didn't have it
+  if (processedStudents.length > 0 && !classStudents[0].grade) {
+    const firstStudent = processedStudents[0];
+    if (firstStudent.grade) teacherGrade = firstStudent.grade;
+    if (firstStudent.section) teacherSection = firstStudent.section;
   }
 
-  // 7. Render client dashboard grid
-  return (
-    <ErrorBoundary portalName="Teacher Portal">
-      <TeacherWorkspaceV2 teacherName={teacherDisplayName} />
-    </ErrorBoundary>
-  );
+  const classContext: TeacherClassContext = {
+    teacherId,
+    teacherName,
+    grade: teacherGrade,
+    section: teacherSection,
+    students: processedStudents,
+  };
+
+  return <TeacherWorkspaceV2 classContext={classContext} />;
 }

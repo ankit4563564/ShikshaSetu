@@ -37,17 +37,11 @@ export default function LiveTransitSection() {
 
             <div className="flex flex-wrap gap-4 pt-2">
               <Link
-                href="/demo"
+                href="/parent"
                 className="px-6 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-md transition-all active:scale-95 flex items-center gap-2"
               >
-                <span>How it works</span>
+                <span>Parent Portal</span>
                 <span>&rarr;</span>
-              </Link>
-              <Link
-                href="/parent"
-                className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 backdrop-blur-md transition-all active:scale-95"
-              >
-                See live demo
               </Link>
             </div>
           </div>

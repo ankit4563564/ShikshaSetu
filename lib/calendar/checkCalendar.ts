@@ -17,10 +17,24 @@ export interface CalendarPeriod {
   suppressAlerts: boolean;
 }
 
+function toValidDate(dateInput?: any): Date {
+  if (dateInput instanceof Date && !isNaN(dateInput.getTime())) {
+    return dateInput;
+  }
+  if (typeof dateInput === 'string' && dateInput.trim().length > 0) {
+    const parsed = new Date(dateInput);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+  return new Date();
+}
+
 /**
  * Check if a given date falls within a calendar period that suppresses alerts
  */
-export async function shouldSuppressAlerts(date: Date = new Date()): Promise<boolean> {
+export async function shouldSuppressAlerts(dateInput: any = new Date()): Promise<boolean> {
+  const date = toValidDate(dateInput);
   const supabase = createClient();
 
   const { data: periods, error } = await supabase
@@ -35,13 +49,14 @@ export async function shouldSuppressAlerts(date: Date = new Date()): Promise<boo
     return false;
   }
 
-  return periods && periods.length > 0;
+  return Boolean(periods && periods.length > 0);
 }
 
 /**
  * Get active calendar periods for a given date
  */
-export async function getActivePeriods(date: Date = new Date()): Promise<CalendarPeriod[]> {
+export async function getActivePeriods(dateInput: any = new Date()): Promise<CalendarPeriod[]> {
+  const date = toValidDate(dateInput);
   const supabase = createClient();
 
   const { data: periods, error } = await supabase
@@ -70,7 +85,9 @@ export async function getActivePeriods(date: Date = new Date()): Promise<Calenda
 /**
  * Get all calendar periods for a date range
  */
-export async function getCalendarPeriods(startDate: Date, endDate: Date): Promise<CalendarPeriod[]> {
+export async function getCalendarPeriods(startInput?: any, endInput?: any): Promise<CalendarPeriod[]> {
+  const startDate = toValidDate(startInput);
+  const endDate = toValidDate(endInput);
   const supabase = createClient();
 
   const { data: periods, error } = await supabase

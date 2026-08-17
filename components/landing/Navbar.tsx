@@ -28,12 +28,6 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/demo"
-            className="hidden text-xs font-bold text-deep-teal/80 transition-colors hover:text-deep-teal sm:block"
-          >
-            Watch demo
-          </Link>
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               href="/sign-in"

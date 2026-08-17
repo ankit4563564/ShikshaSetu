@@ -69,13 +69,40 @@ export default async function ParentPage() {
     }
   }
 
+  // 3. Filter to ONLY this parent's linked children — NEVER show all students.
+  //    Demo mode: Sunita Sharma is linked to Aarav Sharma (b1000000-...-001 in seed.sql)
+  const DEMO_LINKED_STUDENT_ID = 'b1000000-0000-4000-8000-000000000001';
+  const effectiveLinkedIds =
+    linkedStudentIds.length > 0
+      ? linkedStudentIds
+      : demo?.active
+      ? [DEMO_LINKED_STUDENT_ID] // Demo: scope to seed Aarav only
+      : []; // Authenticated user with no linked children
+
+  if (effectiveLinkedIds.length === 0) {
+    // Parent authenticated but no children linked — show an empty state, not all students.
+    return (
+      <LanguageProvider>
+        <div className="min-h-screen bg-slate-100/80 flex items-center justify-center p-8">
+          <div className="bg-white rounded-3xl border border-slate-200 p-10 max-w-md text-center shadow-xl space-y-4">
+            <div className="text-4xl">👨‍👩‍👦</div>
+            <h1 className="font-display text-xl font-black text-slate-900">
+              No Children Linked
+            </h1>
+            <p className="text-sm text-slate-500 font-medium">
+              Your parent account is not yet linked to a student profile. Please contact your
+              school administrator to complete the setup.
+            </p>
+          </div>
+        </div>
+      </LanguageProvider>
+    );
+  }
+
   // 2. Fetch raw student data from Supabase (or fallback seed mock data)
   const studentsRaw = await getStudentsData();
 
-  // 3. Filter to only this parent's linked children
-  const myStudents = linkedStudentIds.length > 0
-    ? studentsRaw.filter((s) => linkedStudentIds.includes(s.studentId))
-    : studentsRaw;
+  const myStudents = studentsRaw.filter((s) => effectiveLinkedIds.includes(s.studentId));
 
   // 4. Check if alerts should be suppressed (exam period/holiday)
   const suppressAlerts = await shouldSuppressAlerts();

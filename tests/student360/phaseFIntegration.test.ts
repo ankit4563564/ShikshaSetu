@@ -20,6 +20,12 @@ vi.mock('@/lib/supabase/scoped', () => ({
             }
             return { data: null, error: null };
           },
+          maybeSingle: async () => {
+            if (table === 'teachers') {
+              return { data: { id: 't-101' }, error: null };
+            }
+            return { data: null, error: null };
+          },
         }),
       }),
     }),

@@ -16,7 +16,7 @@ export function OnboardingMotionProvider({ children }: OnboardingMotionProviderP
   const reduceMotion = useReducedMotion();
 
   return (
-    <LazyMotion features={domAnimation} strict>
+    <LazyMotion features={domAnimation}>
       <MotionConfig
         reducedMotion={reduceMotion ? 'always' : 'never'}
         transition={

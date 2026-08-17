@@ -105,7 +105,7 @@ function RoleCardComponent({ role, index, onSelect, disabled }: RoleCardProps) {
         {role.description}
       </span>
       <span className="relative z-10 mt-auto pt-3 font-display text-[11px] font-extrabold uppercase tracking-wider text-amber-300 group-hover:text-amber-200 flex items-center gap-1">
-        <span>Enter Demo Portal</span>
+        <span>Access Portal</span>
         <span className="transition-transform group-hover:translate-x-1">➔</span>
       </span>
     </m.button>

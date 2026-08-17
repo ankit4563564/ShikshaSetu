@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { generateGatePassQrContent } from '@/lib/gate/qrPassToken';
 
 interface GatePass {
   id: string;
-  status: 'pending' | 'approved' | 'used' | 'expired' | 'rejected';
+  status: 'pending' | 'approved' | 'used' | 'expired' | 'rejected' | 'revoked';
   pickup_window_start: string;
   pickup_window_end: string;
   pass_code: string | null;
@@ -31,6 +32,8 @@ export function ParentGatePassTab({
   onRequestPass,
   onCancelPass,
 }: ParentGatePassTabProps) {
+  const [showQrModal, setShowQrModal] = useState(false);
+
   if (!activePass) {
     return (
       <div className="rounded-2xl border border-deep-teal/5 bg-white p-5 shadow-sm flex items-center justify-between">
@@ -48,6 +51,9 @@ export function ParentGatePassTab({
       </div>
     );
   }
+
+  // Generate dynamic HMAC signed QR content for approved pass
+  const qrContent = activePass.status === 'approved' ? generateGatePassQrContent(activePass.id) : '';
 
   return (
     <div className="rounded-2xl border border-deep-teal/5 bg-white p-5 shadow-sm space-y-3">
@@ -68,6 +74,12 @@ export function ParentGatePassTab({
               <span className="text-[10px] text-sage font-bold uppercase tracking-wider">Approved</span>
             </>
           )}
+          {activePass.status === 'revoked' && (
+            <>
+              <span className="h-2 w-2 rounded-full bg-rose-500" />
+              <span className="text-[10px] text-rose-600 font-bold uppercase tracking-wider">Revoked</span>
+            </>
+          )}
           {activePass.status === 'rejected' && (
             <>
               <span className="h-2 w-2 rounded-full bg-warm-clay" />
@@ -86,7 +98,7 @@ export function ParentGatePassTab({
       {activePass.status === 'pending' && (
         <div className="space-y-2">
           <p className="font-body text-xs text-deep-teal/70">
-            Pending teacher approval...
+            Pending teacher approval for {studentName}...
           </p>
           <button
             onClick={() => onCancelPass(activePass.id)}
@@ -102,11 +114,32 @@ export function ParentGatePassTab({
         <div className="space-y-3">
           <div className="bg-sage/5 border border-sage/20 rounded-xl p-4 text-center">
             <p className="font-body text-[10px] text-deep-teal/50 font-bold uppercase tracking-widest mb-1">
-              Pass Code
+              Pass Code & Dynamic QR
             </p>
             <h2 className="font-mono text-3xl font-extrabold text-deep-teal tracking-widest animate-pulse">
               {activePass.pass_code}
             </h2>
+
+            <div className="mt-3 flex justify-center">
+              <button
+                onClick={() => setShowQrModal(!showQrModal)}
+                className="bg-sage text-white text-xs font-bold py-1.5 px-3 rounded-lg hover:bg-sage/90 transition-all"
+              >
+                {showQrModal ? 'Hide QR Code' : 'Show Digital QR Pass'}
+              </button>
+            </div>
+
+            {showQrModal && (
+              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mt-3 p-3 bg-white rounded-xl border border-sage/30 shadow-inner flex flex-col items-center">
+                <div className="bg-slate-900 text-white font-mono text-[10px] p-3 rounded-lg break-all max-w-full select-all">
+                  {qrContent}
+                </div>
+                <p className="text-[10px] text-deep-teal/60 font-semibold mt-2">
+                  🔒 Cryptographically signed dynamic QR token for gate scanner
+                </p>
+              </motion.div>
+            )}
+
             {timeLeftText && (
               <p className="font-body text-2xs text-sage font-semibold mt-2">
                 ⏳ {timeLeftText}
@@ -123,6 +156,21 @@ export function ParentGatePassTab({
               Cancel Pass
             </button>
           </div>
+        </div>
+      )}
+
+      {activePass.status === 'revoked' && (
+        <div className="space-y-2">
+          <p className="font-body text-xs text-rose-600 font-bold">
+            Pass Revoked by Staff: {activePass.rejection_reason || 'Safety restriction'}
+          </p>
+          <button
+            onClick={onRequestPass}
+            disabled={isLoading}
+            className="text-xs text-deep-teal hover:underline font-bold bg-transparent border-0 p-0 disabled:opacity-50"
+          >
+            Request Another Pass
+          </button>
         </div>
       )}
 

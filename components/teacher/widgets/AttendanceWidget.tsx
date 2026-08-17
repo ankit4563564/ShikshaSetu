@@ -1,21 +1,64 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getCanonicalAttendanceSummary } from '@/lib/canonical';
+import { createClient } from '@/lib/supabase/client';
 
 interface AttendanceWidgetProps {
+  grade: string;
+  section: string;
   onAskExplain: (query: string) => void;
+  onOpenTakeAttendance?: () => void;
 }
 
-export default function AttendanceWidget({ onAskExplain }: AttendanceWidgetProps) {
+export default function AttendanceWidget({ grade, section, onAskExplain, onOpenTakeAttendance }: AttendanceWidgetProps) {
   const [attendanceSummary, setAttendanceSummary] = useState<{ totalDays: number; presentDays: number; rate: number; recentTrend: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const summary = await getCanonicalAttendanceSummary(30);
-        setAttendanceSummary(summary);
+        const supabase = createClient();
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+        // 1. Get all student IDs in this class
+        const { data: students } = await supabase
+          .from('students')
+          .select('id')
+          .eq('grade', grade)
+          .eq('section', section);
+
+        if (!students || students.length === 0) {
+          setAttendanceSummary({ totalDays: 0, presentDays: 0, rate: 0, recentTrend: 'stable' });
+          setLoading(false);
+          return;
+        }
+
+        const studentIds = students.map((s) => s.id);
+
+        // 2. Aggregate attendance records for this class
+        const { data: records } = await supabase
+          .from('attendance')
+          .select('id, student_id, status, date')
+          .in('student_id', studentIds)
+          .gte('date', thirtyDaysAgo);
+
+        const total = (records || []).length;
+        const present = (records || []).filter((r) => r.status === 'present').length;
+        const late = (records || []).filter((r) => r.status === 'late').length;
+        const rate = total > 0 ? (present + late * 0.5) / total : 1.0;
+
+        // Calculate rough trend: compare last 7 days vs prior 7 days
+        const now = Date.now();
+        const last7 = (records || []).filter((r) => new Date(r.date).getTime() > now - 7 * 24 * 60 * 60 * 1000);
+        const prior7 = (records || []).filter((r) => {
+          const t = new Date(r.date).getTime();
+          return t > now - 14 * 24 * 60 * 60 * 1000 && t <= now - 7 * 24 * 60 * 60 * 1000;
+        });
+        const last7Rate = last7.length > 0 ? last7.filter((r) => r.status === 'present').length / last7.length : 1;
+        const prior7Rate = prior7.length > 0 ? prior7.filter((r) => r.status === 'present').length / prior7.length : 1;
+        const recentTrend = last7Rate > prior7Rate + 0.05 ? 'improving' : last7Rate < prior7Rate - 0.05 ? 'declining' : 'stable';
+
+        setAttendanceSummary({ totalDays: total, presentDays: present, rate, recentTrend });
       } catch (error) {
         console.error('Failed to load attendance summary:', error);
       } finally {
@@ -23,7 +66,7 @@ export default function AttendanceWidget({ onAskExplain }: AttendanceWidgetProps
       }
     }
     loadData();
-  }, []);
+  }, [grade, section]);
 
   const presentRate = attendanceSummary?.rate || 0;
   const presentPercentage = Math.round(presentRate * 100);
@@ -60,7 +103,7 @@ export default function AttendanceWidget({ onAskExplain }: AttendanceWidgetProps
 
       <div className="space-y-3">
         <div className="flex justify-between items-center text-xs text-slate-600 font-medium">
-          <span>Class 8A Daily Attendance Rate</span>
+          <span>Class {grade}{section} Daily Attendance Rate</span>
           <span>{loading ? 'Loading...' : `${presentDays}/${totalDays} Present`}</span>
         </div>
         <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
@@ -68,10 +111,21 @@ export default function AttendanceWidget({ onAskExplain }: AttendanceWidgetProps
         </div>
       </div>
 
-      <div className="pt-1 flex items-center justify-between">
-        <span className="text-[11px] text-slate-400 font-medium">
-          {loading ? 'Loading data...' : `${absentDays} Absent Days`}
-        </span>
+      <div className="pt-1 flex items-center justify-between gap-2">
+        {onOpenTakeAttendance ? (
+          <button
+            type="button"
+            onClick={onOpenTakeAttendance}
+            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] transition-all active:scale-95 flex items-center gap-1 shadow-xs"
+          >
+            <span>📝 Take Attendance</span>
+          </button>
+        ) : (
+          <span className="text-[11px] text-slate-400 font-medium">
+            {loading ? 'Loading data...' : `${absentDays} Absent Days`}
+          </span>
+        )}
+
         <button
           type="button"
           onClick={() => onAskExplain('Explain Class 8A attendance trends this week.')}
@@ -84,3 +138,4 @@ export default function AttendanceWidget({ onAskExplain }: AttendanceWidgetProps
     </div>
   );
 }
+

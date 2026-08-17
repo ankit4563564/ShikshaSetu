@@ -138,16 +138,21 @@ export async function updateMarksAction(
   examId: string,
   grades: { gradeId: string; score: number }[]
 ) {
-  const teacherId = await getTeacherId();
-  if (!teacherId) throw new Error('Unauthorized');
+  const context = await getAuthContext();
+  requirePermission(context, 'marks:write');
 
-  const adminDb = createAdminClient();
+  const scopedDb = createScopedClient(context);
 
   const results = await Promise.all(
     grades.map(async (g) => {
-      const { error } = await adminDb
+      // Validate non-negative score
+      if (g.score < 0) {
+        return `Score cannot be negative for grade ${g.gradeId}`;
+      }
+
+      const { error } = await scopedDb
         .from('grades')
-        .update({ score: g.score, recorded_by: teacherId })
+        .update({ score: g.score, recorded_by: context.userId })
         .eq('id', g.gradeId);
 
       return error ? `Failed to update grade ${g.gradeId}: ${error.message}` : null;
@@ -164,13 +169,13 @@ export async function updateMarksAction(
 }
 
 export async function publishExamAction(examId: string) {
-  const teacherId = await getTeacherId();
-  if (!teacherId) throw new Error('Unauthorized');
+  const context = await getAuthContext();
+  requirePermission(context, 'marks:write');
 
-  const adminDb = createAdminClient();
+  const scopedDb = createScopedClient(context);
   const now = new Date().toISOString();
 
-  const { error: examError } = await adminDb
+  const { error: examError } = await scopedDb
     .from('exams')
     .update({ is_published: true, published_at: now })
     .eq('id', examId);
@@ -179,7 +184,7 @@ export async function publishExamAction(examId: string) {
     return { error: examError.message };
   }
 
-  const { error: gradeError } = await adminDb
+  const { error: gradeError } = await scopedDb
     .from('grades')
     .update({ is_published: true, published_at: now })
     .eq('exam_id', examId);
@@ -189,7 +194,7 @@ export async function publishExamAction(examId: string) {
   }
 
   // Fetch exam details for notification
-  const { data: exam } = await adminDb
+  const { data: exam } = await scopedDb
     .from('exams')
     .select('subject, exam_name')
     .eq('id', examId)
@@ -197,171 +202,97 @@ export async function publishExamAction(examId: string) {
 
   if (exam) {
     // Get all students with grades for this exam
-    const { data: gradedStudents } = await adminDb
+    const { data: gradedStudents } = await scopedDb
       .from('grades')
       .select('student_id')
       .eq('exam_id', examId);
 
-      if (gradedStudents) {
-        const uniqueStudentIds = [...new Set(gradedStudents.map((g: any) => g.student_id as string))] as string[];
+    if (gradedStudents) {
+      const uniqueStudentIds = [...new Set(gradedStudents.map((g: any) => g.student_id as string))] as string[];
 
-        // Batch fetch all grades for this exam (fix N+1)
-        const { data: allGrades } = await adminDb
-          .from('grades')
-          .select('student_id, score, max_score')
-          .eq('exam_id', examId)
-          .in('student_id', uniqueStudentIds);
+      // Batch fetch all grades for this exam (fix N+1)
+      const { data: allGrades } = await scopedDb
+        .from('grades')
+        .select('student_id, score, max_score')
+        .eq('exam_id', examId)
+        .in('student_id', uniqueStudentIds);
 
-        const gradeMap = new Map<string, { score: number; max_score: number }>();
-        (allGrades || []).forEach((g: any) => {
-          if (!gradeMap.has(g.student_id)) {
-            gradeMap.set(g.student_id, { score: g.score, max_score: g.max_score });
-          }
-        });
+      const gradeMap = new Map<string, { score: number; max_score: number }>();
+      (allGrades || []).forEach((g: any) => {
+        if (!gradeMap.has(g.student_id)) {
+          gradeMap.set(g.student_id, { score: g.score, max_score: g.max_score });
+        }
+      });
 
-        // Batch fetch care team recipients for all students
-        const careTeamResults = await Promise.all(
-          uniqueStudentIds.map((sid) =>
-            getStudentCareTeamRecipients(adminDb, sid, {
-              includeGuardians: true,
-              includeTeacher: false,
-              includeAdmins: false,
-            }).then((recipients) => ({ studentId: sid, recipients }))
-          )
-        );
+      // Batch fetch care team recipients for all students
+      const careTeamResults = await Promise.all(
+        uniqueStudentIds.map((sid) =>
+          getStudentCareTeamRecipients(scopedDb, sid, {
+            includeGuardians: true,
+            includeTeacher: false,
+            includeAdmins: false,
+          }).then((recipients) => ({ studentId: sid, recipients }))
+        )
+      );
 
-        // Batch create ecosystem notifications
-        await Promise.all(
-          careTeamResults.map(async ({ studentId, recipients }) => {
-            const grade = gradeMap.get(studentId);
-            if (!grade || recipients.length === 0) return;
+      // Batch create ecosystem notifications
+      await Promise.all(
+        careTeamResults.map(async ({ studentId, recipients }) => {
+          const grade = gradeMap.get(studentId);
+          if (!grade || recipients.length === 0) return;
 
-            const percentage = Math.round((grade.score / grade.max_score) * 100);
+          const percentage = Math.round((grade.score / grade.max_score) * 100);
 
-            await createEcosystemNotifications(adminDb, recipients, {
-              studentId,
-              title: 'Marks Published',
-              body: `${exam.exam_name} (${exam.subject}): ${percentage}%`,
-              category: 'academic',
-            });
-          })
-        );
+          await createEcosystemNotifications(scopedDb, recipients, {
+            studentId,
+            title: 'Marks Published',
+            body: `${exam.exam_name} (${exam.subject}): ${percentage}%`,
+            category: 'academic',
+          });
+        })
+      );
 
-        // Record ecosystem event for Mission Control
-        await recordEcosystemEvent(adminDb, {
-          eventType: 'marks_published',
-          actorId: teacherId,
-          actorRole: 'teacher',
-          title: 'Exam marks published',
-          body: `${exam.exam_name} (${exam.subject}) marks published for ${uniqueStudentIds.length} students.`,
-          metadata: { exam_id: examId },
-        });
-      }
+      // Record ecosystem event for Mission Control
+      await recordEcosystemEvent(scopedDb, {
+        eventType: 'marks_published',
+        actorId: context.userId,
+        actorRole: context.role || 'teacher',
+        title: 'Exam marks published',
+        body: `${exam.exam_name} (${exam.subject}) marks published for ${uniqueStudentIds.length} students.`,
+        metadata: { exam_id: examId },
+      });
+    }
   }
 
   revalidatePath('/teacher');
   revalidatePath('/student');
   revalidatePath('/parent');
   revalidatePath('/admin');
+
+  // Broadcast Real-time event across channels
+  try {
+    const { broadcastPortalEvent } = await import('@/lib/realtime/portalSync');
+    for (const studentId of uniqueStudentIds) {
+      await broadcastPortalEvent(`school:${context.schoolId}:parent:${studentId}`, 'GRADES_PUBLISHED', {
+        studentId,
+        tenantId: context.schoolId,
+        actorId: context.userId,
+        actorRole: context.role,
+      });
+    }
+  } catch (_bcErr) {
+    // Ignore broadcast errors in test/offline environments
+  }
+
   return { success: true };
 }
 
-const DEMO_EXAMS: ExamRecord[] = [
-  {
-    id: 'exam-001',
-    subject: 'Mathematics',
-    examName: 'Mid-Term Mathematics Assessment',
-    maxScore: 100,
-    examDate: '2026-07-15',
-    classGrade: '8',
-    classSection: 'A',
-    createdBy: 'teacher-demo',
-    isPublished: true,
-    publishedAt: '2026-07-16T10:00:00Z',
-    createdAt: '2026-07-15T08:00:00Z',
-  },
-  {
-    id: 'exam-002',
-    subject: 'Science',
-    examName: 'Unit Test #2 - Physics & Mechanics',
-    maxScore: 50,
-    examDate: '2026-07-20',
-    classGrade: '8',
-    classSection: 'A',
-    createdBy: 'teacher-demo',
-    isPublished: true,
-    publishedAt: '2026-07-21T09:30:00Z',
-    createdAt: '2026-07-20T08:00:00Z',
-  },
-  {
-    id: 'exam-003',
-    subject: 'English',
-    examName: 'Weekly Comprehension & Grammar Quiz',
-    maxScore: 25,
-    examDate: '2026-07-24',
-    classGrade: '8',
-    classSection: 'A',
-    createdBy: 'teacher-demo',
-    isPublished: false,
-    publishedAt: null,
-    createdAt: '2026-07-24T08:00:00Z',
-  },
-  {
-    id: 'exam-004',
-    subject: 'Social Studies',
-    examName: 'Periodic Assessment - Civics & History',
-    maxScore: 100,
-    examDate: '2026-07-10',
-    classGrade: '8',
-    classSection: 'A',
-    createdBy: 'teacher-demo',
-    isPublished: true,
-    publishedAt: '2026-07-11T14:00:00Z',
-    createdAt: '2026-07-10T08:00:00Z',
-  },
-];
-
-const DEMO_GRADES: Record<string, GradeRecord[]> = {
-  'exam-001': [
-    { id: 'g-01', studentId: 'std-01', studentName: 'Aarav Sharma', subject: 'Mathematics', assessmentName: 'Mid-Term Mathematics Assessment', score: 92, maxScore: 100, percentage: 92, isPublished: true },
-    { id: 'g-02', studentId: 'std-02', studentName: 'Priya Patel', subject: 'Mathematics', assessmentName: 'Mid-Term Mathematics Assessment', score: 88, maxScore: 100, percentage: 88, isPublished: true },
-    { id: 'g-03', studentId: 'std-03', studentName: 'Kabir Khan', subject: 'Mathematics', assessmentName: 'Mid-Term Mathematics Assessment', score: 76, maxScore: 100, percentage: 76, isPublished: true },
-    { id: 'g-04', studentId: 'std-04', studentName: 'Ananya Verma', subject: 'Mathematics', assessmentName: 'Mid-Term Mathematics Assessment', score: 95, maxScore: 100, percentage: 95, isPublished: true },
-    { id: 'g-05', studentId: 'std-05', studentName: 'Rohan Gupta', subject: 'Mathematics', assessmentName: 'Mid-Term Mathematics Assessment', score: 81, maxScore: 100, percentage: 81, isPublished: true },
-    { id: 'g-06', studentId: 'std-06', studentName: 'Diya Singh', subject: 'Mathematics', assessmentName: 'Mid-Term Mathematics Assessment', score: 89, maxScore: 100, percentage: 89, isPublished: true },
-    { id: 'g-07', studentId: 'std-07', studentName: 'Siddharth Mehra', subject: 'Mathematics', assessmentName: 'Mid-Term Mathematics Assessment', score: 78, maxScore: 100, percentage: 78, isPublished: true },
-  ],
-  'exam-002': [
-    { id: 'g-11', studentId: 'std-01', studentName: 'Aarav Sharma', subject: 'Science', assessmentName: 'Unit Test #2 - Physics & Mechanics', score: 46, maxScore: 50, percentage: 92, isPublished: true },
-    { id: 'g-12', studentId: 'std-02', studentName: 'Priya Patel', subject: 'Science', assessmentName: 'Unit Test #2 - Physics & Mechanics', score: 41, maxScore: 50, percentage: 82, isPublished: true },
-    { id: 'g-13', studentId: 'std-03', studentName: 'Kabir Khan', subject: 'Science', assessmentName: 'Unit Test #2 - Physics & Mechanics', score: 38, maxScore: 50, percentage: 76, isPublished: true },
-    { id: 'g-14', studentId: 'std-04', studentName: 'Ananya Verma', subject: 'Science', assessmentName: 'Unit Test #2 - Physics & Mechanics', score: 48, maxScore: 50, percentage: 96, isPublished: true },
-  ],
-  'exam-003': [
-    { id: 'g-21', studentId: 'std-01', studentName: 'Aarav Sharma', subject: 'English', assessmentName: 'Weekly Comprehension & Grammar Quiz', score: 24, maxScore: 25, percentage: 96, isPublished: false },
-    { id: 'g-22', studentId: 'std-02', studentName: 'Priya Patel', subject: 'English', assessmentName: 'Weekly Comprehension & Grammar Quiz', score: 22, maxScore: 25, percentage: 88, isPublished: false },
-    { id: 'g-23', studentId: 'std-03', studentName: 'Kabir Khan', subject: 'English', assessmentName: 'Weekly Comprehension & Grammar Quiz', score: 19, maxScore: 25, percentage: 76, isPublished: false },
-  ],
-  'exam-004': [
-    { id: 'g-31', studentId: 'std-01', studentName: 'Aarav Sharma', subject: 'Social Studies', assessmentName: 'Periodic Assessment - Civics & History', score: 86, maxScore: 100, percentage: 86, isPublished: true },
-    { id: 'g-32', studentId: 'std-02', studentName: 'Priya Patel', subject: 'Social Studies', assessmentName: 'Periodic Assessment - Civics & History', score: 82, maxScore: 100, percentage: 82, isPublished: true },
-    { id: 'g-33', studentId: 'std-03', studentName: 'Kabir Khan', subject: 'Social Studies', assessmentName: 'Periodic Assessment - Civics & History', score: 79, maxScore: 100, percentage: 79, isPublished: true },
-  ],
-};
-
-const DEMO_ANALYTICS: Record<string, ExamAnalytics> = {
-  'exam-001': { classAverage: 85.3, highestScore: 95, lowestScore: 76, totalStudents: 7, aboveAverage: 5, belowAverage: 2 },
-  'exam-002': { classAverage: 43.2, highestScore: 48, lowestScore: 38, totalStudents: 4, aboveAverage: 3, belowAverage: 1 },
-  'exam-003': { classAverage: 21.6, highestScore: 24, lowestScore: 19, totalStudents: 3, aboveAverage: 2, belowAverage: 1 },
-  'exam-004': { classAverage: 82.3, highestScore: 86, lowestScore: 79, totalStudents: 3, aboveAverage: 2, belowAverage: 1 },
-};
-
 export async function getExamsAction(teacherId?: string) {
   try {
-    const user = await requireAuth();
-    const supabase = createClient();
+    const context = await getAuthContext();
+    const scopedDb = createScopedClient(context);
 
-    let query = supabase
+    let query = scopedDb
       .from('exams')
       .select(`
         id, subject, exam_name, max_score, exam_date,
@@ -376,13 +307,13 @@ export async function getExamsAction(teacherId?: string) {
 
     const { data, error } = await query;
 
-    if (error || !data || data.length === 0) {
-      return DEMO_EXAMS;
+    if (error || !data) {
+      return [];
     }
 
     return (data as any[]).map(mapExam);
   } catch {
-    return DEMO_EXAMS;
+    return [];
   }
 }
 
@@ -422,10 +353,10 @@ export async function getExamsForStudentAction(studentId: string) {
 
 export async function getExamMarksAction(examId: string) {
   try {
-    const user = await requireAuth();
-    const supabase = createClient();
+    const context = await getAuthContext();
+    const scopedDb = createScopedClient(context);
 
-    const { data, error } = await supabase
+    const { data, error } = await scopedDb
       .from('grades')
       .select(`
         id, student_id, subject, assessment_name, score,
@@ -435,7 +366,7 @@ export async function getExamMarksAction(examId: string) {
       .order('student_id');
 
     if (error || !data || data.length === 0) {
-      return DEMO_GRADES[examId] || DEMO_GRADES['exam-001'];
+      return [];
     }
 
     const grades: GradeRecord[] = ((data || []) as any[]).map((g: any) => ({
@@ -452,7 +383,7 @@ export async function getExamMarksAction(examId: string) {
 
     return grades;
   } catch {
-    return DEMO_GRADES[examId] || DEMO_GRADES['exam-001'];
+    return [];
   }
 }
 

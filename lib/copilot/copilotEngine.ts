@@ -146,7 +146,7 @@ export async function loadCopilotItems() {
       // Fallback: create a demo item if no signal is detected
       const fallbackItem: PreparedActionItem = {
         id: 'demo-signal-fallback',
-        studentId: CANONICAL_STUDENT_ID,
+        studentId: CANONICAL_STUDENT_ID, // seed.sql Aarav Sharma
         studentName: 'Aarav Sharma',
         priority: 'high',
         title: 'Homework gap detected',

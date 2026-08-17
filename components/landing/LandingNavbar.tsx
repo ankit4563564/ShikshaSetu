@@ -45,17 +45,10 @@ export function LandingNavbar() {
           </button>
           <button
             type="button"
-            onClick={openDemoModal}
-            className="hidden sm:block font-title-md text-xs text-on-surface-variant hover:text-primary transition-colors font-bold px-3 py-2"
-          >
-            Watch Demo
-          </button>
-          <button
-            type="button"
             onClick={openRoleSelector}
             className="bg-primary text-on-primary px-5 py-2 rounded-full font-title-md text-xs hover:bg-primary-container transition-all hover:scale-105 flex items-center gap-1.5 font-bold shadow-md"
           >
-            Enter Portal
+            Portal Access
             <span className="material-symbols-outlined text-xs">arrow_forward</span>
           </button>
         </div>

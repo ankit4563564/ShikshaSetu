@@ -29,7 +29,7 @@ export function Footer() {
               onClick={() => openLeadModal('Request Campus Trial')}
               className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-full font-bold text-[15px] transition-all"
             >
-              Book School Demo
+              Request School Onboarding
             </button>
           </div>
         </div>

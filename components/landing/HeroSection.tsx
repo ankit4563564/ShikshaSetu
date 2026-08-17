@@ -35,26 +35,26 @@ export function HeroSection() {
                 className="group relative overflow-hidden bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-secondary-fixed hover:-translate-y-1 transition-all duration-100 ease-out shadow-lg flex items-center gap-2 font-extrabold hover:scale-105 active:scale-95 active:translate-y-0 inline-flex"
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  🚀 Experience Live Demo
+                  🚀 Access Portal
                   <span className="material-symbols-outlined text-sm transition-transform duration-100 ease-out group-hover:translate-x-1.5">arrow_forward</span>
                 </span>
               </button>
             </div>
 
-            {/* Quick Access Pills for Hackathon Judges */}
+            {/* Quick Access Pills */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <span className="text-xs font-mono text-white/70 font-semibold">Quick Portal Access:</span>
               <a
                 href="/parent"
                 className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-full text-xs font-bold transition-all hover:scale-105 flex items-center gap-1.5"
               >
-                👨‍👩‍👧 Parent Experience
+                👨‍👩‍👧 Parent Portal
               </a>
               <a
                 href="/teacher"
                 className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-full text-xs font-bold transition-all hover:scale-105 flex items-center gap-1.5"
               >
-                👩‍🏫 Teacher Experience
+                👩‍🏫 Teacher Portal
               </a>
             </div>
           </div>

@@ -19,11 +19,11 @@ export function FinalCTAV4() {
             in <span className="text-amber-400">seven minutes.</span>
           </h2>
           <p className="text-sm text-slate-300 font-medium leading-relaxed max-w-lg">
-            Run the live demo, explore every role portal and see the magic for yourself.
+            Explore every role portal and experience real connected school operations.
           </p>
           <div className="flex flex-wrap gap-4 pt-2">
-            <Button href="/demo" variant="yellow">Watch the school day &rarr;</Button>
-            <Button href="/teacher" variant="glass" className="text-white border-white/20 hover:bg-white/10">Book a demo</Button>
+            <Button href="/sign-in" variant="yellow">Access Portals &rarr;</Button>
+            <Button href="/parent" variant="glass" className="text-white border-white/20 hover:bg-white/10">Parent View</Button>
           </div>
         </div>
 

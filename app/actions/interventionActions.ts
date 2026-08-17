@@ -176,6 +176,25 @@ export async function approveSupportPlanAction(
     revalidatePath('/student');
     revalidatePath('/admin');
 
+    // Broadcast Real-time event across channels
+    try {
+      const { broadcastPortalEvent } = await import('@/lib/realtime/portalSync');
+      await broadcastPortalEvent(`school:${context.schoolId}:parent:${input.studentId}`, 'INTERVENTION_MUTATED', {
+        studentId: input.studentId,
+        tenantId: context.schoolId,
+        actorId: context.userId,
+        actorRole: context.role,
+      });
+      await broadcastPortalEvent(`school:${context.schoolId}:admin:ops`, 'INTERVENTION_MUTATED', {
+        studentId: input.studentId,
+        tenantId: context.schoolId,
+        actorId: context.userId,
+        actorRole: context.role,
+      });
+    } catch (_bcErr) {
+      // Ignore broadcast errors in test/offline environments
+    }
+
     return {
       success: true,
       interventionId: intervention.id,

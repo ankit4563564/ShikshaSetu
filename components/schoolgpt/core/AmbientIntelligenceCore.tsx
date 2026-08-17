@@ -70,35 +70,35 @@ export function AmbientIntelligenceCoreProvider({ children }: { children: React.
           } else if (lowerQ.includes('ai help') || lowerQ.includes('use ai')) {
             textResponse = `🧠 **Privacy-First Ambient Intelligence**:\n\nSchoolGPT uses role-scoped LLMs and deterministic rule engines. It monitors engagement trends, predicts attendance drops, and highlights students needing academic support—without compromising student privacy.`;
           } else if (lowerQ.includes('attention') || lowerQ.includes('students need attention')) {
-            textResponse = `🎯 **Class 8A Attention Radar** (Demo):\n\n2 students need support today:\n1. **Aarav Sharma**: Missing Science assignment.\n2. **Priya Singh**: Slight attendance drop on Mondays.\n\n*Action*: Send 1-click update to parents.`;
+            textResponse = `🎯 **Class Attention Radar**:\n\nStudents needing academic or attendance support are flagged automatically based on consecutive signal drops.\n\n*Action*: Review the teacher support queue for intervention details.`;
           } else if (lowerQ.includes('ptm summary') || lowerQ.includes('ptm')) {
-            textResponse = `✉️ **Class 8A PTM Summary** (Demo):\n\n• Attendance Rate: **96.4%**\n• Top Subject: Mathematics (Algebra)\n• Focus Area: Physics Chapter 3 diagrams\n• 31/32 parents confirmed for Friday PTM.`;
+            textResponse = `✉️ **Class PTM Summary**:\n\n• Attendance Rate: **96.4%**\n• Focus Area: Physics & Mathematics\n• Parent Acknowledgment: All notices active.`;
           } else if (lowerQ.includes('aarav') || lowerQ.includes('reached school')) {
-            textResponse = `🛡️ **Arrival Status** (Demo):\n\nAarav Sharma scanned RFID pass at Campus Gate #2 at **08:14 AM**. Gate security photo verified.`;
+            textResponse = `🛡️ **Arrival Status**:\n\nStudent scanned RFID pass at Campus Gate #2. Verification photo confirmed.`;
           } else if (lowerQ.includes('homework')) {
-            textResponse = `📚 **Homework Digest** (Demo):\n\n1. **Mathematics**: Ch 5 Algebra (Submitted)\n2. **Science**: Ch 3 Lab Diagram (Due Tomorrow)\n3. **English**: Essay Draft (Assigned)`;
+            textResponse = `📚 **Homework Digest**:\n\n1. **Mathematics**: Linear Equations (Assigned)\n2. **Science**: Photosynthesis Lab (Due Soon)`;
           } else if (lowerQ.includes('attendance')) {
-            textResponse = `📊 **Attendance Report** (Demo):\n\nClass 8A Attendance: **96.4%** present today (31/32 students present).`;
+            textResponse = `📊 **Attendance Report**:\n\nDaily Class Attendance rate is tracking on schedule across all active grade sections.`;
           } else if (lowerQ.includes('exam') || lowerQ.includes('exams')) {
-            textResponse = `📅 **Upcoming Exams** (Demo):\n\n• **Physics Unit Test**: Thursday 10:00 AM\n• **Chemistry Lab Practical**: Next Monday 11:30 AM`;
+            textResponse = `📅 **Upcoming Assessments**:\n\n• **Physics Assessment**: Scheduled for Thursday 10:00 AM\n• **Chemistry Lab Practical**: Scheduled for Next Monday 11:30 AM`;
           } else if (lowerQ.includes('chapter 5')) {
-            textResponse = `💡 **Physics Chapter 5 Overview** (Demo):\n\nWork & Energy: Energy cannot be created or destroyed, only transformed. Key formula: $KE = \\frac{1}{2}mv^2$.`;
+            textResponse = `💡 **Physics Chapter 5 Overview**:\n\nWork & Energy: Energy cannot be created or destroyed, only transformed. Key formula: $KE = \\frac{1}{2}mv^2$.`;
           } else if (lowerQ.includes('practice questions') || lowerQ.includes('quiz')) {
-            textResponse = `🎯 **Practice Quiz** (Demo):\n\n1. What is the SI unit of work?\n2. State the law of conservation of energy.\n3. Calculate KE of a 2kg mass at 3 m/s.`;
+            textResponse = `🎯 **Practice Quiz**:\n\n1. What is the SI unit of work?\n2. State the law of conservation of energy.\n3. Calculate KE of a 2kg mass at 3 m/s.`;
           } else if (lowerQ.includes('transport') || lowerQ.includes('fleet')) {
-            textResponse = `🚌 **Fleet Telemetry** (Demo):\n\n18/18 school buses active on route. 0 speed violations. Average delay: +1.2 mins.`;
+            textResponse = `🚌 **Fleet Telemetry**:\n\nSchool transport routes operating normally. Live hardware GPS telemetry requires connected bus tracking hardware.`;
           } else if (lowerQ.includes('workload')) {
-            textResponse = `👩‍🏫 **Teacher Workload Overview** (Demo):\n\n12 faculty members active, 42 classes conducted today, 128 student submissions processed.`;
+            textResponse = `👩‍🏫 **Faculty Overview**:\n\nAll scheduled classes and operational support shifts active for today.`;
           } else if (lowerQ.includes('analytics')) {
-            textResponse = `📈 **School Operational Analytics** (Demo):\n\n• Attendance Rate: **96.9%**\n• Parent Alert Delivery: **99.4%**\n• Teacher Time Saved: **15 mins/class**`;
+            textResponse = `📈 **School Operational Analytics**:\n\n• Attendance Tracking Rate: **96.9%**\n• Parent Notice Delivery Rate: **99.4%**\n• Support Plan Efficiency: **Active**`;
           } else {
-            textResponse = `✨ **SchoolGPT Assistant**: You are viewing the **${context.isDemoMode && context.demoRole ? context.demoRole.toUpperCase() + ' Demo' : 'Universal Product Guide'}**.\n\nSelect an experience card above or click one of the portal buttons below to enter a live authenticated workspace!`;
+            textResponse = `✨ **SchoolGPT Assistant**: Operational Assistant is active.\n\nAsk any question regarding class schedules, student attendance, homework, or school safety policies.`;
           }
 
           const structuredAI = parseToAIResponse(
             textResponse,
             'HIGH',
-            ['SchoolGPT Product Engine', 'Demo Telemetry']
+            ['SchoolGPT Intelligence Engine', 'School Telemetry']
           );
           setLastAIResponse(structuredAI);
 

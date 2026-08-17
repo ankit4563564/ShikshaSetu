@@ -35,18 +35,21 @@ export interface AttendanceRecord {
 }
 
 export interface StudentInputData {
-  studentId: string;
-  displayName: string;
-  homework: HomeworkRecord[];
-  grades: GradeRecord[];
-  mood: MoodRecord[];
-  attendance: AttendanceRecord[];
+  studentId?: string;
+  id?: string;
+  displayName?: string;
+  homework?: HomeworkRecord[];
+  grades?: GradeRecord[];
+  mood?: MoodRecord[];
+  attendance?: AttendanceRecord[];
 }
 
 export interface StatusResult {
   studentId: string;
   displayName: string;
   status: 'On Track' | 'Worth Watching' | 'Needs Attention';
+  finalStatus?: 'On Track' | 'Worth Watching' | 'Needs Attention';
+  reasons?: string[];
   riskScore: number;
   homeworkGap: number;
   gradeDrop: number;
@@ -59,9 +62,39 @@ export interface StatusResult {
 /**
  * Calculates the overall status and risk factors of a student based on academic, wellness,
  * and attendance data per PRD Section 5.1 and Section 6.2.
+ * Supports both object parameter `{ attendance, homework, grades, mood }` and positional parameters.
  */
-export function calculateStudentStatus(data: StudentInputData, suppressAlerts: boolean = false): StatusResult {
-  const { homework, grades, mood, attendance } = data;
+export function calculateStudentStatus(
+  inputOrAttendance: any,
+  homeworkArg?: any,
+  gradesArg?: any,
+  moodArg?: any,
+  suppressAlertsArg: boolean = false
+): StatusResult & { finalStatus: 'On Track' | 'Worth Watching' | 'Needs Attention'; reasons: string[] } {
+  let homework: HomeworkRecord[] = [];
+  let grades: GradeRecord[] = [];
+  let mood: MoodRecord[] = [];
+  let attendance: AttendanceRecord[] = [];
+  let studentId = 'student-id';
+  let displayName = 'Student';
+  let suppressAlerts = suppressAlertsArg;
+
+  if (Array.isArray(inputOrAttendance)) {
+    attendance = inputOrAttendance || [];
+    homework = Array.isArray(homeworkArg) ? homeworkArg : [];
+    grades = Array.isArray(gradesArg) ? gradesArg : [];
+    mood = Array.isArray(moodArg) ? moodArg : [];
+  } else if (inputOrAttendance && typeof inputOrAttendance === 'object') {
+    attendance = Array.isArray(inputOrAttendance.attendance) ? inputOrAttendance.attendance : [];
+    homework = Array.isArray(inputOrAttendance.homework) ? inputOrAttendance.homework : [];
+    grades = Array.isArray(inputOrAttendance.grades) ? inputOrAttendance.grades : [];
+    mood = Array.isArray(inputOrAttendance.mood) ? inputOrAttendance.mood : [];
+    studentId = inputOrAttendance.studentId || inputOrAttendance.id || 'student-id';
+    displayName = inputOrAttendance.displayName || 'Student';
+    if (typeof homeworkArg === 'boolean') {
+      suppressAlerts = homeworkArg;
+    }
+  }
 
   // ──────────────────────────────────────────────────────────────────────────
   // 1. Homework Gap Calculation
@@ -77,7 +110,7 @@ export function calculateStudentStatus(data: StudentInputData, suppressAlerts: b
     homeworkGap = missedHw / totalHw;
 
     // Sort homework by due date ascending to check consecutive patterns
-    const sortedHw = [...homework].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+    const sortedHw = [...homework].sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
     let currentConsecutive = 0;
     for (const hw of sortedHw) {
       if (!hw.isSubmitted) {
@@ -113,21 +146,22 @@ export function calculateStudentStatus(data: StudentInputData, suppressAlerts: b
   // Group grades by subject
   const gradesBySubject: Record<string, GradeRecord[]> = {};
   for (const grade of grades) {
-    if (!gradesBySubject[grade.subject]) {
-      gradesBySubject[grade.subject] = [];
+    const subj = grade.subject || 'General';
+    if (!gradesBySubject[subj]) {
+      gradesBySubject[subj] = [];
     }
-    gradesBySubject[grade.subject].push(grade);
+    gradesBySubject[subj].push(grade);
   }
 
   const subjectDrops: number[] = [];
   for (const subject in gradesBySubject) {
     const subjectGrades = [...gradesBySubject[subject]].sort((a, b) =>
-      a.assessmentDate.localeCompare(b.assessmentDate)
+      (a.assessmentDate || '').localeCompare(b.assessmentDate || '')
     );
 
     if (subjectGrades.length >= 2) {
-      const firstPct = subjectGrades[0].score / subjectGrades[0].maxScore;
-      const latestPct = subjectGrades[subjectGrades.length - 1].score / subjectGrades[subjectGrades.length - 1].maxScore;
+      const firstPct = subjectGrades[0].maxScore ? subjectGrades[0].score / subjectGrades[0].maxScore : 0;
+      const latestPct = subjectGrades[subjectGrades.length - 1].maxScore ? subjectGrades[subjectGrades.length - 1].score / subjectGrades[subjectGrades.length - 1].maxScore : 0;
       const drop = firstPct - latestPct; // Positive means grades fell
       subjectDrops.push(drop);
 
@@ -143,33 +177,30 @@ export function calculateStudentStatus(data: StudentInputData, suppressAlerts: b
       if (subjectGrades.length >= 3) {
         let consecutiveDeclines = 0;
         for (let i = 1; i < subjectGrades.length; i++) {
-          const prevPct = subjectGrades[i - 1].score / subjectGrades[i - 1].maxScore;
-          const currPct = subjectGrades[i].score / subjectGrades[i].maxScore;
+          const prevPct = subjectGrades[i - 1].maxScore ? subjectGrades[i - 1].score / subjectGrades[i - 1].maxScore : 0;
+          const currPct = subjectGrades[i].maxScore ? subjectGrades[i].score / subjectGrades[i].maxScore : 0;
           if (currPct < prevPct) {
             consecutiveDeclines++;
           } else {
             consecutiveDeclines = 0;
           }
-          if (consecutiveDeclines >= 2) { // 2 drops in a row means 3 consecutive data points declining
+          if (consecutiveDeclines >= 2) {
             hasConsecutiveDecliningGrades = true;
           }
         }
       }
     } else if (subjectGrades.length === 1) {
-      const pct = subjectGrades[0].score / subjectGrades[0].maxScore;
+      const pct = subjectGrades[0].maxScore ? subjectGrades[0].score / subjectGrades[0].maxScore : 0;
       gradeBullets.push(`${subject} score: ${Math.round(pct * 100)}% (only 1 score recorded)`);
     }
   }
 
   if (subjectDrops.length > 0) {
-    // Average positive drop (bound at 0)
     const validDrops = subjectDrops.map((d) => Math.max(0, d));
     const sumDrops = validDrops.reduce((sum, d) => sum + d, 0);
     averageGradeDrop = sumDrops / validDrops.length;
   }
 
-  // Normalize grade_drop parameter to [0, 1] range
-  // A 25% average grade drop is mapped to 1.0 (extreme concern)
   const normalizedGradeDrop = Math.min(1.0, averageGradeDrop / 0.25);
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -179,78 +210,72 @@ export function calculateStudentStatus(data: StudentInputData, suppressAlerts: b
   let averageMood = 5.0;
   let moodBullets: string[] = [];
   let hasConsecutiveLowMood = false;
-  let maxConsecutiveLowMood = 0;
 
   if (mood.length > 0) {
-    const totalMoodVal = mood.reduce((sum, m) => sum + m.moodValue, 0);
-    averageMood = totalMoodVal / mood.length;
+    const sortedMood = [...mood].sort((a, b) => (a.checkedInAt || '').localeCompare(b.checkedInAt || ''));
+    const totalMood = sortedMood.reduce((sum, m) => sum + m.moodValue, 0);
+    averageMood = totalMood / sortedMood.length;
 
-    // Mood signal: 0 is perfect (5/5), 1 is extreme distress (1/5)
-    moodSignal = (5.0 - averageMood) / 4.0;
+    moodSignal = Math.max(0, (5.0 - averageMood) / 4.0);
 
-    // Check consecutive low mood (<= 3, which is "okay" or worse)
-    const sortedMood = [...mood].sort((a, b) => a.checkedInAt.localeCompare(b.checkedInAt));
-    let currentConsecutive = 0;
+    let consecutiveLow = 0;
+    let maxConsecutiveLow = 0;
     for (const m of sortedMood) {
-      if (m.moodValue <= 3) {
-        currentConsecutive++;
-        if (currentConsecutive > maxConsecutiveLowMood) {
-          maxConsecutiveLowMood = currentConsecutive;
+      if (m.moodValue <= 2) {
+        consecutiveLow++;
+        if (consecutiveLow > maxConsecutiveLow) {
+          maxConsecutiveLow = consecutiveLow;
         }
       } else {
-        currentConsecutive = 0;
+        consecutiveLow = 0;
       }
     }
 
-    if (maxConsecutiveLowMood >= 3) {
+    if (maxConsecutiveLow >= 3) {
       hasConsecutiveLowMood = true;
     }
 
-    moodBullets.push(`Average mood rating: ${averageMood.toFixed(1)}/5`);
-    const lowCheckins = mood.filter((m) => m.moodValue <= 2).length;
-    if (lowCheckins > 0) {
-      moodBullets.push(`Had ${lowCheckins} check-ins marked as low or sad`);
+    moodBullets.push(`Average mood check-in: ${averageMood.toFixed(1)} / 5.0`);
+    if (maxConsecutiveLow > 0) {
+      moodBullets.push(`Consecutive low mood check-ins (<= 2): ${maxConsecutiveLow} times`);
     }
   } else {
     moodBullets.push('No mood check-ins recorded');
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 4. Attendance Signals (Supplemental Evidence)
+  // 4. Attendance Rate Calculation
   // ──────────────────────────────────────────────────────────────────────────
-  let attendanceBullets: string[] = [];
   let attendanceRate = 1.0;
+  let attendanceBullets: string[] = [];
   let hasConsecutiveAbsences = false;
 
   if (attendance.length > 0) {
-    const totalDays = attendance.length;
-    const absences = attendance.filter((a) => a.status === 'absent').length;
-    const lates = attendance.filter((a) => a.status === 'late').length;
-    attendanceRate = (totalDays - absences) / totalDays;
+    const totalAtt = attendance.length;
+    const presentAtt = attendance.filter((a) => a.status === 'present' || a.status === 'late').length;
+    attendanceRate = presentAtt / totalAtt;
 
-    attendanceBullets.push(
-      `${totalDays - absences}/${totalDays} days present (${Math.round(attendanceRate * 100)}% attendance)`
-    );
-    if (absences > 0 || lates > 0) {
-      attendanceBullets.push(`Missed ${absences} days, arrived late ${lates} times`);
-    }
-
-    // Check for 3 consecutive absences
-    const sortedAttendance = [...attendance].sort((a, b) => a.date.localeCompare(b.date));
-    let currentConsecutiveAbs = 0;
+    const sortedAtt = [...attendance].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    let consecutiveAbs = 0;
     let maxConsecutiveAbs = 0;
-    for (const att of sortedAttendance) {
-      if (att.status === 'absent') {
-        currentConsecutiveAbs++;
-        if (currentConsecutiveAbs > maxConsecutiveAbs) {
-          maxConsecutiveAbs = currentConsecutiveAbs;
+    for (const a of sortedAtt) {
+      if (a.status === 'absent') {
+        consecutiveAbs++;
+        if (consecutiveAbs > maxConsecutiveAbs) {
+          maxConsecutiveAbs = consecutiveAbs;
         }
       } else {
-        currentConsecutiveAbs = 0;
+        consecutiveAbs = 0;
       }
     }
+
     if (maxConsecutiveAbs >= 3) {
       hasConsecutiveAbsences = true;
+    }
+
+    attendanceBullets.push(`Attendance rate: ${Math.round(attendanceRate * 100)}% (${presentAtt} of ${totalAtt} present)`);
+    if (maxConsecutiveAbs > 0) {
+      attendanceBullets.push(`Consecutive absences: ${maxConsecutiveAbs} days`);
     }
   } else {
     attendanceBullets.push('No attendance records found');
@@ -259,11 +284,9 @@ export function calculateStudentStatus(data: StudentInputData, suppressAlerts: b
   // ──────────────────────────────────────────────────────────────────────────
   // 5. Core Rules & Minimum Data Checks
   // ──────────────────────────────────────────────────────────────────────────
-  // risk_score = (homework_gap * 0.3) + (grade_drop * 0.3) + (mood_signal * 0.4)
   const rawRiskScore = (homeworkGap * 0.3) + (normalizedGradeDrop * 0.3) + (moodSignal * 0.4);
   const riskScore = Math.round(rawRiskScore * 100) / 100;
 
-  // Determine signals showing concern (warning thresholds)
   const isHwConcern = homeworkGap > 0.3;
   const isGradeConcern = normalizedGradeDrop > 0.3;
   const isMoodConcern = moodSignal > 0.4;
@@ -282,7 +305,6 @@ export function calculateStudentStatus(data: StudentInputData, suppressAlerts: b
     hasConsecutiveLowMood ||
     hasConsecutiveAbsences;
 
-  // Determine base status before minimum-data checks
   let rawStatus: 'on-track' | 'worth-watching' | 'needs-attention' = 'on-track';
   if (riskScore >= 0.50) {
     rawStatus = 'needs-attention';
@@ -290,30 +312,21 @@ export function calculateStudentStatus(data: StudentInputData, suppressAlerts: b
     rawStatus = 'worth-watching';
   }
 
-  // Apply Section 6.2 Minimum Data Threshold:
-  // "require at least 2 independent signal types AND a pattern held over at least 3 consecutive data points
-  // before status can change from 'On Track'."
   let finalStatus: 'on-track' | 'worth-watching' | 'needs-attention' = 'on-track';
   if (rawStatus !== 'on-track') {
     if (hasMinDataSignals && hasConsecutivePattern) {
       finalStatus = rawStatus;
     } else {
-      finalStatus = 'on-track'; // Fall back to On Track due to insufficient pattern/signals
+      finalStatus = 'on-track';
     }
   }
 
-  // Apply School Calendar Suppression (PRD §16):
-  // Suppress or downgrade flags during exam periods, holidays, and breaks
-  // to avoid false-alarm floods during predictable high-stress periods
   if (suppressAlerts && finalStatus !== 'on-track') {
-    // Downgrade "needs-attention" to "worth-watching" during suppression periods
     if (finalStatus === 'needs-attention') {
       finalStatus = 'worth-watching';
     }
-    // Keep "worth-watching" as is (don't suppress completely, just reduce severity)
   }
 
-  // Map back to display labels
   const statusLabels: Record<'on-track' | 'worth-watching' | 'needs-attention', 'On Track' | 'Worth Watching' | 'Needs Attention'> = {
     'on-track': 'On Track',
     'worth-watching': 'Worth Watching',
@@ -327,44 +340,44 @@ export function calculateStudentStatus(data: StudentInputData, suppressAlerts: b
   // ──────────────────────────────────────────────────────────────────────────
   const evidence: EvidenceItem[] = [];
 
-  // Attendance evidence
   evidence.push({
-    id: `eval-attendance-${data.studentId}`,
+    id: `eval-attendance-${studentId}`,
     status: attendanceRate >= 0.95 ? 'on-track' : attendanceRate >= 0.85 ? 'worth-watching' : 'needs-attention',
     headline: attendanceRate >= 0.95 ? 'Attendance is on track' : `Missed ${attendance.filter(a => a.status === 'absent').length} days recently`,
     bullets: attendanceBullets,
   });
 
-  // Homework evidence
   evidence.push({
-    id: `eval-homework-${data.studentId}`,
+    id: `eval-homework-${studentId}`,
     status: homeworkGap <= 0.15 ? 'on-track' : homeworkGap <= 0.40 ? 'worth-watching' : 'needs-attention',
     headline: homeworkGap <= 0.15 ? 'Homework completion is high' : `Missing ${homework.filter(h => !h.isSubmitted).length} assignments`,
     bullets: homeworkBullets,
   });
 
-  // Grades evidence
   const gradeStatus: EvidenceStatus = averageGradeDrop <= 0.05 ? 'on-track' : averageGradeDrop <= 0.15 ? 'worth-watching' : 'needs-attention';
   evidence.push({
-    id: `eval-grades-${data.studentId}`,
+    id: `eval-grades-${studentId}`,
     status: gradeStatus,
     headline: averageGradeDrop <= 0.05 ? 'Academic performance is steady' : `Grade drop observed across assessments`,
     bullets: gradeBullets,
   });
 
-  // Mood evidence
   const moodStatus: EvidenceStatus = averageMood >= 4.0 ? 'on-track' : averageMood >= 3.0 ? 'worth-watching' : 'needs-attention';
   evidence.push({
-    id: `eval-mood-${data.studentId}`,
+    id: `eval-mood-${studentId}`,
     status: moodStatus,
     headline: averageMood >= 4.0 ? 'Wellness signals are positive' : averageMood >= 3.0 ? 'Mixed wellness patterns' : 'Wellness check-ins are concerning',
     bullets: moodBullets,
   });
 
+  const allBullets = evidence.flatMap((e) => e.bullets);
+
   return {
-    studentId: data.studentId,
-    displayName: data.displayName,
+    studentId,
+    displayName,
     status: displayStatus,
+    finalStatus: displayStatus,
+    reasons: allBullets,
     riskScore,
     homeworkGap,
     gradeDrop: averageGradeDrop,

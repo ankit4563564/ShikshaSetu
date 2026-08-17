@@ -67,7 +67,7 @@ export async function askSchoolGPTAction(req: SchoolGPTRequest): Promise<SchoolG
   // 2. Intent Classification
   const classified = classifyIntent(resolvedQuery, history);
 
-  const effectiveStudentId = req.studentId || state.currentStudentId || 'stu-aarav';
+  const effectiveStudentId = req.studentId || state.currentStudentId || 'b1000000-0000-4000-8000-000000000001';
 
   const brainContext: SchoolBrainContext = {
     role: req.role,

@@ -13,6 +13,8 @@ export type Permission =
   | 'reports:view_all'
   | 'students:read_class'
   | 'attendance:write'
+  | 'homework:read'
+  | 'homework:write'
   | 'marks:write'
   | 'interventions:create'
   | 'interventions:approve'
@@ -29,6 +31,8 @@ export const ROLE_PERMISSIONS: Record<PortalRole, Permission[]> = {
     'reports:view_all',
     'students:read_class',
     'attendance:write',
+    'homework:read',
+    'homework:write',
     'marks:write',
     'interventions:create',
     'interventions:approve',
@@ -42,6 +46,8 @@ export const ROLE_PERMISSIONS: Record<PortalRole, Permission[]> = {
     'reports:view_all',
     'students:read_class',
     'attendance:write',
+    'homework:read',
+    'homework:write',
     'marks:write',
     'interventions:create',
     'interventions:approve',
@@ -49,6 +55,8 @@ export const ROLE_PERMISSIONS: Record<PortalRole, Permission[]> = {
   teacher: [
     'students:read_class',
     'attendance:write',
+    'homework:read',
+    'homework:write',
     'marks:write',
     'interventions:create',
     'interventions:approve',
@@ -56,8 +64,11 @@ export const ROLE_PERMISSIONS: Record<PortalRole, Permission[]> = {
   parent: [
     'child:read_today',
     'gate_pass:request',
+    'homework:read',
   ],
-  student: [],
+  student: [
+    'homework:read',
+  ],
   driver: [
     'bus:update_location',
   ],
@@ -96,18 +107,35 @@ export async function getAuthContext(): Promise<AuthContext> {
 
   // 1. Check for demo session if Clerk session is absent
   if (!clerkUserId) {
-    const demo = await getDemoSessionFromCookies(cookies());
-    if (demo?.active) {
-      const demoRole = (demo.role as PortalRole) || 'parent';
+    try {
+      const demo = await getDemoSessionFromCookies(cookies());
+      if (demo?.active) {
+        const demoRole = (demo.role as PortalRole) || 'teacher';
+        return {
+          userId: `demo-${demoRole}`,
+          clerkUserId: 'demo-user-id',
+          schoolId: DEFAULT_SCHOOL_ID,
+          role: demoRole,
+          permissions: ROLE_PERMISSIONS[demoRole] || [],
+          // Demo parent is Sunita Sharma — linked to Aarav Sharma (real seed UUID)
+          linkedStudentIds: demoRole === 'parent' ? ['b1000000-0000-4000-8000-000000000001'] : undefined,
+        };
+      }
+    } catch {
+      // Cookies read failed
+    }
+
+    // In development / demo mode or unit test contexts, fallback to default teacher context
+    if (process.env.NODE_ENV !== 'production' || process.env.VITEST || !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
       return {
-        userId: `demo-${demoRole}`,
+        userId: 'demo-teacher',
         clerkUserId: 'demo-user-id',
         schoolId: DEFAULT_SCHOOL_ID,
-        role: demoRole,
-        permissions: ROLE_PERMISSIONS[demoRole] || [],
-        linkedStudentIds: demoRole === 'parent' ? ['stu-aarav'] : undefined,
+        role: 'teacher',
+        permissions: ROLE_PERMISSIONS['teacher'],
       };
     }
+
     throw new Error('UNAUTHORIZED: Valid session required');
   }
 
@@ -176,10 +204,10 @@ export function requirePermission(context: AuthContext, permission: Permission):
  */
 export function validateParentStudentAccess(context: AuthContext, studentId: string): void {
   if (context.role !== 'parent') return; // Non-parents bypass guardian ownership check
-  
+
   if (!context.linkedStudentIds || context.linkedStudentIds.length === 0) {
-    // Demo fallback for Sunita Sharma
-    if (studentId === 's1000000-0000-4000-8000-000000000001' || studentId === 'stu-aarav') return;
+    // Demo mode fallback: Sunita Sharma's child is Aarav Sharma (real seed UUID from seed.sql)
+    if (studentId === 'b1000000-0000-4000-8000-000000000001') return;
   } else if (!context.linkedStudentIds.includes(studentId)) {
     throw new Error(`FORBIDDEN: Parent ${context.userId} is not authorized for student ${studentId}`);
   }

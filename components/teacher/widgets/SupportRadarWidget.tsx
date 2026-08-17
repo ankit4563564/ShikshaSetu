@@ -12,11 +12,13 @@ interface StudentStatus {
 }
 
 interface SupportRadarWidgetProps {
+  grade: string;
+  section: string;
   onAskWhy: (studentName: string) => void;
   onSelectStudent?: (studentId: string) => void;
 }
 
-export default function SupportRadarWidget({ onAskWhy, onSelectStudent }: SupportRadarWidgetProps) {
+export default function SupportRadarWidget({ grade, section, onAskWhy, onSelectStudent }: SupportRadarWidgetProps) {
   const [students, setStudents] = useState<StudentStatus[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,9 +31,9 @@ export default function SupportRadarWidget({ onAskWhy, onSelectStudent }: Suppor
         const { data: studentsData, error: studentsError } = await supabase
           .from('students')
           .select('id, first_name, last_name, display_name')
-          .eq('grade', '8')
-          .eq('section', 'A')
-          .limit(10);
+          .eq('grade', grade)
+          .eq('section', section)
+          .limit(40);
 
         if (studentsError) throw studentsError;
 

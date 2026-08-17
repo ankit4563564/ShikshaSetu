@@ -11,8 +11,12 @@ import ScheduleCalendarWidget from './widgets/ScheduleCalendarWidget';
 import SchoolGPTSpotlight from '../schoolgpt/SchoolGPTSpotlight';
 import SchoolGPTDrawer from '../schoolgpt/SchoolGPTDrawer';
 import Student360Modal from './Student360Modal';
+import AiHomeworkModal from './AiHomeworkModal';
 import { useAmbientAICore } from '../schoolgpt/core/AmbientIntelligenceCore';
 import { useContextRegistry } from '../schoolgpt/context/ContextRegistry';
+import { TakeAttendanceModal } from './TakeAttendanceModal';
+import type { TeacherClassContext } from '@/app/teacher/page';
+import type { AttendanceRosterStudent } from '@/lib/attendance/types';
 
 const suggestedCards = [
   { title: 'Support Radar', prompt: 'Which students need support today?', icon: '🎯', bg: 'bg-rose-50 border-rose-100 text-rose-700' },
@@ -33,27 +37,51 @@ const quickActions = [
 ];
 
 interface TeacherWorkspaceV2Props {
-  readonly teacherName?: string;
+  readonly classContext: TeacherClassContext;
 }
 
-export default function TeacherWorkspaceV2({ teacherName }: TeacherWorkspaceV2Props) {
+export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2Props) {
   const [activeTab, setActiveTab] = useState('today');
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
+  const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const { ask, isLoading } = useAmbientAICore();
   const { setContext } = useContextRegistry();
 
+  const displayName = classContext.teacherName;
+  const { grade, section, students } = classContext;
+
+  const attendanceRoster: AttendanceRosterStudent[] = students.map((s) => ({
+    studentId: s.studentId,
+    displayName: s.displayName,
+    rollNumber: s.roll_number || '',
+    currentStatus: 'present',
+  }));
+
   const handleQuerySend = (query: string) => {
+    if (query === 'View Attendance') {
+      setIsAttendanceModalOpen(true);
+      return;
+    }
+    if (query === 'Open Homework' || query.includes('homework')) {
+      setIsHomeworkModalOpen(true);
+      return;
+    }
     ask(query);
     setIsDrawerOpen(true);
   };
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    if (tab === 'attendance') setContext({ module: 'attendance' });
-    else if (tab === 'assignments') setContext({ module: 'homework' });
-    else if (tab === 'students') setContext({ module: 'general' });
+    if (tab === 'attendance') {
+      setContext({ module: 'attendance' });
+      setIsAttendanceModalOpen(true);
+    } else if (tab === 'assignments') {
+      setContext({ module: 'homework' });
+      setIsHomeworkModalOpen(true);
+    } else if (tab === 'students') setContext({ module: 'general' });
   };
 
   const displayName = teacherName || 'Teacher';
@@ -75,7 +103,7 @@ export default function TeacherWorkspaceV2({ teacherName }: TeacherWorkspaceV2Pr
           <h1 className="font-display text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
             Good morning, {displayName} 👋
           </h1>
-          <p className="text-sm font-medium text-slate-500">How can I help you today?</p>
+          <p className="text-sm font-medium text-slate-500 font-medium">How can I help you today?</p>
         </div>
 
         {/* Today's Focus Priorities Bar */}
@@ -139,20 +167,48 @@ export default function TeacherWorkspaceV2({ teacherName }: TeacherWorkspaceV2Pr
         <div className="space-y-4 pt-4 border-t border-slate-200/80">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-lg font-extrabold text-slate-900">Live Classroom Dashboard</h2>
-            <span className="text-xs font-medium text-slate-400">Class 8A Workspace</span>
+            <span className="text-xs font-medium text-slate-400">Class {grade}{section} Workspace</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <SupportRadarWidget
+              grade={grade}
+              section={section}
               onAskWhy={(q) => handleQuerySend(q)}
               onSelectStudent={(id) => setSelectedStudentId(id)}
             />
-            <AttendanceWidget onAskExplain={(q) => handleQuerySend(q)} />
-            <HomeworkWidget onDraftReminder={(q) => handleQuerySend(q)} />
+            <AttendanceWidget
+              grade={grade}
+              section={section}
+              onAskExplain={(q) => handleQuerySend(q)}
+              onOpenTakeAttendance={() => setIsAttendanceModalOpen(true)}
+            />
+            <HomeworkWidget
+              grade={grade}
+              section={section}
+              onDraftReminder={(q) => handleQuerySend(q)}
+              onOpenCreateHomework={() => setIsHomeworkModalOpen(true)}
+            />
             <ScheduleCalendarWidget />
           </div>
         </div>
       </main>
+
+      {/* Take Attendance Full-Screen Modal — real student roster from teacher's class */}
+      <TakeAttendanceModal
+        isOpen={isAttendanceModalOpen}
+        onClose={() => setIsAttendanceModalOpen(false)}
+        initialStudents={attendanceRoster}
+        className={`Grade ${grade}${section}`}
+      />
+
+      {/* AI Homework Draft & Publish Modal */}
+      <AiHomeworkModal
+        isOpen={isHomeworkModalOpen}
+        onClose={() => setIsHomeworkModalOpen(false)}
+        defaultGrade={grade}
+        defaultSection={section}
+      />
 
       {/* Student 360 Viewport Modal */}
       {selectedStudentId && (

@@ -24,16 +24,37 @@ Strict Constraints:
 /**
  * Builds the offline template-based fallback sentence when LLM providers are unavailable.
  */
-export function generateOfflineFallback(studentName: string, evidence: EvidenceItem[]): string {
+export function generateOfflineFallback(
+  studentName: string,
+  evidenceInput?: any,
+  reasonsInput?: any,
+  ..._rest: any[]
+): string {
+  let evidence: EvidenceItem[] = [];
+
+  if (Array.isArray(evidenceInput)) {
+    evidence = evidenceInput;
+  } else if (Array.isArray(reasonsInput) && reasonsInput.length > 0) {
+    const reasons: string[] = reasonsInput;
+    return `Recent observations show that ${studentName}: ${reasons.slice(0, 2).join('; ')}.`;
+  } else if (typeof evidenceInput === 'string' && evidenceInput) {
+    return `${studentName} is currently ${evidenceInput.toLowerCase()} based on recent academic and attendance observations.`;
+  }
+
+  const safeEvidence = Array.isArray(evidence) ? evidence : [];
   // Find items that are not 'on-track' to focus on concerns
-  const concerns = evidence.filter((item) => item.status !== 'on-track');
-  const itemsToUse = concerns.length > 0 ? concerns : evidence;
+  const concerns = safeEvidence.filter((item) => item && item.status !== 'on-track');
+  const itemsToUse = concerns.length > 0 ? concerns : safeEvidence;
+
+  if (itemsToUse.length === 0) {
+    return `${studentName} is doing well and is currently on track across all monitored areas.`;
+  }
 
   // Map headlines to lower case and clean up basic punctuation
   const descriptions = itemsToUse.map((item) => {
-    let desc = item.headline.trim();
+    let desc = (item.headline || '').trim();
     // Lowercase first letter if it doesn't look like a proper noun
-    if (desc && desc[0] === desc[0].toUpperCase() && desc[1] === desc[1].toLowerCase()) {
+    if (desc && desc[0] === desc[0].toUpperCase() && desc[1] === desc[1]?.toLowerCase()) {
       desc = desc[0].toLowerCase() + desc.slice(1);
     }
     // Remove trailing period

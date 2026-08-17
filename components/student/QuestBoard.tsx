@@ -16,25 +16,28 @@ interface Quest {
 }
 
 interface QuestBoardProps {
-  student: StudentWithFlag;
-  setActiveAvatar: (avatar: string) => void;
-  setActiveTitle: (title: string) => void;
-  activeAvatar: string;
-  activeTitle: string;
+  student?: StudentWithFlag;
+  setActiveAvatar?: (avatar: string) => void;
+  setActiveTitle?: (title: string) => void;
+  activeAvatar?: string;
+  activeTitle?: string;
 }
 
 export default function QuestBoard({ student, setActiveAvatar, setActiveTitle, activeAvatar, activeTitle }: QuestBoardProps) {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const streak = student.attendance.reduce((count, record, index, records) => {
+  const attendanceList = student?.attendance || [];
+  const streak = attendanceList.reduce((count, record, index, records) => {
     if (index === 0 || records[index - 1].status === 'present' || records[index - 1].status === 'late') return count + 1;
     return count;
   }, 0);
-  const [xp, setXp] = useState(() => student.grades.reduce((total, grade) => total + Math.round((grade.score / grade.maxScore) * 100), 0));
+  const gradesList = student?.grades || [];
+  const [xp, setXp] = useState(() => gradesList.reduce((total, grade) => total + Math.round((grade.score / grade.maxScore) * 100), 0));
   const [coins, setCoins] = useState(0);
   const maxXp = 500;
   const level = 3;
 
-  const [quests, setQuests] = useState<Quest[]>(() => student.homework.slice(0, 3).map((homework, index) => ({
+  const homeworkList = student?.homework || [];
+  const [quests, setQuests] = useState<Quest[]>(() => homeworkList.slice(0, 3).map((homework, index) => ({
     id: homework.id,
     title: homework.title,
     points: 50 + index * 25,
@@ -56,10 +59,11 @@ export default function QuestBoard({ student, setActiveAvatar, setActiveTitle, a
   const [activeTab, setActiveTab] = useState<'quests' | 'leaderboard'>('quests');
   
   // House points state
-  const [housePoints, setHousePoints] = useState(() => student.grades.reduce((total, grade) => total + grade.score, 0));
+  const [housePoints, setHousePoints] = useState(() => (student?.grades || []).reduce((total, grade) => total + grade.score, 0));
   const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
-  const leaderboard = [{ name: `${student.displayName} (You)`, avatar: activeAvatar, title: activeTitle, xp, streak, house: 'Agni (Red)', isMe: true }];
+  const studentName = student?.displayName || 'Aarav Sharma';
+  const leaderboard = [{ name: `${studentName} (You)`, avatar: activeAvatar || '🎓', title: activeTitle || 'Level 3 Explorer', xp, streak, house: 'Agni (Red)', isMe: true }];
 
   // House Rankings
   const houseRankings = [

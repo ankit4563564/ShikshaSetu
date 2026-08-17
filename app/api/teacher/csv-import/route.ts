@@ -1,230 +1,268 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getAuthContext, requirePermission } from '@/lib/auth/getAuthContext';
+import { createScopedClient } from '@/lib/supabase/scoped';
 import { revalidatePath } from 'next/cache';
 import { recordEcosystemEvent } from '@/lib/ecosystem';
-import { requireRole } from '@/lib/auth/routeGuard';
 
 interface CsvRow {
   [key: string]: string;
 }
 
-interface ColumnMapping {
-  studentName: string;
-  date?: string;
-  presentAbsent?: string;
-  subject?: string;
-  score?: string;
+export async function HEAD() {
+  return new NextResponse(null, { status: 200 });
+}
+
+export async function GET() {
+  return new NextResponse(null, { status: 200 });
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireRole(['teacher', 'admin']);
-    if (auth instanceof NextResponse) return auth;
+    const context = await getAuthContext();
+    const scopedDb = createScopedClient(context);
 
     const body = await request.json();
-    const { data, mapping, importType } = body as {
+    const { data, importType } = body as {
       data: CsvRow[];
-      mapping: ColumnMapping;
-      importType: 'attendance' | 'grades';
+      importType: 'students' | 'teachers' | 'guardians' | 'attendance';
     };
-    const teacherId = auth.roleId;
 
-    const supabase = createClient();
-
-    // Fetch all students to map names to IDs
-    const { data: students, error: studentsError } = await supabase
-      .from('students')
-      .select('id, display_name')
-      .eq('class_teacher_id', teacherId);
-
-    if (studentsError || !students) {
-      return NextResponse.json(
-        { error: 'Failed to fetch students' },
-        { status: 500 }
-      );
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      return NextResponse.json({ error: 'CSV file contains no data rows' }, { status: 400 });
     }
-
-    // Create name-to-ID mapping
-    const studentNameMap = new Map<string, string>();
-    students.forEach((student) => {
-      studentNameMap.set(student.display_name.toLowerCase(), student.id);
-      // Also map first name for flexibility
-      const firstName = student.display_name.split(' ')[0].toLowerCase();
-      studentNameMap.set(firstName, student.id);
-    });
 
     let successCount = 0;
+    let warningCount = 0;
     let failedCount = 0;
     const errors: string[] = [];
-    const affectedStudentIds = new Set<string>();
+    const warnings: string[] = [];
 
-    if (importType === 'attendance') {
-      // Process attendance import
-      for (const row of data) {
-        try {
-          const studentName = row[mapping.studentName]?.trim();
-          if (!studentName) {
-            failedCount++;
-            errors.push(`Missing student name in row`);
-            continue;
-          }
+    // ── 1. STUDENTS BULK IMPORT ──
+    if (importType === 'students') {
+      requirePermission(context, 'students:write');
 
-          const studentId = studentNameMap.get(studentName.toLowerCase());
-          if (!studentId) {
-            failedCount++;
-            errors.push(`Student not found: ${studentName}`);
-            continue;
-          }
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        const displayName = row['Name'] || row['display_name'] || row['Student Name'] || row['student_name'];
+        const grade = row['Grade'] || row['grade'] || '8';
+        const section = row['Section'] || row['section'] || 'A';
+        const rollNumber = row['Roll Number'] || row['roll_number'] || row['Roll'] || `${i + 1}`;
+        const house = row['House'] || row['house'] || null;
 
-          const date = mapping.date ? row[mapping.date] : new Date().toISOString().split('T')[0];
-          const status = mapping.presentAbsent ? row[mapping.presentAbsent]?.toLowerCase() : 'present';
-          
-          // Normalize status
-          let normalizedStatus: 'present' | 'absent' | 'late' = 'present';
-          if (status.includes('absent') || status === 'a') {
-            normalizedStatus = 'absent';
-          } else if (status.includes('late') || status === 'l') {
-            normalizedStatus = 'late';
-          }
-
-          // Check if record already exists
-          const { data: existing } = await supabase
-            .from('attendance')
-            .select('id')
-            .eq('student_id', studentId)
-            .eq('date', date)
-            .maybeSingle();
-
-          if (existing) {
-            // Update existing record
-            const { error: updateError } = await supabase
-              .from('attendance')
-              .update({
-                status: normalizedStatus,
-                marked_by: teacherId,
-                marked_at: new Date().toISOString(),
-              })
-              .eq('id', existing.id);
-
-            if (updateError) throw updateError;
-          } else {
-            // Insert new record
-            const { error: insertError } = await supabase
-              .from('attendance')
-              .insert({
-                student_id: studentId,
-                date,
-                status: normalizedStatus,
-                marked_by: teacherId,
-                marked_at: new Date().toISOString(),
-              });
-
-            if (insertError) throw insertError;
-          }
-
-          successCount++;
-          affectedStudentIds.add(studentId);
-        } catch (err: any) {
+        if (!displayName || !displayName.trim()) {
           failedCount++;
-          errors.push(`Row processing error: ${err.message}`);
+          errors.push(`Row ${i + 1}: Missing student name`);
+          continue;
         }
-      }
-    } else if (importType === 'grades') {
-      // Process grades import
-      for (const row of data) {
-        try {
-          const studentName = row[mapping.studentName]?.trim();
-          if (!studentName) {
+
+        // Duplicate check on roll number within same grade & section
+        const { data: existing } = await scopedDb
+          .from('students')
+          .select('id')
+          .eq('grade', grade)
+          .eq('section', section)
+          .eq('roll_number', rollNumber)
+          .maybeSingle();
+
+        if (existing) {
+          // Update existing student
+          const { error: updateError } = await scopedDb
+            .from('students')
+            .update({ display_name: displayName.trim(), house })
+            .eq('id', existing.id);
+
+          if (updateError) {
             failedCount++;
-            errors.push(`Missing student name in row`);
-            continue;
+            errors.push(`Row ${i + 1} (${displayName}): ${updateError.message}`);
+          } else {
+            successCount++;
+            warningCount++;
+            warnings.push(`Row ${i + 1}: Updated existing student (Roll #${rollNumber})`);
           }
-
-          const studentId = studentNameMap.get(studentName.toLowerCase());
-          if (!studentId) {
-            failedCount++;
-            errors.push(`Student not found: ${studentName}`);
-            continue;
-          }
-
-          if (!mapping.subject || !mapping.score) {
-            failedCount++;
-            errors.push(`Missing subject or score mapping`);
-            continue;
-          }
-
-          const subject = row[mapping.subject]?.trim();
-          const scoreStr = row[mapping.score]?.trim();
-          const date = mapping.date ? row[mapping.date] : new Date().toISOString().split('T')[0];
-
-          if (!subject || !scoreStr) {
-            failedCount++;
-            errors.push(`Missing subject or score in row`);
-            continue;
-          }
-
-          const score = parseFloat(scoreStr);
-          if (isNaN(score)) {
-            failedCount++;
-            errors.push(`Invalid score: ${scoreStr}`);
-            continue;
-          }
-
-          // Insert grade record
-          const { error: insertError } = await supabase
-            .from('grades')
+        } else {
+          // Insert new student
+          const { error: insertError } = await scopedDb
+            .from('students')
             .insert({
-              student_id: studentId,
-              subject,
-              assessment_name: `CSV Import - ${date}`,
-              score,
-              max_score: 100, // Default max score
-              assessment_date: date,
-              recorded_by: teacherId,
+              display_name: displayName.trim(),
+              grade,
+              section,
+              roll_number: rollNumber,
+              house,
+              school_id: context.schoolId,
             });
 
-          if (insertError) throw insertError;
+          if (insertError) {
+            failedCount++;
+            errors.push(`Row ${i + 1} (${displayName}): ${insertError.message}`);
+          } else {
+            successCount++;
+          }
+        }
+      }
 
-          successCount++;
-          affectedStudentIds.add(studentId);
-        } catch (err: any) {
+      await recordEcosystemEvent(scopedDb, {
+        eventType: 'roster_imported',
+        actorId: context.userId,
+        actorRole: context.role || 'admin',
+        title: 'Bulk Students Roster Imported',
+        body: `Imported ${successCount} students successfully.`,
+        metadata: { successCount, warningCount, failedCount },
+      });
+    }
+
+    // ── 2. TEACHERS BULK IMPORT ──
+    else if (importType === 'teachers') {
+      requirePermission(context, 'teachers:write');
+
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        const name = row['Name'] || row['name'] || row['Teacher Name'];
+        const email = row['Email'] || row['email'];
+        const subject = row['Subject'] || row['subject'] || row['Specialization'] || 'General';
+
+        if (!name || !name.trim()) {
           failedCount++;
-          errors.push(`Row processing error: ${err.message}`);
+          errors.push(`Row ${i + 1}: Missing teacher name`);
+          continue;
+        }
+
+        const { error: insertError } = await scopedDb
+          .from('teachers')
+          .insert({
+            name: name.trim(),
+            email: email ? email.trim().toLowerCase() : null,
+            subject_specialization: subject,
+            school_id: context.schoolId,
+          });
+
+        if (insertError) {
+          failedCount++;
+          errors.push(`Row ${i + 1} (${name}): ${insertError.message}`);
+        } else {
+          successCount++;
         }
       }
     }
 
-    await recordEcosystemEvent(supabase, {
-      eventType: 'academic_records_imported',
-      actorId: teacherId,
-      actorRole: 'teacher',
-      title: `${importType === 'attendance' ? 'Attendance' : 'Grade'} records imported`,
-      body: `${successCount} records imported, ${failedCount} failed.`,
-      metadata: {
-        importType,
-        successCount,
-        failedCount,
-        affectedStudentIds: Array.from(affectedStudentIds),
-      },
-    });
+    // ── 3. GUARDIANS BULK IMPORT ──
+    else if (importType === 'guardians') {
+      requirePermission(context, 'guardians:write');
 
-    // Revalidate every existing module that reads student status derived from
-    // attendance/grade data.
-    revalidatePath('/teacher');
-    revalidatePath('/parent');
-    revalidatePath('/student');
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        const guardianName = row['Guardian Name'] || row['guardian_name'] || row['Name'];
+        const phone = row['Phone'] || row['phone'] || row['Mobile'];
+        const studentName = row['Student Name'] || row['student_name'];
+        const relationship = row['Relationship'] || row['relationship'] || 'parent';
+
+        if (!guardianName || !guardianName.trim()) {
+          failedCount++;
+          errors.push(`Row ${i + 1}: Missing guardian name`);
+          continue;
+        }
+
+        // Insert or find guardian
+        const { data: guardian, error: gError } = await scopedDb
+          .from('guardians')
+          .insert({
+            name: guardianName.trim(),
+            phone: phone ? phone.trim() : null,
+            school_id: context.schoolId,
+          })
+          .select('id')
+          .single();
+
+        if (gError || !guardian) {
+          failedCount++;
+          errors.push(`Row ${i + 1} (${guardianName}): ${gError?.message || 'Failed to create guardian'}`);
+          continue;
+        }
+
+        successCount++;
+
+        // Link to student if student name provided
+        if (studentName) {
+          const { data: student } = await scopedDb
+            .from('students')
+            .select('id')
+            .ilike('display_name', `%${studentName.trim()}%`)
+            .maybeSingle();
+
+          if (student) {
+            await scopedDb
+              .from('guardian_access')
+              .insert({
+                student_id: student.id,
+                guardian_id: guardian.id,
+                relationship,
+                can_pickup: true,
+              })
+              .catch(() => null);
+          }
+        }
+      }
+    }
+
+    // ── 4. ATTENDANCE BULK IMPORT ──
+    else if (importType === 'attendance') {
+      requirePermission(context, 'attendance:write');
+
+      const { data: students } = await scopedDb.from('students').select('id, display_name');
+      const studentNameMap = new Map<string, string>();
+      (students || []).forEach((student) => {
+        studentNameMap.set(student.display_name.toLowerCase(), student.id);
+      });
+
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        const studentName = (row['Student Name'] || row['student_name'] || row['Name'])?.trim();
+        if (!studentName) {
+          failedCount++;
+          errors.push(`Row ${i + 1}: Missing student name`);
+          continue;
+        }
+
+        const studentId = studentNameMap.get(studentName.toLowerCase());
+        if (!studentId) {
+          failedCount++;
+          errors.push(`Row ${i + 1}: Student not found (${studentName})`);
+          continue;
+        }
+
+        const date = row['Date'] || row['date'] || new Date().toISOString().split('T')[0];
+        const statusStr = (row['Status'] || row['status'] || 'present').toLowerCase();
+        const status = statusStr.includes('absent') || statusStr === 'a' ? 'absent' : statusStr.includes('late') ? 'late' : 'present';
+
+        const { error: attError } = await scopedDb.from('attendance').insert({
+          student_id: studentId,
+          date,
+          status,
+          marked_by: context.userId,
+        });
+
+        if (attError) {
+          failedCount++;
+          errors.push(`Row ${i + 1} (${studentName}): ${attError.message}`);
+        } else {
+          successCount++;
+        }
+      }
+    }
+
     revalidatePath('/admin');
+    revalidatePath('/teacher');
 
     return NextResponse.json({
-      success: successCount,
-      failed: failedCount,
-      errors: errors.slice(0, 10), // Return first 10 errors
+      success: true,
+      importType,
+      successCount,
+      warningCount,
+      failedCount,
+      warnings: warnings.slice(0, 10),
+      errors: errors.slice(0, 10),
     });
-  } catch (error: any) {
-    console.error('[CSV Import] Error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Import failed' },
-      { status: 500 }
-    );
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'CSV import failed' }, { status: 500 });
   }
 }

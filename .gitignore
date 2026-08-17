@@ -38,3 +38,7 @@ yarn-error.log*
 
 # Gemin / Agent temporary files
 .gemini/
+
+# Test reports & build artifacts
+/test-results/
+/playwright-report/

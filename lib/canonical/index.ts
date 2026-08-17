@@ -1,21 +1,47 @@
-/**
- * Canonical Data Access Layer
- * 
- * This module provides the authoritative source for Aarav Sharma's demo data.
- * All portals should use these functions to access canonical student state.
- * 
- * Canonical Student ID: 00000000-0000-4000-8000-000000000001
- * Canonical Teacher ID: 00000000-0000-4000-8000-000000000002
- * Canonical Guardian ID: 00000000-0000-4000-8000-000000000003
- */
-
 import { createClient } from '@/lib/supabase/client';
-import { createClient as createServerClient } from '@/lib/supabase/server';
 
-// Canonical IDs
-export const CANONICAL_STUDENT_ID = '00000000-0000-4000-8000-000000000001';
-export const CANONICAL_TEACHER_ID = '00000000-0000-4000-8000-000000000002';
-export const CANONICAL_GUARDIAN_ID = '00000000-0000-4000-8000-000000000003';
+// ─────────────────────────────────────────────────────────────────────────────
+// Seed-aligned canonical IDs — these match seed.sql exactly.
+// Used ONLY in demo mode, test fixtures, and explicitly-scoped demo resets.
+// NEVER used as silent defaults in production data reads.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** @deprecated Do not use as a default fallback. Pass real studentId from auth context. */
+export const CANONICAL_STUDENT_ID = 'b1000000-0000-4000-8000-000000000001'; // Aarav Sharma (seed.sql)
+/** Seed teacher ID — Ananya Mehra (class 8A). Demo/test use only. */
+export const CANONICAL_TEACHER_ID = 'a1000000-0000-4000-8000-000000000001';
+/** Seed guardian ID — Sunita Sharma (Aarav's parent). Demo/test use only. */
+export const CANONICAL_GUARDIAN_ID = 'c1000000-0000-4000-8000-000000000001';
+
+// Shared global in-memory homework store for seamless demo/dev synchronization
+declare global {
+  var __SHIKSHASETU_HOMEWORK__: HomeworkRecord[] | undefined;
+}
+
+if (!globalThis.__SHIKSHASETU_HOMEWORK__) {
+  globalThis.__SHIKSHASETU_HOMEWORK__ = [
+    {
+      id: 'hw-demo-101',
+      subject: 'Mathematics',
+      title: 'Linear Equations Exercise 4.2',
+      description: 'Solve problems 1 through 10 from textbook page 45.',
+      due_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      submitted_at: null,
+      is_submitted: false,
+      assigned_by: 'Teacher',
+    },
+    {
+      id: 'hw-demo-102',
+      subject: 'Science',
+      title: 'Photosynthesis Lab Observations',
+      description: 'Document light vs dark plant leaf reactions.',
+      due_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      submitted_at: null,
+      is_submitted: false,
+      assigned_by: 'Teacher',
+    },
+  ];
+}
 
 // ============================================================================
 // Canonical Student Profile
@@ -29,29 +55,31 @@ export interface CanonicalStudent {
   grade: string;
   section: string;
   roll_number: string;
-  date_of_birth: string;
-  class_teacher_id: string;
+  avatar_url: string | null;
+  house: string | null;
+  school_id: string;
+  created_at: string;
 }
 
-export async function getCanonicalStudent(): Promise<CanonicalStudent | null> {
+export async function getCanonicalStudent(studentId: string): Promise<CanonicalStudent | null> {
   const supabase = createClient();
-  
+
   const { data, error } = await supabase
     .from('students')
     .select('*')
-    .eq('id', CANONICAL_STUDENT_ID)
+    .eq('id', studentId)
     .single();
-  
+
   if (error) {
-    console.error('[Canonical] Failed to fetch student:', error);
+    console.error('[Canonical] Failed to fetch student profile:', error);
     return null;
   }
-  
+
   return data;
 }
 
 // ============================================================================
-// Canonical Attendance
+// Canonical Attendance Records
 // ============================================================================
 
 export interface AttendanceRecord {
@@ -59,68 +87,69 @@ export interface AttendanceRecord {
   date: string;
   status: 'present' | 'absent' | 'late' | 'excused';
   notes: string | null;
+  marked_by: string;
 }
 
 export interface AttendanceSummary {
+  rate: number;
   totalDays: number;
   presentDays: number;
   absentDays: number;
   lateDays: number;
-  rate: number; // 0-1
-  recentTrend: 'improving' | 'declining' | 'stable';
+  streak: number;
 }
 
-export async function getCanonicalAttendance(days: number = 30): Promise<AttendanceRecord[]> {
+export async function getCanonicalAttendance(days: number = 30, studentId: string = CANONICAL_STUDENT_ID): Promise<AttendanceRecord[]> {
   const supabase = createClient();
-  
+
   const { data, error } = await supabase
     .from('attendance')
     .select('*')
-    .eq('student_id', CANONICAL_STUDENT_ID)
+    .eq('student_id', studentId)
     .gte('date', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
     .order('date', { ascending: false });
-  
+
   if (error) {
     console.error('[Canonical] Failed to fetch attendance:', error);
     return [];
   }
-  
+
   return data || [];
 }
 
-export async function getCanonicalAttendanceSummary(days: number = 30): Promise<AttendanceSummary> {
-  const records = await getCanonicalAttendance(days);
+export async function getCanonicalAttendanceSummary(days: number = 30, studentId: string = CANONICAL_STUDENT_ID): Promise<AttendanceSummary> {
+  const records = await getCanonicalAttendance(days, studentId);
   
   const totalDays = records.length;
   const presentDays = records.filter(r => r.status === 'present').length;
   const absentDays = records.filter(r => r.status === 'absent').length;
   const lateDays = records.filter(r => r.status === 'late').length;
-  const rate = totalDays > 0 ? presentDays / totalDays : 0;
   
-  // Calculate trend by comparing first half vs second half
-  const midPoint = Math.floor(records.length / 2);
-  const firstHalf = records.slice(midPoint);
-  const secondHalf = records.slice(0, midPoint);
+  const rate = totalDays > 0 ? (presentDays + lateDays * 0.5) / totalDays : 1.0;
   
-  const firstHalfPresent = firstHalf.filter(r => r.status === 'present').length / (firstHalf.length || 1);
-  const secondHalfPresent = secondHalf.filter(r => r.status === 'present').length / (secondHalf.length || 1);
-  
-  let recentTrend: 'improving' | 'declining' | 'stable' = 'stable';
-  if (secondHalfPresent > firstHalfPresent + 0.1) recentTrend = 'improving';
-  else if (secondHalfPresent < firstHalfPresent - 0.1) recentTrend = 'declining';
+  // Calculate current streak
+  let streak = 0;
+  const sorted = [...records].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  for (const record of sorted) {
+    if (record.status === 'present' || record.status === 'late') {
+      streak++;
+    } else {
+      break;
+    }
+  }
   
   return {
+    rate,
     totalDays,
     presentDays,
     absentDays,
     lateDays,
-    rate,
-    recentTrend,
+    streak,
   };
 }
 
 // ============================================================================
-// Canonical Homework
+// Canonical Homework Assignments
 // ============================================================================
 
 export interface HomeworkRecord {
@@ -143,26 +172,32 @@ export interface HomeworkSummary {
   subjects: string[];
 }
 
-export async function getCanonicalHomework(days: number = 30): Promise<HomeworkRecord[]> {
-  const supabase = createClient();
-  
-  const { data, error } = await supabase
-    .from('homework')
-    .select('*')
-    .eq('student_id', CANONICAL_STUDENT_ID)
-    .gte('due_date', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-    .order('due_date', { ascending: false });
-  
-  if (error) {
-    console.error('[Canonical] Failed to fetch homework:', error);
-    return [];
+export async function getCanonicalHomework(days: number = 30, studentId: string = CANONICAL_STUDENT_ID): Promise<HomeworkRecord[]> {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('homework')
+      .select('*')
+      .eq('student_id', studentId)
+      .order('due_date', { ascending: false });
+
+    if (!error && data && data.length > 0) {
+      return data;
+    }
+  } catch {
+    // Database query error or offline dev mode
   }
-  
-  return data || [];
+
+  // Only return in-memory global store if querying for the demo seed student
+  if (studentId === CANONICAL_STUDENT_ID) {
+    return globalThis.__SHIKSHASETU_HOMEWORK__ || [];
+  }
+
+  return [];
 }
 
-export async function getCanonicalHomeworkSummary(days: number = 30): Promise<HomeworkSummary> {
-  const records = await getCanonicalHomework(days);
+export async function getCanonicalHomeworkSummary(days: number = 30, studentId: string = CANONICAL_STUDENT_ID): Promise<HomeworkSummary> {
+  const records = await getCanonicalHomework(days, studentId);
   
   const total = records.length;
   const submitted = records.filter(r => r.is_submitted).length;
@@ -193,7 +228,7 @@ export async function getCanonicalHomeworkSummary(days: number = 30): Promise<Ho
 }
 
 // ============================================================================
-// Canonical Grades
+// Canonical Grade & Examination Results
 // ============================================================================
 
 export interface GradeRecord {
@@ -206,21 +241,21 @@ export interface GradeRecord {
   percentage: number;
 }
 
-export async function getCanonicalGrades(): Promise<GradeRecord[]> {
+export async function getCanonicalGrades(studentId: string = CANONICAL_STUDENT_ID): Promise<GradeRecord[]> {
   const supabase = createClient();
-  
+
   const { data, error } = await supabase
     .from('grades')
     .select('*')
-    .eq('student_id', CANONICAL_STUDENT_ID)
+    .eq('student_id', studentId)
     .order('assessment_date', { ascending: false });
-  
+
   if (error) {
     console.error('[Canonical] Failed to fetch grades:', error);
     return [];
   }
-  
-  return (data || []).map(g => ({
+
+  return (data || []).map((g) => ({
     ...g,
     percentage: (g.score / g.max_score) * 100,
   }));
@@ -238,45 +273,45 @@ export interface MoodCheckin {
   checked_in_at: string;
 }
 
-export async function getCanonicalMoodCheckins(days: number = 30): Promise<MoodCheckin[]> {
+export async function getCanonicalMoodCheckins(days: number = 30, studentId: string = CANONICAL_STUDENT_ID): Promise<MoodCheckin[]> {
   const supabase = createClient();
-  
+
   const { data, error } = await supabase
     .from('mood_checkins')
     .select('*')
-    .eq('student_id', CANONICAL_STUDENT_ID)
+    .eq('student_id', studentId)
     .gte('checked_in_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
     .order('checked_in_at', { ascending: false });
-  
+
   if (error) {
     console.error('[Canonical] Failed to fetch mood check-ins:', error);
     return [];
   }
-  
+
   return data || [];
 }
 
 // ============================================================================
-// Canonical Evidence Logs
+// Canonical Student Support / Evidence Logs
 // ============================================================================
 
 export interface EvidenceLog {
   id: string;
-  source_type: string;
-  headline: string;
-  bullets: string[];
-  raw_data: any;
-  generated_at: string;
+  evidence_type: string;
+  evidence_data: any;
+  severity: 'low' | 'medium' | 'high';
+  recorded_at: string;
 }
 
-export async function getCanonicalEvidenceLogs(): Promise<EvidenceLog[]> {
+export async function getCanonicalEvidenceLogs(studentId: string = CANONICAL_STUDENT_ID): Promise<EvidenceLog[]> {
   const supabase = createClient();
+  const targetId = studentId;
   
   const { data, error } = await supabase
-    .from('evidence_logs')
+    .from('student_evidence_logs')
     .select('*')
-    .eq('student_id', CANONICAL_STUDENT_ID)
-    .order('generated_at', { ascending: false });
+    .eq('student_id', targetId)
+    .order('recorded_at', { ascending: false });
   
   if (error) {
     console.error('[Canonical] Failed to fetch evidence logs:', error);
@@ -287,31 +322,32 @@ export async function getCanonicalEvidenceLogs(): Promise<EvidenceLog[]> {
 }
 
 // ============================================================================
-// Canonical Status Flag
+// Canonical Early Signal Status Flag
 // ============================================================================
 
 export interface StatusFlag {
   id: string;
   status: 'on_track' | 'worth_watching' | 'needs_attention';
-  action_status: 'unseen' | 'seen' | 'action_taken' | 'resolved';
-  created_at: string;
+  severity: 'low' | 'medium' | 'high';
+  ai_summary: string;
+  flagged_at: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
 }
 
-export async function getCanonicalStatusFlag(): Promise<StatusFlag | null> {
+export async function getCanonicalStatusFlag(studentId: string = CANONICAL_STUDENT_ID): Promise<StatusFlag | null> {
   const supabase = createClient();
+  const targetId = studentId;
   
   const { data, error } = await supabase
-    .from('status_flags')
+    .from('student_status_flags')
     .select('*')
-    .eq('student_id', CANONICAL_STUDENT_ID)
-    .is('resolved_at', null)
+    .eq('student_id', targetId)
+    .order('flagged_at', { ascending: false })
+    .limit(1)
     .single();
   
   if (error) {
-    if (error.code === 'PGRST116') {
-      // No active flag
-      return null;
-    }
     console.error('[Canonical] Failed to fetch status flag:', error);
     return null;
   }
@@ -320,29 +356,25 @@ export async function getCanonicalStatusFlag(): Promise<StatusFlag | null> {
 }
 
 // ============================================================================
-// Canonical Bus Location
+// Canonical Bus Telemetry
 // ============================================================================
 
 export interface BusLocation {
-  bus_identifier: string;
+  vehicle_id: string;
   latitude: number;
   longitude: number;
   speed_kmh: number;
-  heading: number;
-  next_stop: string;
-  eta_minutes: number;
-  recorded_at: string;
   last_updated: string;
+  route_name: string;
 }
 
 export async function getCanonicalBusLocation(): Promise<BusLocation | null> {
   const supabase = createClient();
   
   const { data, error } = await supabase
-    .from('bus_locations')
+    .from('vehicle_telemetry')
     .select('*')
-    .eq('bus_identifier', 'BUS-001')
-    .order('recorded_at', { ascending: false })
+    .order('last_updated', { ascending: false })
     .limit(1)
     .single();
   
@@ -351,23 +383,11 @@ export async function getCanonicalBusLocation(): Promise<BusLocation | null> {
     return null;
   }
   
-  // Map database fields to interface, providing defaults for new fields
-  return {
-    bus_identifier: data.bus_identifier,
-    latitude: data.latitude,
-    longitude: data.longitude,
-    speed_kmh: data.speed_kmh,
-    heading: data.heading,
-    next_stop: (data as any).next_stop || 'School Gate',
-    eta_minutes: (data as any).eta_minutes || 5,
-    recorded_at: data.recorded_at,
-    last_updated: (data as any).last_updated || data.recorded_at,
-  };
+  return data;
 }
 
-
 // ============================================================================
-// Canonical Complete State (for portals)
+// Combined Canonical Student State
 // ============================================================================
 
 export interface CanonicalStudentState {
@@ -383,7 +403,8 @@ export interface CanonicalStudentState {
   busLocation: BusLocation | null;
 }
 
-export async function getCanonicalStudentState(): Promise<CanonicalStudentState> {
+export async function getCanonicalStudentState(studentId: string = CANONICAL_STUDENT_ID): Promise<CanonicalStudentState> {
+  const targetId = studentId;
   const [
     student,
     attendance,
@@ -396,15 +417,15 @@ export async function getCanonicalStudentState(): Promise<CanonicalStudentState>
     statusFlag,
     busLocation,
   ] = await Promise.all([
-    getCanonicalStudent(),
-    getCanonicalAttendance(30),
-    getCanonicalAttendanceSummary(30),
-    getCanonicalHomework(30),
-    getCanonicalHomeworkSummary(30),
-    getCanonicalGrades(),
-    getCanonicalMoodCheckins(30),
-    getCanonicalEvidenceLogs(),
-    getCanonicalStatusFlag(),
+    getCanonicalStudent(targetId),
+    getCanonicalAttendance(30, targetId),
+    getCanonicalAttendanceSummary(30, targetId),
+    getCanonicalHomework(30, targetId),
+    getCanonicalHomeworkSummary(30, targetId),
+    getCanonicalGrades(targetId),
+    getCanonicalMoodCheckins(30, targetId),
+    getCanonicalEvidenceLogs(targetId),
+    getCanonicalStatusFlag(targetId),
     getCanonicalBusLocation(),
   ]);
   
