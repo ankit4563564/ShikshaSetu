@@ -16,7 +16,18 @@ export default function LoginClient() {
   const [status, setStatus] = useState<MagicLinkStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isResolving, setIsResolving] = useState(false);
+  const [clerkTimeout, setClerkTimeout] = useState(false);
   const magicLinkFlowRef = useRef<ReturnType<NonNullable<typeof signIn>['createMagicLinkFlow']> | null>(null);
+
+  // Monitor Clerk SDK load timeout (e.g. if blocked by browser adblock / network)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isClerkLoaded) {
+        setClerkTimeout(true);
+      }
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [isClerkLoaded]);
 
   // If already authenticated via Clerk session, automatically route to the authorized portal
   useEffect(() => {
@@ -40,7 +51,7 @@ export default function LoginClient() {
     }
 
     if (!isClerkLoaded || !signIn) {
-      setErrorMessage('Authentication service is initializing. Please wait a moment.');
+      setErrorMessage('Connecting to authentication service... Please try again in 2 seconds.');
       return;
     }
 
@@ -61,7 +72,7 @@ export default function LoginClient() {
       if (!emailLinkFactor) {
         // If email_link strategy is not enabled in Clerk dashboard
         setErrorMessage(
-          'Email magic link is not enabled on this authentication instance. Please contact your administrator to configure email verification links in Clerk Dashboard.'
+          'Email magic link is not enabled on this authentication instance. Please enable "Email verification link (Magic links)" in Clerk Dashboard under Authentication Factors.'
         );
         setStatus('idle');
         return;
@@ -170,7 +181,7 @@ export default function LoginClient() {
               <button
                 type="button"
                 onClick={handleReset}
-                className="text-xs font-bold text-[#1f4e5f] hover:underline pt-2 block mx-auto"
+                className="text-xs font-bold text-[#1f4e5f] hover:underline pt-2 block mx-auto cursor-pointer"
               >
                 ← Use a different email
               </button>
@@ -201,6 +212,12 @@ export default function LoginClient() {
                 </div>
               )}
 
+              {clerkTimeout && !isClerkLoaded && (
+                <div role="alert" className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium leading-relaxed">
+                  ⚠️ Connecting to authentication server is taking longer than usual. Please check your internet connection or ensure ad-blockers allow requests to <code>clerk.accounts.dev</code>.
+                </div>
+              )}
+
               {status === 'expired' && (
                 <div role="alert" className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
                   This sign-in link has expired. Request a new one.
@@ -215,10 +232,15 @@ export default function LoginClient() {
 
               <button
                 type="submit"
-                disabled={status === 'sending'}
-                className="w-full py-3.5 px-4 rounded-2xl bg-[#1f4e5f] hover:bg-[#183e4c] text-white font-extrabold text-xs tracking-wider uppercase shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+                disabled={status === 'sending' || (!isClerkLoaded && !clerkTimeout)}
+                className="w-full py-3.5 px-4 rounded-2xl bg-[#1f4e5f] hover:bg-[#183e4c] text-white font-extrabold text-xs tracking-wider uppercase shadow-md transition-all active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
-                {status === 'sending' ? (
+                {!isClerkLoaded ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Connecting authentication...</span>
+                  </>
+                ) : status === 'sending' ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     <span>Sending your sign-in link...</span>
