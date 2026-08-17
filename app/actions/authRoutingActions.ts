@@ -4,7 +4,7 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import { getAuthContext } from '@/lib/auth/getAuthContext';
 import { linkClerkUser } from '@/lib/auth/authOnboarding';
 
-export const PRODUCTION_PORTAL_MAP: Record<string, string> = {
+const PRODUCTION_PORTAL_MAP: Record<string, string> = {
   teacher: '/teacher',
   parent: '/parent',
   student: '/student',
@@ -13,6 +13,14 @@ export const PRODUCTION_PORTAL_MAP: Record<string, string> = {
   gate: '/gate',
   driver: '/driver',
 };
+
+/**
+ * getProductionPortalMapRoute:
+ * Helper async function to inspect the production portal map for a role.
+ */
+export async function getProductionPortalMapRoute(role: string): Promise<string | undefined> {
+  return PRODUCTION_PORTAL_MAP[role];
+}
 
 /**
  * resolveAuthenticatedPortalRoute:

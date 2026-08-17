@@ -80,7 +80,6 @@ export default async function ParentPage() {
         linkedStudentIds = (access || []).map((a: any) => a.student_id);
       }
     }
-  }
 
   // 3. Filter to ONLY this parent's linked children — NEVER show all students.
   //    Demo mode: Sunita Sharma is linked to Aarav Sharma (b1000000-...-001 in seed.sql)

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { PRODUCTION_PORTAL_MAP, resolveAuthenticatedPortalRoute } from '@/app/actions/authRoutingActions';
+import { getProductionPortalMapRoute, resolveAuthenticatedPortalRoute } from '@/app/actions/authRoutingActions';
 import { getAuthContext, validateParentStudentAccess, AuthContext } from '@/lib/auth/getAuthContext';
 
 // Mock Clerk auth
@@ -30,33 +30,33 @@ describe('Production Login & Automatic Role Routing Tests', () => {
   });
 
   describe('Production Portal Access Matrix', () => {
-    it('1. Maps teacher to /teacher', () => {
-      expect(PRODUCTION_PORTAL_MAP['teacher']).toBe('/teacher');
+    it('1. Maps teacher to /teacher', async () => {
+      expect(await getProductionPortalMapRoute('teacher')).toBe('/teacher');
     });
 
-    it('2. Maps parent to /parent', () => {
-      expect(PRODUCTION_PORTAL_MAP['parent']).toBe('/parent');
+    it('2. Maps parent to /parent', async () => {
+      expect(await getProductionPortalMapRoute('parent')).toBe('/parent');
     });
 
-    it('3. Maps student to /student', () => {
-      expect(PRODUCTION_PORTAL_MAP['student']).toBe('/student');
+    it('3. Maps student to /student', async () => {
+      expect(await getProductionPortalMapRoute('student')).toBe('/student');
     });
 
-    it('4. Maps admin and principal to /admin', () => {
-      expect(PRODUCTION_PORTAL_MAP['admin']).toBe('/admin');
-      expect(PRODUCTION_PORTAL_MAP['principal']).toBe('/admin');
+    it('4. Maps admin and principal to /admin', async () => {
+      expect(await getProductionPortalMapRoute('admin')).toBe('/admin');
+      expect(await getProductionPortalMapRoute('principal')).toBe('/admin');
     });
 
-    it('5. Maps gate to /gate', () => {
-      expect(PRODUCTION_PORTAL_MAP['gate']).toBe('/gate');
+    it('5. Maps gate to /gate', async () => {
+      expect(await getProductionPortalMapRoute('gate')).toBe('/gate');
     });
 
-    it('6. Maps driver to /driver', () => {
-      expect(PRODUCTION_PORTAL_MAP['driver']).toBe('/driver');
+    it('6. Maps driver to /driver', async () => {
+      expect(await getProductionPortalMapRoute('driver')).toBe('/driver');
     });
 
-    it('7. Explicitly excludes prototype vendor from production portal matrix', () => {
-      expect(PRODUCTION_PORTAL_MAP['vendor']).toBeUndefined();
+    it('7. Explicitly excludes prototype vendor from production portal matrix', async () => {
+      expect(await getProductionPortalMapRoute('vendor')).toBeUndefined();
     });
   });
 
