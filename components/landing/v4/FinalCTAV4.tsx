@@ -28,7 +28,7 @@ export function FinalCTAV4() {
         </div>
 
         <div className="lg:col-span-5 relative h-[220px] rounded-2xl overflow-hidden border border-slate-800 shadow-xl hidden lg:block">
-          <Image src="/images/school_admin_analytics_visual.jpg" alt="Live Demo Preview" fill className="object-cover" />
+          <Image src="/images/school_admin_analytics_visual.jpg" alt="School Operations Preview" fill className="object-cover" />
           <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center">
             <div className="w-14 h-14 rounded-full bg-amber-400 text-slate-950 font-black text-xl flex items-center justify-center shadow-2xl animate-pulse">
               ▶

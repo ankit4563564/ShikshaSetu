@@ -193,7 +193,7 @@ export function LandingModalProvider({ children }: { children: React.ReactNode }
                   type="submit"
                   className="w-full bg-secondary-container text-on-secondary-container hover:bg-secondary-fixed py-3 rounded-xl font-bold text-sm transition-colors mt-2"
                 >
-                  Request Live Demo →
+                  Request Pilot Access →
                 </button>
               </form>
             )}
