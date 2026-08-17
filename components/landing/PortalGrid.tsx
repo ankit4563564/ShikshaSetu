@@ -7,7 +7,7 @@ import { m as motion } from 'framer-motion';
 export default function PortalGrid() {
   const primaryHeroPortals = [
     {
-      href: '/sign-in?role=parent',
+      href: '/login',
       label: 'Primary Hero Experience 1',
       title: '📱 Parent Mobile Application',
       description: 'Rich mobile application for tracking student milestones, academic growth, and live safety (real-time bus tracking with geofence proximity alerts).',
@@ -123,7 +123,7 @@ export default function PortalGrid() {
               className="h-full"
             >
               <Link
-                href="/sign-in?role=parent"
+                href="/login"
                 className="group flex flex-col h-full rounded-3xl border border-[#1f4e5f]/20 border-t-4 border-t-[#6b9080] bg-white/95 overflow-hidden shadow-md backdrop-blur-md transition-all duration-300 hover:shadow-xl"
               >
                 {/* Visual UI Preview Box */}
@@ -186,7 +186,7 @@ export default function PortalGrid() {
               className="h-full"
             >
               <Link
-                href="/sign-in?role=teacher"
+                href="/login"
                 className="group flex flex-col h-full rounded-3xl border border-[#1f4e5f]/20 border-t-4 border-t-[#e8a33d] bg-white/95 overflow-hidden shadow-md backdrop-blur-md transition-all duration-300 hover:shadow-xl"
               >
                 {/* Visual UI Preview Box */}

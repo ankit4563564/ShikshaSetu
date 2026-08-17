@@ -23,23 +23,35 @@ export default async function AdminPage() {
   const demo = await getDemoSessionFromCookies(cookies());
   if (clerkKey && !demo?.active) {
     const { userId } = await auth();
-    if (userId) {
-      const user = await currentUser();
-      adminName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Administrator';
-      const email = user?.emailAddresses[0]?.emailAddress || '';
-      await linkClerkUser(userId, email);
+    if (!userId) {
+      redirect('/login');
+    }
 
-      const adminDb = createAdminClient();
-      const { data: admin } = await adminDb
-        .from('admins')
-        .select('id')
-        .eq('clerk_user_id', userId)
-        .limit(1)
-        .maybeSingle();
-
-      if (admin) {
-        activeAdminId = admin.id;
+    const { getAuthContext } = await import('@/lib/auth/getAuthContext');
+    try {
+      const context = await getAuthContext();
+      if (context.role !== 'admin' && context.role !== 'principal') {
+        redirect(`/unauthorized?portal=admin&currentRole=${context.role}`);
       }
+    } catch (_err) {
+      redirect('/unauthorized?reason=unconfigured_account');
+    }
+
+    const user = await currentUser();
+    adminName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Administrator';
+    const email = user?.emailAddresses[0]?.emailAddress || '';
+    await linkClerkUser(userId, email);
+
+    const adminDb = createAdminClient();
+    const { data: admin } = await adminDb
+      .from('admins')
+      .select('id')
+      .eq('clerk_user_id', userId)
+      .limit(1)
+      .maybeSingle();
+
+    if (admin) {
+      activeAdminId = admin.id;
     }
   }
 

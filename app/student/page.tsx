@@ -27,11 +27,25 @@ export default async function StudentPage({
   // 2. Clerk authenticated user → resolve their student record
   if (!resolvedStudentId && clerkKey && !demo?.active) {
     const { userId } = await auth();
-    if (userId) {
-      const student = await getStudentByAuthenticatedUser(userId);
-      if (student) {
-        resolvedStudentId = student.studentId;
+    if (!userId) {
+      const { redirect } = await import('next/navigation');
+      redirect('/login');
+    }
+
+    const { getAuthContext } = await import('@/lib/auth/getAuthContext');
+    try {
+      const context = await getAuthContext();
+      if (context.role !== 'student' && context.role !== 'admin' && context.role !== 'principal') {
+        const { redirect } = await import('next/navigation');
+        redirect(`/unauthorized?portal=student&currentRole=${context.role}`);
       }
+    } catch (_err) {
+      // Unconfigured or error
+    }
+
+    const student = await getStudentByAuthenticatedUser(userId);
+    if (student) {
+      resolvedStudentId = student.studentId;
     }
   }
 

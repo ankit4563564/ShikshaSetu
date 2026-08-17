@@ -30,7 +30,7 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
-              href="/sign-in"
+              href="/login"
               className="inline-flex items-center justify-center rounded-full bg-deep-teal px-5 py-2.5 text-xs font-bold text-white shadow-[0_8px_20px_rgba(31,78,95,0.22)] transition-all hover:bg-[#1a4250] hover:shadow-[0_12px_25px_rgba(31,78,95,0.32)] sm:px-6"
             >
               Enter portals →

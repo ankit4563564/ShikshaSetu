@@ -33,8 +33,21 @@ export default async function ParentPage() {
   // 1. Clerk Authentication Check & Onboarding Link
   if (clerkKey && !demo?.active) {
     const { userId } = await auth();
-    if (userId) {
-      const user = await currentUser();
+    if (!userId) {
+      redirect('/login');
+    }
+
+    const { getAuthContext } = await import('@/lib/auth/getAuthContext');
+    try {
+      const context = await getAuthContext();
+      if (context.role !== 'parent' && context.role !== 'admin' && context.role !== 'principal') {
+        redirect(`/unauthorized?portal=parent&currentRole=${context.role}`);
+      }
+    } catch (_err) {
+      redirect('/unauthorized?reason=unconfigured_account');
+    }
+
+    const user = await currentUser();
       const email = user?.emailAddresses[0]?.emailAddress || '';
 
       // Idempotent account onboarding linking on first login

@@ -41,7 +41,7 @@ function RoleCardComponent({ role, index, onSelect, disabled }: RoleCardProps) {
       disabled={disabled}
       onClick={() => {
         // Navigate to sign-in with role parameter
-        window.location.href = `/sign-in?role=${role.id}`;
+        window.location.href = `/login`;
       }}
       onMouseMove={handleMove}
       onMouseLeave={resetTilt}

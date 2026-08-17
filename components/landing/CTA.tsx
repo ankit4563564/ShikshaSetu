@@ -32,7 +32,7 @@ export default function CTA() {
           <div className="pt-4 flex flex-col justify-center gap-4 sm:flex-row">
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link
-                href="/sign-in"
+                href="/login"
                 className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#e8a33d] to-[#f4c875] px-8 py-4 text-sm font-extrabold text-[#1f4e5f] shadow-[0_10px_30px_rgba(232,163,61,0.35)] transition-all hover:shadow-[0_15px_40px_rgba(232,163,61,0.5)]"
               >
                 Access Portal →

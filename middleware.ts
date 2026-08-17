@@ -2,30 +2,31 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { getDemoSessionFromRequest } from '@/lib/demo/session';
 
-// Match public authentication routes, landing page, and all portal demo routes
+// Match public unauthenticated routes (landing, marketing, login, demo)
 const isPublicRoute = createRouteMatcher([
+  '/login(.*)',
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/onboarding(.*)',
   '/unauthorized(.*)',
   '/',
   '/landing(.*)',
+  '/about(.*)',
+  '/contact(.*)',
+  '/pricing(.*)',
+  '/privacy(.*)',
+  '/terms(.*)',
+  '/resources(.*)',
+  '/blog(.*)',
   '/demo(.*)',
-  '/parent(.*)',
-  '/teacher(.*)',
-  '/student(.*)',
-  '/admin(.*)',
-  '/driver(.*)',
-  '/gate(.*)',
-  '/vendor(.*)',
   '/api/demo/runner(.*)',
   '/api/auth/demo-session(.*)',
   '/api/seed-clerk-users(.*)',
-  '/api/auth/demo-login(.*)'
+  '/api/auth/demo-login(.*)',
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  // Demo mode bypass: if a valid demo session cookie exists, skip Clerk auth
+  // Demo mode bypass: if explicit demo session cookie exists, allow access
   const demo = await getDemoSessionFromRequest(req);
   if (demo?.active) return NextResponse.next();
 
@@ -33,14 +34,13 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
-  // Ensure user is signed in
+  // Enforce Clerk authentication for all protected portal routes
   const session = await auth();
   if (!session.userId) {
-    return session.redirectToSignIn({ returnBackUrl: req.url });
+    const loginUrl = new URL('/login', req.url);
+    return NextResponse.redirect(loginUrl);
   }
 
-  // For hackathon demo: allow authenticated users to access all portals.
-  // Page-level components handle role-specific data filtering.
   return NextResponse.next();
 });
 

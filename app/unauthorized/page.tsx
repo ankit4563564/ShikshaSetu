@@ -9,14 +9,18 @@ function UnauthorizedContent() {
   const searchParams = useSearchParams();
   const portal = searchParams.get('portal') || '';
   const currentRole = searchParams.get('currentRole') || '';
+  const reason = searchParams.get('reason') || '';
 
   // Contextual text based on routing violation
   let title = 'Access Restricted';
   let message = 'You do not have permission to view this page.';
-  let primaryActionUrl = '/';
-  let primaryActionLabel = 'Go to Home';
+  let primaryActionUrl = '/login';
+  let primaryActionLabel = 'Go to Login';
 
-  if (portal === 'teacher' && (currentRole === 'parent' || currentRole === 'guardian')) {
+  if (reason === 'unconfigured_account' || reason === 'missing_role') {
+    title = 'Account Setup Incomplete';
+    message = 'Your school account is not fully configured yet. Please contact your school administrator to assign your portal access.';
+  } else if (portal === 'teacher' && (currentRole === 'parent' || currentRole === 'guardian')) {
     title = '🚫 Access Restricted';
     message = 'This account is registered as a Parent. The Teacher Portal is available only to school staff.';
     primaryActionUrl = '/parent';
@@ -29,12 +33,12 @@ function UnauthorizedContent() {
   } else if (portal === 'admin') {
     title = '🚫 Access Restricted';
     message = 'Admin routes require verified administrator permissions.';
-    primaryActionUrl = currentRole === 'teacher' ? '/teacher' : '/parent';
-    primaryActionLabel = currentRole === 'teacher' ? 'Teacher Dashboard' : 'Parent Portal';
+    primaryActionUrl = currentRole === 'teacher' ? '/teacher' : currentRole === 'parent' ? '/parent' : '/login';
+    primaryActionLabel = currentRole === 'teacher' ? 'Teacher Dashboard' : currentRole === 'parent' ? 'Parent Portal' : 'Go to Login';
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-paper px-6 text-center text-deep-teal antialiased">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-paper px-6 text-center text-deep-teal antialiased select-none">
       <div className="max-w-md rounded-2xl border border-deep-teal/5 bg-white p-8 shadow-sm space-y-6">
         <div className="space-y-3">
           <h1 className="font-display text-2xl font-extrabold tracking-tight text-warm-clay">
@@ -52,7 +56,7 @@ function UnauthorizedContent() {
           >
             {primaryActionLabel}
           </Link>
-          <SignOutButton redirectUrl="/sign-in">
+          <SignOutButton redirectUrl="/login">
             <button
               type="button"
               className="w-full rounded-xl border border-deep-teal/15 bg-white hover:bg-deep-teal/5 text-deep-teal/70 font-display text-xs font-semibold py-2.5 transition-all active:scale-98"

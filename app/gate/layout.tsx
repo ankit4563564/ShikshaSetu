@@ -10,16 +10,17 @@ export default async function GateLayout({ children }: { children: React.ReactNo
 
   if (!demo?.active) {
     const { userId } = await auth();
-    if (!userId) redirect('/sign-in');
+    if (!userId) redirect('/login');
 
-    const adminDb = createAdminClient();
-    const { data: teacher } = await adminDb
-      .from('teachers')
-      .select('id')
-      .eq('clerk_user_id', userId)
-      .maybeSingle();
-
-    if (!teacher) redirect('/unauthorized?portal=gate&currentRole=none');
+    const { getAuthContext } = await import('@/lib/auth/getAuthContext');
+    try {
+      const context = await getAuthContext();
+      if (context.role !== 'gate' && context.role !== 'teacher' && context.role !== 'admin' && context.role !== 'principal') {
+        redirect(`/unauthorized?portal=gate&currentRole=${context.role}`);
+      }
+    } catch (_err) {
+      redirect('/unauthorized?reason=unconfigured_account');
+    }
   }
 
   return <section aria-label="Gate Portal">{children}</section>;

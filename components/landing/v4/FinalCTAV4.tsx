@@ -22,7 +22,7 @@ export function FinalCTAV4() {
             Explore every role portal and experience real connected school operations.
           </p>
           <div className="flex flex-wrap gap-4 pt-2">
-            <Button href="/sign-in" variant="yellow">Access Portals &rarr;</Button>
+            <Button href="/login" variant="yellow">Access Portals &rarr;</Button>
             <Button href="/parent" variant="glass" className="text-white border-white/20 hover:bg-white/10">Parent View</Button>
           </div>
         </div>

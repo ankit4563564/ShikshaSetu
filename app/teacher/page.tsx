@@ -35,28 +35,39 @@ export default async function TeacherPage() {
   // ─── Clerk Auth: resolve real teacher identity ────────────────────────────
   if (clerkKey && !demo?.active) {
     const { userId } = await auth();
-    if (userId) {
-      const adminDb = createAdminClient();
+    if (!userId) {
+      redirect('/login');
+    }
 
-      // Try to find teacher by clerk_user_id
-      const { data: teacher } = await adminDb
-        .from('teachers')
-        .select('id, first_name, last_name, display_name, grade, section, clerk_user_id')
-        .eq('clerk_user_id', userId)
-        .limit(1)
-        .maybeSingle();
-
-      if (teacher) {
-        teacherId = teacher.id;
-        teacherName =
-          teacher.display_name ||
-          `${teacher.first_name || ''} ${teacher.last_name || ''}`.trim() ||
-          'Teacher';
-        // Use teacher's assigned class if present in DB
-        if (teacher.grade) teacherGrade = teacher.grade;
-        if (teacher.section) teacherSection = teacher.section;
+    // Server-authoritative role check
+    const { getAuthContext } = await import('@/lib/auth/getAuthContext');
+    try {
+      const context = await getAuthContext();
+      if (context.role !== 'teacher' && context.role !== 'admin' && context.role !== 'principal') {
+        redirect(`/unauthorized?portal=teacher&currentRole=${context.role}`);
       }
-      // If no teacher found for this Clerk user, defaults remain (demo seed)
+    } catch (_err) {
+      redirect('/unauthorized?reason=unconfigured_account');
+    }
+
+    const adminDb = createAdminClient();
+
+    // Try to find teacher by clerk_user_id
+    const { data: teacher } = await adminDb
+      .from('teachers')
+      .select('id, first_name, last_name, display_name, grade, section, clerk_user_id')
+      .eq('clerk_user_id', userId)
+      .limit(1)
+      .maybeSingle();
+
+    if (teacher) {
+      teacherId = teacher.id;
+      teacherName =
+        teacher.display_name ||
+        `${teacher.first_name || ''} ${teacher.last_name || ''}`.trim() ||
+        'Teacher';
+      if (teacher.grade) teacherGrade = teacher.grade;
+      if (teacher.section) teacherSection = teacher.section;
     }
   }
 
