@@ -178,7 +178,7 @@ export default function Student360Modal({
                       Grade {data.grade}{data.section ? `-${data.section}` : ''}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-0.5">Student 360 & Early Warning Intelligence View</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Student Learning &amp; Wellbeing Profile</p>
                 </div>
               </div>
               <button
@@ -195,19 +195,19 @@ export default function Student360Modal({
                 onClick={() => setActiveTab('overview')}
                 className={`py-3 border-b-2 transition-all ${activeTab === 'overview' ? 'border-slate-900 text-slate-900 font-black' : 'border-transparent hover:text-slate-700'}`}
               >
-                Early Warning & Summary
+                Overview &amp; Help Needed
               </button>
               <button
                 onClick={() => setActiveTab('academics')}
                 className={`py-3 border-b-2 transition-all ${activeTab === 'academics' ? 'border-slate-900 text-slate-900 font-black' : 'border-transparent hover:text-slate-700'}`}
               >
-                Academic & Attendance Signals
+                Marks &amp; Attendance
               </button>
               <button
                 onClick={() => setActiveTab('timeline')}
                 className={`py-3 border-b-2 transition-all ${activeTab === 'timeline' ? 'border-slate-900 text-slate-900 font-black' : 'border-transparent hover:text-slate-700'}`}
               >
-                Intervention History & Timeline ({data.interventions.length})
+                Support Plans &amp; History ({data.interventions.length})
               </button>
             </div>
 
@@ -254,18 +254,18 @@ export default function Student360Modal({
                   }`}>
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/80 border border-current">
-                        Severity: {data.signalAnalysis.severity.toUpperCase()}
+                        Attention Level: {data.signalAnalysis.severity.toUpperCase()}
                       </span>
                     </div>
                     <div>
-                      <h4 className="font-display text-sm font-extrabold">WHY THIS STUDENT IS FLAGGED</h4>
+                      <h4 className="font-display text-sm font-extrabold">WHY THIS STUDENT NEEDS ATTENTION</h4>
                       <p className="text-xs mt-1 leading-relaxed">{data.signalAnalysis.explanation}</p>
                     </div>
                   </div>
 
                   {/* Supporting Evidence List */}
                   <div className="space-y-3">
-                    <h4 className="font-display text-xs font-extrabold uppercase tracking-wider text-slate-400">Supporting Evidence</h4>
+                    <h4 className="font-display text-xs font-extrabold uppercase tracking-wider text-slate-400">Key Details &amp; Observations</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {data.signalAnalysis.signals.map((sig, idx) => (
                         <div key={idx} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-1">
@@ -281,10 +281,10 @@ export default function Student360Modal({
 
                   {/* Suggested Next Steps */}
                   <div className="space-y-3 pt-2 border-t border-slate-100">
-                    <h4 className="font-display text-xs font-extrabold uppercase tracking-wider text-slate-400">Suggested Next Steps</h4>
+                    <h4 className="font-display text-xs font-extrabold uppercase tracking-wider text-slate-400">Recommended Actions for Teacher</h4>
                     
                     {data.signalAnalysis.recommendedActions.length === 0 ? (
-                      <p className="text-xs text-slate-500 py-3">No active recommendations for this student.</p>
+                      <p className="text-xs text-slate-500 py-3">No action required for this student right now.</p>
                     ) : (
                       <div className="space-y-2">
                         {data.signalAnalysis.recommendedActions.map((rec, idx) => (
@@ -295,9 +295,9 @@ export default function Student360Modal({
                             </div>
                             <button
                               onClick={() => handleOpenReviewForm(rec)}
-                              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-display text-xs font-extrabold transition-all shadow-xs shrink-0 active:scale-95"
+                              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-display text-xs font-extrabold transition-all shadow-xs shrink-0 active:scale-95 cursor-pointer"
                             >
-                              Start Intervention
+                              Add Support Plan
                             </button>
                           </div>
                         ))}
@@ -322,7 +322,7 @@ export default function Student360Modal({
                       <span className="text-[10px] text-slate-500 block">{data.homeworkMetrics.missing} Missing Assignments</span>
                     </div>
                     <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-1 text-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">Academic Average</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Class Average</span>
                       <strong className="text-3xl font-black text-slate-900 block mt-1">{data.academicMetrics.overallAveragePercentage}%</strong>
                       <span className="text-[10px] text-slate-500 block">Across Recent Assessments</span>
                     </div>
@@ -349,11 +349,11 @@ export default function Student360Modal({
               {/* TIMELINE TAB */}
               {activeTab === 'timeline' && (
                 <div className="space-y-4">
-                  <h4 className="font-display text-xs font-extrabold uppercase tracking-wider text-slate-400">Intervention History & Milestones</h4>
+                  <h4 className="font-display text-xs font-extrabold uppercase tracking-wider text-slate-400">Support Plans &amp; Milestones</h4>
                   {data.interventions.length === 0 ? (
                     <div className="p-8 border border-dashed border-slate-200 rounded-2xl text-center space-y-1">
-                      <p className="text-xs font-bold text-slate-700">No active or past support interventions.</p>
-                      <p className="text-[11px] text-slate-400">Interventions started by teachers will appear here.</p>
+                      <p className="text-xs font-bold text-slate-700">No active support plans created yet.</p>
+                      <p className="text-[11px] text-slate-400">Support plans and help sessions started by teachers will appear here.</p>
                     </div>
                   ) : (
                     <div className="relative border-l-2 border-slate-200 ml-4 pl-6 space-y-6 py-2">

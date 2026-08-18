@@ -312,8 +312,8 @@ export default function ParentTodayClient({
               <div className="space-y-4">
                 <label className="flex items-center justify-between p-3 rounded-xl bg-deep-teal/5 hover:bg-deep-teal/10 transition-all cursor-pointer">
                   <div>
-                    <span className="font-body text-sm font-semibold text-deep-teal">Share Mood Check-ins</span>
-                    <p className="font-body text-[10px] text-deep-teal/50 mt-0.5">Allow teachers to see wellness updates</p>
+                    <span className="font-body text-sm font-semibold text-deep-teal">Daily Wellbeing Updates</span>
+                    <p className="font-body text-[10px] text-deep-teal/50 mt-0.5">Let teachers know how your child is feeling each morning</p>
                   </div>
                   <input
                     type="checkbox"
@@ -324,8 +324,8 @@ export default function ParentTodayClient({
                 </label>
                 <label className="flex items-center justify-between p-3 rounded-xl bg-deep-teal/5 hover:bg-deep-teal/10 transition-all cursor-pointer">
                   <div>
-                    <span className="font-body text-sm font-semibold text-deep-teal">Receive Bus Notifications</span>
-                    <p className="font-body text-[10px] text-deep-teal/50 mt-0.5">Get alerts for bus delays and arrivals</p>
+                    <span className="font-body text-sm font-semibold text-deep-teal">Bus Arrival &amp; Delay Alerts</span>
+                    <p className="font-body text-[10px] text-deep-teal/50 mt-0.5">Instant notifications when the school bus is arriving or delayed</p>
                   </div>
                   <input
                     type="checkbox"
@@ -336,8 +336,8 @@ export default function ParentTodayClient({
                 </label>
                 <label className="flex items-center justify-between p-3 rounded-xl bg-deep-teal/5 hover:bg-deep-teal/10 transition-all cursor-pointer">
                   <div>
-                    <span className="font-body text-sm font-semibold text-deep-teal">Receive Academic Updates</span>
-                    <p className="font-body text-[10px] text-deep-teal/50 mt-0.5">Show homework and attendance info</p>
+                    <span className="font-body text-sm font-semibold text-deep-teal">Homework &amp; Marks Updates</span>
+                    <p className="font-body text-[10px] text-deep-teal/50 mt-0.5">Receive daily homework alerts and assessment test results</p>
                   </div>
                   <input
                     type="checkbox"

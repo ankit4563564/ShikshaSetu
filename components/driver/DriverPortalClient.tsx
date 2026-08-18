@@ -27,9 +27,9 @@ function SelectorScreen({ selectedDriver, setSelectedDriver, setErrorText, isBus
     <div className="space-y-6">
       <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
         <div>
-          <h2 className="font-display text-xl font-extrabold text-slate-900">Select Attendant &amp; Bus Route</h2>
+          <h2 className="font-display text-xl font-extrabold text-slate-900">Select Bus Route &amp; Driver</h2>
           <p className="font-body text-xs text-slate-500 mt-1">
-            Choose your assigned bus driver profile to initialize passive background GPS streaming and student boarding checklists.
+            Choose your assigned bus profile to start sharing live location and manage student boarding checklists.
           </p>
         </div>
 
@@ -129,7 +129,7 @@ function RouteScreen({ currentStop, currentStopIndex, stops, gpsError, isBusy, o
           <div className="flex items-center gap-2">
             <span className="px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs flex items-center gap-2 shadow-2xs">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping" />
-              GPS Streaming Live (24 km/h)
+              Live Location Active (24 km/h)
             </span>
           </div>
         </div>
@@ -142,10 +142,10 @@ function RouteScreen({ currentStop, currentStopIndex, stops, gpsError, isBusy, o
             <div className="flex items-center gap-2">
               <span className="text-base">📡</span>
               <span className="font-display text-xs font-bold text-slate-200 uppercase tracking-wider">
-                Live Bus Telemetry &amp; Route Vector
+                Live Bus Location &amp; Route Map
               </span>
             </div>
-            <span className="font-mono text-[11px] font-bold text-sky-400">Signal: 4G High Precision (±3m)</span>
+            <span className="font-mono text-[11px] font-bold text-sky-400">Signal: 4G High Accuracy (±3m)</span>
           </div>
 
           {/* Animated Route Vector Graphic */}
