@@ -1,6 +1,6 @@
 /**
  * ShikshaSetu — Visual Revision Mind Map Type Definitions
- * Rich Semantic Grouping & Formula Atomicity Model
+ * Intermediate Chapter Model & Editorial Revision Sheet Specification
  */
 
 export type ConceptAccentColor = 'blue' | 'green' | 'orange' | 'purple' | 'red' | 'teal';
@@ -19,7 +19,7 @@ export type MindMapItemType =
 
 export type ImportanceLevel = 'high' | 'medium' | 'low';
 export type DensityLevel = 'compact' | 'normal' | 'dense';
-export type PreferredRegion = 'top' | 'left' | 'center' | 'right' | 'bottom';
+export type LayoutSpan = 'full' | 'half' | 'third';
 
 export type DeclarativeDiagramType =
   | 'process-flow'
@@ -35,14 +35,22 @@ export interface SourceReference {
   readonly excerpt: string;
 }
 
+export interface FormulaBlock {
+  readonly latex: string;
+  readonly meaning?: string;
+  readonly variables?: string;
+  readonly unit?: string;
+  readonly condition?: string;
+}
+
 export interface MindMapItem {
   readonly id: string;
   readonly type: MindMapItemType;
   readonly title?: string;
   readonly content: string;
-  readonly details?: string; // Variable meanings and explanations
-  readonly condition?: string; // Conditions for validity (e.g. "At constant temperature")
-  readonly unit?: string; // SI units (e.g. "Ampere (A)", "Volt (V)", "Ohm (Ω)")
+  readonly details?: string;
+  readonly condition?: string;
+  readonly unit?: string;
   readonly diagramType?: DeclarativeDiagramType;
   readonly diagramData?: Record<string, any>;
   readonly source?: SourceReference;
@@ -60,9 +68,16 @@ export interface MindMapSection {
   readonly title: string;
   readonly accentColor: ConceptAccentColor;
   readonly importance: ImportanceLevel;
+  readonly layoutSpan?: LayoutSpan;
   readonly density?: DensityLevel;
-  readonly preferredRegion?: PreferredRegion;
   readonly summary?: string;
+  readonly definition?: string;
+  readonly formulas?: FormulaBlock[];
+  readonly keyPoints?: string[];
+  readonly conditions?: string[];
+  readonly examples?: string[];
+  readonly applications?: string[];
+  readonly warnings?: string[];
   readonly items: MindMapItem[];
   readonly relatedSectionIds: string[];
 }

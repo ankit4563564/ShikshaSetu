@@ -67,7 +67,7 @@ export default function VisualMindMapCanvas({
     <div className={`flex flex-col h-full bg-[#F4F4F2] border border-slate-300 rounded-3xl overflow-hidden shadow-xs ${className}`}>
       {/* ── 1. TOP CONTROL BAR ── */}
       <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-3.5 bg-white border-b border-slate-200 z-20">
-        {/* Search & Topic Quick Filter */}
+        {/* Search & Filter */}
         <div className="flex items-center gap-3 flex-1 min-w-[240px] max-w-md">
           <div className="relative w-full">
             <span className="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
@@ -81,7 +81,7 @@ export default function VisualMindMapCanvas({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 text-xs font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -89,12 +89,12 @@ export default function VisualMindMapCanvas({
           </div>
         </div>
 
-        {/* Viewport Zoom & Interaction Controls */}
+        {/* Viewport Zoom & Actions */}
         <div className="flex items-center gap-2">
           {focusedSectionId && (
             <button
               onClick={() => setFocusedSectionId(null)}
-              className="px-3 py-1.5 rounded-xl bg-slate-900 text-white font-display text-xs font-bold hover:bg-slate-800 transition-all flex items-center gap-1.5 shadow-2xs"
+              className="px-3 py-1.5 rounded-xl bg-slate-900 text-white font-display text-xs font-bold hover:bg-slate-800 transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
             >
               <span>Reset Focus</span>
               <span className="text-[10px] bg-slate-700 px-1.5 py-0.2 rounded">✕</span>
@@ -138,27 +138,27 @@ export default function VisualMindMapCanvas({
         </div>
       </div>
 
-      {/* ── 2. SCROLLABLE REVISION POSTER VIEWPORT ── */}
+      {/* ── 2. EDITORIAL POSTER VIEWPORT ── */}
       <div className="flex-1 overflow-auto p-4 sm:p-8 relative bg-[#F8F8F6]">
         <div
           ref={containerRef}
           id="mindmap-poster-sheet"
           style={{ transform: `scale(${zoom})`, transformOrigin: 'top center', transition: 'transform 0.15s ease-out' }}
-          className="max-w-6xl mx-auto bg-[#FAFAF8] border border-slate-300 rounded-3xl p-6 sm:p-8 shadow-sm relative space-y-6"
+          className="max-w-5xl mx-auto bg-[#FAFAF8] border border-slate-300 rounded-3xl p-6 sm:p-8 shadow-sm relative space-y-6"
         >
-          {/* ── POSTER CHAPTER BANNER ── */}
-          <div className="border-b-2 border-slate-900 pb-5 space-y-2 text-center sm:text-left relative">
+          {/* ── POSTER HEADER BANNER ── */}
+          <div className="border-b-2 border-slate-900 pb-4 space-y-2 text-left relative">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="px-3 py-1 rounded-full bg-slate-900 text-white text-[11px] font-extrabold uppercase tracking-widest">
+                <span className="px-3 py-0.5 rounded-full bg-slate-900 text-white text-[11px] font-extrabold uppercase tracking-widest">
                   {mindMap.subject}
                 </span>
-                <span className="px-3 py-1 rounded-full bg-slate-200 text-slate-800 text-[11px] font-bold">
-                  Class {mindMap.grade} &bull; Revision Sheet
+                <span className="px-3 py-0.5 rounded-full bg-slate-200 text-slate-800 text-[11px] font-bold">
+                  Class {mindMap.grade} &bull; Visual Revision Poster
                 </span>
               </div>
               <span className="text-xs font-mono font-bold text-slate-400">
-                {mindMap.sections.length} Core Concept Areas
+                {mindMap.sections.length} Semantic Concept Areas
               </span>
             </div>
 
@@ -170,7 +170,7 @@ export default function VisualMindMapCanvas({
             </p>
           </div>
 
-          {/* ── SVG RELATIONSHIP OVERLAY ── */}
+          {/* ── SVG RELATIONSHIP CONNECTORS ── */}
           <svg className="absolute inset-0 pointer-events-none w-full h-full z-10 overflow-visible opacity-30">
             {mindMap.relationships.map((rel, idx) => {
               const from = cardCoordinates[rel.fromSectionId];
@@ -189,7 +189,7 @@ export default function VisualMindMapCanvas({
               return (
                 <path
                   key={idx}
-                  d={`M ${x1} ${y1} C ${x1} ${y1 + 40}, ${x2} ${y2 - 40}, ${x2} ${y2}`}
+                  d={`M ${x1} ${y1} C ${x1} ${y1 + 30}, ${x2} ${y2 - 30}, ${x2} ${y2}`}
                   fill="none"
                   stroke={isHighlighted ? '#1e293b' : '#94a3b8'}
                   strokeWidth={isHighlighted ? 2.5 : 1.5}
@@ -199,8 +199,8 @@ export default function VisualMindMapCanvas({
             })}
           </svg>
 
-          {/* ── DENSE 3-COLUMN / 2-COLUMN CONCEPT POSTER GRID ── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 relative z-10">
+          {/* ── EDITORIAL CONCEPT POSTER GRID ── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 relative z-10">
             {mindMap.sections.map((section) => {
               const isFocused = focusedSectionId === section.id;
               const isDimmed =
@@ -208,26 +208,31 @@ export default function VisualMindMapCanvas({
                 !isFocused &&
                 !relatedSectionIds.has(section.id);
 
+              const isFullSpan = section.layoutSpan === 'full';
+
               return (
-                <ConceptSectionCard
+                <div
                   key={section.id}
-                  section={section}
-                  isFocused={isFocused}
-                  isDimmed={isDimmed}
-                  searchQuery={searchQuery}
-                  onSelect={(id) => {
-                    setFocusedSectionId((prev) => (prev === id ? null : id));
-                  }}
-                  className={section.importance === 'high' && mindMap.sections.length <= 4 ? 'lg:col-span-1' : ''}
-                />
+                  className={isFullSpan ? 'md:col-span-2' : 'md:col-span-1'}
+                >
+                  <ConceptSectionCard
+                    section={section}
+                    isFocused={isFocused}
+                    isDimmed={isDimmed}
+                    searchQuery={searchQuery}
+                    onSelect={(id) => {
+                      setFocusedSectionId((prev) => (prev === id ? null : id));
+                    }}
+                  />
+                </div>
               );
             })}
           </div>
 
-          {/* ── POSTER FOOTER NOTE ── */}
-          <div className="pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between text-[11px] text-slate-500 font-medium">
-            <span>ShikshaSetu Exam Revision Master Sheet &bull; Formulated for rapid recall</span>
-            <span>Click any card to isolate dependencies</span>
+          {/* ── FOOTER ── */}
+          <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between text-[11px] text-slate-500 font-medium">
+            <span>ShikshaSetu Academic Concept Maps &bull; Verified Syllabus</span>
+            <span>Click any concept to isolate dependencies</span>
           </div>
         </div>
       </div>

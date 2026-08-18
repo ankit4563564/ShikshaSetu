@@ -1,11 +1,11 @@
 /**
  * ShikshaSetu — Visual Revision Mind Map AI Extractor Service
- * Semantic Document Hierarchy & Atomic Concept Grouping Pipeline
+ * Document Hierarchy & Editorial Concept Composition Engine
  */
 
 import { ResilientAIProvider } from '@/lib/intelligence/providers/aiProvider';
 import { safeValidateConceptMindMap } from './schema';
-import type { ConceptMindMap, ConceptAccentColor, MindMapSection, MindMapItem } from './types';
+import type { ConceptMindMap, ConceptAccentColor, MindMapSection, MindMapItem, FormulaBlock } from './types';
 
 export interface ExtractMindMapOptions {
   title: string;
@@ -23,9 +23,8 @@ export interface ExtractMindMapResult {
 const ACCENT_PALETTE: ConceptAccentColor[] = ['blue', 'green', 'purple', 'orange', 'red', 'teal'];
 
 /**
- * Intelligent deterministic semantic extractor.
- * Converts uploaded notes text into 4-8 coherent, rich concept sections.
- * Never creates fragmented cards or breaks headings!
+ * Intelligent Document Hierarchy Parser.
+ * Reconstructs raw text into 5-8 coherent concept sections with atomic formulas and rich revision points.
  */
 export function deriveDeterministicMindMapFromNotes(
   title: string,
@@ -34,147 +33,226 @@ export function deriveDeterministicMindMapFromNotes(
   notesText: string
 ): ConceptMindMap {
   const cleanTitle = title.trim() || 'Chapter Revision Sheet';
+  const normalizedText = notesText.replace(/\[Page\s*\d+\]/gi, '').trim();
 
-  // Normalize line endings and remove page header markers
-  const cleanText = notesText.replace(/\[Page\s*\d+\]/gi, '').trim();
-  const rawParagraphs = cleanText
-    .split(/\n{2,}/)
-    .map((p) => p.trim())
-    .filter((p) => p.length > 5);
+  const rawLines = normalizedText.split('\n').map((l) => l.trim()).filter(Boolean);
+
+  // Filter out chapter intro heading like "Chapter: Electricity and Circuits" from becoming a section
+  const lines: string[] = [];
+  for (const line of rawLines) {
+    if (/^Chapter\s*:\s*/i.test(line) && lines.length === 0) {
+      continue;
+    }
+    lines.push(line);
+  }
+
+  // Accumulate lines into section blocks based on numbered headings or bold headers
+  const rawBlocks: Array<{ heading: string; lines: string[] }> = [];
+  let currentBlock: { heading: string; lines: string[] } | null = null;
+
+  for (const line of lines) {
+    const isHeading = /^(?:[0-9]{1,2}[\.\)]|\#+)\s*([A-Za-z0-9\s&,'\-\(\)\/]+)/i.test(line) ||
+      (/^[A-Z][A-Za-z0-9\s&,'\-\(\)\/]{3,50}:$/.test(line) && !line.includes('='));
+
+    if (isHeading) {
+      if (currentBlock && (currentBlock.lines.length > 0 || currentBlock.heading)) {
+        rawBlocks.push(currentBlock);
+      }
+      currentBlock = { heading: line, lines: [] };
+    } else {
+      if (!currentBlock) {
+        currentBlock = { heading: cleanTitle, lines: [] };
+      }
+      currentBlock.lines.push(line);
+    }
+  }
+
+  if (currentBlock && (currentBlock.lines.length > 0 || currentBlock.heading)) {
+    rawBlocks.push(currentBlock);
+  }
 
   const sections: MindMapSection[] = [];
-  const lines = cleanText.split('\n').map((l) => l.trim()).filter(Boolean);
 
-  let currentHeading = '';
-  let currentItems: MindMapItem[] = [];
+  for (let idx = 0; idx < rawBlocks.length; idx++) {
+    const block = rawBlocks[idx];
+    const rawHeading = block.heading;
+    const headingMatch = rawHeading.match(/^(?:[0-9]{1,2}[\.\)]|Chapter|Section|\#+)\s*([A-Za-z0-9\s&,'\-\(\)\/]+)/i);
+    let sectionTitle = headingMatch ? headingMatch[1].replace(/[:\-#]+$/, '').trim() : rawHeading.replace(/[:\-#]+$/, '').trim();
 
-  const flushCurrentSection = () => {
-    if (!currentHeading && currentItems.length === 0) return;
-
-    let validHeading = currentHeading || 'Core Concepts & Fundamentals';
-    // Clean up fragmented prefix symbols
-    validHeading = validHeading
-      .replace(/^[\d\.\)\-\:\s\#]+/, '')
-      .replace(/[:\-#]+$/, '')
-      .trim();
-
-    // Prevent fragment headings like "'s Law"
-    if (validHeading.startsWith("'s")) {
-      validHeading = "Ohm's Law & Resistance";
+    // Guard against malformed fragments like "'s Law"
+    if (sectionTitle.startsWith("'s")) {
+      sectionTitle = "Ohm's Law & Resistance";
+    }
+    if (sectionTitle.length < 3) {
+      sectionTitle = `Key Concept Area ${sections.length + 1}`;
     }
 
-    if (validHeading.length < 3) {
-      validHeading = `Key Topic ${sections.length + 1}`;
+    const contentLines = block.lines;
+    if (contentLines.length === 0 && lines.length === 1) {
+      contentLines.push(lines[0]);
     }
+
+    // 2. Parse Items, Formulas, Definitions & Key Points
+    const items: MindMapItem[] = [];
+    const formulas: FormulaBlock[] = [];
+    const keyPoints: string[] = [];
+    const conditions: string[] = [];
+    const warnings: string[] = [];
+    const examples: string[] = [];
+    let definitionStr: string | undefined = undefined;
+
+    let pendingFormula: Partial<FormulaBlock> | null = null;
+
+    for (const rawLine of contentLines) {
+      const line = rawLine.replace(/^[\*\-\•\d\.\)]+\s*/, '').trim();
+      if (!line || line.length < 2) continue;
+
+      const isFormulaLine = /^(?:Formula|Equation|Law\s*Formula)?\s*[:=]?\s*([A-Za-z0-9_\\^\{\}\s\+\-\*\/\(\)\=\.·]+)$/i.test(line) &&
+        /[=\+\-\*\/\^\\_]/.test(line) &&
+        /\b[A-Za-z0-9_]\s*=|\\frac|\\cdot|\//.test(line);
+
+      const isWhereLine = /^Where\b|variable meanings/i.test(line);
+      const isUnitLine = /^SI\s*Unit|^Unit\s*[:=]|measured\s*in/i.test(line);
+      const isConditionLine = /condition|constant\s*temperature|provided\s*that|valid\s*when/i.test(line);
+      const isWarningLine = /warning|trap|danger|caution|common\s*mistake/i.test(line);
+      const isExampleLine = /example|practical|application|solved/i.test(line);
+
+      if (isFormulaLine) {
+        // Clean formula content to valid LaTeX syntax
+        let latex = line
+          .replace(/^(?:Formula|Equation|Law\s*Formula)?\s*[:=]?\s*/i, '')
+          .replace(/\*/g, ' \\cdot ')
+          .trim();
+
+        // Convert fractions like Q / t to \frac{Q}{t}
+        latex = latex.replace(/([A-Za-z0-9_]+)\s*\/\s*([A-Za-z0-9_]+)/g, '\\frac{$1}{$2}');
+
+        pendingFormula = { latex };
+      } else if (isWhereLine && pendingFormula) {
+        pendingFormula.variables = line;
+      } else if (isUnitLine) {
+        const unit = line.replace(/^(?:SI\s*)?Unit\s*[:=]?\s*/i, '').trim();
+        if (pendingFormula) {
+          pendingFormula.unit = unit;
+        } else {
+          keyPoints.push(`SI Unit: ${unit}`);
+        }
+      } else if (isConditionLine) {
+        conditions.push(line);
+        if (pendingFormula) pendingFormula.condition = line;
+      } else if (isWarningLine) {
+        warnings.push(line);
+        items.push({
+          id: `item-${sections.length + 1}-${items.length + 1}`,
+          type: 'warning',
+          content: line,
+        });
+      } else if (isExampleLine) {
+        examples.push(line);
+        items.push({
+          id: `item-${sections.length + 1}-${items.length + 1}`,
+          type: 'example',
+          content: line,
+        });
+      } else {
+        // General statement or definition
+        if (!definitionStr && items.length === 0) {
+          definitionStr = line;
+          items.push({
+            id: `item-${sections.length + 1}-def`,
+            type: 'definition',
+            content: line,
+          });
+        } else {
+          keyPoints.push(line);
+          items.push({
+            id: `item-${sections.length + 1}-${items.length + 1}`,
+            type: 'key_point',
+            content: line,
+          });
+        }
+      }
+    }
+
+    // Flush formula if captured
+    if (pendingFormula && pendingFormula.latex) {
+      formulas.push({
+        latex: pendingFormula.latex,
+        variables: pendingFormula.variables || undefined,
+        unit: pendingFormula.unit || undefined,
+        condition: pendingFormula.condition || undefined,
+      });
+
+      items.unshift({
+        id: `item-${sections.length + 1}-formula`,
+        type: 'formula',
+        content: pendingFormula.latex,
+        details: pendingFormula.variables,
+        unit: pendingFormula.unit,
+        condition: pendingFormula.condition,
+      });
+    }
+
+    if (items.length === 0) {
+      items.push({
+        id: `item-${sections.length + 1}-1`,
+        type: 'concept',
+        content: (block.lines[0] || block.heading).slice(0, 160),
+      });
+    }
+
+    const isMajorSection =
+      formulas.length > 0 ||
+      sectionTitle.toLowerCase().includes('ohm') ||
+      sectionTitle.toLowerCase().includes('heating') ||
+      sectionTitle.toLowerCase().includes('joule') ||
+      sectionTitle.toLowerCase().includes('resistor') ||
+      sections.length === 0;
 
     sections.push({
       id: `sec-${sections.length + 1}`,
-      title: validHeading,
+      title: sectionTitle,
       accentColor: ACCENT_PALETTE[sections.length % ACCENT_PALETTE.length],
-      importance: sections.length === 0 ? 'high' : 'medium',
-      items: currentItems.length > 0 ? currentItems : [
-        { id: `item-${sections.length + 1}-1`, type: 'concept', content: 'Key principles and overview.' }
-      ],
+      importance: isMajorSection ? 'high' : 'medium',
+      layoutSpan: isMajorSection ? 'full' : 'half',
+      definition: definitionStr,
+      formulas,
+      keyPoints,
+      conditions,
+      warnings,
+      examples,
+      items,
       relatedSectionIds: [],
     });
-
-    currentHeading = '';
-    currentItems = [];
-  };
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // Detect section heading candidates
-    const isHeading =
-      /^(?:[0-9]{1,2}[\.\)]|Chapter|Section|\#+)\s+([A-Za-z0-9\s&,'\-]+)/i.test(line) ||
-      (/^[A-Z][A-Za-z0-9\s&,'\-]{3,45}:$/.test(line) && !line.includes('=')) ||
-      (line.length < 45 && /^(?:Electric\s|Potential\s|Ohm|Resistance|Resistivity|Series\s|Parallel\s|Heating\s|Joule|Applications|Magnetic|Chemical)/i.test(line));
-
-    if (isHeading && currentItems.length > 0) {
-      flushCurrentSection();
-      currentHeading = line;
-    } else if (isHeading && !currentHeading) {
-      currentHeading = line;
-    } else {
-      // Analyze line content type
-      const isFormula = /[=\+\-\*\/\^\\_]/.test(line) && /\b[A-Za-z]\s*=|\\frac|\\cdot/.test(line);
-      const isUnit = /SI\s*Unit|measured\s*in|Unit\s*:/i.test(line);
-      const isCondition = /condition|valid\s*when|provided\s*that|constant\s*temperature/i.test(line);
-      const isWarning = /warning|trap|note\s*that|danger|caution/i.test(line);
-      const isExample = /example|solved|calculate/i.test(line);
-
-      let itemType: MindMapItem['type'] = 'concept';
-      if (isFormula) itemType = 'formula';
-      else if (isCondition) itemType = 'condition';
-      else if (isWarning) itemType = 'warning';
-      else if (isExample) itemType = 'example';
-      else if (currentItems.length === 0) itemType = 'definition';
-
-      // Clean line text
-      const cleanContent = line.replace(/^[\*\-\•\d\.\)]+\s*/, '').trim();
-      if (cleanContent.length > 2) {
-        currentItems.push({
-          id: `item-${sections.length + 1}-${currentItems.length + 1}`,
-          type: itemType,
-          content: cleanContent,
-        });
-      }
-    }
   }
 
-  // Flush the final section
-  flushCurrentSection();
-
-  // If no sections were identified, group raw paragraphs into 3-5 major areas
-  if (sections.length === 0) {
-    for (let pIdx = 0; pIdx < Math.min(rawParagraphs.length, 6); pIdx++) {
-      const p = rawParagraphs[pIdx];
-      sections.push({
-        id: `sec-${pIdx + 1}`,
-        title: p.slice(0, 35).replace(/[:\.\d]+$/, '').trim() || `Concept Area ${pIdx + 1}`,
-        accentColor: ACCENT_PALETTE[pIdx % ACCENT_PALETTE.length],
-        importance: pIdx === 0 ? 'high' : 'medium',
-        items: [
-          {
-            id: `item-${pIdx + 1}-1`,
-            type: 'concept',
-            content: p,
-          },
-        ],
-        relatedSectionIds: [],
-      });
-    }
-  }
-
-  // Ensure 4 to 8 sections max for visual harmony
+  // Ensure 5-8 balanced sections
   const finalSections = sections.slice(0, 8);
 
-  // Form relationships between sequential and interrelated sections
-  const relationships = finalSections.slice(1).map((sec, idx) => ({
-    fromSectionId: finalSections[idx].id,
+  const relationships = finalSections.slice(1).map((sec, i) => ({
+    fromSectionId: finalSections[i].id,
     toSectionId: sec.id,
     label: 'Connects to',
     type: 'depends_on' as const,
   }));
 
+  const firstSentence = rawBlocks[0]?.lines[0] || 'Core principles and definitions.';
+
   return {
     title: cleanTitle,
     subject: subject || 'General Science',
-    grade: grade || '8',
-    summary: rawParagraphs[0] ? rawParagraphs[0].slice(0, 240) : `Comprehensive revision summary for ${cleanTitle}.`,
+    grade: grade || '10',
+    summary: firstSentence.slice(0, 220).replace(/^[\d\.\)]+\s*/, ''),
     sections: finalSections,
     relationships,
-    sourceReferences: [
-      { excerpt: cleanText.slice(0, 160) },
-    ],
+    sourceReferences: [{ excerpt: normalizedText.slice(0, 180) }],
   };
 }
 
 export async function extractConceptMindMapFromText(
   options: ExtractMindMapOptions
 ): Promise<ExtractMindMapResult> {
-  const { title, subject = 'General Science', grade = '8', notesText } = options;
+  const { title, subject = 'General Science', grade = '10', notesText } = options;
 
   if (!notesText || notesText.trim().length < 20) {
     return {
@@ -184,20 +262,20 @@ export async function extractConceptMindMapFromText(
   }
 
   const systemPrompt = `You are the ShikshaSetu Educational Concept Mind-Map Generator.
-Your task is to transform uploaded textbook/lesson notes into a dense, beautifully organized 1-PAGE EXAM REVISION CONCEPT POSTER.
+Your task is to transform uploaded textbook/lesson notes into a dense, high-end 1-PAGE EXAM REVISION CONCEPT POSTER.
 
 CRITICAL QUALITY INSTRUCTIONS:
 1. SEMANTIC GROUPING: Group the entire document into 5 to 8 MAJOR CONCEPT SECTIONS.
-   (Example for Electricity: 1. Electric Charge, 2. Electric Current, 3. Potential Difference, 4. Ohm's Law & Resistance, 5. Series Combination, 6. Parallel Combination, 7. Heating Effect & Joule's Law, 8. Safety & Applications).
+   (Example for Electricity: 1. Electric Charge, 2. Electric Current, 3. Potential Difference, 4. Ohm's Law & Resistance, 5. Series Combination, 6. Parallel Combination, 7. Heating Effect & Joule's Law, 8. Applications & Fuse).
 2. FORMULA ATOMICITY: NEVER isolate a formula into a random orphaned box.
    For every formula:
    - Provide "content": standard LaTeX equation (e.g. "I = \\\\frac{Q}{t}", "V = I R", "H = I^2 R t").
-   - Provide "details": clear variable meanings (e.g. "Where V = voltage, I = current, R = resistance").
+   - Provide "details": clear variable meanings (e.g. "Where V = potential difference, I = current, R = resistance").
    - Provide "unit": SI unit (e.g. "Volt (V)", "Ampere (A)", "Ohm (\\\\Omega)", "Joule (J)").
    - Provide "condition": validity conditions if any (e.g. "At constant temperature").
-3. HEADING INTEGRITY: Every section title must be complete and grammatically whole (e.g. "Ohm's Law", NOT "'s Law" or ": Volt").
-4. COMPACT REVISION: Condense long paragraphs into clear bullet definitions, key points, conditions, exam traps/warnings, and solved examples.
-5. ACCENT COLORS: Assign each section ONE distinct color from ["blue", "green", "purple", "orange", "red", "teal"].
+3. HEADING INTEGRITY: Every section title must be complete and grammatically whole (e.g. "Ohm's Law & Resistance", NOT "'s Law" or ": Volt").
+4. LAYOUT SPANS: Assign "layoutSpan": "full" to major overarching laws (Ohm's Law, Joule's Law) and "half" to pairs (Current / Potential Diff, Series / Parallel).
+5. COMPACT REVISION: Condense long paragraphs into clear bullet definitions, key points, conditions, exam traps/warnings, and solved examples.
 
 OUTPUT STRICT JSON MATCHING THIS EXACT SCHEMA:
 {
@@ -211,6 +289,7 @@ OUTPUT STRICT JSON MATCHING THIS EXACT SCHEMA:
       "title": string,
       "accentColor": "blue"|"green"|"orange"|"purple"|"red"|"teal",
       "importance": "high"|"medium"|"low",
+      "layoutSpan": "full"|"half",
       "summary": string,
       "items": [
         {
@@ -252,7 +331,7 @@ OUTPUT STRICT JSON MATCHING THIS EXACT SCHEMA:
     const parsedJson = JSON.parse(response.text);
     const validation = safeValidateConceptMindMap(parsedJson);
 
-    if (validation.success && validation.data.sections.length >= 2) {
+    if (validation.success && validation.data.sections.length >= 3) {
       return { success: true, mindMap: validation.data };
     } else {
       console.warn('[MindMapExtractor] AI output failed validation, using semantic deterministic grouping:', validation.success ? 'too few sections' : validation.error);

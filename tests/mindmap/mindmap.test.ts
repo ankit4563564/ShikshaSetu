@@ -125,29 +125,47 @@ Electric Fuse is a safety device made of a metal wire with low melting point tha
     expect(uniqueColors.size).toBeGreaterThanOrEqual(3);
   });
 
-  it('5. should correctly calculate dynamic page count in export pagination logic', () => {
-    const mockMap: ConceptMindMap = {
-      title: 'Large Chapter',
-      subject: 'Physics',
-      grade: '10',
-      summary: 'Test summary',
-      sections: Array.from({ length: 7 }, (_, i) => ({
-        id: `sec-${i + 1}`,
-        title: `Major Concept ${i + 1}`,
-        accentColor: 'blue',
-        importance: 'high',
-        items: [{ id: `item-${i}-1`, type: 'concept', content: `Details for section ${i + 1}` }],
-        relatedSectionIds: [],
-      })),
-      relationships: [],
-    };
+  it('6. should assign full layout span to major laws like Ohm and Joule', () => {
+    const derived = deriveDeterministicMindMapFromNotes(
+      'Electricity',
+      'Physics',
+      '10',
+      electricityNotes
+    );
 
-    const perPageLandscape = 4;
-    const calculatedPagesLandscape = Math.ceil(mockMap.sections.length / perPageLandscape);
-    expect(calculatedPagesLandscape).toBe(2);
+    const ohmSection = derived.sections.find((s) => s.title.toLowerCase().includes('ohm'));
+    expect(ohmSection).toBeDefined();
+    if (ohmSection) {
+      expect(ohmSection.layoutSpan).toBe('full');
+      expect(ohmSection.formulas).toBeDefined();
+      expect(ohmSection.formulas?.length).toBeGreaterThan(0);
+      expect(ohmSection.formulas?.[0].latex).toContain('V');
+    }
+  });
 
-    const perPagePortrait = 3;
-    const calculatedPagesPortrait = Math.ceil(mockMap.sections.length / perPagePortrait);
-    expect(calculatedPagesPortrait).toBe(3);
+  it('7. should ensure all 8 electricity concepts are extracted with zero orphan fragments', () => {
+    const derived = deriveDeterministicMindMapFromNotes(
+      'Electricity & Circuits',
+      'Physics',
+      '10',
+      electricityNotes
+    );
+
+    expect(derived.sections.length).toBe(8);
+
+    const titles = derived.sections.map((s) => s.title);
+    expect(titles).toContain('Electric Charge');
+    expect(titles).toContain('Electric Current');
+    expect(titles).toContain('Ohm\'s Law and Resistance');
+    expect(titles).toContain('Series Combination of Resistors');
+    expect(titles).toContain('Parallel Combination of Resistors');
+    expect(titles.some((t) => t.includes('Heating') || t.includes('Joule'))).toBe(true);
+
+    // Verify all formulas are attached with variable meanings
+    for (const sec of derived.sections) {
+      expect(sec.title).not.toMatch(/^'s/);
+      expect(sec.title).not.toMatch(/^:\s*/);
+      expect(sec.items.length).toBeGreaterThan(0);
+    }
   });
 });

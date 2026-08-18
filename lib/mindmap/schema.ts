@@ -1,10 +1,10 @@
 /**
  * ShikshaSetu — Visual Revision Mind Map Zod Schema & Validation
- * Phase A Production MVP
+ * Phase A Production MVP & Editorial Model
  */
 
 import { z } from 'zod';
-import type { ConceptMindMap, MindMapSection, MindMapItem, ConceptAccentColor } from './types';
+import type { ConceptMindMap, ConceptAccentColor } from './types';
 
 const ACCENT_COLORS: ConceptAccentColor[] = ['blue', 'green', 'orange', 'purple', 'red', 'teal'];
 
@@ -13,6 +13,14 @@ export const SourceReferenceSchema = z.object({
   page: z.number().int().positive().optional(),
   section: z.string().optional(),
   excerpt: z.string().default(''),
+});
+
+export const FormulaBlockSchema = z.object({
+  latex: z.string(),
+  meaning: z.string().optional(),
+  variables: z.string().optional(),
+  unit: z.string().optional(),
+  condition: z.string().optional(),
 });
 
 export const MindMapItemSchema = z.object({
@@ -57,9 +65,16 @@ export const MindMapSectionSchema = z.object({
   title: z.string().min(1, 'Section title is required'),
   accentColor: z.enum(['blue', 'green', 'orange', 'purple', 'red', 'teal']).optional(),
   importance: z.enum(['high', 'medium', 'low']).default('medium'),
+  layoutSpan: z.enum(['full', 'half', 'third']).optional().default('half'),
   density: z.enum(['compact', 'normal', 'dense']).optional().default('normal'),
-  preferredRegion: z.enum(['top', 'left', 'center', 'right', 'bottom']).optional(),
   summary: z.string().optional(),
+  definition: z.string().optional(),
+  formulas: z.array(FormulaBlockSchema).optional().default([]),
+  keyPoints: z.array(z.string()).optional().default([]),
+  conditions: z.array(z.string()).optional().default([]),
+  examples: z.array(z.string()).optional().default([]),
+  applications: z.array(z.string()).optional().default([]),
+  warnings: z.array(z.string()).optional().default([]),
   items: z.array(MindMapItemSchema).min(1, 'Each section must contain at least one item'),
   relatedSectionIds: z.array(z.string()).default([]),
 });
@@ -77,20 +92,25 @@ export const ConceptMindMapSchema = z.object({
 
 /**
  * Normalizes and ensures each top-level concept has a distinct accent color
- * from the controlled academic palette.
+ * from the controlled academic palette and coherent layout spans.
  */
 export function normalizeConceptMindMap(raw: unknown): ConceptMindMap {
   const parsed = ConceptMindMapSchema.parse(raw);
 
   const sectionsWithColors = parsed.sections.map((sec, idx) => {
-    // If color is missing or duplicate, assign round-robin from palette
     const accentColor = (sec.accentColor && ACCENT_COLORS.includes(sec.accentColor as any))
       ? sec.accentColor
       : ACCENT_COLORS[idx % ACCENT_COLORS.length];
 
+    // Assign layout spans intelligently if not set:
+    // Important sections with multiple formulas or overviews span 'full' (2 cols), pairs span 'half'
+    const isMajor = sec.importance === 'high' || sec.title.toLowerCase().includes('ohm') || sec.title.toLowerCase().includes('joule') || sec.title.toLowerCase().includes('heating');
+    const layoutSpan = sec.layoutSpan || (isMajor ? 'full' : 'half');
+
     return {
       ...sec,
       accentColor,
+      layoutSpan,
     };
   });
 
@@ -100,9 +120,6 @@ export function normalizeConceptMindMap(raw: unknown): ConceptMindMap {
   };
 }
 
-/**
- * Safe validator that returns a structured result without throwing exceptions.
- */
 export function safeValidateConceptMindMap(raw: unknown): { success: true; data: ConceptMindMap } | { success: false; error: string } {
   try {
     const validated = normalizeConceptMindMap(raw);
