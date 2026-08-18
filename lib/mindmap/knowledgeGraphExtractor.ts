@@ -500,67 +500,47 @@ export async function extractKnowledgeGraphFromText(
     };
   }
 
-  const systemPrompt = `You are the ShikshaSetu Semantic Knowledge Graph & Concept Hierarchy Architect.
-Your task is to transform uploaded textbook/lesson notes into a strictly structured, comprehensive KNOWLEDGE GRAPH with explicit semantic node roles.
+  const systemPrompt = `You are the Concept Architect inside ShikshaSetu, an AI-powered learning platform.
+Your job is to transform raw study material into a clear, hierarchical, exam-oriented mind map.
 
-CRITICAL ARCHITECTURE RULES:
-1. SEMANTIC NODE CLASSIFICATION:
-   - "chapter": The single root node of the document.
-   - "section": Major chapters or modules (e.g. "Formal Languages", "Finite Automata", "Regular Expressions").
-   - "concept" / "sub_concept": Individual concepts (e.g. "DFA", "NFA", "Alphabets", "Strings").
-   - "algorithm": Multi-step computational procedures (e.g. "Subset Construction Algorithm").
-   - "algorithm_step": Individual steps belonging to an algorithm. MUST have an "algorithm" parent.
-   - "theorem" / "law": Mathematical/scientific theorems with statements and conditions (e.g. "Arden's Theorem", "Kleene's Theorem", "Ohm's Law").
-   - "property": Specific characteristics or constraints of a concept (e.g. "Exactly one transition for each symbol").
-   - "application": Practical usages (e.g. "Lexical Analyzers", "Compilers").
-   - "study_tip": Preparation or learning advice.
-2. STRICT ATOMICITY:
-   - "DFA": Keep 5-tuple "(Q, \\Sigma, \\delta, q_0, F)", state definitions, and properties INSIDE the DFA node. Do NOT create separate cards for Q, Sigma, delta!
-   - "Subset Construction": Steps must be child nodes under the "Subset Construction" algorithm node.
-3. FORMULA NORMALIZATION:
-   - Set notation: L = \\{a, ab, abc\\}, L = \\{a^n : n \\ge 0\\}
-   - Empty set: \\emptyset
-   - Kleene star: \\Sigma^*
-   - Greek letters: \\Sigma, \\delta, \\varepsilon
-   - Do NOT duplicate formulas.
-4. EXPLICIT RELATIONSHIP TYPES:
-   - ["contains", "has_property", "defined_by", "has_formula", "uses_algorithm", "has_step", "equivalent_to", "contrasts_with", "example_of", "application_of", "depends_on", "leads_to", "summarized_by"].
+CORE PRINCIPLES & ARCHITECTURE RULES:
+1. CONCEPT HIERARCHY: Build a hierarchy based on Topic -> Major Concept -> Subconcept -> Details (depth 3-4 levels).
+2. WHAT COUNTS AS A CONCEPT:
+   - Create nodes for meaningful topics, concepts, definitions, theorems, algorithms, formulas, important processes, or applications.
+   - Do NOT create nodes for filler sentences, individual words, or every bullet point.
+   - Example (Algorithm):
+     DFA ↔ NFA Equivalence -> Subset Construction -> Steps 1-4 (do NOT make each step a separate top-level card).
+   - Example (Theorems):
+     Arden's Theorem -> Statement, Condition, Application, Proof.
+3. PRESERVE MATHEMATICAL NOTATION:
+   - Preserve exact expressions: (Q, \\Sigma, \\delta, q_0, F), \\delta: Q \\times \\Sigma \\to Q, L = \\{a, ab, abc\\}, L = \\{a^n : n \\ge 0\\}, L = \\emptyset, L = \\Sigma^*.
+   - Never corrupt \\varepsilon, \\lambda, \\Sigma, \\delta, \\rightarrow, \\emptyset, \\cup, *.
+4. PRESERVE SOURCE HIERARCHY:
+   - Exactly ONE root node representing the chapter or main subject.
+   - Concise, scannable node titles.
+   - Assign priorities: "high" (essential concepts/theorems/formulas), "medium" (supporting concepts), "low" (examples/study tips).
 
 OUTPUT STRICT JSON MATCHING THIS EXACT SCHEMA:
 {
   "title": string,
-  "subject": string,
-  "grade": string,
   "summary": string,
-  "nodes": [
+  "children": [
     {
-      "id": string,
-      "parentId": string|null,
       "title": string,
-      "type": "chapter"|"section"|"concept"|"sub_concept"|"definition"|"property"|"formula"|"theorem"|"law"|"algorithm"|"algorithm_step"|"example"|"comparison"|"application"|"condition"|"warning"|"summary"|"study_tip",
-      "importance": "critical"|"high"|"medium"|"low",
       "summary": string,
-      "definitions": string[],
-      "properties": string[],
-      "keyPoints": string[],
-      "formulas": [
-        { "latex": string, "meaning": string, "variables": string, "unit": string, "condition": string }
-      ],
-      "purpose": string,
-      "steps": string[],
-      "statement": string,
-      "applications": string[],
-      "conditions": string[],
-      "warnings": string[],
-      "studyTips": string[]
-    }
-  ],
-  "relationships": [
-    {
-      "fromNodeId": string,
-      "toNodeId": string,
-      "type": "contains"|"has_property"|"defined_by"|"has_formula"|"uses_algorithm"|"has_step"|"equivalent_to"|"contrasts_with"|"example_of"|"application_of"|"depends_on"|"leads_to"|"summarized_by",
-      "label": string
+      "priority": "high"|"medium"|"low",
+      "example": string,
+      "formulas": string[],
+      "children": [
+        {
+          "title": string,
+          "summary": string,
+          "priority": "high"|"medium"|"low",
+          "example": string,
+          "formulas": string[],
+          "children": []
+        }
+      ]
     }
   ]
 }`;

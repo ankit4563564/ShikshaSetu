@@ -141,6 +141,25 @@ export interface KnowledgeGraph {
 }
 
 // ──────────────────────────────────────────
+// HIERARCHICAL CONCEPT ARCHITECT TREE MODEL
+// ──────────────────────────────────────────
+
+export interface HierarchicalConceptTreeNode {
+  readonly title: string;
+  readonly summary?: string;
+  readonly priority?: 'high' | 'medium' | 'low';
+  readonly example?: string;
+  readonly formulas?: string[];
+  readonly children?: HierarchicalConceptTreeNode[];
+}
+
+export interface HierarchicalConceptTree {
+  readonly title: string;
+  readonly summary: string;
+  readonly children: HierarchicalConceptTreeNode[];
+}
+
+// ──────────────────────────────────────────
 // VISUAL MIND MAP (CONSUMER OF KNOWLEDGE GRAPH)
 // ──────────────────────────────────────────
 

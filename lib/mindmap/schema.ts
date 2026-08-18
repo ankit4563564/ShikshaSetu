@@ -192,11 +192,131 @@ export const KnowledgeGraphSchema = z
     }
   });
 
+// ──────────────────────────────────────────
+// HIERARCHICAL CONCEPT ARCHITECT TREE SCHEMA
+// ──────────────────────────────────────────
+
+export const HierarchicalConceptTreeNodeSchema: z.ZodType<any> = z.lazy(() =>
+  z.object({
+    title: z.string().min(1, 'Title is required'),
+    summary: z.string().optional(),
+    priority: z.enum(['high', 'medium', 'low']).optional().default('medium'),
+    example: z.string().optional(),
+    formulas: z.array(z.string()).optional().default([]),
+    children: z.array(HierarchicalConceptTreeNodeSchema).optional().default([]),
+  })
+);
+
+export const HierarchicalConceptTreeSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  summary: z.string().optional().default(''),
+  children: z.array(HierarchicalConceptTreeNodeSchema).default([]),
+});
+
+export function convertConceptTreeToKnowledgeGraph(
+  tree: z.infer<typeof HierarchicalConceptTreeSchema>,
+  subject = 'Computer Science',
+  grade = 'University'
+): KnowledgeGraph {
+  const rootId = 'node-chapter-root';
+  const nodes: any[] = [
+    {
+      id: rootId,
+      parentId: null,
+      title: tree.title,
+      type: 'chapter',
+      importance: 'critical',
+      summary: tree.summary,
+      keyPoints: [],
+    },
+  ];
+  const relationships: any[] = [];
+
+  let nodeCounter = 1;
+
+  function traverse(node: any, parentId: string, depth: number) {
+    const currentId = `node-concept-${nodeCounter++}`;
+    const isStep = /^(?:step\s*\d+|create\s*dfa\s*states|initial\s*dfa\s*state|for\s*each\s*dfa\s*state|final\s*dfa\s*states)/i.test(node.title);
+    const isAlgo = /subset\s*construction|algorithm|conversion/i.test(node.title);
+    const isTheorem = /theorem|law/i.test(node.title);
+
+    const type = isStep
+      ? 'algorithm_step'
+      : isAlgo
+      ? 'algorithm'
+      : isTheorem
+      ? 'theorem'
+      : depth === 1
+      ? 'section'
+      : 'concept';
+
+    const kNode: any = {
+      id: currentId,
+      parentId,
+      title: node.title,
+      type,
+      importance: node.priority === 'high' ? 'critical' : node.priority === 'low' ? 'low' : 'medium',
+      summary: node.summary,
+      definitions: node.summary ? [node.summary] : [],
+      examples: node.example ? [node.example] : [],
+      keyPoints: [],
+      formulas: [],
+      properties: [],
+      steps: [],
+    };
+
+    if (node.formulas && Array.isArray(node.formulas)) {
+      kNode.formulas = node.formulas.map((f: string) => ({ latex: f }));
+    }
+
+    nodes.push(kNode);
+
+    relationships.push({
+      fromNodeId: parentId,
+      toNodeId: currentId,
+      type: isStep ? 'has_step' : isAlgo ? 'uses_algorithm' : 'contains',
+      label: isStep ? 'Step' : 'Child concept',
+    });
+
+    if (node.children && Array.isArray(node.children)) {
+      for (const child of node.children) {
+        traverse(child, currentId, depth + 1);
+      }
+    }
+  }
+
+  if (tree.children && Array.isArray(tree.children)) {
+    for (const topChild of tree.children) {
+      traverse(topChild, rootId, 1);
+    }
+  }
+
+  return {
+    title: tree.title,
+    subject,
+    grade,
+    summary: tree.summary || `Concept map for ${tree.title}`,
+    nodes,
+    relationships,
+  };
+}
+
 export function safeValidateKnowledgeGraph(raw: unknown): { success: true; data: KnowledgeGraph } | { success: false; error: string } {
   try {
+    // 1. Try direct KnowledgeGraph parsing
     const validated = KnowledgeGraphSchema.parse(raw);
     return { success: true, data: validated };
   } catch (err: any) {
+    // 2. Try Hierarchical Concept Tree parsing
+    try {
+      const treeParsed = HierarchicalConceptTreeSchema.parse(raw);
+      if (treeParsed.children && treeParsed.children.length > 0) {
+        const converted = convertConceptTreeToKnowledgeGraph(treeParsed);
+        return { success: true, data: converted };
+      }
+    } catch {
+      // Fall through
+    }
     return { success: false, error: err.message || 'Invalid knowledge graph schema' };
   }
 }
