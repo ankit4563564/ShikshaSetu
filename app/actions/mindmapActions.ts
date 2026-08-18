@@ -1,9 +1,12 @@
 'use server';
 
 import { getAuthContext } from '@/lib/auth/getAuthContext';
-import { extractConceptMindMapFromText, ExtractMindMapOptions, ExtractMindMapResult } from '@/lib/mindmap/mindmapExtractor';
-import { safeValidateConceptMindMap } from '@/lib/mindmap/schema';
-import type { ConceptMindMap } from '@/lib/mindmap/types';
+import {
+  extractKnowledgeGraphFromText,
+  ExtractKnowledgeGraphOptions,
+  ExtractKnowledgeGraphResult,
+} from '@/lib/mindmap/knowledgeGraphExtractor';
+import type { ConceptMindMap, KnowledgeGraph } from '@/lib/mindmap/types';
 
 export interface GenerateMindMapRequest {
   title: string;
@@ -12,13 +15,21 @@ export interface GenerateMindMapRequest {
   rawNotes: string;
 }
 
+export interface GenerateMindMapResponse {
+  success: boolean;
+  mindMap?: ConceptMindMap;
+  knowledgeGraph?: KnowledgeGraph;
+  error?: string;
+}
+
 /**
- * generateMindMapAction: Authenticated Server Action for extracting a dense revision concept map.
- * Enforces tenant security and input length boundaries.
+ * generateMindMapAction: Authenticated Server Action for extracting a hierarchical Knowledge Graph
+ * and generating a dense revision concept map.
+ * Enforces tenant security, authentication, and input boundaries.
  */
 export async function generateMindMapAction(
   request: GenerateMindMapRequest
-): Promise<ExtractMindMapResult> {
+): Promise<GenerateMindMapResponse> {
   try {
     const authContext = await getAuthContext();
 
@@ -31,11 +42,11 @@ export async function generateMindMapAction(
     if (!rawNotes || typeof rawNotes !== 'string' || rawNotes.trim().length < 20) {
       return {
         success: false,
-        error: 'Not enough source material to generate a reliable revision map. Please provide comprehensive notes (at least 20 characters).',
+        error: 'Not enough readable content to generate a reliable revision map. Please provide comprehensive notes (at least 20 characters).',
       };
     }
 
-    const result = await extractConceptMindMapFromText({
+    const result = await extractKnowledgeGraphFromText({
       title: title.trim(),
       subject: subject.trim(),
       grade: grade.trim(),
