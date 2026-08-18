@@ -16,6 +16,7 @@ export function TakeAttendanceModal({
   isOpen,
   onClose,
   initialStudents = [],
+  className = 'Grade 8A',
 }: TakeAttendanceModalProps) {
   const [roster, setRoster] = useState<AttendanceRosterStudent[]>(initialStudents);
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,37 +51,46 @@ export function TakeAttendanceModal({
   useEffect(() => {
     if (!isOpen) return;
 
+    if (initialStudents && initialStudents.length > 0) {
+      setRoster(initialStudents);
+      setRosterLoading(false);
+      setRosterUnavailableOffline(false);
+      const cacheKey = className ? `class_${className.replace(/\s/g, '_').toLowerCase()}` : 'class_default';
+      attendanceStore.cacheRoster(cacheKey, initialStudents).catch(() => {});
+      return;
+    }
+
+    let isMounted = true;
     async function loadClassRoster() {
       setRosterLoading(true);
       setRosterUnavailableOffline(false);
 
-      if (initialStudents && initialStudents.length > 0) {
-        setRoster(initialStudents);
+      try {
         const cacheKey = className ? `class_${className.replace(/\s/g, '_').toLowerCase()}` : 'class_default';
-        await attendanceStore.cacheRoster(cacheKey, initialStudents);
-        setRosterLoading(false);
-        return;
-      }
+        const cached = await attendanceStore.getCachedRoster(cacheKey).catch(() => null);
+        if (!isMounted) return;
 
-      // Try loading cached roster from IndexedDB
-      const cacheKey = className ? `class_${className.replace(/\s/g, '_').toLowerCase()}` : 'class_default';
-      const cached = await attendanceStore.getCachedRoster(cacheKey);
-      if (cached && cached.length > 0) {
-        setRoster(cached);
-        setRosterLoading(false);
-      } else if (!navigator.onLine) {
-        setRosterUnavailableOffline(true);
-        setRosterLoading(false);
-      } else {
-        // No initial students, no cache, and online but DB empty
-        // Set empty roster — do not fabricate fake student IDs
-        setRoster([]);
-        setRosterLoading(false);
+        if (cached && cached.length > 0) {
+          setRoster(cached);
+        } else if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          setRosterUnavailableOffline(true);
+        } else {
+          setRoster([]);
+        }
+      } catch (err) {
+        console.warn('[TakeAttendanceModal] Error loading cached roster:', err);
+      } finally {
+        if (isMounted) {
+          setRosterLoading(false);
+        }
       }
     }
 
     loadClassRoster();
-  }, [isOpen, initialStudents]);
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, initialStudents, className]);
 
   // Handle marking status for individual student
   const handleStatusChange = async (studentId: string, status: AttendanceStatus) => {

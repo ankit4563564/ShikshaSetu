@@ -47,23 +47,32 @@ class IndexedDBAttendanceStore implements AttendanceOfflineStore {
     }
 
     this.dbPromise = new Promise((resolve, reject) => {
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      try {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-      request.onupgradeneeded = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
-        if (!db.objectStoreNames.contains(QUEUE_STORE)) {
-          db.createObjectStore(QUEUE_STORE, { keyPath: 'operationId' });
-        }
-        if (!db.objectStoreNames.contains(ROSTER_STORE)) {
-          db.createObjectStore(ROSTER_STORE, { keyPath: 'key' });
-        }
-      };
+        request.onblocked = () => {
+          console.warn('[IndexedDB] Database upgrade blocked by another connection');
+        };
 
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => {
+        request.onupgradeneeded = (event) => {
+          const db = (event.target as IDBOpenDBRequest).result;
+          if (!db.objectStoreNames.contains(QUEUE_STORE)) {
+            db.createObjectStore(QUEUE_STORE, { keyPath: 'operationId' });
+          }
+          if (!db.objectStoreNames.contains(ROSTER_STORE)) {
+            db.createObjectStore(ROSTER_STORE, { keyPath: 'key' });
+          }
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => {
+          this.dbPromise = null;
+          reject(request.error);
+        };
+      } catch (err) {
         this.dbPromise = null;
-        reject(request.error);
-      };
+        reject(err);
+      }
     });
 
     return this.dbPromise;
