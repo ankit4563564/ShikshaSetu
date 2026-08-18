@@ -237,9 +237,7 @@ export default function MindMapExportModal({
                   pageBreakAfter: isLastPage ? 'auto' : 'always',
                   breakAfter: isLastPage ? 'auto' : 'page',
                 }}
-                className={`p-6 bg-white flex flex-col justify-between ${
-                  !isLastPage ? 'html2pdf__page-break' : ''
-                }`}
+                className="p-6 bg-white flex flex-col justify-between"
               >
                 <div className="space-y-4">
                   {/* Page Header */}

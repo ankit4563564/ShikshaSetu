@@ -83,6 +83,78 @@ function highlightMatch(text: string, query?: string) {
   );
 }
 
+/**
+ * Renders nested MindMapItem children recursively with type-aware formatting.
+ * Handles process (algorithm steps), formula, and concept items at any depth.
+ */
+function NestedChildren({
+  items,
+  accent,
+  searchQuery,
+  depth = 0,
+}: {
+  items: MindMapItem[];
+  accent: typeof ACCENT_STYLES.blue;
+  searchQuery?: string;
+  depth?: number;
+}) {
+  if (!items || items.length === 0) return null;
+
+  return (
+    <div className={`mt-1.5 pl-3 ${depth === 0 ? 'ml-2 border-l-2' : 'ml-1 border-l'} border-slate-200 space-y-1.5`}>
+      {items.map((child) => (
+        <div key={child.id} className="text-xs space-y-1">
+          {child.type === 'process' ? (
+            <div className="p-2.5 rounded-lg bg-indigo-50/60 border border-indigo-200 space-y-1.5">
+              <div className="flex items-center gap-1.5 font-bold text-[11px] text-indigo-950 uppercase tracking-wider">
+                <span>⚡</span>
+                <span>{highlightMatch(child.title || child.content, searchQuery)}</span>
+              </div>
+              {child.details && (
+                <div className="space-y-1 pl-1.5 border-l-2 border-indigo-300">
+                  {child.details.split('\n').filter(Boolean).map((step, sIdx) => (
+                    <div key={sIdx} className="text-[11px] text-slate-800 font-medium pl-2 leading-relaxed">
+                      {step}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : child.type === 'formula' ? (
+            <div className={`p-2.5 rounded-lg border ${accent.formulaBg} ${accent.formulaBorder}`}>
+              <div className="text-center overflow-x-auto py-0.5">
+                <FormulaRenderer latex={child.content} />
+              </div>
+              {child.details && (
+                <p className="text-[10px] text-slate-600 text-center mt-1">
+                  {highlightMatch(child.details, searchQuery)}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-start gap-1.5 font-medium text-slate-800">
+              <span className="text-indigo-500 font-bold shrink-0 mt-0.5">↳</span>
+              <div className="flex-1">
+                <span className="font-bold text-slate-900">{highlightMatch(child.title || child.content, searchQuery)}</span>
+                {child.details && child.details !== child.content && (
+                  <p className="text-[11px] text-slate-600 font-normal mt-0.5 leading-relaxed">
+                    {highlightMatch(child.details, searchQuery)}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Recursive grandchildren */}
+          {child.children && child.children.length > 0 && (
+            <NestedChildren items={child.children} accent={accent} searchQuery={searchQuery} depth={depth + 1} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ConceptSectionCard({
   section,
   isFocused = false,
@@ -131,7 +203,6 @@ export default function ConceptSectionCard({
         </p>
       )}
 
-      {/* Items List */}
       <div className="space-y-2.5">
         {section.items.map((item) => (
           <div key={item.id} className="text-xs leading-relaxed">
@@ -140,15 +211,11 @@ export default function ConceptSectionCard({
                 <div className="text-center overflow-x-auto py-0.5">
                   <FormulaRenderer latex={item.content} />
                 </div>
-
-                {/* Variable Explanations & Details */}
                 {item.details && (
                   <p className="text-[11px] text-slate-700 text-center font-medium border-t border-slate-200/60 pt-1.5">
                     {highlightMatch(item.details, searchQuery)}
                   </p>
                 )}
-
-                {/* Unit & Condition Row */}
                 {(item.unit || item.condition) && (
                   <div className="flex flex-wrap items-center justify-center gap-2 pt-1 text-[10px] font-bold">
                     {item.unit && (
@@ -190,7 +257,7 @@ export default function ConceptSectionCard({
               <div className="p-3 rounded-xl bg-indigo-50/80 border border-indigo-200 space-y-2">
                 <div className="flex items-center gap-1.5 font-bold text-[11px] text-indigo-950 uppercase tracking-wider">
                   <span>⚡</span>
-                  <span>{highlightMatch(item.content, searchQuery)}</span>
+                  <span>{highlightMatch(item.title || item.content, searchQuery)}</span>
                 </div>
                 {item.details && (
                   <div className="space-y-1.5 pl-1.5 border-l-2 border-indigo-300">
@@ -208,58 +275,26 @@ export default function ConceptSectionCard({
                 <p className="text-[11px] font-medium mt-0.5 leading-normal">{highlightMatch(item.content, searchQuery)}</p>
               </div>
             ) : (
-              <div className="space-y-1.5">
-                <div className="flex items-start gap-2 text-slate-700">
-                  <span className="text-slate-400 font-black shrink-0 mt-0.5">•</span>
-                  <div className="flex-1">
-                    <p className="font-medium text-slate-800 leading-snug">{highlightMatch(item.content, searchQuery)}</p>
-                    {item.details && item.details !== item.content && (
-                      <p className="text-[11px] text-slate-600 font-normal mt-0.5 leading-relaxed">
-                        {highlightMatch(item.details, searchQuery)}
-                      </p>
-                    )}
-                  </div>
+              <div className="flex items-start gap-2 text-slate-700">
+                <span className="text-slate-400 font-black shrink-0 mt-0.5">•</span>
+                <div className="flex-1">
+                  <p className="font-medium text-slate-800 leading-snug">{highlightMatch(item.title || item.content, searchQuery)}</p>
+                  {item.details && item.details !== item.content && (
+                    <p className="text-[11px] text-slate-600 font-normal mt-0.5 leading-relaxed">
+                      {highlightMatch(item.details, searchQuery)}
+                    </p>
+                  )}
                 </div>
-
-                {/* Nested Child Items / Subconcepts */}
-                {item.children && item.children.length > 0 && (
-                  <div className="mt-1.5 pl-3 ml-2 border-l-2 border-slate-200 space-y-1.5">
-                    {item.children.map((child) => (
-                      <div key={child.id} className="text-xs space-y-1">
-                        <div className="flex items-start gap-1.5 font-medium text-slate-800">
-                          <span className="text-indigo-500 font-bold shrink-0 mt-0.5">↳</span>
-                          <div className="flex-1">
-                            <span className="font-bold text-slate-900">{highlightMatch(child.title || child.content, searchQuery)}</span>
-                            {child.details && child.details !== child.content && (
-                              <p className="text-[11px] text-slate-600 font-normal mt-0.5 leading-relaxed">
-                                {highlightMatch(child.details, searchQuery)}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Grandchild Sub-items */}
-                        {child.children && child.children.length > 0 && (
-                          <div className="pl-3 ml-2 border-l border-slate-200 space-y-1 mt-1">
-                            {child.children.map((grandChild) => (
-                              <div key={grandChild.id} className="flex items-start gap-1.5 text-[11px] text-slate-700">
-                                <span className="text-slate-400 font-bold shrink-0">•</span>
-                                <span className="leading-snug">{highlightMatch(grandChild.title || grandChild.content, searchQuery)}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
+            )}
+
+            {item.children && item.children.length > 0 && (
+              <NestedChildren items={item.children} accent={accent} searchQuery={searchQuery} />
             )}
           </div>
         ))}
       </div>
 
-      {/* Connected Nodes Indicator */}
       {section.relatedSectionIds.length > 0 && (
         <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-mono">
           <span>Connected to {section.relatedSectionIds.length} concepts</span>

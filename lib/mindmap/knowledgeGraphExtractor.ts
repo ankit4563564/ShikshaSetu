@@ -544,10 +544,10 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
     knowledgeGraph: graph,
   };
 
-  // Development hierarchy logging
+  // Compact hierarchy diagnostic log
   console.log(
-    '[MindMap] Hierarchy:',
-    JSON.stringify(mindMap, null, 2)
+    `[MindMap] ${mindMap.title}: ${mindMap.sections.length} sections →`,
+    mindMap.sections.map(s => `"${s.title}" (${s.items.length} items)`).join(', ')
   );
 
   return mindMap;
