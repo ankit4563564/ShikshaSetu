@@ -186,6 +186,22 @@ export default function ConceptSectionCard({
                   <p className="text-[11px] font-medium leading-normal">{highlightMatch(item.content, searchQuery)}</p>
                 </div>
               </div>
+            ) : item.type === 'process' ? (
+              <div className="p-3 rounded-xl bg-indigo-50/80 border border-indigo-200 space-y-2">
+                <div className="flex items-center gap-1.5 font-bold text-[11px] text-indigo-950 uppercase tracking-wider">
+                  <span>⚡</span>
+                  <span>{highlightMatch(item.content, searchQuery)}</span>
+                </div>
+                {item.details && (
+                  <div className="space-y-1.5 pl-1.5 border-l-2 border-indigo-300">
+                    {item.details.split('\n').filter(Boolean).map((step, sIdx) => (
+                      <div key={sIdx} className="text-[11px] text-slate-800 font-medium pl-2 leading-relaxed">
+                        {step}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             ) : item.type === 'example' ? (
               <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 text-emerald-950">
                 <strong className="text-[10px] font-bold block uppercase tracking-wider text-emerald-800">Solved Example</strong>
