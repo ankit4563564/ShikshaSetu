@@ -204,4 +204,55 @@ Heat produced: H = I^2 * R * t.`;
       expect(ohmNode.formulas && ohmNode.formulas.length > 0).toBe(true);
     }
   });
+
+  it('10. should validate and convert HierarchicalConceptTree JSON format into KnowledgeGraph', () => {
+    const rawConceptTree = {
+      title: 'Theory of Computation — Unit 1',
+      summary: 'Mathematical models of computation and formal languages.',
+      children: [
+        {
+          title: 'Formal Languages',
+          summary: 'Mathematical abstractions of programming languages.',
+          priority: 'high',
+          children: [
+            {
+              title: 'Alphabets',
+              summary: 'Finite set of symbols.',
+              priority: 'medium',
+              children: [],
+            },
+          ],
+        },
+        {
+          title: 'DFA ↔ NFA Equivalence',
+          summary: 'Equivalence between deterministic and non-deterministic models.',
+          priority: 'high',
+          children: [
+            {
+              title: 'Subset Construction',
+              summary: 'Algorithm converting NFA to equivalent DFA.',
+              priority: 'high',
+              children: [
+                {
+                  title: 'Step 1: Create DFA states from subsets',
+                  summary: 'Power set construction',
+                  priority: 'medium',
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const validation = safeValidateKnowledgeGraph(rawConceptTree);
+    expect(validation.success).toBe(true);
+    if (validation.success) {
+      expect(validation.data.title).toBe('Theory of Computation — Unit 1');
+      expect(validation.data.nodes.length).toBeGreaterThanOrEqual(4);
+      const root = validation.data.nodes.find((n) => n.parentId === null);
+      expect(root?.title).toBe('Theory of Computation — Unit 1');
+    }
+  });
 });

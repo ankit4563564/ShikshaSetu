@@ -500,44 +500,46 @@ export async function extractKnowledgeGraphFromText(
     };
   }
 
-  const systemPrompt = `You are the Concept Architect inside ShikshaSetu, an AI-powered learning platform.
-Your job is to transform raw study material into a clear, hierarchical, exam-oriented mind map.
+  const systemPrompt = `You are ShikshaSetu's Mind Map Intelligence Engine.
+Your ONLY job is to convert the supplied educational notes into a semantic hierarchical mind map.
 
-CORE PRINCIPLES & ARCHITECTURE RULES:
-1. CONCEPT HIERARCHY: Build a hierarchy based on Topic -> Major Concept -> Subconcept -> Details (depth 3-4 levels).
-2. WHAT COUNTS AS A CONCEPT:
-   - Create nodes for meaningful topics, concepts, definitions, theorems, algorithms, formulas, important processes, or applications.
-   - Do NOT create nodes for filler sentences, individual words, or every bullet point.
-   - Example (Algorithm):
-     DFA ↔ NFA Equivalence -> Subset Construction -> Steps 1-4 (do NOT make each step a separate top-level card).
-   - Example (Theorems):
-     Arden's Theorem -> Statement, Condition, Application, Proof.
-3. PRESERVE MATHEMATICAL NOTATION:
-   - Preserve exact expressions: (Q, \\Sigma, \\delta, q_0, F), \\delta: Q \\times \\Sigma \\to Q, L = \\{a, ab, abc\\}, L = \\{a^n : n \\ge 0\\}, L = \\emptyset, L = \\Sigma^*.
-   - Never corrupt \\varepsilon, \\lambda, \\Sigma, \\delta, \\rightarrow, \\emptyset, \\cup, *.
-4. PRESERVE SOURCE HIERARCHY:
-   - Exactly ONE root node representing the chapter or main subject.
-   - Concise, scannable node titles.
-   - Assign priorities: "high" (essential concepts/theorems/formulas), "medium" (supporting concepts), "low" (examples/study tips).
+PRIMARY OBJECTIVE:
+Identify: ROOT TOPIC -> MAJOR TOPICS -> CONCEPTS -> SUBCONCEPTS -> IMPORTANT DETAILS.
+Build a coherent knowledge tree that answers "What concepts belong to what other concepts?" — NOT "What sentences appeared in the notes?".
 
-OUTPUT STRICT JSON MATCHING THIS EXACT SCHEMA:
+CRITICAL RULES:
+1. NEVER FLATTEN CONTENT:
+   - Algorithms/Procedures: An algorithm is ONE node. Its steps are children. (e.g. DFA ↔ NFA Equivalence -> Subset Construction -> 4 Steps).
+   - Operators: Group operators under "Basic Operators" -> Union, Concatenation, Kleene Star, etc.
+   - Theorems: A theorem groups its statement, condition, formula, and applications (e.g. Arden's Theorem -> Statement: X = AX + B, Condition: A does not contain ε).
+   - Conversions: Group methods by conversion direction (e.g. RE -> FA vs FA -> RE).
+   - Applications: Group applications by domain (e.g. Compiler Design, Text Processing, Network Validation).
+2. DEFINITIONS, FORMULAS & EXAMPLES:
+   - Keep definitions, formulas, and examples attached to the concept they describe.
+   - Preserve exact mathematical notation: (Q, \\Sigma, \\delta, q_0, F), \\delta: Q \\times \\Sigma \\to Q, \\delta: Q \\times (\\Sigma \\cup \\{\\varepsilon\\}) \\to 2^Q, X = AX + B, \\varepsilon, \\lambda, \\Sigma, \\delta, \\emptyset, \\cup, \\rightarrow, 2^Q, superscripts, subscripts.
+3. ROOT & MAJOR TOPICS:
+   - Exactly ONE root node representing the main subject (e.g. "Theory of Computation — Unit 1").
+   - Depth limit: 3 to 4 levels. Short, scannable titles.
+4. PRIORITY:
+   - "high": Definitions, major concepts, formulas, theorems, algorithms, conversions.
+   - "medium": Supporting concepts and useful explanations.
+   - "low": Minor examples, applications, study tips.
+
+OUTPUT FORMAT:
+Return ONLY valid JSON matching this exact structure with NO markdown formatting, NO \`\`\`json fences, and NO commentary:
 {
-  "title": string,
-  "summary": string,
+  "title": "string",
+  "summary": "string",
   "children": [
     {
-      "title": string,
-      "summary": string,
+      "title": "string",
+      "summary": "string",
       "priority": "high"|"medium"|"low",
-      "example": string,
-      "formulas": string[],
       "children": [
         {
-          "title": string,
-          "summary": string,
+          "title": "string",
+          "summary": "string",
           "priority": "high"|"medium"|"low",
-          "example": string,
-          "formulas": string[],
           "children": []
         }
       ]
@@ -562,7 +564,8 @@ OUTPUT STRICT JSON MATCHING THIS EXACT SCHEMA:
       maxTokens: 3800,
     });
 
-    const parsedJson = JSON.parse(response.text);
+    const cleanText = response.text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    const parsedJson = JSON.parse(cleanText);
     const validation = safeValidateKnowledgeGraph(parsedJson);
 
     if (validation.success && validation.data.nodes.length >= 3) {
