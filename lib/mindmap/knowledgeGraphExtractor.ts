@@ -5,6 +5,7 @@
 
 import { ResilientAIProvider } from '@/lib/intelligence/providers/aiProvider';
 import { safeValidateKnowledgeGraph } from './schema';
+import { normalizeMathFormula, deduplicateFormulas } from './formulaNormalizer';
 import type {
   KnowledgeGraph,
   KnowledgeNode,
@@ -15,6 +16,7 @@ import type {
   MindMapSection,
   MindMapItem,
   ConceptAccentColor,
+  FormulaBlock,
 } from './types';
 
 export interface ExtractKnowledgeGraphOptions {
@@ -42,11 +44,11 @@ export function classifySemanticRole(text: string, title?: string): {
 } {
   const lower = (text + ' ' + (title || '')).toLowerCase();
 
-  if (/^(?:step\s*\d+|create\s*dfa\s*states|initial\s*dfa\s*state|compute\s*transitions|final\s*dfa\s*states)/i.test(text)) {
+  if (/^(?:step\s*\d+|create\s*dfa\s*states|initial\s*dfa\s*state|for\s*each\s*dfa\s*state|final\s*dfa\s*states)/i.test(text)) {
     return { type: 'algorithm_step', importance: 'medium' };
   }
   if (/subset\s*construction|algorithm|conversion\s*method/i.test(lower)) {
-    return { type: 'algorithm', importance: 'high' };
+    return { type: 'algorithm', importance: 'critical' };
   }
   if (/arden's\s*theorem|kleene's\s*theorem|pythagorean\s*theorem/i.test(lower)) {
     return { type: 'theorem', importance: 'critical' };
@@ -63,7 +65,7 @@ export function classifySemanticRole(text: string, title?: string): {
   if (/exactly\s*one\s*transition|deterministic\s*behavior|accepts\s*or\s*rejects|property|characteristic/i.test(lower)) {
     return { type: 'property', importance: 'medium' };
   }
-  if (/[=\+\-\*\/\^\\_]/.test(text) && /\b[A-Za-z0-9_]\s*=|\\frac|\\delta|\(Q,\s*Σ/.test(text)) {
+  if (/[=\+\-\*\/\^\\_]/.test(text) && /\b[A-Za-z0-9_]\s*=|\\frac|\\delta|\(Q,\s*Σ|\\Sigma/.test(text)) {
     return { type: 'formula', importance: 'high' };
   }
   if (/is\s*defined\s*as|is\s*a\s*5-tuple|is\s*the\s*rate\s*of|is\s*work\s*done/i.test(lower)) {
@@ -115,8 +117,9 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
     // 2. Subtopic Headings (e.g. "a. Deterministic Finite Automata (DFA): ...", "d. DFA and NFA Equivalence:")
     const subHeadingMatch = line.match(/^(?:[a-z][\.\)]|[•\*\-])\s*([^:\n]{3,65}):/i);
 
-    // 3. Algorithm Step Lines (e.g. "1. Create DFA states corresponding to subsets...", "Step 1: ...")
-    const isStepLine = /^Step\s*\d+[:\.]?/i.test(line) ||
+    // 3. Algorithm Step Lines
+    const isStepLine =
+      /^Step\s*\d+[:\.]?/i.test(line) ||
       /^(?:(?:Step\s*\d+[:\.]?|\d+\.)\s*)?(?:Create\s*DFA\s*states|Initial\s*DFA\s*state|For\s*each\s*DFA\s*state|Final\s*DFA\s*states)/i.test(line);
 
     if (majorHeadingMatch) {
@@ -181,10 +184,11 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
         currentAlgorithmId = null;
       }
 
-      if (inlineContent && /\(Q,\s*Σ|\\delta|[A-Za-z]\s*=/.test(inlineContent)) {
+      if (inlineContent && /\(Q,\s*Σ|\\delta|[A-Za-z]\s*=|L\s*=|R\s*=/i.test(inlineContent)) {
+        const norm = normalizeMathFormula(inlineContent.match(/\([^\)]+\)/)?.[0] || inlineContent);
         subNode.formulas = [
           {
-            latex: inlineContent.match(/\([^\)]+\)/)?.[0] || inlineContent,
+            latex: norm,
             meaning: inlineContent,
           },
         ];
@@ -229,16 +233,18 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
       const targetNode = nodes.find((n) => n.id === (currentSubtopicId || currentTopicId));
       if (!targetNode) continue;
 
-      const hasInlineFormula = /[=\+\-\*\/\^\\_]/.test(line) && /\b[A-Za-z0-9_]\s*=|\\frac|\\delta|\(Q,\s*Σ/.test(line);
+      const hasInlineFormula = /[=\+\-\*\/\^\\_]/.test(line) && /\b[A-Za-z0-9_]\s*=|\\frac|\\delta|\(Q,\s*Σ|L\s*=|R\s*=|H\s*=|V\s*=|I\s*=/i.test(line);
 
       if (hasInlineFormula) {
         const formulaMatch = line.match(/(?:[A-Za-z0-9_]+\s*=\s*[^;\.\n]+)/);
-        const latex = formulaMatch ? formulaMatch[0].trim() : line.trim();
+        const rawFormula = formulaMatch ? formulaMatch[0].trim() : line.trim();
+        const norm = normalizeMathFormula(rawFormula);
         targetNode.formulas = targetNode.formulas || [];
         targetNode.formulas.push({
-          latex,
+          latex: norm,
           meaning: line,
         });
+        targetNode.formulas = deduplicateFormulas(targetNode.formulas);
       }
 
       const classification = classifySemanticRole(line, targetNode.title);
@@ -323,26 +329,35 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
 }
 
 /**
- * Bridges a structured KnowledgeGraph into ConceptMindMap format.
- * Ensures algorithm steps and properties are encapsulated inside their parent concept cards.
+ * Bridges a structured KnowledgeGraph into ConceptMindMap format for visual rendering.
+ * Strictly guarantees that algorithm steps and properties are encapsulated inside parent concepts.
  */
 export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMindMap {
-  // Exclude root and standalone steps (which are already encapsulated inside algorithm parent)
-  const nonRootNodes = graph.nodes.filter(
+  // Exclude root and algorithm_step nodes from top-level sections
+  const candidateNodes = graph.nodes.filter(
     (n) => n.type !== 'chapter' && n.type !== 'algorithm_step'
   );
 
+  // Group candidate nodes: top-level sections or distinct concept nodes
   const sections: MindMapSection[] = [];
-  const topicNodes = nonRootNodes.filter((n) => n.type === 'section' || !n.parentId || n.parentId === 'node-chapter-root');
 
-  for (let idx = 0; idx < (topicNodes.length > 0 ? topicNodes.length : nonRootNodes.length); idx++) {
-    const node = topicNodes.length > 0 ? topicNodes[idx] : nonRootNodes[idx];
-    const childNodes = nonRootNodes.filter((n) => n.parentId === node.id);
+  // Determine section cards:
+  // If there are subtopic/concept nodes (like DFA, NFA, Alphabets, etc.), use concept nodes as visual sections.
+  // Otherwise, use section nodes.
+  const conceptNodes = candidateNodes.filter(
+    (n) => n.type === 'concept' || n.type === 'sub_concept' || n.type === 'theorem' || n.type === 'law' || n.type === 'algorithm'
+  );
+
+  const targetNodes = conceptNodes.length >= 4 ? conceptNodes : candidateNodes.filter((n) => n.type === 'section' || !n.parentId || n.parentId === 'node-chapter-root');
+
+  for (let idx = 0; idx < targetNodes.length; idx++) {
+    const node = targetNodes[idx];
+    const childNodes = graph.nodes.filter((n) => n.parentId === node.id);
 
     const items: MindMapItem[] = [];
 
     // 1. Definition
-    if (node.definitions) {
+    if (node.definitions && node.definitions.length > 0) {
       node.definitions.forEach((def, dIdx) => {
         items.push({
           id: `${node.id}-def-${dIdx}`,
@@ -352,9 +367,10 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // 2. Formulas
-    if (node.formulas) {
-      node.formulas.forEach((f, fIdx) => {
+    // 2. Formulas (deduplicated & normalized)
+    if (node.formulas && node.formulas.length > 0) {
+      const deduped = deduplicateFormulas(node.formulas);
+      deduped.forEach((f, fIdx) => {
         items.push({
           id: `${node.id}-form-${fIdx}`,
           type: 'formula',
@@ -367,7 +383,7 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
     }
 
     // 3. Properties
-    if (node.properties) {
+    if (node.properties && node.properties.length > 0) {
       node.properties.forEach((prop, pIdx) => {
         items.push({
           id: `${node.id}-prop-${pIdx}`,
@@ -377,18 +393,23 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // 4. Algorithm Steps (encapsulated)
-    if (node.steps && node.steps.length > 0) {
+    // 4. Algorithm Steps (encapsulated process block)
+    const stepChildren = childNodes.filter((c) => c.type === 'algorithm_step');
+    const allSteps = (node.steps && node.steps.length > 0)
+      ? node.steps
+      : stepChildren.map((s) => s.definitions?.[0] || s.title);
+
+    if (allSteps.length > 0) {
       items.push({
         id: `${node.id}-algo-process`,
         type: 'process',
-        content: `Algorithm: ${node.title} — ${node.steps.length} Steps`,
-        details: node.steps.map((s, i) => `${i + 1}. ${s}`).join('\n'),
+        content: `Algorithm: ${node.title} — ${allSteps.length} Steps`,
+        details: allSteps.map((s, i) => `${i + 1}. ${s}`).join('\n'),
       });
     }
 
     // 5. Key Points
-    if (node.keyPoints) {
+    if (node.keyPoints && node.keyPoints.length > 0) {
       node.keyPoints.forEach((kp, kpIdx) => {
         items.push({
           id: `${node.id}-kp-${kpIdx}`,
@@ -399,7 +420,7 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
     }
 
     // 6. Applications
-    if (node.applications) {
+    if (node.applications && node.applications.length > 0) {
       node.applications.forEach((app, aIdx) => {
         items.push({
           id: `${node.id}-app-${aIdx}`,
@@ -408,37 +429,6 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
         });
       });
     }
-
-    // 7. Child Nodes Content (encapsulated under parent)
-    childNodes.forEach((child) => {
-      if (child.definitions && child.definitions.length > 0) {
-        items.push({
-          id: `${child.id}-concept`,
-          type: 'concept',
-          content: `${child.title}: ${child.definitions[0]}`,
-        });
-      }
-      if (child.formulas && child.formulas.length > 0) {
-        child.formulas.forEach((cf, cfIdx) => {
-          items.push({
-            id: `${child.id}-form-${cfIdx}`,
-            type: 'formula',
-            content: cf.latex,
-            details: `${child.title} — ${cf.variables || cf.meaning || ''}`,
-            unit: cf.unit,
-            condition: cf.condition,
-          });
-        });
-      }
-      if (child.steps && child.steps.length > 0) {
-        items.push({
-          id: `${child.id}-steps`,
-          type: 'process',
-          content: `${child.title} (${child.steps.length} Steps)`,
-          details: child.steps.map((s, i) => `${i + 1}. ${s}`).join(' | '),
-        });
-      }
-    });
 
     if (items.length === 0) {
       items.push({
@@ -466,7 +456,7 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       layoutSpan: isMajor ? 'full' : 'half',
       summary: node.summary,
       definition: node.definitions?.[0],
-      formulas: node.formulas,
+      formulas: node.formulas ? deduplicateFormulas(node.formulas) : [],
       keyPoints: node.keyPoints,
       items,
       relatedSectionIds: graph.relationships
@@ -491,7 +481,7 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
     subject: graph.subject,
     grade: graph.grade,
     summary: graph.summary,
-    sections: sections.slice(0, 8),
+    sections: sections.slice(0, 10),
     relationships,
     sourceReferences: graph.sourceReferences,
     knowledgeGraph: graph,
@@ -527,12 +517,14 @@ CRITICAL ARCHITECTURE RULES:
 2. STRICT ATOMICITY:
    - "DFA": Keep 5-tuple "(Q, \\Sigma, \\delta, q_0, F)", state definitions, and properties INSIDE the DFA node. Do NOT create separate cards for Q, Sigma, delta!
    - "Subset Construction": Steps must be child nodes under the "Subset Construction" algorithm node.
-3. EXPLICIT RELATIONSHIP TYPES:
+3. FORMULA NORMALIZATION:
+   - Set notation: L = \\{a, ab, abc\\}, L = \\{a^n : n \\ge 0\\}
+   - Empty set: \\emptyset
+   - Kleene star: \\Sigma^*
+   - Greek letters: \\Sigma, \\delta, \\varepsilon
+   - Do NOT duplicate formulas.
+4. EXPLICIT RELATIONSHIP TYPES:
    - ["contains", "has_property", "defined_by", "has_formula", "uses_algorithm", "has_step", "equivalent_to", "contrasts_with", "example_of", "application_of", "depends_on", "leads_to", "summarized_by"].
-   - E.g. DFA <-> NFA: "equivalent_to".
-   - E.g. DFA/NFA Equivalence -> Subset Construction: "uses_algorithm".
-   - E.g. Subset Construction -> Step 1: "has_step".
-   - E.g. Arden's Theorem -> Regular Expression Conversion: "application_of".
 
 OUTPUT STRICT JSON MATCHING THIS EXACT SCHEMA:
 {

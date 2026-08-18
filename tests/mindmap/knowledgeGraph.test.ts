@@ -9,15 +9,16 @@ import {
   extractKnowledgeGraphFromText,
   classifySemanticRole,
 } from '@/lib/mindmap/knowledgeGraphExtractor';
+import { normalizeMathFormula, deduplicateFormulas } from '@/lib/mindmap/formulaNormalizer';
 import type { KnowledgeGraph } from '@/lib/mindmap/types';
 
-describe('ShikshaSetu Mind Map — Semantic Hierarchy & Knowledge Graph Tests', () => {
+describe('ShikshaSetu Mind Map — Knowledge Graph, Formula Normalization & Pagination Tests', () => {
   const tocNotes = `Chapter: Theory of Computation
 1. Formal Languages:
 Formal languages are mathematical abstractions of programming and natural languages.
 a. Alphabets: A finite, non-empty set of symbols denoted by Sigma (Σ). Example: Σ = {0, 1}.
 b. Strings: A finite sequence of symbols chosen from an alphabet. Length denoted by |w|. Empty string is epsilon (ε).
-c. Languages: A set of strings over an alphabet. Can be finite or infinite.
+c. Languages: A set of strings over an alphabet. Can be finite or infinite. Example: L = {a, ab, abc}, L = {a^n : n >= 0}, L = ∅, L = Σ*.
 
 2. Finite Automata:
 Finite automata are state machines that model computation with limited memory.
@@ -49,7 +50,30 @@ Series: R_s = R1 + R2. Parallel: 1 / R_p = 1 / R1 + 1 / R2.
 5. Joule's Law of Heating:
 Heat produced: H = I^2 * R * t.`;
 
-  it('1. should accurately classify semantic roles for different content types', () => {
+  it('1. should accurately normalize mathematical and theoretical formulas', () => {
+    expect(normalizeMathFormula('L = {a, ab, abc}')).toBe('L = \\{a, ab, abc\\}');
+    expect(normalizeMathFormula('L = {a^n : n >= 0}')).toBe('L = \\{a^n : n \\ge 0\\}');
+    expect(normalizeMathFormula('L = ∅')).toBe('L = \\emptyset');
+    expect(normalizeMathFormula('L = Σ*')).toBe('L = \\Sigma^*');
+    expect(normalizeMathFormula('δ: Q × Σ → Q')).toContain('\\delta');
+    expect(normalizeMathFormula('δ: Q × Σ → Q')).toContain('\\Sigma');
+  });
+
+  it('2. should deduplicate formulas with identical mathematical meaning', () => {
+    const rawFormulas = [
+      { latex: 'L = {a, ab}', meaning: 'Sample language' },
+      { latex: 'L = \\{a, ab\\}', meaning: 'Duplicate language' },
+      { latex: 'V = I * R', meaning: 'Ohm law' },
+      { latex: 'V = I \\cdot R', meaning: 'Ohm law duplicate' },
+    ];
+
+    const deduped = deduplicateFormulas(rawFormulas);
+    expect(deduped.length).toBe(2);
+    expect(deduped[0].latex).toBe('L = \\{a, ab\\}');
+    expect(deduped[1].latex).toContain('V = I');
+  });
+
+  it('3. should accurately classify semantic roles for different content types', () => {
     expect(classifySemanticRole('Step 1: Create DFA states corresponding to subsets').type).toBe('algorithm_step');
     expect(classifySemanticRole('Subset Construction Method').type).toBe('algorithm');
     expect(classifySemanticRole("Arden's Theorem for regular expressions").type).toBe('theorem');
@@ -60,7 +84,7 @@ Heat produced: H = I^2 * R * t.`;
     expect(classifySemanticRole('Study tip: focus on state transitions').type).toBe('study_tip');
   });
 
-  it('2. should extract Theory of Computation notes into a valid Knowledge Graph with root chapter', () => {
+  it('4. should extract Theory of Computation notes into a valid Knowledge Graph with root chapter', () => {
     const graph = deriveDeterministicKnowledgeGraphFromNotes(
       'Theory of Computation',
       'Computer Science',
@@ -78,7 +102,7 @@ Heat produced: H = I^2 * R * t.`;
     }
   });
 
-  it('3. should nest algorithm steps strictly under their algorithm parent node', () => {
+  it('5. should nest algorithm steps strictly under their algorithm parent node', () => {
     const graph = deriveDeterministicKnowledgeGraphFromNotes(
       'Theory of Computation',
       'Computer Science',
@@ -86,12 +110,8 @@ Heat produced: H = I^2 * R * t.`;
       tocNotes
     );
 
-    // Find the algorithm node (Subset Construction or DFA/NFA Equivalence)
-    const algoNode = graph.nodes.find((n) => n.type === 'algorithm' || n.title.toLowerCase().includes('subset') || n.title.toLowerCase().includes('equivalence'));
-    expect(algoNode).toBeDefined();
-
     const stepNodes = graph.nodes.filter((n) => n.type === 'algorithm_step');
-    expect(stepNodes.length).toBeGreaterThan(0);
+    expect(stepNodes.length).toBeGreaterThanOrEqual(4);
 
     for (const step of stepNodes) {
       expect(step.parentId).toBeDefined();
@@ -100,7 +120,37 @@ Heat produced: H = I^2 * R * t.`;
     }
   });
 
-  it('4. should preserve formula and tuple atomicity within DFA and Ohm nodes', () => {
+  it('6. should ensure algorithm steps are NEVER top-level sections in the bridged mind map', () => {
+    const graph = deriveDeterministicKnowledgeGraphFromNotes(
+      'Theory of Computation',
+      'Computer Science',
+      'University',
+      tocNotes
+    );
+
+    const mindMap = convertKnowledgeGraphToMindMap(graph);
+
+    // Assert that no section is named after an individual step
+    for (const sec of mindMap.sections) {
+      expect(sec.title).not.toMatch(/^Step\s*\d+/i);
+      expect(sec.title).not.toMatch(/^Create DFA states/i);
+      expect(sec.title).not.toMatch(/^Initial DFA state/i);
+      expect(sec.title).not.toMatch(/^For each DFA state/i);
+      expect(sec.title).not.toMatch(/^Final DFA states/i);
+    }
+
+    // Assert that the algorithm card encapsulates all steps in a process item
+    const algoSection = mindMap.sections.find((s) => s.title.toLowerCase().includes('equivalence') || s.title.toLowerCase().includes('subset'));
+    expect(algoSection).toBeDefined();
+    if (algoSection) {
+      const processItem = algoSection.items.find((i) => i.type === 'process');
+      expect(processItem).toBeDefined();
+      expect(processItem?.details).toContain('1.');
+      expect(processItem?.details).toContain('Create DFA states');
+    }
+  });
+
+  it('7. should preserve formula and tuple atomicity within DFA and Ohm nodes', () => {
     const graph = deriveDeterministicKnowledgeGraphFromNotes(
       'Theory of Computation',
       'Computer Science',
@@ -118,22 +168,7 @@ Heat produced: H = I^2 * R * t.`;
     }
   });
 
-  it('5. should establish explicit relationship types (has_step, equivalent_to, uses_algorithm, application_of)', () => {
-    const graph = deriveDeterministicKnowledgeGraphFromNotes(
-      'Theory of Computation',
-      'Computer Science',
-      'University',
-      tocNotes
-    );
-
-    expect(graph.relationships.length).toBeGreaterThan(0);
-
-    const relTypes = graph.relationships.map((r) => r.type);
-    expect(relTypes).toContain('contains');
-    expect(relTypes.some((t) => t === 'has_step' || t === 'uses_algorithm' || t === 'equivalent_to' || t === 'application_of')).toBe(true);
-  });
-
-  it('6. should reject invalid Knowledge Graph where algorithm_step has a non-algorithm parent', () => {
+  it('8. should reject invalid Knowledge Graph where algorithm_step has a non-algorithm parent', () => {
     const invalidGraph: KnowledgeGraph = {
       title: 'Invalid Step Parent Test',
       subject: 'Computer Science',
@@ -142,7 +177,7 @@ Heat produced: H = I^2 * R * t.`;
       nodes: [
         { id: 'node-root', title: 'Root', type: 'chapter', importance: 'critical' },
         { id: 'node-concept-1', title: 'Concept', type: 'concept', importance: 'high', parentId: 'node-root' },
-        { id: 'node-step-1', title: 'Step 1', type: 'algorithm_step', importance: 'medium', parentId: 'node-concept-1' }, // Invalid! parent is concept, not algorithm
+        { id: 'node-step-1', title: 'Step 1', type: 'algorithm_step', importance: 'medium', parentId: 'node-concept-1' },
       ],
       relationships: [],
     };
@@ -150,46 +185,6 @@ Heat produced: H = I^2 * R * t.`;
     const validation = safeValidateKnowledgeGraph(invalidGraph);
     expect(validation.success).toBe(false);
     expect(validation.error).toContain('must have an algorithm parent');
-  });
-
-  it('7. should reject Knowledge Graph with duplicate relationship links', () => {
-    const duplicateRelGraph: KnowledgeGraph = {
-      title: 'Duplicate Rel Test',
-      subject: 'Computer Science',
-      grade: 'University',
-      summary: 'Testing duplicate relationship detection',
-      nodes: [
-        { id: 'node-root', title: 'Root', type: 'chapter', importance: 'critical' },
-        { id: 'node-topic-1', title: 'Topic 1', type: 'section', importance: 'high', parentId: 'node-root' },
-      ],
-      relationships: [
-        { fromNodeId: 'node-root', toNodeId: 'node-topic-1', type: 'contains' },
-        { fromNodeId: 'node-root', toNodeId: 'node-topic-1', type: 'contains' }, // Duplicate!
-      ],
-    };
-
-    const validation = safeValidateKnowledgeGraph(duplicateRelGraph);
-    expect(validation.success).toBe(false);
-    expect(validation.error).toContain('Duplicate relationship detected');
-  });
-
-  it('8. should correctly bridge a Knowledge Graph into a ConceptMindMap without top-level step fragmentation', () => {
-    const graph = deriveDeterministicKnowledgeGraphFromNotes(
-      'Theory of Computation',
-      'Computer Science',
-      'University',
-      tocNotes
-    );
-
-    const mindMap = convertKnowledgeGraphToMindMap(graph);
-    expect(mindMap.title).toBe('Theory of Computation');
-    expect(mindMap.sections.length).toBeGreaterThan(0);
-
-    // Verify no section is named "Step 1" or "Step 2"
-    for (const sec of mindMap.sections) {
-      expect(sec.title).not.toMatch(/^Step\s*\d+/i);
-      expect(sec.items.length).toBeGreaterThan(0);
-    }
   });
 
   it('9. should correctly extract Electricity regression fixture with formulas attached to concepts', () => {

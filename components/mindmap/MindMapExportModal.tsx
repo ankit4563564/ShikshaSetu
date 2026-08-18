@@ -10,6 +10,49 @@ interface MindMapExportModalProps {
   mindMap: ConceptMindMap;
 }
 
+/**
+ * Calculates height-balanced A4 page bins to ensure zero empty or single-card overflow pages.
+ */
+function packSectionsIntoA4Pages(sections: MindMapSection[], orientation: 'landscape' | 'portrait'): MindMapSection[][] {
+  if (sections.length === 0) return [[]];
+
+  // Weights: base card = 100, full span = 180, formulas/steps = +30 each
+  const getWeight = (sec: MindMapSection) => {
+    let w = sec.layoutSpan === 'full' ? 180 : 100;
+    if (sec.formulas && sec.formulas.length > 0) w += sec.formulas.length * 30;
+    if (sec.items && sec.items.length > 3) w += (sec.items.length - 3) * 15;
+    return w;
+  };
+
+  const maxPageCapacity = orientation === 'landscape' ? 420 : 500;
+  const pages: MindMapSection[][] = [];
+  let currentPage: MindMapSection[] = [];
+  let currentWeight = 0;
+
+  for (const sec of sections) {
+    const w = getWeight(sec);
+    if (currentPage.length > 0 && currentWeight + w > maxPageCapacity && currentPage.length >= (orientation === 'landscape' ? 3 : 2)) {
+      pages.push(currentPage);
+      currentPage = [sec];
+      currentWeight = w;
+    } else {
+      currentPage.push(sec);
+      currentWeight += w;
+    }
+  }
+
+  if (currentPage.length > 0) {
+    // If the last page has only 1 item and previous page exists, merge if reasonable
+    if (currentPage.length === 1 && pages.length > 0 && pages[pages.length - 1].length <= 3) {
+      pages[pages.length - 1].push(currentPage[0]);
+    } else {
+      pages.push(currentPage);
+    }
+  }
+
+  return pages.length > 0 ? pages : [sections];
+}
+
 export default function MindMapExportModal({
   isOpen,
   onClose,
@@ -20,16 +63,9 @@ export default function MindMapExportModal({
   const [exportSuccess, setExportSuccess] = useState(false);
   const printSheetRef = useRef<HTMLDivElement>(null);
 
-  // Group sections into discrete A4 pages (e.g. 4 sections per landscape page, 3 per portrait page)
+  // Calculate balanced A4 pages
   const pagedSections = useMemo(() => {
-    const perPage = orientation === 'landscape' ? 4 : 3;
-    const pages: MindMapSection[][] = [];
-    const total = mindMap.sections.length;
-
-    for (let i = 0; i < total; i += perPage) {
-      pages.push(mindMap.sections.slice(i, i + perPage));
-    }
-    return pages.length > 0 ? pages : [mindMap.sections];
+    return packSectionsIntoA4Pages(mindMap.sections, orientation);
   }, [mindMap.sections, orientation]);
 
   const totalPages = pagedSections.length;
@@ -45,8 +81,8 @@ export default function MindMapExportModal({
       const html2pdf = (await import('html2pdf.js')).default;
 
       const opt = {
-        margin: 0,
-        filename: `${mindMap.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-revision-poster.pdf`,
+        margin: [4, 4, 4, 4],
+        filename: `${mindMap.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-revision-sheet.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
@@ -56,12 +92,11 @@ export default function MindMapExportModal({
           scrollX: 0,
         },
         jsPDF: {
-          unit: 'px',
-          format: orientation === 'landscape' ? [1120, 792] : [794, 1123],
+          unit: 'mm',
+          format: 'a4',
           orientation: orientation,
-          hotfixes: ['px_scaling'],
         },
-        pagebreak: { mode: ['css'], after: '.html2pdf__page-break' },
+        pagebreak: { mode: ['css', 'legacy'], after: '.html2pdf__page-break' },
       };
 
       await html2pdf().set(opt).from(element).save();
@@ -87,7 +122,7 @@ export default function MindMapExportModal({
               Export Revision Poster
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              High-resolution vector A4 study poster with zero clipped cards and balanced pages
+              High-resolution vector A4 study poster with balanced pages and zero clipped cards
             </p>
           </div>
           <button
@@ -130,7 +165,7 @@ export default function MindMapExportModal({
             >
               <div className="text-lg mb-1">📑 Portrait (Notebook 2-Col)</div>
               <span className="text-[10px] font-normal text-slate-500">
-                Standard &bull; {Math.ceil(mindMap.sections.length / 3)} Pages
+                Standard &bull; {totalPages} {totalPages === 1 ? 'Page' : 'Pages'}
               </span>
             </button>
           </div>
@@ -147,9 +182,9 @@ export default function MindMapExportModal({
             <span className="font-bold text-slate-900">{mindMap.sections.length} Atomic Sections</span>
           </div>
           <div className="flex justify-between font-medium">
-            <span className="text-slate-500">Exact PDF Pages:</span>
+            <span className="text-slate-500">Calculated PDF Pages:</span>
             <span className="font-extrabold text-indigo-700">
-              {totalPages} {totalPages === 1 ? 'Page (1-Page Poster)' : `Pages (Balanced Layout)`}
+              {totalPages} {totalPages === 1 ? 'Page (Single Sheet)' : `Pages (Balanced Layout)`}
             </span>
           </div>
         </div>
@@ -183,11 +218,11 @@ export default function MindMapExportModal({
         </div>
       </div>
 
-      {/* ── OFF-SCREEN PIXEL-PERFECT A4 PRINT CONTAINER ── */}
+      {/* ── OFF-SCREEN DEDICATED HIGH-DPI A4 PRINT CONTAINER ── */}
       <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
         <div
           ref={printSheetRef}
-          style={{ width: orientation === 'landscape' ? '1120px' : '794px' }}
+          style={{ width: orientation === 'landscape' ? '1080px' : '760px' }}
           className="bg-white text-slate-900 font-sans"
         >
           {pagedSections.map((pageSections, pIdx) => {
@@ -198,10 +233,9 @@ export default function MindMapExportModal({
               <div
                 key={pIdx}
                 style={{
-                  width: orientation === 'landscape' ? '1120px' : '794px',
-                  height: orientation === 'landscape' ? '792px' : '1123px',
                   boxSizing: 'border-box',
-                  overflow: 'hidden',
+                  pageBreakAfter: isLastPage ? 'auto' : 'always',
+                  breakAfter: isLastPage ? 'auto' : 'page',
                 }}
                 className={`p-6 bg-white flex flex-col justify-between ${
                   !isLastPage ? 'html2pdf__page-break' : ''
@@ -220,10 +254,10 @@ export default function MindMapExportModal({
                         </span>
                       </div>
                       <h1 className="text-xl font-black text-slate-900">
-                        {mindMap.title} {totalPages > 1 ? `(${pageNum}/${totalPages})` : ''}
+                        {mindMap.title} {totalPages > 1 ? `(Page ${pageNum}/${totalPages})` : ''}
                       </h1>
                       {pageNum === 1 && (
-                        <p className="text-[10px] text-slate-600 mt-0.5 max-w-3xl leading-snug line-clamp-2">
+                        <p className="text-[10px] text-slate-600 mt-0.5 max-w-3xl leading-snug">
                           {mindMap.summary}
                         </p>
                       )}
@@ -252,7 +286,7 @@ export default function MindMapExportModal({
                 </div>
 
                 {/* Dynamic Page Footer */}
-                <div className="border-t border-slate-200 pt-2 flex justify-between text-[8px] text-slate-400 font-mono">
+                <div className="border-t border-slate-200 pt-2 mt-4 flex justify-between text-[8px] text-slate-400 font-mono">
                   <span>© ShikshaSetu Academic Concept Maps &bull; Verified Syllabus</span>
                   <span className="font-bold text-slate-700">
                     Page {pageNum} of {totalPages}
