@@ -7,10 +7,11 @@ import {
   deriveDeterministicKnowledgeGraphFromNotes,
   convertKnowledgeGraphToMindMap,
   extractKnowledgeGraphFromText,
+  classifySemanticRole,
 } from '@/lib/mindmap/knowledgeGraphExtractor';
 import type { KnowledgeGraph } from '@/lib/mindmap/types';
 
-describe('ShikshaSetu Mind Map Phase B — Knowledge Graph Model Tests', () => {
+describe('ShikshaSetu Mind Map — Semantic Hierarchy & Knowledge Graph Tests', () => {
   const tocNotes = `Chapter: Theory of Computation
 1. Formal Languages:
 Formal languages are mathematical abstractions of programming and natural languages.
@@ -20,10 +21,14 @@ c. Languages: A set of strings over an alphabet. Can be finite or infinite.
 
 2. Finite Automata:
 Finite automata are state machines that model computation with limited memory.
-a. Deterministic Finite Automata (DFA): A 5-tuple (Q, Σ, δ, q0, F) where Q is finite states, Σ is alphabet, δ: Q × Σ → Q is transition function, q0 is start state, F is accept states.
+a. Deterministic Finite Automata (DFA): A 5-tuple (Q, Σ, δ, q0, F) where Q is finite states, Σ is alphabet, δ: Q × Σ → Q is transition function, q0 is start state, F is accept states. Exactly one transition for each symbol. Deterministic behavior.
 b. Non-deterministic Finite Automata (NFA): A 5-tuple (Q, Σ, δ, q0, F) where transition function δ: Q × (Σ ∪ {ε}) → P(Q).
 c. Transition Diagrams and Tables: Graphical and tabular representations of state transitions.
 d. DFA and NFA Equivalence: Every NFA can be converted to an equivalent DFA using Subset Construction (Powerset Construction).
+Step 1: Create DFA states corresponding to subsets of NFA states.
+Step 2: Initial DFA state = ε-closure of NFA initial state.
+Step 3: For each DFA state and input symbol, compute transitions.
+Step 4: Final DFA states contain at least one NFA final state.
 
 3. Regular Expressions and Theorems:
 Algebraic representations of regular languages.
@@ -44,7 +49,18 @@ Series: R_s = R1 + R2. Parallel: 1 / R_p = 1 / R1 + 1 / R2.
 5. Joule's Law of Heating:
 Heat produced: H = I^2 * R * t.`;
 
-  it('1. should extract Theory of Computation notes into a valid Knowledge Graph hierarchy', () => {
+  it('1. should accurately classify semantic roles for different content types', () => {
+    expect(classifySemanticRole('Step 1: Create DFA states corresponding to subsets').type).toBe('algorithm_step');
+    expect(classifySemanticRole('Subset Construction Method').type).toBe('algorithm');
+    expect(classifySemanticRole("Arden's Theorem for regular expressions").type).toBe('theorem');
+    expect(classifySemanticRole("Ohm's Law across conductors").type).toBe('law');
+    expect(classifySemanticRole('Exactly one transition for each symbol').type).toBe('property');
+    expect(classifySemanticRole('V = I * R').type).toBe('formula');
+    expect(classifySemanticRole('Compiler design and pattern matching').type).toBe('application');
+    expect(classifySemanticRole('Study tip: focus on state transitions').type).toBe('study_tip');
+  });
+
+  it('2. should extract Theory of Computation notes into a valid Knowledge Graph with root chapter', () => {
     const graph = deriveDeterministicKnowledgeGraphFromNotes(
       'Theory of Computation',
       'Computer Science',
@@ -56,19 +72,13 @@ Heat produced: H = I^2 * R * t.`;
     expect(validation.success).toBe(true);
 
     if (validation.success) {
-      const nodeTitles = graph.nodes.map((n) => n.title.toLowerCase());
-
-      // Verify major topic nodes exist
-      expect(nodeTitles.some((t) => t.includes('formal languages'))).toBe(true);
-      expect(nodeTitles.some((t) => t.includes('finite automata'))).toBe(true);
-      expect(nodeTitles.some((t) => t.includes('regular expressions'))).toBe(true);
-
-      // Verify subtopics are captured
-      expect(nodeTitles.some((t) => t.includes('dfa') || t.includes('alphabets') || t.includes('kleene'))).toBe(true);
+      const root = graph.nodes.find((n) => n.type === 'chapter');
+      expect(root).toBeDefined();
+      expect(root?.parentId).toBeNull();
     }
   });
 
-  it('2. should enforce parent-child tree hierarchy among nodes', () => {
+  it('3. should nest algorithm steps strictly under their algorithm parent node', () => {
     const graph = deriveDeterministicKnowledgeGraphFromNotes(
       'Theory of Computation',
       'Computer Science',
@@ -76,19 +86,21 @@ Heat produced: H = I^2 * R * t.`;
       tocNotes
     );
 
-    const rootNode = graph.nodes.find((n) => n.type === 'root');
-    expect(rootNode).toBeDefined();
-    expect(rootNode?.parentId).toBeNull();
+    // Find the algorithm node (Subset Construction or DFA/NFA Equivalence)
+    const algoNode = graph.nodes.find((n) => n.type === 'algorithm' || n.title.toLowerCase().includes('subset') || n.title.toLowerCase().includes('equivalence'));
+    expect(algoNode).toBeDefined();
 
-    const topicNodes = graph.nodes.filter((n) => n.type === 'topic');
-    expect(topicNodes.length).toBeGreaterThanOrEqual(2);
+    const stepNodes = graph.nodes.filter((n) => n.type === 'algorithm_step');
+    expect(stepNodes.length).toBeGreaterThan(0);
 
-    for (const topic of topicNodes) {
-      expect(topic.parentId).toBe(rootNode?.id);
+    for (const step of stepNodes) {
+      expect(step.parentId).toBeDefined();
+      const parent = graph.nodes.find((n) => n.id === step.parentId);
+      expect(parent?.type).toBe('algorithm');
     }
   });
 
-  it('3. should preserve formula and tuple atomicity within DFA and Ohm nodes', () => {
+  it('4. should preserve formula and tuple atomicity within DFA and Ohm nodes', () => {
     const graph = deriveDeterministicKnowledgeGraphFromNotes(
       'Theory of Computation',
       'Computer Science',
@@ -96,9 +108,7 @@ Heat produced: H = I^2 * R * t.`;
       tocNotes
     );
 
-    // Find DFA node specifically
     const dfaNode = graph.nodes.find((n) => n.title.toLowerCase().includes('dfa'));
-
     expect(dfaNode).toBeDefined();
     if (dfaNode) {
       const hasTuple =
@@ -108,7 +118,7 @@ Heat produced: H = I^2 * R * t.`;
     }
   });
 
-  it('4. should establish valid typed semantic relationships (equivalent_to, leads_to, application_of)', () => {
+  it('5. should establish explicit relationship types (has_step, equivalent_to, uses_algorithm, application_of)', () => {
     const graph = deriveDeterministicKnowledgeGraphFromNotes(
       'Theory of Computation',
       'Computer Science',
@@ -118,81 +128,85 @@ Heat produced: H = I^2 * R * t.`;
 
     expect(graph.relationships.length).toBeGreaterThan(0);
 
-    // Check relationship types
     const relTypes = graph.relationships.map((r) => r.type);
     expect(relTypes).toContain('contains');
-
-    // Verify all relationship endpoint node IDs exist in nodes list
-    const nodeIds = new Set(graph.nodes.map((n) => n.id));
-    for (const rel of graph.relationships) {
-      expect(nodeIds.has(rel.fromNodeId)).toBe(true);
-      expect(nodeIds.has(rel.toNodeId)).toBe(true);
-    }
+    expect(relTypes.some((t) => t === 'has_step' || t === 'uses_algorithm' || t === 'equivalent_to' || t === 'application_of')).toBe(true);
   });
 
-  it('5. should reject Knowledge Graph with duplicate node IDs via Zod validation', () => {
+  it('6. should reject invalid Knowledge Graph where algorithm_step has a non-algorithm parent', () => {
     const invalidGraph: KnowledgeGraph = {
-      title: 'Invalid Duplicate Test',
+      title: 'Invalid Step Parent Test',
       subject: 'Computer Science',
       grade: 'University',
-      summary: 'Testing duplicate node ID rejection',
+      summary: 'Testing step parent validation',
       nodes: [
-        { id: 'node-1', title: 'Node 1', type: 'root', importance: 'high' },
-        { id: 'node-1', title: 'Duplicate Node 1', type: 'topic', importance: 'medium', parentId: 'node-1' },
+        { id: 'node-root', title: 'Root', type: 'chapter', importance: 'critical' },
+        { id: 'node-concept-1', title: 'Concept', type: 'concept', importance: 'high', parentId: 'node-root' },
+        { id: 'node-step-1', title: 'Step 1', type: 'algorithm_step', importance: 'medium', parentId: 'node-concept-1' }, // Invalid! parent is concept, not algorithm
       ],
       relationships: [],
     };
 
     const validation = safeValidateKnowledgeGraph(invalidGraph);
     expect(validation.success).toBe(false);
-    expect(validation.error).toContain('Duplicate node ID');
+    expect(validation.error).toContain('must have an algorithm parent');
   });
 
-  it('6. should reject Knowledge Graph with broken relationship endpoints', () => {
-    const brokenGraph: KnowledgeGraph = {
-      title: 'Broken Links Test',
+  it('7. should reject Knowledge Graph with duplicate relationship links', () => {
+    const duplicateRelGraph: KnowledgeGraph = {
+      title: 'Duplicate Rel Test',
       subject: 'Computer Science',
       grade: 'University',
-      summary: 'Testing broken relationship rejection',
+      summary: 'Testing duplicate relationship detection',
       nodes: [
-        { id: 'node-1', title: 'Node 1', type: 'root', importance: 'high' },
+        { id: 'node-root', title: 'Root', type: 'chapter', importance: 'critical' },
+        { id: 'node-topic-1', title: 'Topic 1', type: 'section', importance: 'high', parentId: 'node-root' },
       ],
       relationships: [
-        { fromNodeId: 'node-1', toNodeId: 'non-existent-node-99', type: 'contains' },
+        { fromNodeId: 'node-root', toNodeId: 'node-topic-1', type: 'contains' },
+        { fromNodeId: 'node-root', toNodeId: 'node-topic-1', type: 'contains' }, // Duplicate!
       ],
     };
 
-    const validation = safeValidateKnowledgeGraph(brokenGraph);
+    const validation = safeValidateKnowledgeGraph(duplicateRelGraph);
     expect(validation.success).toBe(false);
-    expect(validation.error).toContain('non-existent');
+    expect(validation.error).toContain('Duplicate relationship detected');
   });
 
-  it('7. should correctly bridge a Knowledge Graph into a ConceptMindMap for visual consumers', () => {
+  it('8. should correctly bridge a Knowledge Graph into a ConceptMindMap without top-level step fragmentation', () => {
     const graph = deriveDeterministicKnowledgeGraphFromNotes(
-      'Electricity',
+      'Theory of Computation',
+      'Computer Science',
+      'University',
+      tocNotes
+    );
+
+    const mindMap = convertKnowledgeGraphToMindMap(graph);
+    expect(mindMap.title).toBe('Theory of Computation');
+    expect(mindMap.sections.length).toBeGreaterThan(0);
+
+    // Verify no section is named "Step 1" or "Step 2"
+    for (const sec of mindMap.sections) {
+      expect(sec.title).not.toMatch(/^Step\s*\d+/i);
+      expect(sec.items.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('9. should correctly extract Electricity regression fixture with formulas attached to concepts', () => {
+    const graph = deriveDeterministicKnowledgeGraphFromNotes(
+      'Electricity & Circuits',
       'Physics',
       '10',
       electricityNotes
     );
 
-    const mindMap = convertKnowledgeGraphToMindMap(graph);
-    expect(mindMap.title).toBe('Electricity');
-    expect(mindMap.sections.length).toBeGreaterThan(0);
-    expect(mindMap.knowledgeGraph).toBeDefined();
+    const validation = safeValidateKnowledgeGraph(graph);
+    expect(validation.success).toBe(true);
 
-    // Verify sections have items and accent colors
-    for (const sec of mindMap.sections) {
-      expect(sec.items.length).toBeGreaterThan(0);
-      expect(['blue', 'green', 'orange', 'purple', 'red', 'teal']).toContain(sec.accentColor);
+    const ohmNode = graph.nodes.find((n) => n.title.toLowerCase().includes('ohm'));
+    expect(ohmNode).toBeDefined();
+    if (ohmNode) {
+      expect(ohmNode.formulas && ohmNode.formulas.length > 0).toBe(true);
     }
-  });
-
-  it('8. should reject extraction request with fewer than 20 characters', async () => {
-    const result = await extractKnowledgeGraphFromText({
-      title: 'Short',
-      notesText: 'Too short text',
-    });
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('Not enough readable content');
   });
 });

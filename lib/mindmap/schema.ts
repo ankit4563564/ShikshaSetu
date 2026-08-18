@@ -1,6 +1,6 @@
 /**
  * ShikshaSetu — Visual Revision Mind Map & Knowledge Graph Zod Schemas
- * Phase B Knowledge Graph Model Validation & Normalization
+ * Semantic Hierarchy, Node Classification, and Extended Relationship Validation
  */
 
 import { z } from 'zod';
@@ -24,8 +24,13 @@ export const FormulaBlockSchema = z.object({
   condition: z.string().optional(),
 });
 
+export const TableStructureSchema = z.object({
+  headers: z.array(z.string()),
+  rows: z.array(z.array(z.string())),
+});
+
 // ──────────────────────────────────────────
-// PHASE B: KNOWLEDGE GRAPH SCHEMAS
+// SEMANTIC KNOWLEDGE GRAPH SCHEMAS
 // ──────────────────────────────────────────
 
 export const KnowledgeNodeSchema = z.object({
@@ -33,26 +38,46 @@ export const KnowledgeNodeSchema = z.object({
   parentId: z.string().nullable().optional(),
   title: z.string().min(1, 'Node title is required'),
   type: z.enum([
-    'root',
     'chapter',
-    'topic',
-    'subtopic',
+    'section',
     'concept',
+    'sub_concept',
     'definition',
-    'theorem',
+    'property',
     'formula',
+    'theorem',
+    'law',
     'algorithm',
+    'algorithm_step',
     'example',
+    'comparison',
+    'application',
+    'condition',
+    'warning',
+    'summary',
+    'study_tip',
   ]),
-  importance: z.enum(['high', 'medium', 'low']).default('medium'),
+  importance: z.enum(['critical', 'high', 'medium', 'low']).default('medium'),
   summary: z.string().optional(),
+  
   definitions: z.array(z.string()).optional().default([]),
+  properties: z.array(z.string()).optional().default([]),
   keyPoints: z.array(z.string()).optional().default([]),
   formulas: z.array(FormulaBlockSchema).optional().default([]),
   examples: z.array(z.string()).optional().default([]),
   applications: z.array(z.string()).optional().default([]),
   conditions: z.array(z.string()).optional().default([]),
   warnings: z.array(z.string()).optional().default([]),
+  studyTips: z.array(z.string()).optional().default([]),
+
+  purpose: z.string().optional(),
+  steps: z.array(z.string()).optional().default([]),
+
+  statement: z.string().optional(),
+  proofTechnique: z.string().optional(),
+
+  table: TableStructureSchema.optional(),
+
   sourceReferences: z.array(SourceReferenceSchema).optional().default([]),
 });
 
@@ -61,13 +86,18 @@ export const KnowledgeRelationshipSchema = z.object({
   toNodeId: z.string().min(1, 'toNodeId is required'),
   type: z.enum([
     'contains',
-    'depends_on',
+    'has_property',
+    'defined_by',
+    'has_formula',
+    'uses_algorithm',
+    'has_step',
     'equivalent_to',
     'contrasts_with',
-    'leads_to',
     'example_of',
     'application_of',
-    'part_of',
+    'depends_on',
+    'leads_to',
+    'summarized_by',
   ]),
   label: z.string().optional(),
 });
@@ -85,8 +115,12 @@ export const KnowledgeGraphSchema = z
   })
   .superRefine((kg, ctx) => {
     const nodeIds = new Set<string>();
+    const nodeMap = new Map<string, z.infer<typeof KnowledgeNodeSchema>>();
+    const relKeySet = new Set<string>();
 
-    // 1. Check duplicate node IDs
+    let rootCount = 0;
+
+    // 1. Check duplicate node IDs & count roots
     for (let i = 0; i < kg.nodes.length; i++) {
       const node = kg.nodes[i];
       if (nodeIds.has(node.id)) {
@@ -97,21 +131,38 @@ export const KnowledgeGraphSchema = z
         });
       }
       nodeIds.add(node.id);
-    }
+      nodeMap.set(node.id, node);
 
-    // 2. Validate parentId references
-    for (let i = 0; i < kg.nodes.length; i++) {
-      const node = kg.nodes[i];
-      if (node.parentId && !nodeIds.has(node.parentId) && node.parentId !== node.id) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Node ${node.id} references non-existent parentId: ${node.parentId}`,
-          path: ['nodes', i, 'parentId'],
-        });
+      if (!node.parentId || node.type === 'chapter') {
+        rootCount++;
       }
     }
 
-    // 3. Validate relationship references
+    // 2. Validate parentId references & semantic containment
+    for (let i = 0; i < kg.nodes.length; i++) {
+      const node = kg.nodes[i];
+      if (node.parentId) {
+        if (!nodeIds.has(node.parentId) && node.parentId !== node.id) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Node ${node.id} references non-existent parentId: ${node.parentId}`,
+            path: ['nodes', i, 'parentId'],
+          });
+        }
+
+        const parentNode = nodeMap.get(node.parentId);
+        // Rule: algorithm_step must have an algorithm parent
+        if (node.type === 'algorithm_step' && parentNode && parentNode.type !== 'algorithm') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Algorithm step "${node.title}" must have an algorithm parent (found: ${parentNode.type})`,
+            path: ['nodes', i, 'type'],
+          });
+        }
+      }
+    }
+
+    // 3. Validate relationship references & prevent duplicate relationships
     for (let i = 0; i < kg.relationships.length; i++) {
       const rel = kg.relationships[i];
       if (!nodeIds.has(rel.fromNodeId)) {
@@ -128,6 +179,16 @@ export const KnowledgeGraphSchema = z
           path: ['relationships', i, 'toNodeId'],
         });
       }
+
+      const relKey = `${rel.fromNodeId}->${rel.toNodeId}:${rel.type}`;
+      if (relKeySet.has(relKey)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Duplicate relationship detected: ${relKey}`,
+          path: ['relationships', i],
+        });
+      }
+      relKeySet.add(relKey);
     }
   });
 
@@ -185,7 +246,7 @@ export const MindMapSectionSchema = z.object({
   id: z.string().default(() => `sec-${Math.random().toString(36).slice(2, 9)}`),
   title: z.string().min(1, 'Section title is required'),
   accentColor: z.enum(['blue', 'green', 'orange', 'purple', 'red', 'teal']).optional(),
-  importance: z.enum(['high', 'medium', 'low']).default('medium'),
+  importance: z.enum(['critical', 'high', 'medium', 'low']).default('medium'),
   layoutSpan: z.enum(['full', 'half', 'third']).optional().default('half'),
   density: z.enum(['compact', 'normal', 'dense']).optional().default('normal'),
   summary: z.string().optional(),
@@ -220,7 +281,7 @@ export function normalizeConceptMindMap(raw: unknown): ConceptMindMap {
       ? sec.accentColor
       : ACCENT_COLORS[idx % ACCENT_COLORS.length];
 
-    const isMajor = sec.importance === 'high' || sec.title.toLowerCase().includes('ohm') || sec.title.toLowerCase().includes('joule') || sec.title.toLowerCase().includes('heating') || sec.title.toLowerCase().includes('automata') || sec.title.toLowerCase().includes('regex');
+    const isMajor = sec.importance === 'critical' || sec.importance === 'high' || sec.title.toLowerCase().includes('ohm') || sec.title.toLowerCase().includes('joule') || sec.title.toLowerCase().includes('heating') || sec.title.toLowerCase().includes('automata') || sec.title.toLowerCase().includes('regex');
     const layoutSpan = sec.layoutSpan || (isMajor ? 'full' : 'half');
 
     return {

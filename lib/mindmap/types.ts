@@ -1,6 +1,6 @@
 /**
  * ShikshaSetu — Visual Revision Mind Map & Knowledge Graph Type Definitions
- * Phase B Knowledge Graph Model & Editorial Revision Specification
+ * Semantic Hierarchy, Extended Node Roles, and Algorithm/Theorem Specifications
  */
 
 export type ConceptAccentColor = 'blue' | 'green' | 'orange' | 'purple' | 'red' | 'teal';
@@ -17,7 +17,8 @@ export type MindMapItemType =
   | 'process'
   | 'diagram';
 
-export type ImportanceLevel = 'high' | 'medium' | 'low';
+export type SemanticImportance = 'critical' | 'high' | 'medium' | 'low';
+export type ImportanceLevel = 'critical' | 'high' | 'medium' | 'low';
 export type DensityLevel = 'compact' | 'normal' | 'dense';
 export type LayoutSpan = 'full' | 'half' | 'third';
 
@@ -45,45 +46,79 @@ export interface FormulaBlock {
 }
 
 // ──────────────────────────────────────────
-// PHASE B: KNOWLEDGE GRAPH MODEL
+// SEMANTIC KNOWLEDGE GRAPH MODEL
 // ──────────────────────────────────────────
 
 export type KnowledgeNodeType =
-  | 'root'
   | 'chapter'
-  | 'topic'
-  | 'subtopic'
+  | 'section'
   | 'concept'
+  | 'sub_concept'
   | 'definition'
-  | 'theorem'
+  | 'property'
   | 'formula'
+  | 'theorem'
+  | 'law'
   | 'algorithm'
-  | 'example';
+  | 'algorithm_step'
+  | 'example'
+  | 'comparison'
+  | 'application'
+  | 'condition'
+  | 'warning'
+  | 'summary'
+  | 'study_tip';
 
 export type KnowledgeRelationshipType =
   | 'contains'
-  | 'depends_on'
+  | 'has_property'
+  | 'defined_by'
+  | 'has_formula'
+  | 'uses_algorithm'
+  | 'has_step'
   | 'equivalent_to'
   | 'contrasts_with'
-  | 'leads_to'
   | 'example_of'
   | 'application_of'
-  | 'part_of';
+  | 'depends_on'
+  | 'leads_to'
+  | 'summarized_by';
+
+export interface TableStructure {
+  readonly headers: string[];
+  readonly rows: string[][];
+}
 
 export interface KnowledgeNode {
   readonly id: string;
   readonly parentId?: string | null;
   readonly title: string;
   readonly type: KnowledgeNodeType;
-  readonly importance: ImportanceLevel;
+  readonly importance: SemanticImportance;
   readonly summary?: string;
+  
+  // Specific semantic structures
   readonly definitions?: string[];
+  readonly properties?: string[];
   readonly keyPoints?: string[];
   readonly formulas?: FormulaBlock[];
   readonly examples?: string[];
   readonly applications?: string[];
   readonly conditions?: string[];
   readonly warnings?: string[];
+  readonly studyTips?: string[];
+
+  // Algorithm-specific attributes
+  readonly purpose?: string;
+  readonly steps?: string[];
+
+  // Theorem/Law-specific attributes
+  readonly statement?: string;
+  readonly proofTechnique?: string;
+
+  // Comparison/Table-specific attributes
+  readonly table?: TableStructure;
+
   readonly sourceReferences?: SourceReference[];
 }
 

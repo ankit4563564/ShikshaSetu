@@ -1,6 +1,6 @@
 /**
  * ShikshaSetu — Phase B Knowledge Graph Extractor Service
- * Extracts hierarchical concept trees, atomic formula/tuple nodes, and semantic relationships.
+ * Semantic Classification, Hierarchy Enforcement, and Algorithm/Theorem Atomicity
  */
 
 import { ResilientAIProvider } from '@/lib/intelligence/providers/aiProvider';
@@ -9,6 +9,8 @@ import type {
   KnowledgeGraph,
   KnowledgeNode,
   KnowledgeRelationship,
+  KnowledgeNodeType,
+  SemanticImportance,
   ConceptMindMap,
   MindMapSection,
   MindMapItem,
@@ -32,8 +34,48 @@ export interface ExtractKnowledgeGraphResult {
 const ACCENT_PALETTE: ConceptAccentColor[] = ['blue', 'green', 'purple', 'orange', 'red', 'teal'];
 
 /**
- * Deterministic Knowledge Graph generator strictly derived from uploaded notes.
- * Used for offline/fallback modes and deterministic testing.
+ * Classifies raw text chunks into explicit semantic node types.
+ */
+export function classifySemanticRole(text: string, title?: string): {
+  type: KnowledgeNodeType;
+  importance: SemanticImportance;
+} {
+  const lower = (text + ' ' + (title || '')).toLowerCase();
+
+  if (/^(?:step\s*\d+|create\s*dfa\s*states|initial\s*dfa\s*state|compute\s*transitions|final\s*dfa\s*states)/i.test(text)) {
+    return { type: 'algorithm_step', importance: 'medium' };
+  }
+  if (/subset\s*construction|algorithm|conversion\s*method/i.test(lower)) {
+    return { type: 'algorithm', importance: 'high' };
+  }
+  if (/arden's\s*theorem|kleene's\s*theorem|pythagorean\s*theorem/i.test(lower)) {
+    return { type: 'theorem', importance: 'critical' };
+  }
+  if (/ohm's\s*law|joule's\s*law|newton's\s*law/i.test(lower)) {
+    return { type: 'law', importance: 'critical' };
+  }
+  if (/study\s*tip|exam\s*tip|preparation|key\s*takeaway|focus\s*on/i.test(lower)) {
+    return { type: 'study_tip', importance: 'low' };
+  }
+  if (/application|lexical\s*analyzer|pattern\s*matching|compiler|used\s*in/i.test(lower)) {
+    return { type: 'application', importance: 'medium' };
+  }
+  if (/exactly\s*one\s*transition|deterministic\s*behavior|accepts\s*or\s*rejects|property|characteristic/i.test(lower)) {
+    return { type: 'property', importance: 'medium' };
+  }
+  if (/[=\+\-\*\/\^\\_]/.test(text) && /\b[A-Za-z0-9_]\s*=|\\frac|\\delta|\(Q,\s*Σ/.test(text)) {
+    return { type: 'formula', importance: 'high' };
+  }
+  if (/is\s*defined\s*as|is\s*a\s*5-tuple|is\s*the\s*rate\s*of|is\s*work\s*done/i.test(lower)) {
+    return { type: 'definition', importance: 'high' };
+  }
+
+  return { type: 'concept', importance: 'medium' };
+}
+
+/**
+ * Deterministic Semantic Knowledge Graph generator.
+ * Builds structured parent-child trees with algorithm steps, properties, and theorems properly nested.
  */
 export function deriveDeterministicKnowledgeGraphFromNotes(
   title: string,
@@ -45,71 +87,99 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
   const normalizedText = notesText.replace(/\[Page\s*\d+\]/gi, '').trim();
   const rawLines = normalizedText.split('\n').map((l) => l.trim()).filter(Boolean);
 
-  const rootId = 'node-root';
+  const rootId = 'node-chapter-root';
   const nodes: KnowledgeNode[] = [
     {
       id: rootId,
       parentId: null,
       title: cleanTitle,
-      type: 'root',
-      importance: 'high',
-      summary: `Root concept graph for ${cleanTitle}.`,
+      type: 'chapter',
+      importance: 'critical',
+      summary: `Comprehensive semantic knowledge graph for ${cleanTitle}.`,
       keyPoints: [],
     },
   ];
 
   const relationships: KnowledgeRelationship[] = [];
 
-  // Group lines into topics based on numbered or bold headings
   let currentTopicId = rootId;
   let currentSubtopicId: string | null = null;
+  let currentAlgorithmId: string | null = null;
 
   for (let i = 0; i < rawLines.length; i++) {
     const line = rawLines[i];
 
+    // 1. Major Section Headings (e.g. "1. Formal Languages", "2. Finite Automata", "3. Regular Expressions")
     const majorHeadingMatch = line.match(/^(?:[0-9]{1,2}[\.\)]|[I|V|X]+[\.\)]|Chapter)\s*([A-Za-z0-9\s&,'\-\(\)\/]+)/i);
-    const subHeadingMatch = line.match(/^(?:[a-z][\.\)]|[•\*\-])\s*([^:\n]{3,60}):/i);
+
+    // 2. Subtopic Headings (e.g. "a. Deterministic Finite Automata (DFA): ...", "d. DFA and NFA Equivalence:")
+    const subHeadingMatch = line.match(/^(?:[a-z][\.\)]|[•\*\-])\s*([^:\n]{3,65}):/i);
+
+    // 3. Algorithm Step Lines (e.g. "1. Create DFA states corresponding to subsets...", "Step 1: ...")
+    const isStepLine = /^Step\s*\d+[:\.]?/i.test(line) ||
+      /^(?:(?:Step\s*\d+[:\.]?|\d+\.)\s*)?(?:Create\s*DFA\s*states|Initial\s*DFA\s*state|For\s*each\s*DFA\s*state|Final\s*DFA\s*states)/i.test(line);
 
     if (majorHeadingMatch) {
       const topicTitle = majorHeadingMatch[1].replace(/[:\-#]+$/, '').trim();
-      const topicId = `node-topic-${nodes.length + 1}`;
+      const topicId = `node-section-${nodes.length + 1}`;
       currentTopicId = topicId;
       currentSubtopicId = null;
+      currentAlgorithmId = null;
 
       nodes.push({
         id: topicId,
         parentId: rootId,
         title: topicTitle,
-        type: 'topic',
+        type: 'section',
         importance: 'high',
         definitions: [],
         keyPoints: [],
         formulas: [],
+        applications: [],
       });
 
       relationships.push({
         fromNodeId: rootId,
         toNodeId: topicId,
         type: 'contains',
-        label: 'Includes',
+        label: 'Section',
       });
     } else if (subHeadingMatch && currentTopicId !== rootId) {
       const fullHeadingMatch = subHeadingMatch[0];
       const subTitle = subHeadingMatch[1].replace(/[:\-#]+$/, '').trim();
       const inlineContent = line.slice(fullHeadingMatch.length).trim().replace(/^[:\-]+\s*/, '');
-      const subId = `node-sub-${nodes.length + 1}`;
+      const subId = `node-concept-${nodes.length + 1}`;
       currentSubtopicId = subId;
+
+      const isAlgorithm = /subset\s*construction|algorithm|conversion/i.test(subTitle) || /subset\s*construction/i.test(inlineContent);
+      const isTheorem = /theorem|law/i.test(subTitle);
+
+      const nodeType: KnowledgeNodeType = isAlgorithm
+        ? 'algorithm'
+        : isTheorem
+        ? 'theorem'
+        : 'concept';
 
       const subNode: KnowledgeNode = {
         id: subId,
         parentId: currentTopicId,
         title: subTitle,
-        type: 'subtopic',
-        importance: 'medium',
+        type: nodeType,
+        importance: isAlgorithm || isTheorem ? 'critical' : 'high',
         definitions: inlineContent.length > 5 ? [inlineContent] : [],
+        properties: [],
         keyPoints: [],
         formulas: [],
+        applications: [],
+        steps: [],
       };
+
+      if (isAlgorithm) {
+        currentAlgorithmId = subId;
+        subNode.purpose = inlineContent || 'Convert non-deterministic automaton to equivalent deterministic model.';
+      } else {
+        currentAlgorithmId = null;
+      }
 
       if (inlineContent && /\(Q,\s*Σ|\\delta|[A-Za-z]\s*=/.test(inlineContent)) {
         subNode.formulas = [
@@ -126,23 +196,63 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
         fromNodeId: currentTopicId,
         toNodeId: subId,
         type: 'contains',
-        label: 'Subtopic',
+        label: isAlgorithm ? 'Uses algorithm' : 'Contains concept',
+      });
+    } else if (isStepLine && currentAlgorithmId) {
+      // Step belonging to an algorithm: attach as algorithm_step under the algorithm node
+      const stepId = `node-step-${nodes.length + 1}`;
+      const cleanStep = line.replace(/^(?:Step\s*\d+[:\.]?|\d+\.)\s*/i, '').trim();
+
+      nodes.push({
+        id: stepId,
+        parentId: currentAlgorithmId,
+        title: `Step ${nodes.filter((n) => n.parentId === currentAlgorithmId && n.type === 'algorithm_step').length + 1}`,
+        type: 'algorithm_step',
+        importance: 'medium',
+        definitions: [cleanStep],
+      });
+
+      const algoNode = nodes.find((n) => n.id === currentAlgorithmId);
+      if (algoNode) {
+        algoNode.steps = algoNode.steps || [];
+        algoNode.steps.push(cleanStep);
+      }
+
+      relationships.push({
+        fromNodeId: currentAlgorithmId,
+        toNodeId: stepId,
+        type: 'has_step',
+        label: 'Algorithm Step',
       });
     } else {
-      // Content lines: attach definitions, formulas, or key points to active node
+      // Content lines: attach definitions, properties, applications, or formulas to active node
       const targetNode = nodes.find((n) => n.id === (currentSubtopicId || currentTopicId));
       if (!targetNode) continue;
 
-      const isFormula = /[=\+\-\*\/\^\\_]/.test(line) && /\b[A-Za-z0-9_]\s*=|\\frac|\\delta|\(Q,\s*Σ/.test(line);
+      const hasInlineFormula = /[=\+\-\*\/\^\\_]/.test(line) && /\b[A-Za-z0-9_]\s*=|\\frac|\\delta|\(Q,\s*Σ/.test(line);
 
-      if (isFormula) {
-        let latex = line.replace(/^(?:Formula|Tuple|Definition)?\s*[:=]?\s*/i, '').trim();
+      if (hasInlineFormula) {
+        const formulaMatch = line.match(/(?:[A-Za-z0-9_]+\s*=\s*[^;\.\n]+)/);
+        const latex = formulaMatch ? formulaMatch[0].trim() : line.trim();
         targetNode.formulas = targetNode.formulas || [];
         targetNode.formulas.push({
           latex,
           meaning: line,
         });
-      } else if (line.length > 5) {
+      }
+
+      const classification = classifySemanticRole(line, targetNode.title);
+
+      if (classification.type === 'property') {
+        targetNode.properties = targetNode.properties || [];
+        targetNode.properties.push(line);
+      } else if (classification.type === 'application') {
+        targetNode.applications = targetNode.applications || [];
+        targetNode.applications.push(line);
+      } else if (classification.type === 'study_tip') {
+        targetNode.studyTips = targetNode.studyTips || [];
+        targetNode.studyTips.push(line);
+      } else if (line.length > 5 && !hasInlineFormula) {
         if (!targetNode.definitions || targetNode.definitions.length === 0) {
           targetNode.definitions = targetNode.definitions || [];
           targetNode.definitions.push(line);
@@ -154,7 +264,7 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
     }
   }
 
-  // Cross-link equivalent or dependent concepts (e.g. DFA <-> NFA, Series <-> Parallel)
+  // Cross-link semantic relationships across nodes
   for (let i = 1; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
       const n1 = nodes[i];
@@ -171,13 +281,22 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
           label: 'Equivalent models',
         });
       } else if (
+        n1.title.toLowerCase().includes('equivalence') && n2.type === 'algorithm'
+      ) {
+        relationships.push({
+          fromNodeId: n1.id,
+          toNodeId: n2.id,
+          type: 'uses_algorithm',
+          label: 'Solved via Subset Construction',
+        });
+      } else if (
         n1.title.toLowerCase().includes('kleene') && n2.title.toLowerCase().includes('regular')
       ) {
         relationships.push({
           fromNodeId: n1.id,
           toNodeId: n2.id,
           type: 'leads_to',
-          label: 'Establishes equivalence',
+          label: 'Establishes FA = RE equivalence',
         });
       } else if (
         n1.title.toLowerCase().includes('arden') && n2.title.toLowerCase().includes('regular')
@@ -186,7 +305,7 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
           fromNodeId: n1.id,
           toNodeId: n2.id,
           type: 'application_of',
-          label: 'Used for conversion',
+          label: 'Used for FA to RE conversion',
         });
       }
     }
@@ -196,7 +315,7 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
     title: cleanTitle,
     subject: subject || 'Computer Science',
     grade: grade || 'University',
-    summary: nodes[1]?.definitions?.[0] || `Hierarchical knowledge graph for ${cleanTitle}.`,
+    summary: nodes[1]?.definitions?.[0] || `Semantic knowledge graph for ${cleanTitle}.`,
     nodes,
     relationships,
     sourceReferences: [{ excerpt: normalizedText.slice(0, 180) }],
@@ -204,15 +323,17 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
 }
 
 /**
- * Bridges a structured KnowledgeGraph into a ConceptMindMap for visual canvas/export rendering.
+ * Bridges a structured KnowledgeGraph into ConceptMindMap format.
+ * Ensures algorithm steps and properties are encapsulated inside their parent concept cards.
  */
 export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMindMap {
-  // Exclude root node from top-level section cards
-  const nonRootNodes = graph.nodes.filter((n) => n.type !== 'root');
+  // Exclude root and standalone steps (which are already encapsulated inside algorithm parent)
+  const nonRootNodes = graph.nodes.filter(
+    (n) => n.type !== 'chapter' && n.type !== 'algorithm_step'
+  );
 
-  // Group by parent topic or top-level nodes
   const sections: MindMapSection[] = [];
-  const topicNodes = nonRootNodes.filter((n) => !n.parentId || n.parentId === 'node-root' || n.type === 'topic');
+  const topicNodes = nonRootNodes.filter((n) => n.type === 'section' || !n.parentId || n.parentId === 'node-chapter-root');
 
   for (let idx = 0; idx < (topicNodes.length > 0 ? topicNodes.length : nonRootNodes.length); idx++) {
     const node = topicNodes.length > 0 ? topicNodes[idx] : nonRootNodes[idx];
@@ -220,7 +341,7 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
 
     const items: MindMapItem[] = [];
 
-    // Add node's own definitions
+    // 1. Definition
     if (node.definitions) {
       node.definitions.forEach((def, dIdx) => {
         items.push({
@@ -231,7 +352,7 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // Add node's formulas
+    // 2. Formulas
     if (node.formulas) {
       node.formulas.forEach((f, fIdx) => {
         items.push({
@@ -245,7 +366,28 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // Add node's key points
+    // 3. Properties
+    if (node.properties) {
+      node.properties.forEach((prop, pIdx) => {
+        items.push({
+          id: `${node.id}-prop-${pIdx}`,
+          type: 'key_point',
+          content: `Property: ${prop}`,
+        });
+      });
+    }
+
+    // 4. Algorithm Steps (encapsulated)
+    if (node.steps && node.steps.length > 0) {
+      items.push({
+        id: `${node.id}-algo-process`,
+        type: 'process',
+        content: `Algorithm: ${node.title} — ${node.steps.length} Steps`,
+        details: node.steps.map((s, i) => `${i + 1}. ${s}`).join('\n'),
+      });
+    }
+
+    // 5. Key Points
     if (node.keyPoints) {
       node.keyPoints.forEach((kp, kpIdx) => {
         items.push({
@@ -256,7 +398,18 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // Add child nodes' concepts
+    // 6. Applications
+    if (node.applications) {
+      node.applications.forEach((app, aIdx) => {
+        items.push({
+          id: `${node.id}-app-${aIdx}`,
+          type: 'example',
+          content: `Application: ${app}`,
+        });
+      });
+    }
+
+    // 7. Child Nodes Content (encapsulated under parent)
     childNodes.forEach((child) => {
       if (child.definitions && child.definitions.length > 0) {
         items.push({
@@ -277,6 +430,14 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
           });
         });
       }
+      if (child.steps && child.steps.length > 0) {
+        items.push({
+          id: `${child.id}-steps`,
+          type: 'process',
+          content: `${child.title} (${child.steps.length} Steps)`,
+          details: child.steps.map((s, i) => `${i + 1}. ${s}`).join(' | '),
+        });
+      }
     });
 
     if (items.length === 0) {
@@ -287,7 +448,15 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    const isMajor = node.importance === 'high' || node.title.toLowerCase().includes('automata') || node.title.toLowerCase().includes('regex') || node.title.toLowerCase().includes('ohm') || node.title.toLowerCase().includes('joule');
+    const isMajor =
+      node.importance === 'critical' ||
+      node.importance === 'high' ||
+      node.type === 'theorem' ||
+      node.type === 'law' ||
+      node.title.toLowerCase().includes('automata') ||
+      node.title.toLowerCase().includes('regex') ||
+      node.title.toLowerCase().includes('ohm') ||
+      node.title.toLowerCase().includes('joule');
 
     sections.push({
       id: `sec-${node.id}`,
@@ -306,13 +475,16 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
     });
   }
 
-  // Map graph relationships to mind map relationships
-  const relationships = graph.relationships.map((r) => ({
-    fromSectionId: `sec-${r.fromNodeId}`,
-    toSectionId: `sec-${r.toNodeId}`,
-    label: r.label,
-    type: (r.type === 'equivalent_to' ? 'contrasts_with' : r.type === 'leads_to' ? 'derives' : 'depends_on') as any,
-  }));
+  // Filter relationship connections to existing section IDs
+  const sectionIdSet = new Set(sections.map((s) => s.id));
+  const relationships = graph.relationships
+    .filter((r) => sectionIdSet.has(`sec-${r.fromNodeId}`) && sectionIdSet.has(`sec-${r.toNodeId}`))
+    .map((r) => ({
+      fromSectionId: `sec-${r.fromNodeId}`,
+      toSectionId: `sec-${r.toNodeId}`,
+      label: r.label,
+      type: (r.type === 'equivalent_to' ? 'contrasts_with' : r.type === 'leads_to' ? 'derives' : 'depends_on') as any,
+    }));
 
   return {
     title: graph.title,
@@ -338,25 +510,29 @@ export async function extractKnowledgeGraphFromText(
     };
   }
 
-  const systemPrompt = `You are the ShikshaSetu Knowledge Graph & Concept Hierarchy Architect.
-Your task is to transform uploaded textbook/lesson notes into a strictly structured, comprehensive KNOWLEDGE GRAPH.
+  const systemPrompt = `You are the ShikshaSetu Semantic Knowledge Graph & Concept Hierarchy Architect.
+Your task is to transform uploaded textbook/lesson notes into a strictly structured, comprehensive KNOWLEDGE GRAPH with explicit semantic node roles.
 
-CRITICAL INSTRUCTIONS:
-1. HIERARCHY:
-   - Create a Root Node for the chapter.
-   - Group ideas into major Topic nodes (e.g. "Formal Languages", "Finite Automata", "Regular Expressions").
-   - Create Subtopic nodes under Topics (e.g. "DFA", "NFA", "Transition Diagrams", "Transition Tables").
-   - Set "parentId" to establish the exact tree hierarchy.
-2. ATOMIC FORMULAS & TUPLES:
-   - Keep formulas, 5-tuples (e.g. DFA "(Q, \\Sigma, \\delta, q_0, F)"), variable meanings, and SI units inside their concept nodes.
-   - Do NOT create fragmented single-variable cards for Q, Sigma, delta, etc.
-3. RELATIONSHIPS:
-   - Connect related nodes using exact types: ["contains", "depends_on", "equivalent_to", "contrasts_with", "leads_to", "example_of", "application_of", "part_of"].
+CRITICAL ARCHITECTURE RULES:
+1. SEMANTIC NODE CLASSIFICATION:
+   - "chapter": The single root node of the document.
+   - "section": Major chapters or modules (e.g. "Formal Languages", "Finite Automata", "Regular Expressions").
+   - "concept" / "sub_concept": Individual concepts (e.g. "DFA", "NFA", "Alphabets", "Strings").
+   - "algorithm": Multi-step computational procedures (e.g. "Subset Construction Algorithm").
+   - "algorithm_step": Individual steps belonging to an algorithm. MUST have an "algorithm" parent.
+   - "theorem" / "law": Mathematical/scientific theorems with statements and conditions (e.g. "Arden's Theorem", "Kleene's Theorem", "Ohm's Law").
+   - "property": Specific characteristics or constraints of a concept (e.g. "Exactly one transition for each symbol").
+   - "application": Practical usages (e.g. "Lexical Analyzers", "Compilers").
+   - "study_tip": Preparation or learning advice.
+2. STRICT ATOMICITY:
+   - "DFA": Keep 5-tuple "(Q, \\Sigma, \\delta, q_0, F)", state definitions, and properties INSIDE the DFA node. Do NOT create separate cards for Q, Sigma, delta!
+   - "Subset Construction": Steps must be child nodes under the "Subset Construction" algorithm node.
+3. EXPLICIT RELATIONSHIP TYPES:
+   - ["contains", "has_property", "defined_by", "has_formula", "uses_algorithm", "has_step", "equivalent_to", "contrasts_with", "example_of", "application_of", "depends_on", "leads_to", "summarized_by"].
    - E.g. DFA <-> NFA: "equivalent_to".
-   - E.g. Kleene's Theorem -> Regular Expressions: "leads_to".
+   - E.g. DFA/NFA Equivalence -> Subset Construction: "uses_algorithm".
+   - E.g. Subset Construction -> Step 1: "has_step".
    - E.g. Arden's Theorem -> Regular Expression Conversion: "application_of".
-4. COMPACT REVISION:
-   - Condense long paragraphs into clear definitions and key points. Do NOT invent concepts outside the source.
 
 OUTPUT STRICT JSON MATCHING THIS EXACT SCHEMA:
 {
@@ -369,25 +545,29 @@ OUTPUT STRICT JSON MATCHING THIS EXACT SCHEMA:
       "id": string,
       "parentId": string|null,
       "title": string,
-      "type": "root"|"chapter"|"topic"|"subtopic"|"concept"|"definition"|"theorem"|"formula"|"algorithm"|"example",
-      "importance": "high"|"medium"|"low",
+      "type": "chapter"|"section"|"concept"|"sub_concept"|"definition"|"property"|"formula"|"theorem"|"law"|"algorithm"|"algorithm_step"|"example"|"comparison"|"application"|"condition"|"warning"|"summary"|"study_tip",
+      "importance": "critical"|"high"|"medium"|"low",
       "summary": string,
       "definitions": string[],
+      "properties": string[],
       "keyPoints": string[],
       "formulas": [
         { "latex": string, "meaning": string, "variables": string, "unit": string, "condition": string }
       ],
-      "examples": string[],
+      "purpose": string,
+      "steps": string[],
+      "statement": string,
       "applications": string[],
       "conditions": string[],
-      "warnings": string[]
+      "warnings": string[],
+      "studyTips": string[]
     }
   ],
   "relationships": [
     {
       "fromNodeId": string,
       "toNodeId": string,
-      "type": "contains"|"depends_on"|"equivalent_to"|"contrasts_with"|"leads_to"|"example_of"|"application_of"|"part_of",
+      "type": "contains"|"has_property"|"defined_by"|"has_formula"|"uses_algorithm"|"has_step"|"equivalent_to"|"contrasts_with"|"example_of"|"application_of"|"depends_on"|"leads_to"|"summarized_by",
       "label": string
     }
   ]
@@ -407,7 +587,7 @@ OUTPUT STRICT JSON MATCHING THIS EXACT SCHEMA:
       systemPrompt,
       userMessage,
       temperature: 0.15,
-      maxTokens: 3500,
+      maxTokens: 3800,
     });
 
     const parsedJson = JSON.parse(response.text);
