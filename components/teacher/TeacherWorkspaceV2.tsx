@@ -14,6 +14,7 @@ import Student360Modal from './Student360Modal';
 import AiHomeworkModal from './AiHomeworkModal';
 import SchoolPulsePDF from './SchoolPulsePDF';
 import TeacherMarksPanel from './TeacherMarksPanel';
+import TeacherChat from './TeacherChat';
 import { useAmbientAICore } from '../schoolgpt/core/AmbientIntelligenceCore';
 import { useContextRegistry } from '../schoolgpt/context/ContextRegistry';
 import { TakeAttendanceModal } from './TakeAttendanceModal';
@@ -28,6 +29,14 @@ const getPhotoUrl = (name: string): string | null => {
   if (lower.includes('ananya')) return '/ananya.png';
   if (lower.includes('kabir')) return '/kabir.png';
   return null;
+};
+
+const PARENT_MAP: Record<string, { parentName: string; relationship: string; phone: string }> = {
+  'Aarav Sharma': { parentName: 'Sunita Sharma', relationship: 'Mother', phone: '+91 98765 43210' },
+  'Priya Patel': { parentName: 'Rajesh Patel', relationship: 'Father', phone: '+91 98123 45678' },
+  'Rohan Singh': { parentName: 'Gurpreet Singh', relationship: 'Father', phone: '+91 97234 56789' },
+  'Ananya Gupta': { parentName: 'Pooja Gupta', relationship: 'Mother', phone: '+91 96345 67890' },
+  'Kabir Khan': { parentName: 'Farah Khan', relationship: 'Mother', phone: '+91 95456 78901' },
 };
 
 interface TeacherWorkspaceV2Props {
@@ -45,6 +54,12 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [isMarksModalOpen, setIsMarksModalOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+
+  // Chat with parent state
+  const [chattingStudent, setChattingStudent] = useState<{ id: string; name: string } | null>(null);
+  const [activeParentTabStudentId, setActiveParentTabStudentId] = useState<string>(
+    classContext.students[0]?.studentId || 'b1000000-0000-4000-8000-000000000001'
+  );
 
   const { ask, isLoading } = useAmbientAICore();
   const { setContext } = useContextRegistry();
@@ -104,6 +119,10 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
       setIsPdfModalOpen(true);
       return;
     }
+    if (query === 'Chat with Parent') {
+      setActiveTab('parents');
+      return;
+    }
     if (query === 'Schedule Check-in') {
       setActiveTab('calendar');
       return;
@@ -123,7 +142,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
       setActiveTab('students');
     } else if (item.includes('homework')) {
       setIsHomeworkModalOpen(true);
-    } else if (item.includes('PTM')) {
+    } else if (item.includes('PTM') || item.includes('parent')) {
       setActiveTab('parents');
     } else if (item.includes('Attendance')) {
       setIsAttendanceModalOpen(true);
@@ -161,7 +180,13 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
       setContext({ module: 'homework' });
     } else if (tab === 'students') {
       setContext({ module: 'general' });
+    } else if (tab === 'parents') {
+      setContext({ module: 'general' });
     }
+  };
+
+  const openParentChat = (studentId: string, studentName: string) => {
+    setChattingStudent({ id: studentId, name: studentName });
   };
 
   const filteredStudents = useMemo(() => {
@@ -189,6 +214,10 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
     return { total: students.length, needsAttention, worthWatching, onTrack };
   }, [students]);
 
+  const activeParentStudent = useMemo(() => {
+    return students.find((s) => s.studentId === activeParentTabStudentId) || students[0];
+  }, [students, activeParentTabStudentId]);
+
   const suggestedCards = [
     { title: 'Support Radar', prompt: 'Which students need support today?', icon: '🎯', bg: 'bg-rose-50 border-rose-100 text-rose-700' },
     { title: 'Student Report', prompt: 'Show complete academic report for student needing support.', icon: '👤', bg: 'bg-purple-50 border-purple-100 text-purple-700' },
@@ -201,6 +230,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
   const quickActions = [
     'View Attendance',
     'Open Homework',
+    'Chat with Parent',
     'Compare with Class Average',
     'Generate Parent Summary',
     'Schedule Check-in',
@@ -466,6 +496,8 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                 const hwSub = st.homework?.filter((h) => h.isSubmitted).length || 0;
                 const hwPct = totalHw > 0 ? Math.round((hwSub / totalHw) * 100) : 92;
 
+                const parentInfo = PARENT_MAP[st.displayName] || { parentName: 'Guardian', relationship: 'Parent' };
+
                 return (
                   <div
                     key={st.studentId}
@@ -491,7 +523,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                               {st.displayName}
                             </h3>
                             <p className="text-[11px] text-slate-400 font-medium">
-                              Roll #{st.roll_number || '801'} • {st.house || 'Ruby'} House
+                              Roll #{st.roll_number || '801'} • {parentInfo.parentName} ({parentInfo.relationship})
                             </p>
                           </div>
                         </div>
@@ -531,11 +563,11 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleQuerySend(`Give me a complete academic analysis of ${st.displayName}`)}
-                        className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer"
-                        title="Analyze with SchoolGPT"
+                        onClick={() => openParentChat(st.studentId, st.displayName)}
+                        className="p-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition-all cursor-pointer border border-indigo-200/60"
+                        title={`Chat with ${parentInfo.parentName}`}
                       >
-                        ✨
+                        💬 Chat
                       </button>
                     </div>
                   </div>
@@ -751,53 +783,120 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
         )}
 
         {/* ============================================================ */}
-        {/* TAB 6: PARENTS                                               */}
+        {/* TAB 6: PARENTS (INTERACTIVE LIVE CHAT & COMMUNICATIONS)      */}
         {/* ============================================================ */}
         {activeTab === 'parents' && (
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h1 className="font-display text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                  Parent Communications 💬
+                  Parent Communications & Chat 💬
                 </h1>
                 <p className="text-sm text-slate-500 font-medium mt-1">
-                  PTM schedules, progress updates, and guardian check-ins
+                  Direct live messaging with parents, PTM scheduling & report sharing
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsPdfModalOpen(true)}
-                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold tracking-wide transition-all shadow-xs flex items-center gap-2 cursor-pointer"
-              >
-                <span>📄</span>
-                <span>Generate Parent Pulse Report</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsPdfModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold tracking-wide transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                >
+                  <span>📄</span>
+                  <span>Print Report Cards</span>
+                </button>
+              </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-2xs space-y-4">
-              <h3 className="font-display text-base font-extrabold text-slate-900">Upcoming Parent Meetings & Updates</h3>
-              <div className="space-y-3">
-                {[
-                  { parent: 'Sunita Sharma', child: 'Aarav Sharma', topic: 'Academic Acceleration & Olympiad Prep', time: 'Today at 2:00 PM', status: 'Scheduled' },
-                  { parent: 'Rajesh Patel', child: 'Priya Patel', topic: 'Homework Support & Science Tutoring', time: 'Tomorrow at 4:30 PM', status: 'Pending' },
-                  { parent: 'Gurpreet Singh', child: 'Rohan Singh', topic: 'Attendance & Wellness Follow-up', time: 'Friday at 3:00 PM', status: 'Scheduled' },
-                ].map((ptm) => (
-                  <div key={ptm.parent} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <h4 className="font-display text-sm font-extrabold text-slate-900">{ptm.parent} ({ptm.child})</h4>
-                      <p className="text-xs text-slate-600 font-medium">{ptm.topic}</p>
-                      <p className="text-[11px] text-slate-400 font-bold mt-1">⏰ {ptm.time}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleQuerySend(`Draft a PTM meeting brief for ${ptm.parent} regarding ${ptm.child}`)}
-                      className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shrink-0 cursor-pointer"
-                    >
-                      Draft Brief ✨
-                    </button>
+            {/* Split Screen Parent Messaging Center */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Left Column: Parent Contact List */}
+              <div className="lg:col-span-5 bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h3 className="font-display text-sm font-extrabold text-slate-900">
+                    Class 8A Parents ({students.length})
+                  </h3>
+                  <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                    🟢 Online
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {students.map((st) => {
+                    const parent = PARENT_MAP[st.displayName] || { parentName: 'Guardian', relationship: 'Parent', phone: '+91 90000 00000' };
+                    const isSelected = activeParentTabStudentId === st.studentId;
+                    const photo = getPhotoUrl(st.displayName);
+
+                    return (
+                      <button
+                        key={st.studentId}
+                        type="button"
+                        onClick={() => setActiveParentTabStudentId(st.studentId)}
+                        className={`w-full p-3.5 rounded-2xl border text-left transition-all flex items-center justify-between gap-3 cursor-pointer ${
+                          isSelected
+                            ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                            : 'bg-slate-50 border-slate-200/80 hover:bg-slate-100/80 text-slate-900'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {photo ? (
+                            <img
+                              src={photo}
+                              alt={st.displayName}
+                              className="w-10 h-10 rounded-xl object-cover border border-white/20"
+                            />
+                          ) : (
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs ${isSelected ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                              {st.displayName[0]}
+                            </div>
+                          )}
+                          <div>
+                            <h4 className={`font-display text-xs font-extrabold ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                              {parent.parentName}
+                            </h4>
+                            <p className={`text-[11px] font-medium ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
+                              {st.displayName} ({parent.relationship})
+                            </p>
+                          </div>
+                        </div>
+
+                        <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${isSelected ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-600 border border-slate-200'}`}>
+                          💬 Chat
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Right Column: Live TeacherChat Box */}
+              <div className="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-2xs min-h-[480px] flex flex-col">
+                <div className="border-b border-slate-100 pb-3 mb-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-display text-sm font-extrabold text-slate-900">
+                      Chatting with {PARENT_MAP[activeParentStudent.displayName]?.parentName || 'Parent'}
+                    </h3>
+                    <p className="text-xs text-slate-400 font-medium">
+                      Student: {activeParentStudent.displayName} • Grade {grade}{section}
+                    </p>
                   </div>
-                ))}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedStudentId(activeParentStudent.studentId)}
+                    className="text-xs font-bold text-indigo-600 hover:underline cursor-pointer"
+                  >
+                    View Student 360° Profile →
+                  </button>
+                </div>
+
+                <div className="flex-1">
+                  <TeacherChat
+                    studentId={activeParentStudent.studentId}
+                    studentName={activeParentStudent.displayName}
+                    teacherId={teacherId}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -883,6 +982,36 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
           studentId={selectedStudentId}
           onClose={() => setSelectedStudentId(null)}
         />
+      )}
+
+      {/* Direct Parent Chat Modal */}
+      {chattingStudent && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-xl w-full h-[600px] flex flex-col shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b pb-3 shrink-0">
+              <div>
+                <h3 className="font-display text-base font-black text-slate-900">
+                  💬 Chat with Parent ({PARENT_MAP[chattingStudent.name]?.parentName || 'Parent'})
+                </h3>
+                <p className="text-xs text-slate-400 font-medium">Student: {chattingStudent.name}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setChattingStudent(null)}
+                className="p-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 text-sm font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <TeacherChat
+                studentId={chattingStudent.id}
+                studentName={chattingStudent.name}
+                teacherId={teacherId}
+              />
+            </div>
+          </div>
+        </div>
       )}
 
       {/* School Pulse PDF Generator Modal */}
