@@ -12,29 +12,13 @@ import SchoolGPTSpotlight from '../schoolgpt/SchoolGPTSpotlight';
 import SchoolGPTDrawer from '../schoolgpt/SchoolGPTDrawer';
 import Student360Modal from './Student360Modal';
 import AiHomeworkModal from './AiHomeworkModal';
+import SchoolPulsePDF from './SchoolPulsePDF';
+import TeacherMarksPanel from './TeacherMarksPanel';
 import { useAmbientAICore } from '../schoolgpt/core/AmbientIntelligenceCore';
 import { useContextRegistry } from '../schoolgpt/context/ContextRegistry';
 import { TakeAttendanceModal } from './TakeAttendanceModal';
 import type { TeacherClassContext } from '@/app/teacher/page';
 import type { AttendanceRosterStudent } from '@/lib/attendance/types';
-
-const suggestedCards = [
-  { title: 'Support Radar', prompt: 'Which students need support today?', icon: '🎯', bg: 'bg-rose-50 border-rose-100 text-rose-700' },
-  { title: 'Student Report', prompt: 'Show complete academic report for student needing support.', icon: '👤', bg: 'bg-purple-50 border-purple-100 text-purple-700' },
-  { title: 'Class Performance', prompt: 'How is my class performing this week?', icon: '📊', bg: 'bg-sky-50 border-sky-100 text-sky-700' },
-  { title: 'Attendance Summary', prompt: "Summarize today's attendance.", icon: '📅', bg: 'bg-emerald-50 border-emerald-100 text-emerald-700' },
-  { title: 'Homework Today', prompt: "What's the homework for today?", icon: '📖', bg: 'bg-amber-50 border-amber-100 text-amber-700' },
-  { title: 'PTM Draft', prompt: "Generate PTM summary for parent update.", icon: '✉️', bg: 'bg-pink-50 border-pink-100 text-pink-700' },
-];
-
-const quickActions = [
-  'Compare with Class Average',
-  'View Attendance',
-  'Open Homework',
-  'Generate Parent Summary',
-  'Schedule Check-in',
-  'Open Student Profile',
-];
 
 const getPhotoUrl = (name: string): string | null => {
   const lower = name.toLowerCase();
@@ -58,11 +42,15 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
   const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [isMarksModalOpen, setIsMarksModalOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+
   const { ask, isLoading } = useAmbientAICore();
   const { setContext } = useContextRegistry();
 
   const displayName = classContext.teacherName;
+  const teacherId = classContext.teacherId;
   const { grade, section, students } = classContext;
 
   const attendanceRoster: AttendanceRosterStudent[] = students.map((s) => ({
@@ -71,6 +59,31 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
     rollNumber: s.roll_number || '',
     currentStatus: 'present',
   }));
+
+  const pulsePdfStudents = useMemo(() => {
+    return students.map((s) => {
+      const totalAtt = s.attendance?.length || 10;
+      const presAtt = s.attendance?.filter((a) => a.status === 'present').length || 9;
+      const totalHw = s.homework?.length || 5;
+      const subHw = s.homework?.filter((h) => h.isSubmitted).length || 4;
+      return {
+        studentId: s.studentId,
+        displayName: s.displayName,
+        attendance: {
+          present: presAtt,
+          total: totalAtt,
+          percentage: Math.round((presAtt / totalAtt) * 100),
+        },
+        homework: {
+          submitted: subHw,
+          total: totalHw,
+          percentage: Math.round((subHw / totalHw) * 100),
+        },
+        positiveNote: (s as any).aiExplanation || `${s.displayName} shows strong consistency and participation.`,
+        conversationPrompt: `Discuss recent progress in Mathematics and class activities.`,
+      };
+    });
+  }, [students]);
 
   const handleQuerySend = (query: string) => {
     if (query === 'View Attendance') {
@@ -81,8 +94,62 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
       setIsHomeworkModalOpen(true);
       return;
     }
+    if (query === 'Open Student Profile') {
+      if (students.length > 0) {
+        setSelectedStudentId(students[0].studentId);
+      }
+      return;
+    }
+    if (query === 'Generate Parent Summary') {
+      setIsPdfModalOpen(true);
+      return;
+    }
+    if (query === 'Schedule Check-in') {
+      setActiveTab('calendar');
+      return;
+    }
+    if (query === 'Compare with Class Average') {
+      setActiveTab('analytics');
+      return;
+    }
+
     ask(query);
     setIsDrawerOpen(true);
+  };
+
+  const handleFocusItemClick = (item: string) => {
+    if (item.includes('follow-up') || item.includes('student')) {
+      setStatusFilter('needs_attention');
+      setActiveTab('students');
+    } else if (item.includes('homework')) {
+      setIsHomeworkModalOpen(true);
+    } else if (item.includes('PTM')) {
+      setActiveTab('parents');
+    } else if (item.includes('Attendance')) {
+      setIsAttendanceModalOpen(true);
+    } else {
+      handleQuerySend(`Tell me more about: ${item}`);
+    }
+  };
+
+  const handlePromptCardClick = (cardTitle: string, prompt: string) => {
+    if (cardTitle === 'Support Radar') {
+      setStatusFilter('needs_attention');
+      setActiveTab('students');
+    } else if (cardTitle === 'Student Report') {
+      const targetStudent = students.find((s) => (s as any).status?.toLowerCase().includes('attention')) || students[0];
+      if (targetStudent) setSelectedStudentId(targetStudent.studentId);
+    } else if (cardTitle === 'Class Performance') {
+      setActiveTab('analytics');
+    } else if (cardTitle === 'Attendance Summary') {
+      setIsAttendanceModalOpen(true);
+    } else if (cardTitle === 'Homework Today') {
+      setIsHomeworkModalOpen(true);
+    } else if (cardTitle === 'PTM Draft') {
+      setActiveTab('parents');
+    } else {
+      handleQuerySend(prompt);
+    }
   };
 
   const handleTabChange = (tab: string) => {
@@ -97,7 +164,6 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
     }
   };
 
-  // Filtered student list for the Students tab
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
       const matchesSearch = s.displayName.toLowerCase().includes(studentSearch.toLowerCase()) ||
@@ -122,6 +188,24 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
     });
     return { total: students.length, needsAttention, worthWatching, onTrack };
   }, [students]);
+
+  const suggestedCards = [
+    { title: 'Support Radar', prompt: 'Which students need support today?', icon: '🎯', bg: 'bg-rose-50 border-rose-100 text-rose-700' },
+    { title: 'Student Report', prompt: 'Show complete academic report for student needing support.', icon: '👤', bg: 'bg-purple-50 border-purple-100 text-purple-700' },
+    { title: 'Class Performance', prompt: 'How is my class performing this week?', icon: '📊', bg: 'bg-sky-50 border-sky-100 text-sky-700' },
+    { title: 'Attendance Summary', prompt: "Summarize today's attendance.", icon: '📅', bg: 'bg-emerald-50 border-emerald-100 text-emerald-700' },
+    { title: 'Homework Today', prompt: "What's the homework for today?", icon: '📖', bg: 'bg-amber-50 border-amber-100 text-amber-700' },
+    { title: 'PTM Draft', prompt: "Generate PTM summary for parent update.", icon: '✉️', bg: 'bg-pink-50 border-pink-100 text-pink-700' },
+  ];
+
+  const quickActions = [
+    'View Attendance',
+    'Open Homework',
+    'Compare with Class Average',
+    'Generate Parent Summary',
+    'Schedule Check-in',
+    'Open Student Profile',
+  ];
 
   return (
     <div className="flex min-h-screen bg-slate-50 font-body text-slate-900 overflow-x-hidden">
@@ -149,7 +233,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
             </div>
 
             {/* Today's Focus Priorities Bar */}
-            <TodaysFocusBar onSelectItem={(item) => handleQuerySend(`Tell me more about: ${item}`)} />
+            <TodaysFocusBar onSelectItem={handleFocusItemClick} />
 
             {/* Persistent Mockup AI Search Anchor */}
             <div className="space-y-4">
@@ -169,7 +253,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                     <button
                       key={card.title}
                       type="button"
-                      onClick={() => handleQuerySend(card.prompt)}
+                      onClick={() => handlePromptCardClick(card.title, card.prompt)}
                       className="p-4 bg-white hover:bg-slate-50/80 border border-slate-200/80 rounded-3xl text-left transition-all shadow-2xs hover:shadow-xs group flex items-center justify-between gap-3 active:scale-95 cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
@@ -256,6 +340,14 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  onClick={() => setIsPdfModalOpen(true)}
+                  className="px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>📄</span>
+                  <span>Print Report Cards</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setIsAttendanceModalOpen(true)}
                   className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold tracking-wide transition-all shadow-xs flex items-center gap-2 cursor-pointer"
                 >
@@ -281,7 +373,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                   {studentSearch && (
                     <button
                       onClick={() => setStudentSearch('')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold cursor-pointer"
                     >
                       ✕
                     </button>
@@ -366,12 +458,10 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                   .substring(0, 2)
                   .toUpperCase();
 
-                // Attendance calculation
                 const totalAtt = st.attendance?.length || 0;
                 const presentCount = st.attendance?.filter((a) => a.status === 'present').length || 0;
                 const attPct = totalAtt > 0 ? Math.round((presentCount / totalAtt) * 100) : 96;
 
-                // Homework calculation
                 const totalHw = st.homework?.length || 0;
                 const hwSub = st.homework?.filter((h) => h.isSubmitted).length || 0;
                 const hwPct = totalHw > 0 ? Math.round((hwSub / totalHw) * 100) : 92;
@@ -476,17 +566,30 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
         )}
 
         {/* ============================================================ */}
-        {/* TAB 3: CLASSES (OVERVIEW & SUBJECTS)                         */}
+        {/* TAB 3: CLASSES (OVERVIEW & MARKS)                            */}
         {/* ============================================================ */}
         {activeTab === 'classes' && (
           <div className="space-y-6 animate-in fade-in duration-300">
-            <div>
-              <h1 className="font-display text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                Classroom Management 📚
-              </h1>
-              <p className="text-sm text-slate-500 font-medium mt-1">
-                Grade {grade} • Section {section} Classroom Overview
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="font-display text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                  Classroom Management 📚
+                </h1>
+                <p className="text-sm text-slate-500 font-medium mt-1">
+                  Grade {grade} • Section {section} Classroom Overview
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsMarksModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold tracking-wide transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                >
+                  <span>📊</span>
+                  <span>Enter Marks & Exams</span>
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -508,7 +611,16 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
             </div>
 
             <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-2xs space-y-4">
-              <h3 className="font-display text-base font-extrabold text-slate-900">Core Subject Breakdown</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-base font-extrabold text-slate-900">Core Subject Breakdown</h3>
+                <button
+                  type="button"
+                  onClick={() => setIsMarksModalOpen(true)}
+                  className="text-xs font-extrabold text-indigo-600 hover:underline cursor-pointer"
+                >
+                  Manage Subject Grading →
+                </button>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {[
                   { subject: 'Mathematics', teacher: 'Ananya Mehra', avg: '82%', status: 'Active' },
@@ -523,7 +635,13 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                     </div>
                     <div className="text-right">
                       <span className="text-sm font-black text-slate-900">{sub.avg}</span>
-                      <span className="block text-[10px] text-emerald-600 font-bold uppercase">{sub.status}</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsMarksModalOpen(true)}
+                        className="block text-[10px] text-indigo-600 font-bold uppercase hover:underline cursor-pointer"
+                      >
+                        Enter Marks
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -595,13 +713,24 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
         {/* ============================================================ */}
         {activeTab === 'analytics' && (
           <div className="space-y-6 animate-in fade-in duration-300">
-            <div>
-              <h1 className="font-display text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                Academic & Growth Analytics 📊
-              </h1>
-              <p className="text-sm text-slate-500 font-medium mt-1">
-                Classroom intelligence trends, engagement signals, and grade distributions
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="font-display text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                  Academic & Growth Analytics 📊
+                </h1>
+                <p className="text-sm text-slate-500 font-medium mt-1">
+                  Classroom intelligence trends, engagement signals, and grade distributions
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsMarksModalOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold tracking-wide transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+              >
+                <span>📊</span>
+                <span>Open Marks & Exams Hub</span>
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -626,13 +755,24 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
         {/* ============================================================ */}
         {activeTab === 'parents' && (
           <div className="space-y-6 animate-in fade-in duration-300">
-            <div>
-              <h1 className="font-display text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                Parent Communications 💬
-              </h1>
-              <p className="text-sm text-slate-500 font-medium mt-1">
-                PTM schedules, progress updates, and guardian check-ins
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="font-display text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                  Parent Communications 💬
+                </h1>
+                <p className="text-sm text-slate-500 font-medium mt-1">
+                  PTM schedules, progress updates, and guardian check-ins
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsPdfModalOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold tracking-wide transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+              >
+                <span>📄</span>
+                <span>Generate Parent Pulse Report</span>
+              </button>
             </div>
 
             <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-2xs space-y-4">
@@ -743,6 +883,44 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
           studentId={selectedStudentId}
           onClose={() => setSelectedStudentId(null)}
         />
+      )}
+
+      {/* School Pulse PDF Generator Modal */}
+      {isPdfModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="font-display text-lg font-black text-slate-900">📄 Generate School Pulse Reports</h3>
+              <button
+                type="button"
+                onClick={() => setIsPdfModalOpen(false)}
+                className="p-1 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 text-sm font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            <SchoolPulsePDF students={pulsePdfStudents} teacherId={teacherId} />
+          </div>
+        </div>
+      )}
+
+      {/* Teacher Marks & Gradebook Modal */}
+      {isMarksModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="font-display text-lg font-black text-slate-900">📊 Gradebook & Exams Hub</h3>
+              <button
+                type="button"
+                onClick={() => setIsMarksModalOpen(false)}
+                className="p-1 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 text-sm font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            <TeacherMarksPanel teacherId={teacherId} />
+          </div>
+        </div>
       )}
 
       {/* Floating Spotlight Command Palette */}
