@@ -1,11 +1,11 @@
 /**
  * ShikshaSetu — Visual Revision Mind Map AI Extractor Service
- * Phase A Production MVP
+ * Pure content-driven extraction without preseeded mock data.
  */
 
 import { ResilientAIProvider } from '@/lib/intelligence/providers/aiProvider';
 import { safeValidateConceptMindMap } from './schema';
-import type { ConceptMindMap } from './types';
+import type { ConceptMindMap, ConceptAccentColor, MindMapSection, MindMapItem } from './types';
 
 export interface ExtractMindMapOptions {
   title: string;
@@ -20,182 +20,144 @@ export interface ExtractMindMapResult {
   error?: string;
 }
 
-const SAMPLE_CAPACITANCE_MAP: ConceptMindMap = {
-  title: 'Capacitance & Dielectrics',
-  subject: 'Physics',
-  grade: '12',
-  summary: 'Comprehensive revision sheet on electric charge storage, parallel & series combinations, dielectric materials, and stored electrostatic energy.',
-  sections: [
-    {
-      id: 'sec-fundamentals',
-      title: 'Basic Concepts & Definition',
+const ACCENT_PALETTE: ConceptAccentColor[] = ['blue', 'green', 'purple', 'orange', 'red', 'teal'];
+
+/**
+ * Deterministic text parser strictly derived from the actual uploaded notes.
+ * Used only if external LLM provider is unreachable or returns malformed response.
+ * Never injects hardcoded Capacitance/Newton/Photosynthesis concepts!
+ */
+function deriveDeterministicMindMapFromNotes(
+  title: string,
+  subject: string,
+  grade: string,
+  notesText: string
+): ConceptMindMap {
+  const cleanTitle = title.trim() || 'Uploaded Study Notes';
+  const paragraphs = notesText
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 15);
+
+  const sections: MindMapSection[] = [];
+  const lines = notesText.split('\n').map((l) => l.trim()).filter(Boolean);
+
+  // Group lines into 3-5 concept blocks based on numbering or headings
+  let currentSectionTitle = 'Core Principles & Overview';
+  let currentItems: MindMapItem[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const headingMatch = line.match(/^(?:[0-9]+[\.\)]|Chapter|Section|[A-Z\s]{4,}|\#+)\s*(.*)/i);
+
+    if (headingMatch && headingMatch[1].length > 3 && currentItems.length > 0) {
+      // Flush previous section
+      sections.push({
+        id: `sec-${sections.length + 1}`,
+        title: currentSectionTitle,
+        accentColor: ACCENT_PALETTE[sections.length % ACCENT_PALETTE.length],
+        importance: sections.length === 0 ? 'high' : 'medium',
+        items: currentItems,
+        relatedSectionIds: [],
+      });
+      currentSectionTitle = headingMatch[1].replace(/[:\-#]+$/, '').trim();
+      currentItems = [];
+    } else {
+      // Detect if line contains a mathematical equation or formula
+      const isFormula = /[=\+\-\*\/\^\\_]/.test(line) && line.length < 80 && /\b[A-Za-z]\s*=/.test(line);
+
+      currentItems.push({
+        id: `item-${sections.length + 1}-${currentItems.length + 1}`,
+        type: isFormula ? 'formula' : currentItems.length === 0 ? 'definition' : 'concept',
+        content: line.replace(/^[\*\-\•\d\.\)]+\s*/, ''),
+      });
+
+      if (currentItems.length >= 4) {
+        sections.push({
+          id: `sec-${sections.length + 1}`,
+          title: currentSectionTitle,
+          accentColor: ACCENT_PALETTE[sections.length % ACCENT_PALETTE.length],
+          importance: 'medium',
+          items: currentItems,
+          relatedSectionIds: [],
+        });
+        currentSectionTitle = `Key Concepts Part ${sections.length + 1}`;
+        currentItems = [];
+      }
+    }
+  }
+
+  // Flush remaining items
+  if (currentItems.length > 0) {
+    sections.push({
+      id: `sec-${sections.length + 1}`,
+      title: currentSectionTitle,
+      accentColor: ACCENT_PALETTE[sections.length % ACCENT_PALETTE.length],
+      importance: 'medium',
+      items: currentItems,
+      relatedSectionIds: [],
+    });
+  }
+
+  // Ensure at least 1 section exists
+  if (sections.length === 0) {
+    sections.push({
+      id: 'sec-1',
+      title: cleanTitle,
       accentColor: 'blue',
       importance: 'high',
-      preferredRegion: 'top',
       items: [
         {
           id: 'item-1',
-          type: 'definition',
-          content: 'Capacitance is the measure of a conductor\'s ability to store electric charge per unit potential difference.',
-          source: { page: 1, section: 'Introduction', excerpt: 'Capacitance measures charge storage ability.' },
-        },
-        {
-          id: 'item-2',
-          type: 'formula',
-          content: 'C = \\frac{Q}{V}',
-          details: 'SI Unit: Farad (F) = Coulomb / Volt',
-          source: { page: 1, section: 'Formula', excerpt: 'C = Q / V where Q is charge and V is potential.' },
-        },
-        {
-          id: 'item-3',
-          type: 'key_point',
-          content: 'Capacitance depends purely on geometry and surrounding medium, independent of Q and V.',
-        },
-      ],
-      relatedSectionIds: ['sec-parallel-plate', 'sec-energy'],
-    },
-    {
-      id: 'sec-parallel-plate',
-      title: 'Parallel Plate Capacitor',
-      accentColor: 'green',
-      importance: 'high',
-      preferredRegion: 'left',
-      items: [
-        {
-          id: 'item-4',
-          type: 'formula',
-          content: 'C_0 = \\frac{\\varepsilon_0 A}{d}',
-          details: 'A = plate area, d = plate separation distance',
-        },
-        {
-          id: 'item-5',
-          type: 'condition',
-          content: 'Valid for uniform electric field when plate dimensions are much larger than separation (d² ≪ A).',
-        },
-        {
-          id: 'item-6',
-          type: 'diagram',
-          content: 'Parallel Plate Field & Charge Distribution',
-          diagramType: 'circuit-capacitor',
-          diagramData: { type: 'parallel_plate', separation: 'd', area: 'A' },
-        },
-      ],
-      relatedSectionIds: ['sec-dielectric', 'sec-combinations'],
-    },
-    {
-      id: 'sec-dielectric',
-      title: 'Dielectric Effects',
-      accentColor: 'purple',
-      importance: 'high',
-      preferredRegion: 'center',
-      items: [
-        {
-          id: 'item-7',
           type: 'concept',
-          content: 'Inserting an insulating dielectric slab increases capacitance by factor K (relative permittivity).',
-        },
-        {
-          id: 'item-8',
-          type: 'formula',
-          content: 'C = K \\cdot C_0 = \\frac{K \\varepsilon_0 A}{d}',
-          details: 'K > 1 for all dielectric materials (Air ≈ 1, Mica ≈ 6, Water ≈ 80)',
-        },
-        {
-          id: 'item-9',
-          type: 'warning',
-          content: 'Dielectric breakdown occurs if electric field exceeds dielectric strength (E > E_max).',
+          content: notesText.slice(0, 180),
         },
       ],
-      relatedSectionIds: ['sec-parallel-plate', 'sec-energy'],
-    },
-    {
-      id: 'sec-combinations',
-      title: 'Capacitor Combinations',
-      accentColor: 'orange',
-      importance: 'medium',
-      preferredRegion: 'right',
-      items: [
-        {
-          id: 'item-10',
-          type: 'comparison',
-          content: 'Series vs Parallel Equivalent Formulae',
-          details: 'Series: \\frac{1}{C_{eq}} = \\sum \\frac{1}{C_i} | Parallel: C_{eq} = \\sum C_i',
-        },
-        {
-          id: 'item-11',
-          type: 'formula',
-          content: 'C_{parallel} = C_1 + C_2 + C_3',
-          details: 'Total capacitance increases in parallel (same voltage across all).',
-        },
-        {
-          id: 'item-12',
-          type: 'formula',
-          content: '\\frac{1}{C_{series}} = \\frac{1}{C_1} + \\frac{1}{C_2}',
-          details: 'Total capacitance decreases in series (same charge Q on all).',
-        },
-      ],
-      relatedSectionIds: ['sec-fundamentals', 'sec-energy'],
-    },
-    {
-      id: 'sec-energy',
-      title: 'Energy Stored in Capacitor',
-      accentColor: 'teal',
-      importance: 'high',
-      preferredRegion: 'bottom',
-      items: [
-        {
-          id: 'item-13',
-          type: 'formula',
-          content: 'U = \\frac{1}{2} C V^2 = \\frac{1}{2} Q V = \\frac{Q^2}{2 C}',
-          details: 'Stored in electrostatic field between plates.',
-        },
-        {
-          id: 'item-14',
-          type: 'formula',
-          content: 'u_E = \\frac{1}{2} \\varepsilon_0 E^2',
-          details: 'Energy density per unit volume (J/m³).',
-        },
-        {
-          id: 'item-15',
-          type: 'example',
-          content: 'If battery disconnected before removing dielectric: Charge Q remains constant, Voltage V increases, Stored Energy increases.',
-        },
-      ],
-      relatedSectionIds: ['sec-fundamentals', 'sec-dielectric'],
-    },
-  ],
-  relationships: [
-    { fromSectionId: 'sec-fundamentals', toSectionId: 'sec-parallel-plate', label: 'Applies to geometry', type: 'derives' },
-    { fromSectionId: 'sec-parallel-plate', toSectionId: 'sec-dielectric', label: 'Modified by slab', type: 'depends_on' },
-    { fromSectionId: 'sec-parallel-plate', toSectionId: 'sec-combinations', label: 'Connected in circuits', type: 'combines_to' },
-    { fromSectionId: 'sec-dielectric', toSectionId: 'sec-energy', label: 'Affects energy stored', type: 'depends_on' },
-    { fromSectionId: 'sec-combinations', toSectionId: 'sec-energy', label: 'Total energy calculation', type: 'combines_to' },
-  ],
-  sourceReferences: [
-    { page: 1, section: 'Chapter 2: Electrostatic Potential & Capacitance', excerpt: 'Capacitance fundamentals, combinations, dielectric slabs, and stored electrostatic field energy.' },
-  ],
-};
+      relatedSectionIds: [],
+    });
+  }
+
+  // Build relationships between sequential sections
+  const relationships = sections.slice(1).map((sec, idx) => ({
+    fromSectionId: sections[idx].id,
+    toSectionId: sec.id,
+    label: 'Connects to',
+    type: 'depends_on' as const,
+  }));
+
+  return {
+    title: cleanTitle,
+    subject: subject || 'General Subject',
+    grade: grade || '8',
+    summary: paragraphs[0] ? paragraphs[0].slice(0, 200) : `Comprehensive revision summary for ${cleanTitle}.`,
+    sections,
+    relationships,
+    sourceReferences: [
+      { excerpt: notesText.slice(0, 150) },
+    ],
+  };
+}
 
 export async function extractConceptMindMapFromText(
   options: ExtractMindMapOptions
 ): Promise<ExtractMindMapResult> {
-  const { title, subject = 'General Science', grade = '8', notesText } = options;
+  const { title, subject = 'General Subject', grade = '8', notesText } = options;
 
   if (!notesText || notesText.trim().length < 20) {
     return {
       success: false,
-      error: 'Not enough source material to generate a reliable revision map. Please provide comprehensive notes or chapter content (at least 20 characters).',
+      error: 'Not enough readable content to generate a reliable revision map. Please provide more detailed notes (at least 20 characters).',
     };
   }
 
   const systemPrompt = `You are the ShikshaSetu Educational Concept Mind-Map Generator.
-Your task is to transform uploaded textbook/lesson notes into a dense, structured, exam-revision concept map (like an educational revision poster sheet).
+Your task is to transform the provided uploaded textbook/lesson notes into a dense, structured, exam-revision concept map (like an educational revision poster sheet).
 
 RULES:
-1. Do NOT create generic simple trees or paragraph summaries.
-2. Group related ideas into 4-7 visually rich, distinct Concept Sections.
+1. Strictly base all concepts, definitions, formulas, and examples ONLY on the provided notes text.
+2. Group related ideas into 3-6 visually distinct Concept Sections.
 3. Assign each section ONE distinct accent color from: ["blue", "green", "orange", "purple", "red", "teal"].
-4. Identify all mathematical/scientific formulas and express them in standard LaTeX notation (e.g. "C = \\\\frac{\\\\varepsilon_0 A}{d}", "U = \\\\frac{1}{2} C V^2").
+4. Identify any mathematical/scientific formulas and express them in standard LaTeX notation (e.g. "E = mc^2", "F = ma").
 5. Include definitions, conditions, examples, comparisons, warnings, and relationships between sections.
 6. Allowed diagram tokens: "process-flow", "comparison", "hierarchy", "physics-setup", "circuit-capacitor".
 7. Retain source references (page / section / excerpt) where identifiable.
@@ -240,7 +202,7 @@ OUTPUT STRICT JSON MATCHING THIS EXACT SCHEMA:
     title,
     subject,
     grade,
-    notesExcerpt: notesText.slice(0, 4000), // Token budget management
+    uploadedNotesContent: notesText.slice(0, 4500),
   });
 
   const aiProvider = new ResilientAIProvider();
@@ -259,11 +221,13 @@ OUTPUT STRICT JSON MATCHING THIS EXACT SCHEMA:
     if (validation.success) {
       return { success: true, mindMap: validation.data };
     } else {
-      console.warn('[MindMapExtractor] JSON failed schema validation, falling back to deterministic template:', validation.error);
-      return { success: true, mindMap: SAMPLE_CAPACITANCE_MAP };
+      console.warn('[MindMapExtractor] AI returned invalid JSON structure, deriving map directly from uploaded text:', validation.error);
+      const derived = deriveDeterministicMindMapFromNotes(title, subject, grade, notesText);
+      return { success: true, mindMap: derived };
     }
   } catch (err: any) {
-    console.warn('[MindMapExtractor] AI Provider call failed, using high-fidelity fallback map:', err?.message);
-    return { success: true, mindMap: SAMPLE_CAPACITANCE_MAP };
+    console.warn('[MindMapExtractor] AI Provider call failed, deriving structured map directly from uploaded text:', err?.message);
+    const derived = deriveDeterministicMindMapFromNotes(title, subject, grade, notesText);
+    return { success: true, mindMap: derived };
   }
 }

@@ -88,7 +88,7 @@ describe('ShikshaSetu Visual Mind Map — Phase A Tests', () => {
       notesText: 'Too short',
     });
     expect(result.success).toBe(false);
-    expect(result.error).toContain('Not enough source material');
+    expect(result.error).toContain('Not enough readable content');
   });
 
   it('3. should normalize and assign controlled academic accent colors', () => {
@@ -203,6 +203,68 @@ describe('ShikshaSetu Visual Mind Map — Phase A Tests', () => {
     if (result.success) {
       expect(result.data.relationships.length).toBe(1);
       expect(result.data.relationships[0].type).toBe('derives');
+    }
+  });
+
+  it('9. should strictly extract uploaded Mathematics content without leaking Physics/Capacitance concepts', async () => {
+    const mathNotes = `Chapter: Quadratic Equations
+1. Standard Form:
+A quadratic equation is of standard form a*x^2 + b*x + c = 0 where a is not equal to 0.
+2. Quadratic Formula:
+x = (-b ± sqrt(b^2 - 4*a*c)) / (2*a).
+3. Discriminant:
+D = b^2 - 4*a*c determines nature of roots:
+If D > 0, two distinct real roots.
+If D = 0, two equal real roots.
+If D < 0, no real roots.`;
+
+    const result = await extractConceptMindMapFromText({
+      title: 'Quadratic Equations',
+      subject: 'Mathematics',
+      grade: '10',
+      notesText: mathNotes,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.mindMap).toBeDefined();
+    if (result.mindMap) {
+      expect(result.mindMap.title).toBe('Quadratic Equations');
+      expect(result.mindMap.subject).toBe('Mathematics');
+      // Verify NO hardcoded Physics/Capacitance/Dielectric terms are present
+      const allText = JSON.stringify(result.mindMap).toLowerCase();
+      expect(allText).not.toContain('capacitance');
+      expect(allText).not.toContain('dielectric');
+      expect(allText).not.toContain('farad');
+      // Verify math concepts ARE present
+      expect(allText).toContain('quadratic');
+    }
+  });
+
+  it('10. should strictly extract uploaded Biology content without leaking other subjects', async () => {
+    const bioNotes = `Chapter: Cell Respiration & ATP
+1. Cellular Respiration:
+Process by which organisms combine oxygen with foodstuff molecules, diverting chemical energy into cellular activities:
+C6H12O6 + 6 O2 -> 6 CO2 + 6 H2O + ATP.
+2. Glycolysis:
+Occurs in cytoplasm without oxygen, breaking glucose into pyruvate.
+3. Mitochondria & Krebs Cycle:
+Aerobic stage producing high yield ATP in mitochondrial matrix.`;
+
+    const result = await extractConceptMindMapFromText({
+      title: 'Cellular Respiration',
+      subject: 'Biology',
+      grade: '11',
+      notesText: bioNotes,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.mindMap).toBeDefined();
+    if (result.mindMap) {
+      const allText = JSON.stringify(result.mindMap).toLowerCase();
+      expect(allText).not.toContain('capacitance');
+      expect(allText).not.toContain('dielectric');
+      expect(allText).toContain('respiration');
+      expect(allText).toContain('atp');
     }
   });
 });
