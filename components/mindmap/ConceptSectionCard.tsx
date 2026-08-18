@@ -208,9 +208,51 @@ export default function ConceptSectionCard({
                 <p className="text-[11px] font-medium mt-0.5 leading-normal">{highlightMatch(item.content, searchQuery)}</p>
               </div>
             ) : (
-              <div className="flex items-start gap-2 text-slate-700">
-                <span className="text-slate-400 font-black shrink-0 mt-0.5">•</span>
-                <p className="font-medium text-slate-800 leading-snug">{highlightMatch(item.content, searchQuery)}</p>
+              <div className="space-y-1.5">
+                <div className="flex items-start gap-2 text-slate-700">
+                  <span className="text-slate-400 font-black shrink-0 mt-0.5">•</span>
+                  <div className="flex-1">
+                    <p className="font-medium text-slate-800 leading-snug">{highlightMatch(item.content, searchQuery)}</p>
+                    {item.details && item.details !== item.content && (
+                      <p className="text-[11px] text-slate-600 font-normal mt-0.5 leading-relaxed">
+                        {highlightMatch(item.details, searchQuery)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Nested Child Items / Subconcepts */}
+                {item.children && item.children.length > 0 && (
+                  <div className="mt-1.5 pl-3 ml-2 border-l-2 border-slate-200 space-y-1.5">
+                    {item.children.map((child) => (
+                      <div key={child.id} className="text-xs space-y-1">
+                        <div className="flex items-start gap-1.5 font-medium text-slate-800">
+                          <span className="text-indigo-500 font-bold shrink-0 mt-0.5">↳</span>
+                          <div className="flex-1">
+                            <span className="font-bold text-slate-900">{highlightMatch(child.title || child.content, searchQuery)}</span>
+                            {child.details && child.details !== child.content && (
+                              <p className="text-[11px] text-slate-600 font-normal mt-0.5 leading-relaxed">
+                                {highlightMatch(child.details, searchQuery)}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Grandchild Sub-items */}
+                        {child.children && child.children.length > 0 && (
+                          <div className="pl-3 ml-2 border-l border-slate-200 space-y-1 mt-1">
+                            {child.children.map((grandChild) => (
+                              <div key={grandChild.id} className="flex items-start gap-1.5 text-[11px] text-slate-700">
+                                <span className="text-slate-400 font-bold shrink-0">•</span>
+                                <span className="leading-snug">{highlightMatch(grandChild.title || grandChild.content, searchQuery)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

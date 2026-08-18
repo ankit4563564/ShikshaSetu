@@ -325,35 +325,38 @@ export function safeValidateKnowledgeGraph(raw: unknown): { success: true; data:
 // VISUAL MIND MAP SCHEMAS
 // ──────────────────────────────────────────
 
-export const MindMapItemSchema = z.object({
-  id: z.string().default(() => `item-${Math.random().toString(36).slice(2, 9)}`),
-  type: z.enum([
-    'concept',
-    'definition',
-    'formula',
-    'example',
-    'condition',
-    'comparison',
-    'key_point',
-    'warning',
-    'process',
-    'diagram',
-  ]),
-  title: z.string().optional(),
-  content: z.string().min(1, 'Item content cannot be empty'),
-  details: z.string().optional(),
-  condition: z.string().optional(),
-  unit: z.string().optional(),
-  diagramType: z.enum([
-    'process-flow',
-    'comparison',
-    'hierarchy',
-    'physics-setup',
-    'circuit-capacitor',
-  ]).optional(),
-  diagramData: z.record(z.string(), z.any()).optional(),
-  source: SourceReferenceSchema.optional(),
-});
+export const MindMapItemSchema: z.ZodType<any> = z.lazy(() =>
+  z.object({
+    id: z.string().default(() => `item-${Math.random().toString(36).slice(2, 9)}`),
+    type: z.enum([
+      'concept',
+      'definition',
+      'formula',
+      'example',
+      'condition',
+      'comparison',
+      'key_point',
+      'warning',
+      'process',
+      'diagram',
+    ]),
+    title: z.string().optional(),
+    content: z.string().min(1, 'Item content cannot be empty'),
+    details: z.string().optional(),
+    condition: z.string().optional(),
+    unit: z.string().optional(),
+    diagramType: z.enum([
+      'process-flow',
+      'comparison',
+      'hierarchy',
+      'physics-setup',
+      'circuit-capacitor',
+    ]).optional(),
+    diagramData: z.record(z.string(), z.any()).optional(),
+    source: SourceReferenceSchema.optional(),
+    children: z.array(MindMapItemSchema).optional().default([]),
+  })
+);
 
 export const MindMapRelationshipSchema = z.object({
   fromSectionId: z.string(),

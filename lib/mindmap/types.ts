@@ -174,6 +174,7 @@ export interface MindMapItem {
   readonly diagramType?: DeclarativeDiagramType;
   readonly diagramData?: Record<string, any>;
   readonly source?: SourceReference;
+  readonly children?: MindMapItem[];
 }
 
 export interface MindMapRelationship {

@@ -330,33 +330,87 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
 
 /**
  * Bridges a structured KnowledgeGraph into ConceptMindMap format for visual rendering.
- * Strictly guarantees that algorithm steps and properties are encapsulated inside parent concepts.
+ * Strictly guarantees that child concepts remain nested under their parent nodes,
+ * using parentId relationships from the KnowledgeGraph as the source of truth.
  */
 export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMindMap {
-  // Exclude root and algorithm_step nodes from top-level sections
-  const candidateNodes = graph.nodes.filter(
-    (n) => n.type !== 'chapter' && n.type !== 'algorithm_step'
-  );
+  const rootNode = graph.nodes.find((n) => n.type === 'chapter' || n.parentId === null) || graph.nodes[0];
+  const rootId = rootNode ? rootNode.id : null;
 
-  // Group candidate nodes: top-level sections or distinct concept nodes
-  const sections: MindMapSection[] = [];
+  // 1. Top-level section cards are the direct children of the root node or major section nodes
+  let sectionNodes = graph.nodes.filter((n) => n.id !== rootId && (n.parentId === rootId || n.type === 'section'));
 
-  // Determine section cards:
-  // If there are subtopic/concept nodes (like DFA, NFA, Alphabets, etc.), use concept nodes as visual sections.
-  // Otherwise, use section nodes.
-  const conceptNodes = candidateNodes.filter(
-    (n) => n.type === 'concept' || n.type === 'sub_concept' || n.type === 'theorem' || n.type === 'law' || n.type === 'algorithm'
-  );
+  // Fallback: If no direct root children exist, group by non-child nodes
+  if (sectionNodes.length === 0) {
+    const parentIdSet = new Set(graph.nodes.map((n) => n.parentId).filter(Boolean));
+    sectionNodes = graph.nodes.filter((n) => n.id !== rootId && !parentIdSet.has(n.id));
+  }
 
-  const targetNodes = conceptNodes.length >= 4 ? conceptNodes : candidateNodes.filter((n) => n.type === 'section' || !n.parentId || n.parentId === 'node-chapter-root');
+  if (sectionNodes.length === 0) {
+    sectionNodes = graph.nodes.filter((n) => n.id !== rootId);
+  }
 
-  for (let idx = 0; idx < targetNodes.length; idx++) {
-    const node = targetNodes[idx];
-    const childNodes = graph.nodes.filter((n) => n.parentId === node.id);
-
+  // Recursive item builder for child nodes
+  function buildItemsForNode(parentNodeId: string): MindMapItem[] {
+    const childNodes = graph.nodes.filter((n) => n.parentId === parentNodeId && n.type !== 'algorithm_step');
     const items: MindMapItem[] = [];
 
-    // 1. Definition
+    for (const child of childNodes) {
+      const grandChildren = buildItemsForNode(child.id);
+
+      // Extract algorithm steps if any
+      const stepNodes = graph.nodes.filter((n) => n.parentId === child.id && n.type === 'algorithm_step');
+      const allSteps = (child.steps && child.steps.length > 0)
+        ? child.steps
+        : stepNodes.map((s) => s.definitions?.[0] || s.title);
+
+      const itemChildren: MindMapItem[] = [...grandChildren];
+
+      // Add child formulas as sub-items
+      if (child.formulas && child.formulas.length > 0) {
+        const dedupedFormulas = deduplicateFormulas(child.formulas);
+        dedupedFormulas.forEach((f, fIdx) => {
+          itemChildren.unshift({
+            id: `${child.id}-form-${fIdx}`,
+            type: 'formula',
+            content: f.latex,
+            details: f.variables || f.meaning,
+            unit: f.unit,
+            condition: f.condition,
+          });
+        });
+      }
+
+      // Add algorithm process as sub-item
+      if (allSteps.length > 0) {
+        itemChildren.push({
+          id: `${child.id}-algo-steps`,
+          type: 'process',
+          content: `${child.title} (${allSteps.length} Steps)`,
+          details: allSteps.map((s, i) => `${i + 1}. ${s}`).join('\n'),
+        });
+      }
+
+      items.push({
+        id: `item-${child.id}`,
+        type: (child.type === 'algorithm' ? 'process' : child.type === 'theorem' || child.type === 'law' ? 'concept' : 'concept') as any,
+        title: child.title,
+        content: child.title,
+        details: child.definitions?.[0] || child.summary,
+        children: itemChildren.length > 0 ? itemChildren : undefined,
+      });
+    }
+
+    return items;
+  }
+
+  const sections: MindMapSection[] = [];
+
+  for (let idx = 0; idx < sectionNodes.length; idx++) {
+    const node = sectionNodes[idx];
+    const items: MindMapItem[] = [];
+
+    // 1. Section definition
     if (node.definitions && node.definitions.length > 0) {
       node.definitions.forEach((def, dIdx) => {
         items.push({
@@ -367,7 +421,7 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // 2. Formulas (deduplicated & normalized)
+    // 2. Section formulas
     if (node.formulas && node.formulas.length > 0) {
       const deduped = deduplicateFormulas(node.formulas);
       deduped.forEach((f, fIdx) => {
@@ -382,7 +436,7 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // 3. Properties
+    // 3. Section properties
     if (node.properties && node.properties.length > 0) {
       node.properties.forEach((prop, pIdx) => {
         items.push({
@@ -393,22 +447,26 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // 4. Algorithm Steps (encapsulated process block)
-    const stepChildren = childNodes.filter((c) => c.type === 'algorithm_step');
-    const allSteps = (node.steps && node.steps.length > 0)
+    // 4. Algorithm steps on the section node itself
+    const directSteps = graph.nodes.filter((n) => n.parentId === node.id && n.type === 'algorithm_step');
+    const allDirectSteps = (node.steps && node.steps.length > 0)
       ? node.steps
-      : stepChildren.map((s) => s.definitions?.[0] || s.title);
+      : directSteps.map((s) => s.definitions?.[0] || s.title);
 
-    if (allSteps.length > 0) {
+    if (allDirectSteps.length > 0) {
       items.push({
         id: `${node.id}-algo-process`,
         type: 'process',
-        content: `Algorithm: ${node.title} — ${allSteps.length} Steps`,
-        details: allSteps.map((s, i) => `${i + 1}. ${s}`).join('\n'),
+        content: `Algorithm: ${node.title} — ${allDirectSteps.length} Steps`,
+        details: allDirectSteps.map((s, i) => `${i + 1}. ${s}`).join('\n'),
       });
     }
 
-    // 5. Key Points
+    // 5. Nested child concepts & subconcepts (preserving hierarchy)
+    const nestedChildItems = buildItemsForNode(node.id);
+    items.push(...nestedChildItems);
+
+    // 6. Key points & applications
     if (node.keyPoints && node.keyPoints.length > 0) {
       node.keyPoints.forEach((kp, kpIdx) => {
         items.push({
@@ -419,7 +477,6 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // 6. Applications
     if (node.applications && node.applications.length > 0) {
       node.applications.forEach((app, aIdx) => {
         items.push({
@@ -476,7 +533,7 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       type: (r.type === 'equivalent_to' ? 'contrasts_with' : r.type === 'leads_to' ? 'derives' : 'depends_on') as any,
     }));
 
-  return {
+  const mindMap: ConceptMindMap = {
     title: graph.title,
     subject: graph.subject,
     grade: graph.grade,
@@ -486,6 +543,14 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
     sourceReferences: graph.sourceReferences,
     knowledgeGraph: graph,
   };
+
+  // Development hierarchy logging
+  console.log(
+    '[MindMap] Hierarchy:',
+    JSON.stringify(mindMap, null, 2)
+  );
+
+  return mindMap;
 }
 
 export async function extractKnowledgeGraphFromText(
