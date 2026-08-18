@@ -15,6 +15,7 @@ import AiHomeworkModal from './AiHomeworkModal';
 import SchoolPulsePDF from './SchoolPulsePDF';
 import TeacherMarksPanel from './TeacherMarksPanel';
 import TeacherChat from './TeacherChat';
+import VisualMindMapWorkspace from '../mindmap/VisualMindMapWorkspace';
 import { useTimeGreeting } from '@/lib/utils/timeGreeting';
 import { useAmbientAICore } from '../schoolgpt/core/AmbientIntelligenceCore';
 import { useContextRegistry } from '../schoolgpt/context/ContextRegistry';
@@ -681,6 +682,15 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ============================================================ */}
+        {/* TAB 3.5: VISUAL REVISION MIND MAPS                          */}
+        {/* ============================================================ */}
+        {activeTab === 'mindmaps' && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <VisualMindMapWorkspace />
           </div>
         )}
 

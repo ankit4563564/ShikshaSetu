@@ -15,6 +15,7 @@ const navItems = [
   { id: 'today', label: 'Today', icon: '🏠' },
   { id: 'students', label: 'Students', icon: '👨‍🎓' },
   { id: 'classes', label: 'Classes', icon: '📚' },
+  { id: 'mindmaps', label: 'Revision Maps', icon: '🗺️' },
   { id: 'assignments', label: 'Assignments', icon: '📝' },
   { id: 'analytics', label: 'Analytics', icon: '📊' },
   { id: 'parents', label: 'Parents', icon: '💬' },

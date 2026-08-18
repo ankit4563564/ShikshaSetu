@@ -16,11 +16,13 @@ import {
   AI_STUDY_TIPS,
 } from '@/lib/demo/schoolUniverse';
 
+import VisualMindMapWorkspace from '@/components/mindmap/VisualMindMapWorkspace';
+
 interface StudentPortalClientProps {
   student?: StudentWithFlag;
 }
 
-const TAB_LABELS = ['Today', 'Homework', 'Exams', 'Achievements', 'Missions', 'Wellbeing'] as const;
+const TAB_LABELS = ['Today', 'Revision Maps', 'Homework', 'Exams', 'Achievements', 'Missions', 'Wellbeing'] as const;
 type Tab = typeof TAB_LABELS[number];
 
 export default function StudentPortalClient({ student }: StudentPortalClientProps) {
@@ -103,7 +105,7 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
                   : 'text-muted hover:bg-primary/5 hover:text-primary'
               }`}
             >
-              {{ Today:'⌂', Homework:'📋', Exams:'📝', Achievements:'🏆', Missions:'✦', Wellbeing:'◌' }[tab]}
+              {{ Today:'⌂', 'Revision Maps':'🗺️', Homework:'📋', Exams:'📝', Achievements:'🏆', Missions:'✦', Wellbeing:'◌' }[tab]}
               <span>{tab}</span>
             </button>
           ))}
@@ -248,6 +250,13 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
               </div>
             </section>
           </>
+        )}
+
+        {/* ══ REVISION MIND MAPS TAB ══ */}
+        {activeTab === 'Revision Maps' && (
+          <section className="space-y-6 animate-in fade-in duration-300">
+            <VisualMindMapWorkspace />
+          </section>
         )}
 
         {/* ══ HOMEWORK TAB ══ */}
