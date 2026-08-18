@@ -16,7 +16,7 @@ export default function LoginClient() {
   const [status, setStatus] = useState<MagicLinkStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isResolving, setIsResolving] = useState(false);
-  const magicLinkFlowRef = useRef<ReturnType<NonNullable<typeof signIn>['createMagicLinkFlow']> | null>(null);
+  const emailLinkFlowRef = useRef<ReturnType<NonNullable<typeof signIn>['createEmailLinkFlow']> | null>(null);
 
   // If already authenticated via Clerk session, automatically route to the authorized portal
   useEffect(() => {
@@ -83,14 +83,14 @@ export default function LoginClient() {
         return;
       }
 
-      // 3. Initialize Clerk Magic Link flow
-      const magicLinkFlow = activeSignIn.createMagicLinkFlow();
-      magicLinkFlowRef.current = magicLinkFlow;
+      // 3. Initialize Clerk Email Link flow
+      const emailLinkFlow = activeSignIn.createEmailLinkFlow();
+      emailLinkFlowRef.current = emailLinkFlow;
 
       setStatus('sent');
 
       const redirectOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-      const response = await magicLinkFlow.startMagicLinkFlow({
+      const response = await emailLinkFlow.startEmailLinkFlow({
         emailAddressId: emailLinkFactor.emailAddressId,
         redirectUrl: `${redirectOrigin}/login`,
       });
@@ -116,7 +116,7 @@ export default function LoginClient() {
         setErrorMessage("We couldn't verify that sign-in link. Please request a new one.");
       }
     } catch (err: any) {
-      console.error('[Clerk Magic Link Error]:', err);
+      console.error('[Clerk Email Link Error]:', err);
       const clerkErrorMsg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || err?.message;
       setErrorMessage(clerkErrorMsg || 'An error occurred sending your sign-in link. Please try again.');
       setStatus('idle');
@@ -124,8 +124,8 @@ export default function LoginClient() {
   };
 
   const handleReset = () => {
-    if (magicLinkFlowRef.current) {
-      magicLinkFlowRef.current.cancelMagicLinkFlow();
+    if (emailLinkFlowRef.current) {
+      emailLinkFlowRef.current.cancelEmailLinkFlow();
     }
     setStatus('idle');
     setErrorMessage(null);
