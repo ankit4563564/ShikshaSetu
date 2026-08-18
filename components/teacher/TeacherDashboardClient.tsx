@@ -41,6 +41,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Toast } from '@/components/shared/Toast';
 import { Skeleton } from '@/components/shared/Skeleton';
 import type { StudentProductInsight } from '@/lib/product-intelligence';
+import { useTimeGreeting } from '@/lib/utils/timeGreeting';
 
 import AcademicGrowthAnalytics from '@/components/shared/AcademicGrowthAnalytics';
 import { TeacherCopilotStrip } from '@/components/copilot/TeacherCopilotStrip';
@@ -185,6 +186,7 @@ export default function TeacherDashboardClient({
   teacherId = 'a1000000-0000-4000-8000-000000000001',
   gatePasses = []
 }: TeacherDashboardClientProps) {
+  const timeGreeting = useTimeGreeting();
   const router = useRouter();
   const [students, setStudents] = useState(initialStudents);
 
@@ -513,7 +515,7 @@ export default function TeacherDashboardClient({
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
-                  Good Morning, Ms. Mehra
+                  {timeGreeting}, Ms. Mehra
                 </h1>
                 <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 text-white font-extrabold text-[10px] uppercase tracking-wider">
                   🤖 AI Teaching Companion

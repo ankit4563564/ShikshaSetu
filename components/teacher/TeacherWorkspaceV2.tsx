@@ -15,6 +15,7 @@ import AiHomeworkModal from './AiHomeworkModal';
 import SchoolPulsePDF from './SchoolPulsePDF';
 import TeacherMarksPanel from './TeacherMarksPanel';
 import TeacherChat from './TeacherChat';
+import { useTimeGreeting } from '@/lib/utils/timeGreeting';
 import { useAmbientAICore } from '../schoolgpt/core/AmbientIntelligenceCore';
 import { useContextRegistry } from '../schoolgpt/context/ContextRegistry';
 import { TakeAttendanceModal } from './TakeAttendanceModal';
@@ -44,6 +45,7 @@ interface TeacherWorkspaceV2Props {
 }
 
 export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2Props) {
+  const timeGreeting = useTimeGreeting();
   const [activeTab, setActiveTab] = useState('today');
   const [studentSearch, setStudentSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'needs_attention' | 'worth_watching' | 'on_track'>('all');
@@ -257,7 +259,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
             {/* Header Greeting */}
             <div className="space-y-1">
               <h1 className="font-display text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-                Good morning, {displayName} 👋
+                {timeGreeting}, {displayName} 👋
               </h1>
               <p className="text-sm font-medium text-slate-500">How can I help you today?</p>
             </div>

@@ -24,6 +24,7 @@ import { ParentAttendanceTab } from './ParentAttendanceTab';
 import { ParentGatePassTab } from './ParentGatePassTab';
 import { ParentBusTrackingTab } from './ParentBusTrackingTab';
 import { ParentCopilotStrip } from '@/components/copilot/ParentCopilotStrip';
+import { useTimeGreeting } from '@/lib/utils/timeGreeting';
 
 const getChildBullets = (name: string, tone: 'positive' | 'neutral' | 'concern') => {
   const lower = name.toLowerCase();
@@ -103,6 +104,7 @@ export default function ParentTodayClient({
   isClerkActive = false,
   guardianId = null
 }: ParentTodayClientProps) {
+  const timeGreeting = useTimeGreeting();
   const { t, language } = useLanguage();
   const pathname = usePathname();
   
@@ -426,7 +428,7 @@ export default function ParentTodayClient({
               {/* Today's Story Hero */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-display text-xs font-semibold text-deep-teal/40 uppercase tracking-widest">Today</span>
+                  <span className="font-display text-xs font-bold text-deep-teal/70 uppercase tracking-widest">{timeGreeting} · Today</span>
                   <span className="text-[10px] text-deep-teal/50 font-medium">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
                 </div>
 

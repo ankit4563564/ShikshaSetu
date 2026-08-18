@@ -5,9 +5,9 @@ import { SignOutButton } from '@/components/auth/SignOutButton';
 import SchoolMitra from '@/components/student/SchoolMitra';
 import QuestBoard from '@/components/student/QuestBoard';
 import { StudentCopilotStrip } from '@/components/copilot/StudentCopilotStrip';
-import type { StudentWithFlag } from '@/lib/supabase/getStudentsData';
 import { getCanonicalStudentState } from '@/lib/canonical';
 import { usePortalSync } from '@/hooks/usePortalSync';
+import { useTimeGreeting } from '@/lib/utils/timeGreeting';
 // Fallback to demo universe for data not yet in canonical
 import {
   TODAYS_SCHEDULE,
@@ -24,6 +24,7 @@ const TAB_LABELS = ['Today', 'Homework', 'Exams', 'Achievements', 'Missions', 'W
 type Tab = typeof TAB_LABELS[number];
 
 export default function StudentPortalClient({ student }: StudentPortalClientProps) {
+  const timeGreeting = useTimeGreeting();
   const [activeTab, setActiveTab] = useState<Tab>('Today');
   const [activeAvatar, setActiveAvatar] = useState('🎓');
   const [activeTitle, setActiveTitle] = useState('Level 3 Explorer');
@@ -130,7 +131,7 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
           </div>
           <div>
             <h1 className="font-display text-base font-black tracking-tight text-deep-teal lg:text-lg">
-              Good morning, {firstName}
+              {timeGreeting}, {firstName}
             </h1>
             <p className="text-[11px] font-semibold text-muted">
               Class {studentGrade}{studentSection} · Roll #{studentRoll}

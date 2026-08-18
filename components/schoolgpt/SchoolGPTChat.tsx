@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { askSchoolGPTAction } from '@/app/actions/schoolgptActions';
 import SchoolGPTMessage from './SchoolGPTMessage';
 import SchoolGPTSpotlight from './SchoolGPTSpotlight';
+import { useTimeGreeting } from '@/lib/utils/timeGreeting';
 import type { SchoolGPTRole, SchoolGPTMessage as SchoolGPTMessageType } from '@/lib/schoolgpt/types';
 
 interface SchoolGPTChatProps {
@@ -96,6 +97,7 @@ export default function SchoolGPTChat({
   classGrade,
   classSection,
 }: SchoolGPTChatProps) {
+  const timeGreeting = useTimeGreeting();
   const [messages, setMessages] = useState<SchoolGPTMessageType[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -312,7 +314,7 @@ export default function SchoolGPTChat({
             className="text-center space-y-3 pt-4 sm:pt-8"
           >
             <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
-              Good Morning, Priya 👋
+              {timeGreeting}, Priya 👋
             </h1>
             <p className="font-body text-sm sm:text-base text-slate-500 font-medium max-w-md mx-auto">
               How can I help you today?
