@@ -634,7 +634,18 @@ Return ONLY valid JSON matching this exact structure with NO markdown formatting
     const validation = safeValidateKnowledgeGraph(parsedJson);
 
     if (validation.success && validation.data.nodes.length >= 3) {
+      console.log(
+        '[DEBUG AI KNOWLEDGE GRAPH]',
+        JSON.stringify(validation.data, null, 2)
+      );
+
       const mindMap = convertKnowledgeGraphToMindMap(validation.data);
+
+      console.log(
+        '[DEBUG FINAL MIND MAP]',
+        JSON.stringify(mindMap, null, 2)
+      );
+
       return {
         success: true,
         knowledgeGraph: validation.data,
