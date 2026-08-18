@@ -1,6 +1,6 @@
 /**
  * ShikshaSetu — Visual Revision Mind Map Type Definitions
- * Phase A Production MVP
+ * Rich Semantic Grouping & Formula Atomicity Model
  */
 
 export type ConceptAccentColor = 'blue' | 'green' | 'orange' | 'purple' | 'red' | 'teal';
@@ -40,7 +40,9 @@ export interface MindMapItem {
   readonly type: MindMapItemType;
   readonly title?: string;
   readonly content: string;
-  readonly details?: string;
+  readonly details?: string; // Variable meanings and explanations
+  readonly condition?: string; // Conditions for validity (e.g. "At constant temperature")
+  readonly unit?: string; // SI units (e.g. "Ampere (A)", "Volt (V)", "Ohm (Ω)")
   readonly diagramType?: DeclarativeDiagramType;
   readonly diagramData?: Record<string, any>;
   readonly source?: SourceReference;

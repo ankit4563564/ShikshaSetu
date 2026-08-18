@@ -32,6 +32,8 @@ export const MindMapItemSchema = z.object({
   title: z.string().optional(),
   content: z.string().min(1, 'Item content cannot be empty'),
   details: z.string().optional(),
+  condition: z.string().optional(),
+  unit: z.string().optional(),
   diagramType: z.enum([
     'process-flow',
     'comparison',

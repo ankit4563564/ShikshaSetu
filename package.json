@@ -27,6 +27,7 @@
     "mapbox-gl": "^3.27.0",
     "next": "^14.2.35",
     "papaparse": "^5.5.4",
+    "pdfjs-dist": "^6.2.108",
     "playwright": "^1.61.1",
     "qrcode": "^1.5.4",
     "react": "^18.3.1",
