@@ -217,6 +217,8 @@ export interface KnowledgeGraph {
   readonly tables?: TableVaultEntry[];
   readonly sourceRefs?: SourceRef[];
   readonly sourceReferences?: SourceReference[];
+  readonly telemetry?: Record<string, any>;
+  readonly qualityReport?: Record<string, any>;
 }
 
 // ──────────────────────────────────────────
@@ -270,6 +272,7 @@ export interface FidelityReport {
   readonly relationshipIntegrity: number;
   readonly hierarchyIntegrity: number;
   readonly issues: ValidationIssue[];
+  readonly sectionDepths?: Array<{ sectionTitle: string; score: number; maxScore: number }>;
 }
 
 // ──────────────────────────────────────────
@@ -350,4 +353,6 @@ export interface ConceptMindMap {
   readonly relationships: MindMapRelationship[];
   readonly sourceReferences?: SourceReference[];
   readonly knowledgeGraph?: KnowledgeGraph;
+  readonly telemetry?: Record<string, any>;
+  readonly qualityReport?: Record<string, any>;
 }

@@ -181,6 +181,8 @@ export const KnowledgeGraphSchema = z
     tables: z.array(TableVaultEntrySchema).optional().default([]),
     sourceRefs: z.array(SourceRefSchema).optional().default([]),
     sourceReferences: z.array(SourceReferenceSchema).optional().default([]),
+    telemetry: z.record(z.any()).optional(),
+    qualityReport: z.record(z.any()).optional(),
   })
   .superRefine((kg, ctx) => {
     const nodeIds = new Set<string>();
@@ -552,6 +554,8 @@ export const ConceptMindMapSchema = z.object({
   relationships: z.array(MindMapRelationshipSchema).default([]),
   sourceReferences: z.array(SourceReferenceSchema).optional().default([]),
   knowledgeGraph: KnowledgeGraphSchema.optional(),
+  telemetry: z.record(z.any()).optional(),
+  qualityReport: z.record(z.any()).optional(),
 });
 
 export function normalizeConceptMindMap(raw: unknown): ConceptMindMap {

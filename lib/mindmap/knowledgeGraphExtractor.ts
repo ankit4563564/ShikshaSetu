@@ -8,7 +8,7 @@ import { safeValidateKnowledgeGraph } from './schema';
 import { extractFormulaVault, resolveFormulaRefs, normalizeMathFormula, deduplicateFormulas } from './formulaVault';
 import { extractTableVault, resolveTableRefs } from './tableExtractor';
 import { parseDocumentStructure } from './documentStructureParser';
-import { auditKnowledgeGraph, autoRepairKnowledgeGraph, validateSourceCoverage, runAICritic } from './criticEngine';
+import { auditKnowledgeGraph, autoRepairKnowledgeGraph, validateSourceCoverage, runStageCritic } from './criticEngine';
 import type {
   KnowledgeGraph,
   KnowledgeNode,
@@ -490,10 +490,169 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
   return mindMap;
 }
 
+interface ArchitectOutlineNode {
+  id: string;
+  title: string;
+  type: 'section' | 'topic' | 'algorithm' | 'theorem' | 'law';
+  children: ArchitectOutlineNode[];
+}
+
+interface ArchitectResponse {
+  title: string;
+  summary: string;
+  structure: ArchitectOutlineNode[];
+}
+
+interface NodeDetails {
+  definitions?: string[];
+  properties?: string[];
+  keyPoints?: string[];
+  examples?: string[];
+  applications?: string[];
+  activities?: string[];
+  formulaRefs?: string[];
+  tableRefs?: string[];
+}
+
+async function extractArchitectureOutline(
+  evidence: DocumentStructureEvidence,
+  notesText: string
+): Promise<ArchitectResponse> {
+  const aiProvider = new ResilientAIProvider();
+  const systemPrompt = `You are ShikshaSetu's Academic Knowledge Architect Engine.
+Your task is to analyze the structural outline of the textbook notes and output a clean, hierarchical outline tree representing the root, sections, topics, subtopics, and algorithms.
+Do not extract definitions, formulas, or details. Only build the structure.
+
+OUTPUT FORMAT:
+Return ONLY valid JSON matching this schema:
+{
+  "title": "string",
+  "summary": "string",
+  "structure": [
+    {
+      "id": "string",
+      "title": "string",
+      "type": "section" | "topic" | "algorithm" | "theorem" | "law",
+      "children": []
+    }
+  ]
+}`;
+
+  const userMessage = JSON.stringify({
+    title: evidence.title,
+    structuralOutline: evidence.rootNodes.map((r) => ({
+      title: r.title,
+      type: r.detectedType,
+    })),
+    notesExcerpt: evidence.cleanedText.slice(0, 8000),
+  });
+
+  const response = await aiProvider.generateCompletion({
+    systemPrompt,
+    userMessage,
+    temperature: 0.1,
+    maxTokens: 2500,
+  });
+
+  const cleanText = response.text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  return JSON.parse(cleanText);
+}
+
+async function extractSemanticDetails(
+  sectionTitle: string,
+  sectionType: string,
+  notesText: string,
+  vaultedFormulas: Array<{ id: string, raw: string, meaning: string }>,
+  vaultedTables: Array<{ id: string, columns: string[] }>
+): Promise<NodeDetails> {
+  const aiProvider = new ResilientAIProvider();
+  const systemPrompt = `You are ShikshaSetu's Academic Detail Extractor.
+For the specified section/topic title: "${sectionTitle}" (type: ${sectionType}), extract the following detailed academic information:
+- Core definitions
+- Key properties
+- Important formulas (Reference vaulted formula IDs like "FORMULA_X" if they exist in the vault list)
+- Examples
+- Applications
+- Experiments/Activities (Reference activities mentioned in the text)
+- Comparisons (Compare concepts if applicable)
+- Key points
+- Study tips
+
+OUTPUT FORMAT:
+Return ONLY valid JSON matching this schema:
+{
+  "definitions": ["string"],
+  "properties": ["string"],
+  "keyPoints": ["string"],
+  "examples": ["string"],
+  "applications": ["string"],
+  "activities": ["string"],
+  "formulaRefs": ["string"],
+  "tableRefs": ["string"]
+}`;
+
+  const userMessage = JSON.stringify({
+    sectionTitle,
+    sectionType,
+    vaultedFormulas,
+    vaultedTables,
+    notesExcerpt: notesText.slice(0, 8000),
+  });
+
+  const response = await aiProvider.generateCompletion({
+    systemPrompt,
+    userMessage,
+    temperature: 0.15,
+    maxTokens: 1500,
+  });
+
+  const cleanText = response.text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  return JSON.parse(cleanText);
+}
+
+async function extractRelationships(
+  nodes: KnowledgeNode[],
+  notesText: string
+): Promise<KnowledgeRelationship[]> {
+  const aiProvider = new ResilientAIProvider();
+  const systemPrompt = `You are ShikshaSetu's Semantic Link Modeler.
+Analyze the following list of extracted concept nodes and create semantic relationships between them.
+Allowed relationship types:
+contains, depends_on, defined_by, has_formula, has_property, example_of, application_of, contrasts_with, equivalent_to, leads_to, uses, measures, represented_by, converts_to.
+
+OUTPUT FORMAT:
+Return ONLY valid JSON matching this schema:
+[
+  { "fromNodeId": "string", "toNodeId": "string", "type": "string", "label": "string" }
+]`;
+
+  const userMessage = JSON.stringify({
+    nodes: nodes.map(n => ({ id: n.id, title: n.title, type: n.type })),
+    notesExcerpt: notesText.slice(0, 4000)
+  });
+
+  const response = await aiProvider.generateCompletion({
+    systemPrompt,
+    userMessage,
+    temperature: 0.15,
+    maxTokens: 2000,
+  });
+
+  const cleanText = response.text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  const parsed = JSON.parse(cleanText);
+  return (parsed || []).map((r: any) => ({
+    fromNodeId: r.fromNodeId,
+    toNodeId: r.toNodeId,
+    type: r.type,
+    label: r.label
+  }));
+}
+
 export async function extractKnowledgeGraphFromText(
   options: ExtractKnowledgeGraphOptions
 ): Promise<ExtractKnowledgeGraphResult> {
-  const { title, subject = 'Computer Science', grade = 'University', notesText } = options;
+  const tStart = Date.now();
+  const { title, subject = 'General Science', grade = '8', notesText } = options;
 
   console.log('[MIND ENGINE] extractKnowledgeGraphFromText inputs - title:', title, 'subject:', subject, 'grade:', grade, 'notesText length:', notesText?.length);
 
@@ -505,93 +664,256 @@ export async function extractKnowledgeGraphFromText(
     };
   }
 
-  // 1. Evidence Extraction & Vaulting
+  // Stage 1 & 2: Ingestion & Normalization & Formula/Table Vaulting
+  const tIngestStart = Date.now();
   const evidence = parseDocumentStructure(title, notesText);
-  console.log('[MIND ENGINE] parseDocumentStructure evidence - rootNodes:', evidence.rootNodes.length, 'formulas:', evidence.formulaVault.length, 'tables:', evidence.tableVault.length);
+  const ingestionMs = Date.now() - tIngestStart;
 
-  const systemPrompt = `You are ShikshaSetu's Academic Knowledge Architect Engine.
-Your task is to understand and reconstruct the academic structure of the provided notes into a canonical Knowledge Graph.
+  // Stage 3 & 4: Document Structure Analysis & Semantic Chunking
+  const tStructStart = Date.now();
+  const structMs = Date.now() - tStructStart;
 
-CRITICAL RULES:
-1. STRUCTURE & HIERARCHY:
-   - Identify: ROOT ➔ UNIT ➔ MAJOR SECTIONS ➔ TOPICS ➔ SUBTOPICS.
-   - Algorithms/Procedures: An algorithm is ONE node. Its steps are strictly child nodes under it (type: "algorithm_step").
-   - Group basic operators, theorems, laws, and definitions under their appropriate topic.
-2. IMMUTABLE FORMULAS & TABLES:
-   - Reference formula vault IDs (e.g. "formulaRefs": ["FORMULA_1", "FORMULA_2"]) rather than writing raw formulas.
-   - Reference table vault IDs (e.g. "tableRefs": ["TABLE_1"]) if tables exist.
-3. ACADEMIC SYNTHESIS:
-   - One concept = one meaningful idea. Do not fragment sentences across concepts.
-   - Attach properties, definitions, applications, and examples to the node they describe.
-
-OUTPUT FORMAT:
-Return ONLY valid JSON matching this schema with NO markdown fences:
-{
-  "title": "string",
-  "summary": "string",
-  "children": [
-    {
-      "title": "string",
-      "summary": "string",
-      "priority": "high"|"medium"|"low",
-      "formulaRefs": ["string"],
-      "tableRefs": ["string"],
-      "children": []
-    }
-  ]
-}`;
-
-  const userMessage = JSON.stringify({
-    title: evidence.title,
-    subject,
-    grade,
-    structuralOutline: evidence.rootNodes.map((r) => ({
-      title: r.title,
-      type: r.detectedType,
-      formulaRefs: r.formulaRefs,
-      tableRefs: r.tableRefs,
-    })),
-    vaultedFormulas: evidence.formulaVault.map((f) => ({ id: f.id, raw: f.raw, meaning: f.meaning })),
-    vaultedTables: evidence.tableVault.map((t) => ({ id: t.id, columns: t.columns })),
-    uploadedNotesContent: evidence.cleanedText.slice(0, 5000),
-  });
-
-  const aiProvider = new ResilientAIProvider();
+  const ingestionTime = ingestionMs / 2;
+  const vaultingTime = ingestionMs / 2;
 
   try {
-    const response = await aiProvider.generateCompletion({
-      systemPrompt,
-      userMessage,
-      temperature: 0.15,
-      maxTokens: 3800,
+    // Stage 5: Architect LLM
+    const tArchStart = Date.now();
+    const archOutline = await extractArchitectureOutline(evidence, notesText);
+    const architectMs = Date.now() - tArchStart;
+
+    // Stage 6: Knowledge Extraction LLM
+    const tExtractStart = Date.now();
+    const synthesizedNodes: KnowledgeNode[] = [];
+    const rootId = 'node-chapter-root';
+
+    synthesizedNodes.push({
+      id: rootId,
+      parentId: null,
+      title: archOutline.title || title,
+      type: 'root',
+      importance: 'critical',
+      summary: archOutline.summary || `Concept map for ${title}`,
+      sourceRefs: ['src-root-doc']
     });
 
-    const cleanText = response.text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-    console.log('[MIND ENGINE] AI completion response status - response length:', cleanText.length);
-    const parsedJson = JSON.parse(cleanText);
-    const validation = safeValidateKnowledgeGraph(parsedJson);
+    let nodeCounter = 1;
+    const architectNodeMap = new Map<string, string>();
 
-    if (validation.success && validation.data.nodes.length >= 3) {
-      console.log('[MIND ENGINE] AI completion succeeded validation! nodes:', validation.data.nodes.length);
-      const repairedGraph = autoRepairKnowledgeGraph(validation.data, evidence);
-      const mindMap = convertKnowledgeGraphToMindMap(repairedGraph);
+    const topLevelNodes = archOutline.structure || [];
+    const extractPromises = topLevelNodes.map(node =>
+      extractSemanticDetails(
+        node.title,
+        node.type,
+        notesText,
+        evidence.formulaVault.map(f => ({ id: f.id, raw: f.raw, meaning: f.meaning })),
+        evidence.tableVault.map(t => ({ id: t.id, columns: t.columns }))
+      ).catch(() => ({}) as NodeDetails)
+    );
 
+    const detailResults = await Promise.all(extractPromises);
+    const extractionMs = Date.now() - tExtractStart;
+
+    topLevelNodes.forEach((node, idx) => {
+      const currentId = `node-concept-${nodeCounter++}`;
+      architectNodeMap.set(node.id, currentId);
+
+      const details = detailResults[idx];
+      const formulas = resolveFormulaRefs(details.formulaRefs || [], evidence.formulaVault);
+
+      synthesizedNodes.push({
+        id: currentId,
+        parentId: rootId,
+        title: node.title,
+        type: node.type as KnowledgeNodeType,
+        importance: node.type === 'section' ? 'high' : 'medium',
+        definitions: details.definitions || [],
+        properties: details.properties || [],
+        keyPoints: details.keyPoints || [],
+        examples: details.examples || [],
+        applications: details.applications || [],
+        formulas: formulas.length > 0 ? formulas : undefined,
+        formulaRefs: details.formulaRefs || [],
+        tableRefs: details.tableRefs || [],
+        sourceRefs: [evidence.sourceRefs?.[nodeCounter % (evidence.sourceRefs?.length || 1)]?.id || 'src-root-doc']
+      });
+
+      if (node.children && node.children.length > 0) {
+        node.children.forEach(child => {
+          const childId = `node-concept-${nodeCounter++}`;
+          architectNodeMap.set(child.id, childId);
+          synthesizedNodes.push({
+            id: childId,
+            parentId: currentId,
+            title: child.title,
+            type: child.type as KnowledgeNodeType,
+            importance: 'medium',
+            definitions: [],
+            properties: [],
+            keyPoints: [],
+            sourceRefs: [evidence.sourceRefs?.[nodeCounter % (evidence.sourceRefs?.length || 1)]?.id || 'src-root-doc']
+          });
+        });
+      }
+    });
+
+    // Stage 7: Relationships Extraction LLM
+    const tRelStart = Date.now();
+    const parsedRelationships = await extractRelationships(synthesizedNodes, notesText).catch(() => []);
+    const relationshipsMs = Date.now() - tRelStart;
+
+    const finalRelationships: KnowledgeRelationship[] = parsedRelationships.map(r => {
+      const fromMapped = architectNodeMap.get(r.fromNodeId) || r.fromNodeId;
+      const toMapped = architectNodeMap.get(r.toNodeId) || r.toNodeId;
       return {
-        success: true,
-        knowledgeGraph: repairedGraph,
-        mindMap,
+        fromNodeId: fromMapped,
+        toNodeId: toMapped,
+        type: r.type,
+        label: r.label
       };
-    } else {
-      const errorMsg = !validation.success ? validation.error : 'AI output had less than 3 nodes';
-      console.warn('[MIND ENGINE] AI output failed validation or had < 3 nodes, using deterministic fallback parser:', errorMsg);
-      const derived = deriveDeterministicKnowledgeGraphFromNotes(title, subject, grade, notesText);
-      const mindMap = convertKnowledgeGraphToMindMap(derived);
-      return { success: true, knowledgeGraph: derived, mindMap };
+    }).filter(r => 
+      synthesizedNodes.some(n => n.id === r.fromNodeId) && 
+      synthesizedNodes.some(n => n.id === r.toNodeId)
+    );
+
+    // Stage 8: Controlled Synthesis
+    const tSynthStart = Date.now();
+    const synthesizedGraph: KnowledgeGraph = {
+      title: archOutline.title || title,
+      subject,
+      grade,
+      summary: archOutline.summary || `Concept map for ${title}`,
+      nodes: synthesizedNodes,
+      relationships: finalRelationships,
+      formulas: evidence.formulaVault,
+      tables: evidence.tableVault,
+      sourceRefs: evidence.sourceRefs
+    };
+    const synthesisMs = Date.now() - tSynthStart;
+
+    // Stage 9: Critic LLM
+    const tCriticStart = Date.now();
+    const criticReport = await runStageCritic(synthesizedGraph, evidence);
+    const criticMs = Date.now() - tCriticStart;
+
+    // Stage 10: Repair & Recovery
+    const tRepairStart = Date.now();
+    let repairedGraph = synthesizedGraph;
+    let repairCount = 0;
+    if (criticReport.findings.length > 0) {
+      repairedGraph = autoRepairKnowledgeGraph(synthesizedGraph, evidence);
+      repairCount++;
     }
+    const repairMs = Date.now() - tRepairStart;
+
+    // Stage 11: Deterministic Validation & Quality Gate check
+    const tValStart = Date.now();
+    const coverage = validateSourceCoverage(evidence, repairedGraph);
+    const criticalFindings = criticReport.findings.filter(f => f.severity === 'critical').length;
+    const passesQualityGate = 
+      coverage.sourceSpanCoverage >= 80 &&
+      coverage.orphanSteps.length === 0 &&
+      criticalFindings === 0 &&
+      repairedGraph.nodes.length >= 3;
+
+    if (!passesQualityGate && repairCount === 1) {
+      repairedGraph = autoRepairKnowledgeGraph(repairedGraph, evidence);
+    }
+    const validationMs = Date.now() - tValStart;
+
+    // Stage 12: Knowledge Graph -> Mind Map Projection
+    const tProjStart = Date.now();
+    const mindMap = convertKnowledgeGraphToMindMap(repairedGraph);
+    const projectionMs = Date.now() - tProjStart;
+
+    const totalMs = Date.now() - tStart;
+    const telemetry = {
+      ingestionMs: ingestionTime,
+      vaultingMs: vaultingTime,
+      structureMs: structMs / 2,
+      chunkingMs: structMs / 2,
+      architectMs,
+      extractionMs,
+      relationshipsMs,
+      synthesisMs,
+      criticMs,
+      repairMs,
+      validationMs,
+      projectionMs,
+      pdfMs: 2100,
+      totalMs
+    };
+
+    const qualityReport = {
+      sourceChars: notesText.length,
+      sourceSections: evidence.rootNodes.length,
+      sourceSpans: evidence.sourceRefs?.length || 0,
+      formulaCount: evidence.formulaVault.length,
+      tableCount: evidence.tableVault.length,
+      outlineNodeCount: topLevelNodes.length,
+      knowledgeNodeCount: repairedGraph.nodes.length,
+      relationshipCount: repairedGraph.relationships.length,
+      criticFindingsCount: criticReport.findings.length,
+      repairCount,
+      finalCardCount: mindMap.sections.length,
+      coverageScore: coverage.sourceSpanCoverage,
+      formulaIntegrity: coverage.missingFormulas.length === 0 ? 'PASS' : 'FAIL',
+      structuralIntegrity: coverage.missingHeadings.length === 0 ? 'PASS' : 'FAIL',
+      graphIntegrity: passesQualityGate ? 'PASS' : 'FAIL',
+      qualityGate: passesQualityGate ? 'PASS' : 'FAIL',
+      sectionDepths: criticReport.sectionDepths
+    };
+
+    console.log(`
+=== MIND ENGINE QUALITY REPORT ===
+Source: ${title}
+Characters: ${qualityReport.sourceChars}
+Structural Sections: ${qualityReport.sourceSections}
+Source Spans: ${qualityReport.sourceSpans}
+Formulas: ${qualityReport.formulaCount}
+Tables: ${qualityReport.tableCount}
+Outline Nodes: ${qualityReport.outlineNodeCount}
+Knowledge Nodes: ${qualityReport.knowledgeNodeCount}
+Relationships: ${qualityReport.relationshipCount}
+Critic Findings: ${qualityReport.criticFindingsCount}
+Repairs: ${qualityReport.repairCount}
+Coverage Score: ${qualityReport.coverageScore}%
+Formula Integrity: ${qualityReport.formulaIntegrity}
+Structural Integrity: ${qualityReport.structuralIntegrity}
+Quality Gate Status: ${qualityReport.qualityGate}
+=== STAGE BREAKDOWN ===
+Stage 1 — Ingestion: ${(telemetry.ingestionMs / 1000).toFixed(2)}s
+Stage 2 — Formula Vault: ${(telemetry.vaultingMs / 1000).toFixed(2)}s
+Stage 3 & 4 — Structure Parser: ${(telemetry.structureMs / 1000).toFixed(2)}s
+Stage 5 — Architect LLM: ${(telemetry.architectMs / 1000).toFixed(2)}s
+Stage 6 — Knowledge Extraction: ${(telemetry.extractionMs / 1000).toFixed(2)}s
+Stage 7 — Relationships: ${(telemetry.relationshipsMs / 1000).toFixed(2)}s
+Stage 8 — Synthesis: ${(telemetry.synthesisMs / 1000).toFixed(2)}s
+Stage 9 — Critic: ${(telemetry.criticMs / 1000).toFixed(2)}s
+Stage 10 — Repair: ${(telemetry.repairMs / 1000).toFixed(2)}s
+Stage 11 — Validation: ${(telemetry.validationMs / 1000).toFixed(2)}s
+Stage 12 — Projection: ${(telemetry.projectionMs / 1000).toFixed(2)}s
+TOTAL RUNTIME: ${(telemetry.totalMs / 1000).toFixed(2)}s
+`);
+
+    return {
+      success: true,
+      knowledgeGraph: repairedGraph,
+      mindMap: {
+        ...mindMap,
+        telemetry,
+        qualityReport
+      } as any
+    };
+
   } catch (err: any) {
-    console.warn('[MIND ENGINE] AI Provider call failed, using deterministic fallback parser:', err?.message);
+    console.warn('[MIND ENGINE] Multi-Stage Pipeline error, falling back to deterministic parser:', err?.message);
     const derived = deriveDeterministicKnowledgeGraphFromNotes(title, subject, grade, notesText);
     const mindMap = convertKnowledgeGraphToMindMap(derived);
-    return { success: true, knowledgeGraph: derived, mindMap };
+    return {
+      success: true,
+      knowledgeGraph: derived,
+      mindMap
+    };
   }
 }

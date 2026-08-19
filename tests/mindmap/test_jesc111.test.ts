@@ -106,4 +106,109 @@ Electric bulb, electric iron, fuse wires protect circuits.`;
     expect(mindMap.sections[0].title).toBe('Key Concepts & Summary');
     expect(mindMap.sections[0].items.length).toBe(4); // 4 paragraphs converted to subconcepts
   });
+
+  it('should run the complete 13-stage multi-stage pipeline with mocked LLM and output telemetry and quality report', async () => {
+    const { vi } = await import('vitest');
+    const { ResilientAIProvider } = await import('@/lib/intelligence/providers/aiProvider');
+    const { extractKnowledgeGraphFromText } = await import('@/lib/mindmap/knowledgeGraphExtractor');
+
+    console.log('[MIND ENGINE TEST] Running multi-stage pipeline integration check...');
+
+    const spy = vi.spyOn(ResilientAIProvider.prototype, 'generateCompletion');
+    spy.mockImplementation(async (req) => {
+      if (req.systemPrompt.includes('Academic Knowledge Architect')) {
+        return {
+          text: JSON.stringify({
+            title: 'Class 8 Science Electricity',
+            summary: 'A study of electric current and circuits.',
+            structure: [
+              {
+                id: 'arch-sec-1',
+                title: '11.1 Electric Current and Circuit',
+                type: 'section',
+                children: []
+              },
+              {
+                id: 'arch-sec-2',
+                title: '11.2 Electric Potential and Potential Difference',
+                type: 'section',
+                children: []
+              }
+            ]
+          }),
+          provider: 'mock',
+          latencyMs: 10
+        };
+      }
+      if (req.systemPrompt.includes('Academic Detail Extractor')) {
+        return {
+          text: JSON.stringify({
+            definitions: ['Flow of charge'],
+            properties: ['Measured in amperes'],
+            keyPoints: ['Formula is I = Q/t'],
+            examples: ['Bulb in a circuit'],
+            applications: ['Lighting'],
+            activities: ['Activity 11.1'],
+            formulaRefs: ['formula-1'],
+            tableRefs: []
+          }),
+          provider: 'mock',
+          latencyMs: 10
+        };
+      }
+      if (req.systemPrompt.includes('Semantic Link Modeler')) {
+        return {
+          text: JSON.stringify([
+            { fromNodeId: 'arch-sec-1', toNodeId: 'arch-sec-2', type: 'depends_on', label: 'Depends on' }
+          ]),
+          provider: 'mock',
+          latencyMs: 10
+        };
+      }
+      if (req.systemPrompt.includes('Academic Critic Engine')) {
+        return {
+          text: JSON.stringify({
+            score: 95,
+            findings: [],
+            sectionDepth: [
+              { sectionTitle: '11.1 Electric Current and Circuit', score: 5, maxScore: 6 },
+              { sectionTitle: '11.2 Electric Potential and Potential Difference', score: 4, maxScore: 6 }
+            ]
+          }),
+          provider: 'mock',
+          latencyMs: 10
+        };
+      }
+      return { text: '{}', provider: 'mock', latencyMs: 10 };
+    });
+
+    const result = await extractKnowledgeGraphFromText({
+      title: 'jesc111-electricity',
+      subject: 'Science',
+      grade: '8',
+      notesText: simulatedNotes
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.mindMap).toBeDefined();
+    
+    const mindMap: any = result.mindMap;
+    console.log('[MIND ENGINE TEST] Converted MindMap sections count:', mindMap.sections.length);
+    expect(mindMap.sections.length).toBeGreaterThan(0);
+    
+    // Validate telemetry existence
+    console.log('[MIND ENGINE TEST] Telemetry:', mindMap.telemetry);
+    expect(mindMap.telemetry).toBeDefined();
+    expect(mindMap.telemetry.architectMs).toBeGreaterThanOrEqual(0);
+    expect(mindMap.telemetry.extractionMs).toBeGreaterThanOrEqual(0);
+
+    // Validate quality report existence
+    console.log('[MIND ENGINE TEST] Quality Report:', mindMap.qualityReport);
+    expect(mindMap.qualityReport).toBeDefined();
+    expect(mindMap.qualityReport.knowledgeNodeCount).toBeGreaterThanOrEqual(3);
+    expect(mindMap.qualityReport.coverageScore).toBeGreaterThanOrEqual(80);
+    expect(mindMap.qualityReport.qualityGate).toBe('PASS');
+
+    spy.mockRestore();
+  });
 });

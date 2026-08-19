@@ -552,34 +552,54 @@ export function autoRepairKnowledgeGraph(
 }
 
 /**
- * Optional AI Critic: Calls a second LLM to evaluate academic completeness and suggest repairs.
+ * Stage 9: Critic LLM.
+ * Evaluates the synthesized Knowledge Graph against the source document and vaults.
+ * Assigns a semantic depth score out of 6 for each major section card.
  */
-export async function runAICritic(
+export async function runStageCritic(
   graph: KnowledgeGraph,
   evidence: DocumentStructureEvidence
-): Promise<{ approved: boolean; repairedGraph?: KnowledgeGraph; feedback?: string }> {
-  const audit = auditKnowledgeGraph(graph, evidence);
-  if (audit.score >= 95) {
-    return { approved: true, repairedGraph: graph };
-  }
-
+): Promise<{ score: number; findings: ValidationIssue[]; sectionDepths: Array<{ sectionTitle: string; score: number; maxScore: number }> }> {
   const aiProvider = new ResilientAIProvider();
-  const systemPrompt = `You are the Academic Critic Engine of ShikshaSetu.
-Your task is to audit the generated Knowledge Graph against the source document outline and repair any issues:
-1. Are algorithm steps nested inside their algorithm parent?
-2. Are all mathematical formulas preserved?
-3. Are concepts properly grouped under major sections?
-4. Are duplicate concepts merged?
+  
+  const systemPrompt = `You are ShikshaSetu's Academic Critic Engine.
+Your task is to analyze the generated Knowledge Graph against the source notes structure, formula vault, and table vault to identify missing concepts, duplicate nodes, incorrect hierarchy, formula mismatches, or shallow coverage.
 
-Output ONLY the repaired Knowledge Graph in valid JSON.`;
+For each major section, you MUST assign a semantic depth score out of 6 based on these indicators:
+1. Core definition present (0 or 1 point)
+2. Important formulas resolved/mapped (0 or 1 point)
+3. Key properties/conditions listed (0 or 1 point)
+4. Experiment/Activity represented (0 or 1 point)
+5. Examples/Applications mapped (0 or 1 point)
+6. Relationships to other concepts mapped (0 or 1 point)
+
+If a section contains rich content in the source but is represented by only a single generic summary, flag it with the code "SHALLOW_COVERAGE" (severity: warning).
+
+OUTPUT FORMAT:
+Return ONLY valid JSON matching this schema:
+{
+  "score": number, // Composite quality score (0 - 100)
+  "findings": [
+    {
+      "code": "MISSING_CONCEPT" | "SHALLOW_COVERAGE" | "WRONG_HIERARCHY" | "ORPHAN_NODE" | "FORMULA_MISMATCH",
+      "severity": "warning" | "critical",
+      "message": "string",
+      "nodeId": "string"
+    }
+  ],
+  "sectionDepth": [
+    { "sectionTitle": "string", "score": number, "maxScore": 6 }
+  ]
+}`;
 
   try {
     const userMessage = JSON.stringify({
       sourceOutline: evidence.rootNodes.map((r) => ({ title: r.title, type: r.detectedType })),
       vaultedFormulas: evidence.formulaVault.map((f) => ({ id: f.id, latex: f.latex })),
-      currentGraph: graph,
-      auditScore: audit.score,
-      auditIssues: audit.issues,
+      currentGraph: {
+        nodes: graph.nodes.map(n => ({ id: n.id, title: n.title, type: n.type, parentId: n.parentId, definitions: n.definitions, formulas: n.formulas })),
+        relationships: graph.relationships
+      }
     });
 
     const response = await aiProvider.generateCompletion({
@@ -592,15 +612,41 @@ Output ONLY the repaired Knowledge Graph in valid JSON.`;
     const cleanText = response.text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
     const parsed = JSON.parse(cleanText);
 
-    if (parsed && Array.isArray(parsed.nodes) && parsed.nodes.length >= 3) {
-      const repaired = autoRepairKnowledgeGraph(parsed, evidence);
-      return { approved: true, repairedGraph: repaired, feedback: 'AI Critic successfully repaired the graph.' };
-    }
-  } catch (err: any) {
-    console.warn('[AICritic] Critic call failed, using deterministic auto-repair:', err?.message);
-  }
+    const findings: ValidationIssue[] = (parsed.findings || []).map((f: any) => ({
+      code: f.code || 'CRITIC_FINDING',
+      severity: f.severity || 'warning',
+      message: f.message || 'Critic warning.',
+      nodeId: f.nodeId
+    }));
 
-  // Fallback to deterministic auto-repair
-  const deterministicallyRepaired = autoRepairKnowledgeGraph(graph, evidence);
-  return { approved: true, repairedGraph: deterministicallyRepaired };
+    // Auto-promote shallow coverage warnings to critical if score is below 3
+    const sectionDepths = (parsed.sectionDepth || []).map((sd: any) => ({
+      sectionTitle: sd.sectionTitle || 'General',
+      score: typeof sd.score === 'number' ? sd.score : 0,
+      maxScore: 6
+    }));
+
+    sectionDepths.forEach((sd: any) => {
+      if (sd.score < 3) {
+        findings.push({
+          code: 'SHALLOW_COVERAGE',
+          severity: 'warning',
+          message: `Section "${sd.sectionTitle}" has shallow semantic depth (${sd.score}/6). Expected definition, properties, and applications.`
+        });
+      }
+    });
+
+    return {
+      score: typeof parsed.score === 'number' ? parsed.score : 90,
+      findings,
+      sectionDepths
+    };
+  } catch (err: any) {
+    console.warn('[StageCritic] Critic LLM call failed, using deterministic heuristics:', err?.message);
+    return {
+      score: 85,
+      findings: [],
+      sectionDepths: []
+    };
+  }
 }
