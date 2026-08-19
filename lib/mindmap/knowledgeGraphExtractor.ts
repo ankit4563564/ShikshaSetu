@@ -246,6 +246,7 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
  * using parentId relationships from the KnowledgeGraph as the single source of truth.
  */
 export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMindMap {
+  console.log('[MIND ENGINE] convertKnowledgeGraphToMindMap input nodes:', graph.nodes.length, 'relationships:', graph.relationships.length);
   const rootNode = graph.nodes.find((n) => n.type === 'root' || n.type === 'chapter' || n.parentId === null) || graph.nodes[0];
   const rootId = rootNode ? rootNode.id : null;
 
@@ -262,16 +263,16 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
     sectionNodes = graph.nodes.filter((n) => n.id !== rootId);
   }
 
+  console.log('[MIND ENGINE] convertKnowledgeGraphToMindMap identified sectionNodes count:', sectionNodes.length);
+
   // Recursive item builder for child nodes
   function buildItemsForNode(parentNodeId: string): MindMapItem[] {
-    // Exclude algorithm_step from being rendered as standalone child items to avoid duplication
     const childNodes = graph.nodes.filter((n) => n.parentId === parentNodeId && n.type !== 'algorithm_step');
     const items: MindMapItem[] = [];
 
     for (const child of childNodes) {
       const grandChildren = buildItemsForNode(child.id);
 
-      // Extract algorithm steps if this is an algorithm node
       const stepNodes = graph.nodes.filter((n) => n.parentId === child.id && n.type === 'algorithm_step');
       const allSteps = (child.steps && child.steps.length > 0)
         ? child.steps
@@ -279,7 +280,6 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
 
       const itemChildren: MindMapItem[] = [...grandChildren];
 
-      // Add child formulas as sub-items (resolving from vault)
       let childFormulas: FormulaBlock[] = child.formulas || [];
       if (child.formulaRefs && graph.formulas) {
         const vaultFormulas = resolveFormulaRefs(child.formulaRefs, graph.formulas);
@@ -300,7 +300,6 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
         });
       }
 
-      // Add table if present
       if (child.table) {
         itemChildren.push({
           id: `${child.id}-tbl`,
@@ -311,7 +310,6 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
         });
       }
 
-      // Add algorithm process as sub-item
       if (allSteps.length > 0) {
         itemChildren.push({
           id: `${child.id}-algo-steps`,
@@ -341,7 +339,6 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
     const node = sectionNodes[idx];
     const items: MindMapItem[] = [];
 
-    // 1. Section definition
     if (node.definitions && node.definitions.length > 0) {
       node.definitions.forEach((def, dIdx) => {
         if (def && def !== node.title) {
@@ -354,7 +351,6 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // 2. Section formulas
     let nodeFormulas: FormulaBlock[] = node.formulas || [];
     if (node.formulaRefs && graph.formulas) {
       const vaultFormulas = resolveFormulaRefs(node.formulaRefs, graph.formulas);
@@ -375,7 +371,6 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // 3. Section properties
     if (node.properties && node.properties.length > 0) {
       node.properties.forEach((prop, pIdx) => {
         items.push({
@@ -386,7 +381,6 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // 4. Algorithm steps on the section node itself
     const directSteps = graph.nodes.filter((n) => n.parentId === node.id && n.type === 'algorithm_step');
     const allDirectSteps = (node.steps && node.steps.length > 0)
       ? node.steps
@@ -401,11 +395,9 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // 5. Nested child concepts & subconcepts (preserving hierarchy)
     const nestedChildItems = buildItemsForNode(node.id);
     items.push(...nestedChildItems);
 
-    // 6. Section Table if present
     if (node.table) {
       items.push({
         id: `${node.id}-tbl`,
@@ -416,7 +408,6 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    // 7. Key points & applications
     if (node.keyPoints && node.keyPoints.length > 0) {
       node.keyPoints.forEach((kp, kpIdx) => {
         items.push({
@@ -470,7 +461,6 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
     });
   }
 
-  // Filter relationship connections to existing section IDs
   const sectionIdSet = new Set(sections.map((s) => s.id));
   const relationships = graph.relationships
     .filter((r) => sectionIdSet.has(`sec-${r.fromNodeId}`) && sectionIdSet.has(`sec-${r.toNodeId}`))
@@ -493,23 +483,22 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
   };
 
   console.log(
-    `[MindMap] ${mindMap.title}: ${mindMap.sections.length} sections →`,
+    `[MIND ENGINE] convertKnowledgeGraphToMindMap output sections: ${mindMap.sections.length} total sections:`,
     mindMap.sections.map((s) => `"${s.title}" (${s.items.length} items)`).join(', ')
   );
 
   return mindMap;
 }
 
-/**
- * Stage 3 & 4: Architect LLM Call & Knowledge Synthesis.
- * Extracts academic knowledge hierarchy while referencing immutable Formula and Table Vaults.
- */
 export async function extractKnowledgeGraphFromText(
   options: ExtractKnowledgeGraphOptions
 ): Promise<ExtractKnowledgeGraphResult> {
   const { title, subject = 'Computer Science', grade = 'University', notesText } = options;
 
+  console.log('[MIND ENGINE] extractKnowledgeGraphFromText inputs - title:', title, 'subject:', subject, 'grade:', grade, 'notesText length:', notesText?.length);
+
   if (!notesText || notesText.trim().length < 20) {
+    console.error('[MIND ENGINE] extractKnowledgeGraphFromText notesText too short!');
     return {
       success: false,
       error: 'Not enough readable content to generate a knowledge graph. Please provide at least 20 characters.',
@@ -518,6 +507,7 @@ export async function extractKnowledgeGraphFromText(
 
   // 1. Evidence Extraction & Vaulting
   const evidence = parseDocumentStructure(title, notesText);
+  console.log('[MIND ENGINE] parseDocumentStructure evidence - rootNodes:', evidence.rootNodes.length, 'formulas:', evidence.formulaVault.length, 'tables:', evidence.tableVault.length);
 
   const systemPrompt = `You are ShikshaSetu's Academic Knowledge Architect Engine.
 Your task is to understand and reconstruct the academic structure of the provided notes into a canonical Knowledge Graph.
@@ -577,11 +567,12 @@ Return ONLY valid JSON matching this schema with NO markdown fences:
     });
 
     const cleanText = response.text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    console.log('[MIND ENGINE] AI completion response status - response length:', cleanText.length);
     const parsedJson = JSON.parse(cleanText);
     const validation = safeValidateKnowledgeGraph(parsedJson);
 
     if (validation.success && validation.data.nodes.length >= 3) {
-      // Stage 5: Critic Audit & Auto-Repair
+      console.log('[MIND ENGINE] AI completion succeeded validation! nodes:', validation.data.nodes.length);
       const repairedGraph = autoRepairKnowledgeGraph(validation.data, evidence);
       const mindMap = convertKnowledgeGraphToMindMap(repairedGraph);
 
@@ -591,13 +582,14 @@ Return ONLY valid JSON matching this schema with NO markdown fences:
         mindMap,
       };
     } else {
-      console.warn('[KnowledgeGraphExtractor] AI output failed validation, using deterministic fallback parser:', validation.error);
+      const errorMsg = !validation.success ? validation.error : 'AI output had less than 3 nodes';
+      console.warn('[MIND ENGINE] AI output failed validation or had < 3 nodes, using deterministic fallback parser:', errorMsg);
       const derived = deriveDeterministicKnowledgeGraphFromNotes(title, subject, grade, notesText);
       const mindMap = convertKnowledgeGraphToMindMap(derived);
       return { success: true, knowledgeGraph: derived, mindMap };
     }
   } catch (err: any) {
-    console.warn('[KnowledgeGraphExtractor] AI Provider call failed, using deterministic fallback parser:', err?.message);
+    console.warn('[MIND ENGINE] AI Provider call failed, using deterministic fallback parser:', err?.message);
     const derived = deriveDeterministicKnowledgeGraphFromNotes(title, subject, grade, notesText);
     const mindMap = convertKnowledgeGraphToMindMap(derived);
     return { success: true, knowledgeGraph: derived, mindMap };

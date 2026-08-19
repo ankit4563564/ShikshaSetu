@@ -316,6 +316,61 @@ export function parseDocumentStructure(
     }
   }
 
+  // Fail-safe: if no structural headings were detected, split cleanedText into paragraphs and create virtual topic nodes under a section node
+  if (rootNodes.length === 0) {
+    const paragraphs = cleanedText
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter((p) => p.length > 20);
+
+    if (paragraphs.length > 0) {
+      const sectionNode: StructuralEvidenceNode = {
+        id: `struct-node-vsec`,
+        title: 'Key Concepts & Summary',
+        level: 2,
+        rawText: 'Key Concepts & Summary',
+        detectedType: 'section',
+        pattern: 'heading',
+        parentId: null,
+        children: [],
+        formulaRefs: [],
+        tableRefs: [],
+        sourceSpan: {
+          id: 'src-node-vsec',
+          start: 0,
+          end: Math.min(100, cleanedText.length),
+          rawText: 'Key Concepts & Summary',
+          type: 'heading',
+        },
+      };
+
+      paragraphs.forEach((para, pIdx) => {
+        const topicNode: StructuralEvidenceNode = {
+          id: `struct-node-vtop-${pIdx}`,
+          title: para.slice(0, 50).replace(/[:\-#\.]+$/, '').trim() || `Concept ${pIdx + 1}`,
+          level: 3,
+          rawText: para,
+          detectedType: 'topic',
+          pattern: 'heading',
+          parentId: sectionNode.id,
+          children: [],
+          formulaRefs: findMatchingFormulaRefs(para, formulaResult.vault),
+          tableRefs: [],
+          sourceSpan: {
+            id: `src-node-vtop-span-${pIdx}`,
+            start: cleanedText.indexOf(para),
+            end: cleanedText.indexOf(para) + para.length,
+            rawText: para,
+            type: 'text',
+          },
+        };
+        sectionNode.children.push(topicNode);
+      });
+
+      rootNodes.push(sectionNode);
+    }
+  }
+
   return {
     title: title || 'Academic Notes',
     rawText,
