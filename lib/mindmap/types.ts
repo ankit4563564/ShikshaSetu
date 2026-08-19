@@ -1,6 +1,6 @@
 /**
- * ShikshaSetu — Visual Revision Mind Map & Knowledge Graph Type Definitions
- * Semantic Hierarchy, Extended Node Roles, and Algorithm/Theorem Specifications
+ * ShikshaSetu — Visual Revision Mind Map & Canonical Knowledge Graph Type Definitions
+ * General-Purpose Multi-Stage Academic Knowledge Engine
  */
 
 export type ConceptAccentColor = 'blue' | 'green' | 'orange' | 'purple' | 'red' | 'teal';
@@ -15,7 +15,8 @@ export type MindMapItemType =
   | 'key_point'
   | 'warning'
   | 'process'
-  | 'diagram';
+  | 'diagram'
+  | 'table';
 
 export type SemanticImportance = 'critical' | 'high' | 'medium' | 'low';
 export type ImportanceLevel = 'critical' | 'high' | 'medium' | 'low';
@@ -29,31 +30,87 @@ export type DeclarativeDiagramType =
   | 'physics-setup'
   | 'circuit-capacitor';
 
+// ──────────────────────────────────────────
+// 1. SOURCE PROVENANCE & SPANS
+// ──────────────────────────────────────────
+
+export type SourceSpanType = 'text' | 'heading' | 'formula' | 'table' | 'list' | 'step';
+
+export interface SourceRef {
+  readonly id: string;
+  readonly start: number;
+  readonly end: number;
+  readonly rawText: string;
+  readonly type: SourceSpanType;
+  readonly page?: number;
+  readonly section?: string;
+}
+
 export interface SourceReference {
   readonly id?: string;
   readonly sourceType?: 'uploaded_notes' | 'textbook' | 'lecture';
   readonly page?: number;
   readonly section?: string;
   readonly excerpt: string;
+  readonly start?: number;
+  readonly end?: number;
 }
 
+// ──────────────────────────────────────────
+// 2. FORMULA VAULT (IMMUTABLE MATHEMATICS)
+// ──────────────────────────────────────────
+
 export interface FormulaBlock {
+  readonly id?: string;
   readonly latex: string;
+  readonly raw?: string;
   readonly meaning?: string;
   readonly variables?: string;
   readonly unit?: string;
   readonly condition?: string;
+  readonly sourceRef?: string;
+}
+
+export interface FormulaVaultEntry {
+  readonly id: string;
+  readonly raw: string;
+  readonly latex: string;
+  readonly meaning?: string;
+  readonly variables?: string[];
+  readonly sourceRef?: string;
 }
 
 // ──────────────────────────────────────────
-// SEMANTIC KNOWLEDGE GRAPH MODEL
+// 3. TABLE VAULT (STRUCTURED TABULAR DATA)
+// ──────────────────────────────────────────
+
+export interface TableStructure {
+  readonly id?: string;
+  readonly title?: string;
+  readonly headers: string[];
+  readonly rows: string[][];
+  readonly sourceRef?: string;
+}
+
+export interface TableVaultEntry {
+  readonly id: string;
+  readonly title?: string;
+  readonly columns: string[];
+  readonly rows: string[][];
+  readonly sourceRef?: string;
+}
+
+// ──────────────────────────────────────────
+// 4. CANONICAL KNOWLEDGE GRAPH MODEL
 // ──────────────────────────────────────────
 
 export type KnowledgeNodeType =
+  | 'root'
+  | 'unit'
   | 'chapter'
   | 'section'
-  | 'concept'
-  | 'sub_concept'
+  | 'topic'
+  | 'subtopic'
   | 'definition'
   | 'property'
   | 'formula'
@@ -67,7 +124,8 @@ export type KnowledgeNodeType =
   | 'condition'
   | 'warning'
   | 'summary'
-  | 'study_tip';
+  | 'study_tip'
+  | 'table';
 
 export type KnowledgeRelationshipType =
   | 'contains'
@@ -82,12 +140,13 @@ export type KnowledgeRelationshipType =
   | 'application_of'
   | 'depends_on'
   | 'leads_to'
-  | 'summarized_by';
-
-export interface TableStructure {
-  readonly headers: string[];
-  readonly rows: string[][];
-}
+  | 'summarized_by'
+  | 'proves'
+  | 'applies_to'
+  | 'is_a'
+  | 'compared_with'
+  | 'represented_by'
+  | 'converts_to';
 
 export interface KnowledgeNode {
   readonly id: string;
@@ -96,12 +155,15 @@ export interface KnowledgeNode {
   readonly type: KnowledgeNodeType;
   readonly importance: SemanticImportance;
   readonly summary?: string;
+  readonly level?: number;
+  readonly sourceText?: string;
   
   // Specific semantic structures
   readonly definitions?: string[];
   readonly properties?: string[];
   readonly keyPoints?: string[];
   readonly formulas?: FormulaBlock[];
+  readonly formulaRefs?: string[];
   readonly examples?: string[];
   readonly applications?: string[];
   readonly conditions?: string[];
@@ -118,7 +180,10 @@ export interface KnowledgeNode {
 
   // Comparison/Table-specific attributes
   readonly table?: TableStructure;
+  readonly tableRefs?: string[];
 
+  // Source Provenance
+  readonly sourceRefs?: string[];
   readonly sourceReferences?: SourceReference[];
 }
 
@@ -137,11 +202,66 @@ export interface KnowledgeGraph {
   readonly summary: string;
   readonly nodes: KnowledgeNode[];
   readonly relationships: KnowledgeRelationship[];
+  readonly formulas?: FormulaVaultEntry[];
+  readonly tables?: TableVaultEntry[];
+  readonly sourceRefs?: SourceRef[];
   readonly sourceReferences?: SourceReference[];
 }
 
 // ──────────────────────────────────────────
-// HIERARCHICAL CONCEPT ARCHITECT TREE MODEL
+// 5. STRUCTURAL PARSING EVIDENCE & OUTLINES
+// ──────────────────────────────────────────
+
+export interface StructuralEvidenceNode {
+  readonly id: string;
+  readonly title: string;
+  readonly level: number;
+  readonly rawText: string;
+  readonly numberingPrefix?: string;
+  readonly detectedType: 'unit' | 'section' | 'topic' | 'subtopic' | 'step' | 'list_item' | 'table' | 'text';
+  readonly parentId?: string | null;
+  readonly children: StructuralEvidenceNode[];
+  readonly formulaRefs: string[];
+  readonly tableRefs: string[];
+  readonly sourceSpan: SourceRef;
+}
+
+export interface DocumentStructureEvidence {
+  readonly title: string;
+  readonly rawText: string;
+  readonly cleanedText: string;
+  readonly rootNodes: StructuralEvidenceNode[];
+  readonly sourceRefs: SourceRef[];
+  readonly formulaVault: FormulaVaultEntry[];
+  readonly tableVault: TableVaultEntry[];
+}
+
+// ──────────────────────────────────────────
+// 6. VALIDATION & CRITIC REPORTS
+// ──────────────────────────────────────────
+
+export interface ValidationIssue {
+  readonly code: string;
+  readonly severity: 'critical' | 'warning' | 'info';
+  readonly message: string;
+  readonly nodeId?: string;
+  readonly autoFixable?: boolean;
+}
+
+export interface FidelityReport {
+  readonly score: number; // 0 - 100
+  readonly headingCoverage: number;
+  readonly formulaPreservation: number;
+  readonly tablePreservation: number;
+  readonly conceptCoverage: number;
+  readonly sourceReferenceCoverage: number;
+  readonly relationshipIntegrity: number;
+  readonly hierarchyIntegrity: number;
+  readonly issues: ValidationIssue[];
+}
+
+// ──────────────────────────────────────────
+// 7. HIERARCHICAL CONCEPT ARCHITECT TREE MODEL
 // ──────────────────────────────────────────
 
 export interface HierarchicalConceptTreeNode {
@@ -150,6 +270,9 @@ export interface HierarchicalConceptTreeNode {
   readonly priority?: 'high' | 'medium' | 'low';
   readonly example?: string;
   readonly formulas?: string[];
+  readonly formulaRefs?: string[];
+  readonly tableRefs?: string[];
+  readonly sourceRefs?: string[];
   readonly children?: HierarchicalConceptTreeNode[];
 }
 
@@ -160,7 +283,7 @@ export interface HierarchicalConceptTree {
 }
 
 // ──────────────────────────────────────────
-// VISUAL MIND MAP (CONSUMER OF KNOWLEDGE GRAPH)
+// 8. VISUAL MIND MAP (CONSUMER OF KNOWLEDGE GRAPH)
 // ──────────────────────────────────────────
 
 export interface MindMapItem {
@@ -173,7 +296,9 @@ export interface MindMapItem {
   readonly unit?: string;
   readonly diagramType?: DeclarativeDiagramType;
   readonly diagramData?: Record<string, any>;
+  readonly table?: TableStructure;
   readonly source?: SourceReference;
+  readonly sourceRefs?: string[];
   readonly children?: MindMapItem[];
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { MindMapSection, MindMapItem, ConceptAccentColor } from '@/lib/mindmap/types';
+import type { MindMapSection, MindMapItem, ConceptAccentColor, TableStructure } from '@/lib/mindmap/types';
 import FormulaRenderer from './FormulaRenderer';
 import MiniDiagramRenderer from './MiniDiagramRenderer';
 
@@ -83,9 +83,39 @@ function highlightMatch(text: string, query?: string) {
   );
 }
 
+function RenderTableView({ table }: { table?: TableStructure }) {
+  if (!table || !table.headers || table.headers.length === 0) return null;
+  return (
+    <div className="overflow-x-auto my-2 rounded-xl border border-slate-200 shadow-2xs">
+      <table className="min-w-full divide-y divide-slate-200 text-[11px]">
+        <thead className="bg-slate-100">
+          <tr>
+            {table.headers.map((h, i) => (
+              <th key={i} className="px-2.5 py-1.5 text-left font-bold text-slate-800 tracking-wider">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-slate-100">
+          {table.rows.map((row, rIdx) => (
+            <tr key={rIdx} className={rIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+              {row.map((cell, cIdx) => (
+                <td key={cIdx} className="px-2.5 py-1.5 text-slate-700 font-medium">
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 /**
  * Renders nested MindMapItem children recursively with type-aware formatting.
- * Handles process (algorithm steps), formula, and concept items at any depth.
+ * Handles process (algorithm steps), formula, table, and concept items at any depth.
  */
 function NestedChildren({
   items,
@@ -130,6 +160,11 @@ function NestedChildren({
                   {highlightMatch(child.details, searchQuery)}
                 </p>
               )}
+            </div>
+          ) : child.type === 'table' ? (
+            <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="font-bold text-[11px] text-slate-800">📊 {child.title || 'Table'}</span>
+              <RenderTableView table={child.table} />
             </div>
           ) : (
             <div className="flex items-start gap-1.5 font-medium text-slate-800">
@@ -184,7 +219,7 @@ export default function ConceptSectionCard({
       <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5 mb-3">
         <div>
           <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border mb-1 ${accent.badge}`}>
-            {section.importance === 'high' ? '★ High Priority' : 'Core Concept'}
+            {section.importance === 'high' || section.importance === 'critical' ? '★ High Priority' : 'Core Concept'}
           </span>
           <h3 className={`font-display text-base font-black tracking-tight leading-snug ${accent.headerText}`}>
             {highlightMatch(section.title, searchQuery)}
@@ -237,6 +272,11 @@ export default function ConceptSectionCard({
                 data={item.diagramData}
                 accentColor={section.accentColor}
               />
+            ) : item.type === 'table' ? (
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                <span className="font-bold text-[11px] text-slate-800">📊 {item.title || 'Table'}</span>
+                <RenderTableView table={item.table} />
+              </div>
             ) : item.type === 'warning' ? (
               <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 flex items-start gap-2">
                 <span className="shrink-0 text-sm">⚠️</span>

@@ -1,6 +1,6 @@
 /**
  * ShikshaSetu — Visual Revision Mind Map & Knowledge Graph Zod Schemas
- * Semantic Hierarchy, Node Classification, and Extended Relationship Validation
+ * Semantic Hierarchy, Extended Node Roles, and Canonical Validation
  */
 
 import { z } from 'zod';
@@ -8,62 +8,129 @@ import type { ConceptMindMap, ConceptAccentColor, KnowledgeGraph } from './types
 
 const ACCENT_COLORS: ConceptAccentColor[] = ['blue', 'green', 'orange', 'purple', 'red', 'teal'];
 
+export const SourceSpanTypeSchema = z.enum(['text', 'heading', 'formula', 'table', 'list', 'step']);
+
+export const SourceRefSchema = z.object({
+  id: z.string(),
+  start: z.number(),
+  end: z.number(),
+  rawText: z.string(),
+  type: SourceSpanTypeSchema,
+  page: z.number().int().positive().optional(),
+  section: z.string().optional(),
+});
+
 export const SourceReferenceSchema = z.object({
   id: z.string().optional(),
   sourceType: z.enum(['uploaded_notes', 'textbook', 'lecture']).optional().default('uploaded_notes'),
   page: z.number().int().positive().optional(),
   section: z.string().optional(),
   excerpt: z.string().default(''),
+  start: z.number().optional(),
+  end: z.number().optional(),
 });
 
 export const FormulaBlockSchema = z.object({
+  id: z.string().optional(),
   latex: z.string().min(1, 'Formula latex cannot be empty'),
+  raw: z.string().optional(),
   meaning: z.string().optional(),
   variables: z.string().optional(),
   unit: z.string().optional(),
   condition: z.string().optional(),
+  sourceRef: z.string().optional(),
+});
+
+export const FormulaVaultEntrySchema = z.object({
+  id: z.string(),
+  raw: z.string(),
+  latex: z.string(),
+  meaning: z.string().optional(),
+  variables: z.array(z.string()).optional(),
+  sourceRef: z.string().optional(),
 });
 
 export const TableStructureSchema = z.object({
+  id: z.string().optional(),
+  title: z.string().optional(),
   headers: z.array(z.string()),
   rows: z.array(z.array(z.string())),
+  sourceRef: z.string().optional(),
+});
+
+export const TableVaultEntrySchema = z.object({
+  id: z.string(),
+  title: z.string().optional(),
+  columns: z.array(z.string()),
+  rows: z.array(z.array(z.string())),
+  sourceRef: z.string().optional(),
 });
 
 // ──────────────────────────────────────────
 // SEMANTIC KNOWLEDGE GRAPH SCHEMAS
 // ──────────────────────────────────────────
 
+export const KnowledgeNodeTypeSchema = z.enum([
+  'root',
+  'unit',
+  'chapter',
+  'section',
+  'topic',
+  'subtopic',
+  'definition',
+  'property',
+  'formula',
+  'theorem',
+  'law',
+  'algorithm',
+  'algorithm_step',
+  'example',
+  'comparison',
+  'application',
+  'condition',
+  'warning',
+  'summary',
+  'study_tip',
+  'table',
+]);
+
+export const KnowledgeRelationshipTypeSchema = z.enum([
+  'contains',
+  'has_property',
+  'defined_by',
+  'has_formula',
+  'uses_algorithm',
+  'has_step',
+  'equivalent_to',
+  'contrasts_with',
+  'example_of',
+  'application_of',
+  'depends_on',
+  'leads_to',
+  'summarized_by',
+  'proves',
+  'applies_to',
+  'is_a',
+  'compared_with',
+  'represented_by',
+  'converts_to',
+]);
+
 export const KnowledgeNodeSchema = z.object({
   id: z.string().min(1, 'Node ID is required'),
   parentId: z.string().nullable().optional(),
   title: z.string().min(1, 'Node title is required'),
-  type: z.enum([
-    'chapter',
-    'section',
-    'concept',
-    'sub_concept',
-    'definition',
-    'property',
-    'formula',
-    'theorem',
-    'law',
-    'algorithm',
-    'algorithm_step',
-    'example',
-    'comparison',
-    'application',
-    'condition',
-    'warning',
-    'summary',
-    'study_tip',
-  ]),
+  type: KnowledgeNodeTypeSchema,
   importance: z.enum(['critical', 'high', 'medium', 'low']).default('medium'),
   summary: z.string().optional(),
+  level: z.number().optional(),
+  sourceText: z.string().optional(),
   
   definitions: z.array(z.string()).optional().default([]),
   properties: z.array(z.string()).optional().default([]),
   keyPoints: z.array(z.string()).optional().default([]),
   formulas: z.array(FormulaBlockSchema).optional().default([]),
+  formulaRefs: z.array(z.string()).optional().default([]),
   examples: z.array(z.string()).optional().default([]),
   applications: z.array(z.string()).optional().default([]),
   conditions: z.array(z.string()).optional().default([]),
@@ -77,28 +144,16 @@ export const KnowledgeNodeSchema = z.object({
   proofTechnique: z.string().optional(),
 
   table: TableStructureSchema.optional(),
+  tableRefs: z.array(z.string()).optional().default([]),
 
+  sourceRefs: z.array(z.string()).optional().default([]),
   sourceReferences: z.array(SourceReferenceSchema).optional().default([]),
 });
 
 export const KnowledgeRelationshipSchema = z.object({
   fromNodeId: z.string().min(1, 'fromNodeId is required'),
   toNodeId: z.string().min(1, 'toNodeId is required'),
-  type: z.enum([
-    'contains',
-    'has_property',
-    'defined_by',
-    'has_formula',
-    'uses_algorithm',
-    'has_step',
-    'equivalent_to',
-    'contrasts_with',
-    'example_of',
-    'application_of',
-    'depends_on',
-    'leads_to',
-    'summarized_by',
-  ]),
+  type: KnowledgeRelationshipTypeSchema,
   label: z.string().optional(),
 });
 
@@ -111,6 +166,9 @@ export const KnowledgeGraphSchema = z
     summary: z.string().min(1, 'Knowledge Graph summary is required'),
     nodes: z.array(KnowledgeNodeSchema).min(1, 'Knowledge Graph must contain at least one node'),
     relationships: z.array(KnowledgeRelationshipSchema).default([]),
+    formulas: z.array(FormulaVaultEntrySchema).optional().default([]),
+    tables: z.array(TableVaultEntrySchema).optional().default([]),
+    sourceRefs: z.array(SourceRefSchema).optional().default([]),
     sourceReferences: z.array(SourceReferenceSchema).optional().default([]),
   })
   .superRefine((kg, ctx) => {
@@ -118,9 +176,7 @@ export const KnowledgeGraphSchema = z
     const nodeMap = new Map<string, z.infer<typeof KnowledgeNodeSchema>>();
     const relKeySet = new Set<string>();
 
-    let rootCount = 0;
-
-    // 1. Check duplicate node IDs & count roots
+    // 1. Check duplicate node IDs
     for (let i = 0; i < kg.nodes.length; i++) {
       const node = kg.nodes[i];
       if (nodeIds.has(node.id)) {
@@ -132,13 +188,9 @@ export const KnowledgeGraphSchema = z
       }
       nodeIds.add(node.id);
       nodeMap.set(node.id, node);
-
-      if (!node.parentId || node.type === 'chapter') {
-        rootCount++;
-      }
     }
 
-    // 2. Validate parentId references & semantic containment
+    // 2. Validate parentId references & algorithm step containment
     for (let i = 0; i < kg.nodes.length; i++) {
       const node = kg.nodes[i];
       if (node.parentId) {
@@ -151,7 +203,6 @@ export const KnowledgeGraphSchema = z
         }
 
         const parentNode = nodeMap.get(node.parentId);
-        // Rule: algorithm_step must have an algorithm parent
         if (node.type === 'algorithm_step' && parentNode && parentNode.type !== 'algorithm') {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -162,7 +213,7 @@ export const KnowledgeGraphSchema = z
       }
     }
 
-    // 3. Validate relationship references & prevent duplicate relationships
+    // 3. Validate relationship references
     for (let i = 0; i < kg.relationships.length; i++) {
       const rel = kg.relationships[i];
       if (!nodeIds.has(rel.fromNodeId)) {
@@ -203,6 +254,9 @@ export const HierarchicalConceptTreeNodeSchema: z.ZodType<any> = z.lazy(() =>
     priority: z.enum(['high', 'medium', 'low']).optional().default('medium'),
     example: z.string().optional(),
     formulas: z.array(z.string()).optional().default([]),
+    formulaRefs: z.array(z.string()).optional().default([]),
+    tableRefs: z.array(z.string()).optional().default([]),
+    sourceRefs: z.array(z.string()).optional().default([]),
     children: z.array(HierarchicalConceptTreeNodeSchema).optional().default([]),
   })
 );
@@ -224,7 +278,7 @@ export function convertConceptTreeToKnowledgeGraph(
       id: rootId,
       parentId: null,
       title: tree.title,
-      type: 'chapter',
+      type: 'root',
       importance: 'critical',
       summary: tree.summary,
       keyPoints: [],
@@ -248,7 +302,7 @@ export function convertConceptTreeToKnowledgeGraph(
       ? 'theorem'
       : depth === 1
       ? 'section'
-      : 'concept';
+      : 'topic';
 
     const kNode: any = {
       id: currentId,
@@ -261,6 +315,8 @@ export function convertConceptTreeToKnowledgeGraph(
       examples: node.example ? [node.example] : [],
       keyPoints: [],
       formulas: [],
+      formulaRefs: node.formulaRefs || [],
+      tableRefs: node.tableRefs || [],
       properties: [],
       steps: [],
     };
@@ -305,7 +361,7 @@ export function safeValidateKnowledgeGraph(raw: unknown): { success: true; data:
   try {
     // 1. Try direct KnowledgeGraph parsing
     const validated = KnowledgeGraphSchema.parse(raw);
-    return { success: true, data: validated };
+    return { success: true, data: validated as KnowledgeGraph };
   } catch (err: any) {
     // 2. Try Hierarchical Concept Tree parsing
     try {
@@ -339,6 +395,7 @@ export const MindMapItemSchema: z.ZodType<any> = z.lazy(() =>
       'warning',
       'process',
       'diagram',
+      'table',
     ]),
     title: z.string().optional(),
     content: z.string().min(1, 'Item content cannot be empty'),
@@ -353,7 +410,9 @@ export const MindMapItemSchema: z.ZodType<any> = z.lazy(() =>
       'circuit-capacitor',
     ]).optional(),
     diagramData: z.record(z.string(), z.any()).optional(),
+    table: TableStructureSchema.optional(),
     source: SourceReferenceSchema.optional(),
+    sourceRefs: z.array(z.string()).optional().default([]),
     children: z.array(MindMapItemSchema).optional().default([]),
   })
 );

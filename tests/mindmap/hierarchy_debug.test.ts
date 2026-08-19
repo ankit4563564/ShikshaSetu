@@ -39,10 +39,10 @@ b. Arden's Theorem: If P and Q are regular expressions over Σ, and P does not c
     }
 
     // Verify hierarchy
-    const root = graph.nodes.find(n => n.type === 'chapter');
+    const root = graph.nodes.find(n => n.type === 'root' || n.type === 'chapter' || n.parentId === null);
     expect(root).toBeDefined();
 
-    const sections = graph.nodes.filter(n => n.type === 'section');
+    const sections = graph.nodes.filter(n => n.parentId === root?.id);
     console.log(`\nSections (direct children of root): ${sections.map(s => s.title).join(', ')}`);
     expect(sections.length).toBeGreaterThanOrEqual(2);
 
@@ -50,12 +50,13 @@ b. Arden's Theorem: If P and Q are regular expressions over Σ, and P does not c
     const algoSteps = graph.nodes.filter(n => n.type === 'algorithm_step');
     console.log(`Algorithm steps: ${algoSteps.length}`);
     for (const step of algoSteps) {
+      expect(step.parentId).toBeDefined();
       const parent = graph.nodes.find(n => n.id === step.parentId);
-      console.log(`  Step "${step.title}" -> parent "${parent?.title}" (type: ${parent?.type})`);
+      expect(parent?.type).toBe('algorithm');
     }
 
     // Check concepts under sections
-    const concepts = graph.nodes.filter(n => n.type === 'concept' || n.type === 'theorem' || n.type === 'algorithm');
+    const concepts = graph.nodes.filter(n => n.type === 'topic' || n.type === 'concept' || n.type === 'theorem' || n.type === 'algorithm');
     console.log(`\nConcepts/Theorems/Algorithms:`);
     for (const c of concepts) {
       const parent = graph.nodes.find(n => n.id === c.parentId);
