@@ -1,0 +1,46 @@
+{
+  "title": "THEORY OF COMPUTATION",
+  "unit": "UNIT – 1",
+  "expectedSections": [
+    "Introduction to Theory of Computation",
+    "Formal Languages, Alphabets and Strings",
+    "Finite Automata",
+    "Regular Expressions and Regular Languages",
+    "Summary and Revision Keypoints"
+  ],
+  "expectedConcepts": [
+    "Alphabets",
+    "Strings",
+    "Languages",
+    "Deterministic Finite Automata (DFA)",
+    "Non-deterministic Finite Automata (NFA)",
+    "Transition Diagrams and Transition Tables",
+    "Equivalence of DFA and NFA",
+    "Subset Construction Algorithm",
+    "Operators and Precedence",
+    "Kleene's Theorem",
+    "Arden's Theorem",
+    "Applications of Regular Expressions"
+  ],
+  "expectedAlgorithmHierarchy": {
+    "algorithm": "Subset Construction Algorithm",
+    "stepCount": 4
+  },
+  "expectedFormulas": [
+    "\\(Q,\\s*\\\\Sigma,\\s*\\\\delta,\\s*q_0,\\s*F\\)",
+    "\\\\delta:\\s*Q\\s*\\\\times\\s*\\\\Sigma\\s*\\\\rightarrow\\s*Q",
+    "\\\\delta:\\s*Q\\s*\\\\times\\s*\\(\\\\Sigma\\s*\\\\cup\\s*\\\\{\\\\varepsilon\\\\}\\)\\s*\\\\rightarrow\\s*2\\^Q",
+    "R\\s*=\\s*Q\\s*\\+\\s*RP",
+    "R\\s*=\\s*QP\\^\\*",
+    "L\\s*=\\s*\\\\{a,\\s*ab,\\s*abc\\\\}",
+    "L\\s*=\\s*\\\\{a\\^n\\s*:\\s*n\\s*\\\\ge\\s*0\\\\}",
+    "L\\s*=\\s*\\\\emptyset",
+    "L\\s*=\\s*\\\\Sigma\\^\\*"
+  ],
+  "expectedTables": [
+    {
+      "columns": ["State", "Input 0", "Input 1"],
+      "rowCount": 2
+    }
+  ]
+}

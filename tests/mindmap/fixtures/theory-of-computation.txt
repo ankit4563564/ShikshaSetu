@@ -1,0 +1,83 @@
+BCA 5th SEMESTER
+THEORY OF COMPUTATION
+UNIT – 1
+
+1. Introduction to Theory of Computation:
+Theory of Computation is a theoretical branch of Computer Science and Mathematics that studies whether and how efficiently computational problems can be solved using mathematical models of computation.
+Branches of Theory of Computation:
+• Automata Theory: Study of abstract state machines and automata.
+• Computability Theory: Study of what can and cannot be computed by algorithms.
+• Complexity Theory: Study of resource requirements (time and space complexity) to solve problems.
+
+2. Formal Languages, Alphabets and Strings:
+Formal languages provide the mathematical foundation for programming languages, compilers, and automata.
+a. Alphabets: A finite, non-empty set of symbols denoted by Sigma (Σ). Example: Σ = {0, 1}, Σ = {a, b}.
+b. Strings: A finite sequence of symbols chosen from an alphabet. Length of string w is denoted by |w|. Empty string is denoted by epsilon (ε) or lambda (λ), where |ε| = 0. Powers of alphabet: Σ*, Σ+.
+c. Languages: A set of strings chosen from an alphabet Σ. Can be finite or infinite.
+Language Types:
+• Finite Language: L = {a, ab, abc}
+• Infinite Language: L = {a^n : n >= 0}
+• Empty Language: L = ∅
+• Universal Language: L = Σ*
+
+3. Finite Automata:
+Finite automata are abstract state machines that process input symbols sequentially with finite internal memory.
+a. Deterministic Finite Automata (DFA):
+A deterministic finite automaton where for every state and input symbol, there is exactly one unique transition.
+DFA is mathematically defined as a 5-tuple: (Q, Σ, δ, q0, F)
+Where:
+• Q is a finite, non-empty set of states.
+• Σ is a finite, non-empty set of input symbols (alphabet).
+• δ: Q × Σ → Q is the transition function mapping a state and an input symbol to a single next state.
+• q0 ∈ Q is the initial (start) state.
+• F ⊆ Q is the set of final (accepting) states.
+
+b. Non-deterministic Finite Automata (NFA):
+A non-deterministic finite automaton that allows zero, one, or multiple transitions for a given state and input symbol, as well as spontaneous transitions without consuming input (ε-transitions).
+NFA is mathematically defined as a 5-tuple: (Q, Σ, δ, q0, F)
+Where transition function is δ: Q × (Σ ∪ {ε}) → 2^Q.
+
+c. Transition Diagrams and Transition Tables:
+Finite automata can be represented graphically as state transition diagrams (nodes = states, directed edges = transitions) and tabularly as transition tables.
+| State | Input 0 | Input 1 |
+|-------|---------|---------|
+| -> q0  | q0      | q1      |
+| * q1  | q1      | q0      |
+
+d. Equivalence of DFA and NFA:
+Every NFA can be converted to an equivalent DFA accepting the exact same language. The conversion is performed using the Subset Construction Algorithm (also called Powerset Construction).
+Subset Construction Algorithm:
+Step 1: Create DFA states corresponding to subsets of NFA states.
+Step 2: Initial DFA state = ε-closure of NFA initial state q0.
+Step 3: For each DFA state and input symbol, compute transitions by taking the union of transitions of all constituent NFA states.
+Step 4: Final DFA states are any subsets that contain at least one NFA accepting state.
+
+4. Regular Expressions and Regular Languages:
+Regular expressions provide algebraic representations of regular languages accepted by finite automata.
+a. Operators and Precedence:
+• Union (+ or ∪): R1 + R2
+• Concatenation (· or juxtaposed): R1 · R2
+• Kleene Star (*): R* (zero or more repetitions)
+Precedence Order: Kleene Star (*) > Concatenation (·) > Union (+).
+
+b. Kleene's Theorem:
+A language is regular if and only if it is accepted by a finite automaton (DFA or NFA).
+
+c. Arden's Theorem:
+Let P and Q be two regular expressions over an alphabet Σ. If P does not contain the empty string ε, then the algebraic equation:
+R = Q + RP
+has a unique solution given by:
+R = QP*
+Arden's Theorem is primarily used to convert finite state transition diagrams into equivalent regular expressions.
+
+d. Applications of Regular Expressions:
+• Lexical analyzers in compiler design (Lex/Flex).
+• Pattern matching and search utilities (grep, regex engines).
+• Input validation in web and mobile systems.
+• Network packet inspection and intrusion detection.
+
+5. Summary and Revision Keypoints:
+• DFA has exactly one transition per input symbol; NFA can have multiple transitions or ε-transitions.
+• DFA and NFA have equal computational power; both recognize precisely the regular languages.
+• Arden's Theorem unique solution equation: R = QP*.
+• Subset construction worst-case state complexity: 2^n states for an n-state NFA.

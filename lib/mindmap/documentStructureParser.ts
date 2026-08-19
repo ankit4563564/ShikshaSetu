@@ -4,7 +4,7 @@
  * Preserves mathematical Unicode symbols and tracks exact source spans for provenance.
  */
 
-import { extractFormulaVault } from './formulaVault';
+import { extractFormulaVault, findMatchingFormulaRefs } from './formulaVault';
 import { extractTableVault } from './tableExtractor';
 import type {
   StructuralEvidenceNode,
@@ -63,14 +63,15 @@ interface PrefixMatch {
   prefix: string;
   title: string;
   level: number;
-  type: 'unit' | 'section' | 'topic' | 'subtopic' | 'step' | 'list_item' | 'text';
+  type: 'unit' | 'section' | 'topic' | 'subtopic' | 'algorithm' | 'step' | 'list_item' | 'text';
+  inlineBody?: string;
 }
 
 export function detectStructuralPrefix(line: string): PrefixMatch | null {
   const trimmed = line.trim();
   if (!trimmed || trimmed.length < 2) return null;
 
-  // Level 1: Unit / Chapter / Semester Course Root (e.g. "UNIT – 1", "UNIT 1:", "Chapter: Theory of Computation")
+  // Level 1: Unit / Chapter / Semester Course Root (e.g. "UNIT – 1", "UNIT 1:", "Chapter: Theory of Computation", "BCA 5th SEMESTER")
   const unitMatch = trimmed.match(/^(?:UNIT\s*[-–:]?\s*(\d+|[I|V|X]+)|Chapter\s*[:\-]\s*(.+)|(?:BCA|B\.Tech|B\.Sc|Class|Grade)\s*\d+.*)/i);
   if (unitMatch) {
     return {
@@ -81,28 +82,42 @@ export function detectStructuralPrefix(line: string): PrefixMatch | null {
     };
   }
 
-  // Level 2: Major Section Numbering (e.g. "1. Formal Languages", "2. Finite Automata", "(a) Introduction", "I. Automata")
-  const majorNumMatch = trimmed.match(/^(?:([0-9]{1,2})\.|\(([a-z])\)|([I|V|X]+)\.)\s+([A-Za-z0-9\s&,'\-\(\)\/]{3,80})/i);
+  // Algorithm Header (e.g. "Subset Construction Algorithm:", "Euclidean Algorithm:", "Conversion Algorithm:")
+  const algoMatch = trimmed.match(/^([^:\n]{3,65}(?:Algorithm|Procedure|Conversion Method|Construction Method))\s*[:\-]?\s*$/i);
+  if (algoMatch) {
+    return {
+      prefix: 'Algorithm',
+      title: algoMatch[1].trim(),
+      level: 3,
+      type: 'algorithm',
+    };
+  }
+
+  // Level 2: Major Section Numbering (e.g. "1. Formal Languages:", "2. Finite Automata:", "(a) Introduction", "I. Automata")
+  const majorNumMatch = trimmed.match(/^(?:([0-9]{1,2})\.|\(([a-z])\)|([I|V|X]+)\.)\s+([A-Za-z0-9\s&,'\-\(\)\/]{3,80})(?::\s*(.*))?$/i);
   if (majorNumMatch) {
     return {
       prefix: majorNumMatch[1] ? `${majorNumMatch[1]}.` : majorNumMatch[2] ? `(${majorNumMatch[2]})` : `${majorNumMatch[3]}.`,
       title: majorNumMatch[4].replace(/[:\-#]+$/, '').trim(),
       level: 2,
       type: 'section',
+      inlineBody: majorNumMatch[5]?.trim(),
     };
   }
 
-  // Level 3: Subsection / Topic Numbering (e.g. "a. Alphabets:", "b. Strings:", "i) Formal Languages", "1.1 Alphabets")
-  const subNumMatch = trimmed.match(/^(?:([a-z])[\.\)]|\(([0-9]{1,2})\)|([i|v|x]+)\)|\b(\d+\.\d+)\b)\s*([^:\n]{2,75})/i);
+  // Level 3: Subsection / Topic Numbering (e.g. "a. Alphabets: ...", "b. Strings: ...", "i) Formal Languages", "1.1 Alphabets")
+  const subNumMatch = trimmed.match(/^(?:([a-z])[\.\)]|\(([0-9]{1,2})\)|([i|v|x]+)\)|\b(\d+\.\d+)\b)\s*([^:\n]{2,75})(?::\s*(.*))?$/i);
   if (subNumMatch) {
     const rawTitle = subNumMatch[5].replace(/[:\-#]+$/, '').trim();
-    // Check if it's an algorithm step
     const isStep = /^Step\s*\d+/i.test(rawTitle);
+    const isAlgo = /algorithm|procedure|conversion/i.test(rawTitle);
+
     return {
       prefix: subNumMatch[0].split(/\s+/)[0],
       title: rawTitle,
       level: isStep ? 4 : 3,
-      type: isStep ? 'step' : 'topic',
+      type: isStep ? 'step' : isAlgo ? 'algorithm' : 'topic',
+      inlineBody: subNumMatch[6]?.trim(),
     };
   }
 
@@ -117,7 +132,7 @@ export function detectStructuralPrefix(line: string): PrefixMatch | null {
     };
   }
 
-  // Level 5: List Items / Bullets (e.g. "• Definition", "- Precedence: Star > Concatenation", "* Operators:")
+  // Level 5: List Items / Bullets (e.g. "• Definition:", "- Precedence: Star > Concatenation", "* Operators:")
   const bulletMatch = trimmed.match(/^(?:[•\*\-]|--)\s+(.+)/);
   if (bulletMatch) {
     return {
@@ -153,6 +168,8 @@ export function parseDocumentStructure(
   let currentUnitNode: StructuralEvidenceNode | null = null;
   let currentSectionNode: StructuralEvidenceNode | null = null;
   let currentTopicNode: StructuralEvidenceNode | null = null;
+  let currentAlgorithmNode: StructuralEvidenceNode | null = null;
+
   let nodeCounter = 1;
   let currentOffset = 0;
 
@@ -165,12 +182,10 @@ export function parseDocumentStructure(
 
     const prefixInfo = detectStructuralPrefix(line);
 
-    // Extract any formula references matching in this line
-    const matchedFormulaRefs = formulaResult.vault
-      .filter((f) => line.includes(f.raw) || line.includes(f.latex))
-      .map((f) => f.id);
+    // Extract formula references matching this line
+    const matchedFormulaRefs = findMatchingFormulaRefs(line, formulaResult.vault);
 
-    // Extract any table references in this line
+    // Extract table references matching this line
     const tableRefMatch = line.match(/\[TABLE_REF:\s*(TABLE_\d+)\]/);
     const matchedTableRefs = tableRefMatch ? [tableRefMatch[1]] : [];
 
@@ -189,9 +204,9 @@ export function parseDocumentStructure(
         id: `struct-node-${nodeCounter++}`,
         title: prefixInfo.title,
         level: prefixInfo.level,
-        rawText: line,
+        rawText: prefixInfo.inlineBody ? prefixInfo.inlineBody : line,
         numberingPrefix: prefixInfo.prefix,
-        detectedType: prefixInfo.type,
+        detectedType: prefixInfo.type === 'algorithm' ? 'topic' : prefixInfo.type,
         parentId: null,
         children: [],
         formulaRefs: matchedFormulaRefs,
@@ -204,19 +219,22 @@ export function parseDocumentStructure(
         currentUnitNode = node;
         currentSectionNode = null;
         currentTopicNode = null;
+        currentAlgorithmNode = null;
         rootNodes.push(node);
       } else if (prefixInfo.level === 2) {
         // Major section level
         currentSectionNode = node;
         currentTopicNode = null;
+        currentAlgorithmNode = null;
         if (currentUnitNode) {
           (node as any).parentId = currentUnitNode.id;
           currentUnitNode.children.push(node);
         } else {
           rootNodes.push(node);
         }
-      } else if (prefixInfo.level === 3) {
-        // Topic / Subsection level
+      } else if (prefixInfo.type === 'algorithm' || /subset\s*construction|algorithm|conversion/i.test(prefixInfo.title)) {
+        // Algorithm node
+        currentAlgorithmNode = node;
         currentTopicNode = node;
         if (currentSectionNode) {
           (node as any).parentId = currentSectionNode.id;
@@ -227,42 +245,46 @@ export function parseDocumentStructure(
         } else {
           rootNodes.push(node);
         }
-      } else if (prefixInfo.level === 4) {
-        // Step level
-        if (currentTopicNode) {
-          (node as any).parentId = currentTopicNode.id;
-          currentTopicNode.children.push(node);
-        } else if (currentSectionNode) {
+      } else if (prefixInfo.level === 3) {
+        // Topic / Subsection level
+        currentTopicNode = node;
+        currentAlgorithmNode = null;
+        if (currentSectionNode) {
           (node as any).parentId = currentSectionNode.id;
           currentSectionNode.children.push(node);
+        } else if (currentUnitNode) {
+          (node as any).parentId = currentUnitNode.id;
+          currentUnitNode.children.push(node);
+        } else {
+          rootNodes.push(node);
+        }
+      } else if (prefixInfo.level === 4 || prefixInfo.type === 'step') {
+        // Algorithm Step level
+        const targetParent = currentAlgorithmNode || currentTopicNode || currentSectionNode;
+        if (targetParent) {
+          (node as any).parentId = targetParent.id;
+          targetParent.children.push(node);
         } else {
           rootNodes.push(node);
         }
       } else {
         // List item / supporting bullet
-        if (currentTopicNode) {
-          currentTopicNode.children.push(node);
-        } else if (currentSectionNode) {
-          currentSectionNode.children.push(node);
+        const targetParent = currentTopicNode || currentSectionNode || currentUnitNode;
+        if (targetParent) {
+          targetParent.children.push(node);
         } else {
           rootNodes.push(node);
         }
       }
     } else {
-      // Content line: attach to currently active topic or section
-      if (currentTopicNode) {
+      // Content line: attach formulas or text body to currently active topic, algorithm, or section
+      const activeNode = currentAlgorithmNode || currentTopicNode || currentSectionNode;
+      if (activeNode) {
         if (matchedFormulaRefs.length > 0) {
-          currentTopicNode.formulaRefs.push(...matchedFormulaRefs);
+          activeNode.formulaRefs.push(...matchedFormulaRefs);
         }
         if (matchedTableRefs.length > 0) {
-          currentTopicNode.tableRefs.push(...matchedTableRefs);
-        }
-      } else if (currentSectionNode) {
-        if (matchedFormulaRefs.length > 0) {
-          currentSectionNode.formulaRefs.push(...matchedFormulaRefs);
-        }
-        if (matchedTableRefs.length > 0) {
-          currentSectionNode.tableRefs.push(...matchedTableRefs);
+          activeNode.tableRefs.push(...matchedTableRefs);
         }
       }
     }

@@ -1,10 +1,11 @@
 /**
  * ShikshaSetu — Stage 5: Critic & Deterministic Auto-Repair Engine
- * Validates canonical Knowledge Graphs against source evidence.
- * Detects orphan steps, duplicate concepts, missing formulas, and computes Fidelity Reports.
+ * Validates canonical Knowledge Graphs against source evidence with full Coverage Reporting.
+ * Guarantees zero orphan algorithm steps, immutable formula preservation, and duplicate elimination.
  */
 
 import { ResilientAIProvider } from '@/lib/intelligence/providers/aiProvider';
+import { resolveFormulaRefs } from './formulaVault';
 import type {
   KnowledgeGraph,
   KnowledgeNode,
@@ -13,6 +14,127 @@ import type {
   ValidationIssue,
   DocumentStructureEvidence,
 } from './types';
+
+export interface DetailedCoverageReport {
+  headingCoverage: number;
+  missingHeadings: string[];
+  formulaCoverage: number;
+  missingFormulas: string[];
+  tableCoverage: number;
+  missingTables: string[];
+  stepCoverage: number;
+  orphanSteps: string[];
+  duplicateNodeSpans: string[];
+  sourceSpanCoverage: number;
+}
+
+/**
+ * Deterministically audits source coverage between evidence and the generated KnowledgeGraph.
+ */
+export function validateSourceCoverage(
+  evidence: DocumentStructureEvidence,
+  graph: KnowledgeGraph
+): DetailedCoverageReport {
+  // 1. Heading coverage
+  const allEvidenceHeadings: string[] = [];
+  function collectHeadings(nodes: any[]) {
+    for (const n of nodes) {
+      if (n.title && n.title.length > 2) allEvidenceHeadings.push(n.title);
+      if (n.children && n.children.length > 0) collectHeadings(n.children);
+    }
+  }
+  collectHeadings(evidence.rootNodes);
+
+  const graphTitles = graph.nodes.map((n) => n.title.toLowerCase());
+  const missingHeadings = allEvidenceHeadings.filter((h) => {
+    const hLow = h.toLowerCase();
+    return !graphTitles.some((gt) => gt.includes(hLow) || hLow.includes(gt));
+  });
+
+  const headingCoverage = allEvidenceHeadings.length > 0
+    ? Math.round(((allEvidenceHeadings.length - missingHeadings.length) / allEvidenceHeadings.length) * 100)
+    : 100;
+
+  // 2. Formula coverage
+  const allGraphFormulaIds = new Set<string>(
+    graph.nodes.flatMap((n) => [
+      ...(n.formulaRefs || []),
+      ...(n.formulas || []).map((f) => f.id || ''),
+    ]).filter(Boolean)
+  );
+
+  const allGraphLatex = graph.nodes.flatMap((n) => (n.formulas || []).map((f) => f.latex.replace(/\s+/g, '')));
+
+  const missingFormulas = evidence.formulaVault.filter((f) => {
+    const normKey = f.latex.replace(/\s+/g, '');
+    return !allGraphFormulaIds.has(f.id) && !allGraphLatex.some((gl) => gl.includes(normKey) || normKey.includes(gl));
+  }).map((f) => f.raw);
+
+  const formulaCoverage = evidence.formulaVault.length > 0
+    ? Math.round(((evidence.formulaVault.length - missingFormulas.length) / evidence.formulaVault.length) * 100)
+    : 100;
+
+  // 3. Table coverage
+  const allGraphTableIds = new Set<string>(
+    graph.nodes.flatMap((n) => [...(n.tableRefs || []), n.table?.id || '']).filter(Boolean)
+  );
+  const missingTables = evidence.tableVault.filter((t) => !allGraphTableIds.has(t.id)).map((t) => t.id);
+  const tableCoverage = evidence.tableVault.length > 0
+    ? Math.round(((evidence.tableVault.length - missingTables.length) / evidence.tableVault.length) * 100)
+    : 100;
+
+  // 4. Algorithm step containment
+  const stepNodes = graph.nodes.filter((n) => n.type === 'algorithm_step');
+  const nodeMap = new Map<string, KnowledgeNode>();
+  graph.nodes.forEach((n) => nodeMap.set(n.id, n));
+
+  const orphanSteps = stepNodes.filter((s) => {
+    if (!s.parentId) return true;
+    const parent = nodeMap.get(s.parentId);
+    return !parent || parent.type !== 'algorithm';
+  }).map((s) => s.title);
+
+  const stepCoverage = stepNodes.length > 0
+    ? Math.round(((stepNodes.length - orphanSteps.length) / stepNodes.length) * 100)
+    : 100;
+
+  // 5. Source span duplication
+  const seenSpans = new Map<string, string[]>();
+  for (const node of graph.nodes) {
+    for (const span of node.sourceRefs || []) {
+      const existing = seenSpans.get(span) || [];
+      existing.push(node.id);
+      seenSpans.set(span, existing);
+    }
+  }
+
+  const duplicateNodeSpans: string[] = [];
+  for (const [span, nodeIds] of seenSpans.entries()) {
+    if (nodeIds.length > 1) {
+      duplicateNodeSpans.push(span);
+    }
+  }
+
+  const nodesWithSource = graph.nodes.filter(
+    (n) => (n.sourceRefs && n.sourceRefs.length > 0) || (n.sourceReferences && n.sourceReferences.length > 0) || n.sourceText
+  );
+  const sourceSpanCoverage = graph.nodes.length > 0
+    ? Math.round((nodesWithSource.length / graph.nodes.length) * 100)
+    : 100;
+
+  return {
+    headingCoverage,
+    missingHeadings,
+    formulaCoverage,
+    missingFormulas,
+    tableCoverage,
+    missingTables,
+    stepCoverage,
+    orphanSteps,
+    duplicateNodeSpans,
+    sourceSpanCoverage,
+  };
+}
 
 /**
  * Deterministically audits a KnowledgeGraph against the structural evidence.
@@ -42,8 +164,6 @@ export function auditKnowledgeGraph(
 
   // 2. Orphan Algorithm Step & Invalid Parent Checks
   let orphanStepsCount = 0;
-  let algoNodes = graph.nodes.filter((n) => n.type === 'algorithm');
-
   for (const node of graph.nodes) {
     if (node.type === 'algorithm_step') {
       if (!node.parentId) {
@@ -96,45 +216,28 @@ export function auditKnowledgeGraph(
     }
   }
 
-  // 4. Formula Preservation Check
+  // 4. Coverage Validation (if evidence provided)
+  let headingCoverageScore = 100;
   let formulaPreservationScore = 100;
-  if (evidence && evidence.formulaVault && evidence.formulaVault.length > 0) {
-    const allGraphFormulas = graph.nodes.flatMap((n) => [
-      ...(n.formulas || []).map((f) => f.latex),
-      ...(n.formulaRefs || []),
-    ]);
+  let tablePreservation = 100;
 
-    const missingFormulas = evidence.formulaVault.filter((f) => {
-      return !allGraphFormulas.some((gf) => gf.includes(f.latex) || gf === f.id);
-    });
+  if (evidence) {
+    const coverage = validateSourceCoverage(evidence, graph);
+    headingCoverageScore = coverage.headingCoverage;
+    formulaPreservationScore = coverage.formulaCoverage;
+    tablePreservation = coverage.tableCoverage;
 
-    if (missingFormulas.length > 0) {
-      formulaPreservationScore = Math.max(0, Math.round(((evidence.formulaVault.length - missingFormulas.length) / evidence.formulaVault.length) * 100));
+    if (coverage.missingFormulas.length > 0) {
       issues.push({
         code: 'MISSING_FORMULAS',
         severity: 'warning',
-        message: `${missingFormulas.length} vaulted formulas not referenced in KnowledgeGraph.`,
+        message: `${coverage.missingFormulas.length} formulas missing from graph: ${coverage.missingFormulas.slice(0, 3).join(', ')}`,
         autoFixable: true,
       });
     }
   }
 
-  // 5. Heading Coverage Check
-  let headingCoverageScore = 100;
-  if (evidence && evidence.rootNodes && evidence.rootNodes.length > 0) {
-    const majorEvidenceTitles = evidence.rootNodes.flatMap((r) => [r.title, ...r.children.map((c) => c.title)]);
-    const graphTitles = graph.nodes.map((n) => n.title.toLowerCase());
-
-    const covered = majorEvidenceTitles.filter((mt) =>
-      graphTitles.some((gt) => gt.includes(mt.toLowerCase()) || mt.toLowerCase().includes(gt))
-    );
-
-    headingCoverageScore = majorEvidenceTitles.length > 0
-      ? Math.round((covered.length / majorEvidenceTitles.length) * 100)
-      : 100;
-  }
-
-  // 6. Source Reference Coverage Check
+  // 5. Source Reference Coverage Check
   const nodesWithSource = graph.nodes.filter(
     (n) => (n.sourceRefs && n.sourceRefs.length > 0) || (n.sourceReferences && n.sourceReferences.length > 0) || n.sourceText
   );
@@ -142,7 +245,7 @@ export function auditKnowledgeGraph(
     ? Math.round((nodesWithSource.length / graph.nodes.length) * 100)
     : 100;
 
-  // 7. Relationship Integrity Check
+  // 6. Relationship Integrity Check
   let brokenRelCount = 0;
   for (const rel of graph.relationships) {
     if (!nodeIds.has(rel.fromNodeId) || !nodeIds.has(rel.toNodeId)) {
@@ -161,7 +264,6 @@ export function auditKnowledgeGraph(
     : 100;
 
   const hierarchyIntegrity = Math.max(0, 100 - orphanStepsCount * 25);
-  const tablePreservation = 100;
   const conceptCoverage = Math.max(0, 100 - duplicateCount * 10);
 
   // Calculate composite fidelity score (0 - 100)
@@ -194,7 +296,7 @@ export function autoRepairKnowledgeGraph(
   graph: KnowledgeGraph,
   evidence?: DocumentStructureEvidence
 ): KnowledgeGraph {
-  const nodes: KnowledgeNode[] = [...graph.nodes];
+  let nodes: KnowledgeNode[] = [...graph.nodes];
   const relationships: KnowledgeRelationship[] = [...graph.relationships];
 
   // 1. Ensure at least one algorithm node exists if algorithm steps are present
@@ -216,8 +318,8 @@ export function autoRepairKnowledgeGraph(
     nodes.push(defaultAlgorithm);
   }
 
-  // 2. Re-parent orphan algorithm steps under the algorithm node
-  const updatedNodes: KnowledgeNode[] = nodes.map((node) => {
+  // 2. Re-parent orphan algorithm steps strictly under their algorithm node
+  nodes = nodes.map((node) => {
     if (node.type === 'algorithm_step') {
       const currentParent = nodes.find((n) => n.id === node.parentId);
       if (!currentParent || currentParent.type !== 'algorithm') {
@@ -231,46 +333,42 @@ export function autoRepairKnowledgeGraph(
     return node;
   });
 
-  // 3. Attach missing formulas from evidence vault to the root or nearest matching section
-  if (evidence && evidence.formulaVault) {
-    const allFormulas = updatedNodes.flatMap((n) => n.formulas || []);
-    for (const vaultEntry of evidence.formulaVault) {
-      const exists = allFormulas.some((f) => f.latex.replace(/\s+/g, '') === vaultEntry.latex.replace(/\s+/g, ''));
-      if (!exists) {
-        // Find matching node by meaning/title or attach to first section
-        const matchingNode = updatedNodes.find((n) =>
-          vaultEntry.meaning && n.title.toLowerCase().includes(vaultEntry.meaning.toLowerCase().slice(0, 10))
-        ) || updatedNodes[1] || updatedNodes[0];
+  // 3. Resolve and attach formula references contextually (WITHOUT dumping all on the first section)
+  if (evidence && evidence.formulaVault && evidence.formulaVault.length > 0) {
+    const vault = evidence.formulaVault;
 
-        if (matchingNode) {
-          const currentFormulas = matchingNode.formulas ? [...matchingNode.formulas] : [];
-          currentFormulas.push({
-            id: vaultEntry.id,
-            latex: vaultEntry.latex,
-            raw: vaultEntry.raw,
-            meaning: vaultEntry.meaning,
-            sourceRef: vaultEntry.sourceRef,
-          });
-          const nodeIndex = updatedNodes.findIndex((n) => n.id === matchingNode.id);
-          if (nodeIndex >= 0) {
-            updatedNodes[nodeIndex] = {
-              ...updatedNodes[nodeIndex],
-              formulas: currentFormulas,
-            };
-          }
-        }
-      }
-    }
+    nodes = nodes.map((node) => {
+      // Find matching formulas for this specific node
+      const matchingRefs = vault
+        .filter((v) => {
+          const text = (node.title + ' ' + (node.summary || '') + ' ' + (node.definitions || []).join(' ')).toLowerCase();
+          return (
+            (node.formulaRefs && node.formulaRefs.includes(v.id)) ||
+            (v.meaning && text.includes(v.meaning.toLowerCase().slice(0, 15))) ||
+            text.includes(v.raw.toLowerCase())
+          );
+        })
+        .map((v) => v.id);
+
+      const combinedRefs = Array.from(new Set([...(node.formulaRefs || []), ...matchingRefs]));
+      const resolvedFormulas = resolveFormulaRefs(combinedRefs, vault);
+
+      return {
+        ...node,
+        formulaRefs: combinedRefs,
+        formulas: resolvedFormulas.length > 0 ? resolvedFormulas : node.formulas,
+      };
+    });
   }
 
   // 4. Clean relationships to ensure valid node IDs
-  const validNodeIds = new Set(updatedNodes.map((n) => n.id));
+  const validNodeIds = new Set(nodes.map((n) => n.id));
   const validRelationships = relationships.filter(
     (r) => validNodeIds.has(r.fromNodeId) && validNodeIds.has(r.toNodeId)
   );
 
   // 5. Ensure relationships exist for all parent-child links
-  for (const node of updatedNodes) {
+  for (const node of nodes) {
     if (node.parentId && validNodeIds.has(node.parentId)) {
       const hasRel = validRelationships.some(
         (r) => r.fromNodeId === node.parentId && r.toNodeId === node.id
@@ -288,7 +386,7 @@ export function autoRepairKnowledgeGraph(
 
   return {
     ...graph,
-    nodes: updatedNodes,
+    nodes,
     relationships: validRelationships,
     formulas: evidence?.formulaVault || graph.formulas,
     tables: evidence?.tableVault || graph.tables,

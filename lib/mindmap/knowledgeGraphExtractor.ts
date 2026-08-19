@@ -8,7 +8,7 @@ import { safeValidateKnowledgeGraph } from './schema';
 import { extractFormulaVault, resolveFormulaRefs, normalizeMathFormula, deduplicateFormulas } from './formulaVault';
 import { extractTableVault, resolveTableRefs } from './tableExtractor';
 import { parseDocumentStructure } from './documentStructureParser';
-import { auditKnowledgeGraph, autoRepairKnowledgeGraph, runAICritic } from './criticEngine';
+import { auditKnowledgeGraph, autoRepairKnowledgeGraph, validateSourceCoverage, runAICritic } from './criticEngine';
 import type {
   KnowledgeGraph,
   KnowledgeNode,
@@ -113,7 +113,6 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
     parentId: string,
     depth: number
   ) {
-    const nodeId = `node-${evNode.detectedType || 'concept'}-${nodeCounter++}`;
     const cleanTitle = evNode.title || 'Key Concept';
     const isStep = evNode.detectedType === 'step' || /^Step\s*\d+/i.test(cleanTitle);
     const isAlgo = evNode.detectedType === 'algorithm' || /subset\s*construction|algorithm|conversion/i.test(cleanTitle);
@@ -129,8 +128,22 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
       ? 'section'
       : 'topic';
 
+    const nodeId = `node-${nodeType}-${nodeCounter++}`;
     const formulas = resolveFormulaRefs(evNode.formulaRefs || [], evidence.formulaVault);
     const tables = resolveTableRefs(evNode.tableRefs || [], evidence.tableVault);
+
+    // Only include definition text if it provides real descriptive content distinct from the heading
+    const definitionText = evNode.rawText &&
+      !evNode.rawText.startsWith('1.') &&
+      !evNode.rawText.startsWith('2.') &&
+      !evNode.rawText.startsWith('3.') &&
+      !evNode.rawText.startsWith('4.') &&
+      !evNode.rawText.startsWith('5.') &&
+      !evNode.rawText.startsWith('UNIT') &&
+      !evNode.rawText.startsWith('Chapter') &&
+      evNode.rawText !== cleanTitle
+      ? evNode.rawText
+      : undefined;
 
     const kNode: KnowledgeNode = {
       id: nodeId,
@@ -138,8 +151,8 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
       title: cleanTitle,
       type: nodeType,
       importance: isAlgo || isTheorem || depth <= 2 ? 'high' : 'medium',
-      summary: evNode.rawText !== cleanTitle ? evNode.rawText : undefined,
-      definitions: evNode.rawText && evNode.rawText !== cleanTitle ? [evNode.rawText] : [],
+      summary: definitionText,
+      definitions: definitionText ? [definitionText] : [],
       formulas: formulas.length > 0 ? formulas : undefined,
       formulaRefs: evNode.formulaRefs,
       table: tables.length > 0 ? tables[0] : undefined,
@@ -169,20 +182,6 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
     for (const topNode of evidence.rootNodes) {
       processEvidenceNode(topNode, rootId, 1);
     }
-  } else {
-    // If no structural markers were found, fallback to line-level parsing
-    const lines = evidence.cleanedText.split('\n').filter((l) => l.trim().length > 0);
-    lines.forEach((line, idx) => {
-      const isHeading = /^[0-9]+\.\s*|^[a-z]\.\s*/i.test(line);
-      nodes.push({
-        id: `node-fallback-${idx + 1}`,
-        parentId: isHeading ? rootId : `node-fallback-1`,
-        title: line.slice(0, 50),
-        type: isHeading ? 'section' : 'topic',
-        importance: isHeading ? 'high' : 'medium',
-        definitions: [line],
-      });
-    });
   }
 
   // Cross-link semantic relationships
@@ -254,13 +253,14 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
 
   // Recursive item builder for child nodes
   function buildItemsForNode(parentNodeId: string): MindMapItem[] {
+    // Exclude algorithm_step from being rendered as standalone child items to avoid duplication
     const childNodes = graph.nodes.filter((n) => n.parentId === parentNodeId && n.type !== 'algorithm_step');
     const items: MindMapItem[] = [];
 
     for (const child of childNodes) {
       const grandChildren = buildItemsForNode(child.id);
 
-      // Extract algorithm steps if any
+      // Extract algorithm steps if this is an algorithm node
       const stepNodes = graph.nodes.filter((n) => n.parentId === child.id && n.type === 'algorithm_step');
       const allSteps = (child.steps && child.steps.length > 0)
         ? child.steps
@@ -333,11 +333,13 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
     // 1. Section definition
     if (node.definitions && node.definitions.length > 0) {
       node.definitions.forEach((def, dIdx) => {
-        items.push({
-          id: `${node.id}-def-${dIdx}`,
-          type: 'definition',
-          content: def,
-        });
+        if (def && def !== node.title) {
+          items.push({
+            id: `${node.id}-def-${dIdx}`,
+            type: 'definition',
+            content: def,
+          });
+        }
       });
     }
 
@@ -379,7 +381,7 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       ? node.steps
       : directSteps.map((s) => s.definitions?.[0] || s.title);
 
-    if (allDirectSteps.length > 0) {
+    if (allDirectSteps.length > 0 && node.type === 'algorithm') {
       items.push({
         id: `${node.id}-algo-process`,
         type: 'process',

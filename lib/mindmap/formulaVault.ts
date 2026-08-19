@@ -1,7 +1,7 @@
 /**
  * ShikshaSetu — Formula Vault (Immutable Mathematical & Theoretical Foundation)
  * Extracts, standardizes, and vaults mathematical formulas & state tuples BEFORE LLM processing.
- * Guarantees that mathematical notation is NEVER rewritten or corrupted by LLMs.
+ * Guarantees that mathematical notation is NEVER rewritten, fragmented, or corrupted.
  */
 
 import type { FormulaVaultEntry, FormulaBlock, SourceRef } from './types';
@@ -14,27 +14,36 @@ export function normalizeMathFormula(raw: string): string {
 
   let formula = raw.trim();
 
-  // Strip formula label prefixes like "Formula:", "Tuple:", "Equation:"
-  formula = formula.replace(/^(?:Formula|Tuple|Equation|Law\s*Formula)\s*[:=]?\s*/i, '');
+  // Strip formula label prefixes like "Formula:", "Tuple:", "Equation:", "defined as:", "given by:"
+  formula = formula
+    .replace(/^(?:Formula|Tuple|Equation|Law\s*Formula|defined\s*as|given\s*by|equation)\s*[:=]?\s*/i, '')
+    .replace(/^(?:where|if|then|let)\s+/i, '')
+    .replace(/\s*(?:where|with|for|has|and|is\b).*$/i, '') // strip trailing explanation clauses
+    .trim();
 
-  // 1. Greek & special symbols
+  // 1. Greek & special theoretical symbols
   formula = formula
     .replace(/Σ\*/g, '\\Sigma^*')
+    .replace(/Σ\+/g, '\\Sigma^+')
     .replace(/Σ/g, '\\Sigma')
     .replace(/δ/g, '\\delta')
     .replace(/ε/g, '\\varepsilon')
     .replace(/λ/g, '\\lambda')
     .replace(/∅/g, '\\emptyset')
     .replace(/∈/g, '\\in')
+    .replace(/⊆/g, '\\subseteq')
     .replace(/∪/g, '\\cup')
     .replace(/∩/g, '\\cap');
 
-  // 2. State transition powerset / exponential notation
+  // 2. State transition powerset / exponential notation / subscripts
   formula = formula
     .replace(/P\(Q\)/g, '2^Q')
     .replace(/\b2\^Q\b/g, '2^Q')
-    .replace(/q0/g, 'q_0')
-    .replace(/q_0/g, 'q_0');
+    .replace(/\bq0\b/g, 'q_0')
+    .replace(/\bq_0\b/g, 'q_0')
+    .replace(/QP\*/g, 'QP^*')
+    .replace(/A\*B/g, 'A^*B')
+    .replace(/R\*/g, 'R^*');
 
   // 3. Comparison & arithmetic operators
   formula = formula
@@ -51,36 +60,76 @@ export function normalizeMathFormula(raw: string): string {
   // 5. Fractions: e.g. Q / t -> \frac{Q}{t}, W / Q -> \frac{W}{Q}
   formula = formula.replace(/\b([A-Za-z0-9_]+)\s*\/\s*([A-Za-z0-9_]+)\b/g, '\\frac{$1}{$2}');
 
-  // 6. Common powers and subscripts
+  // 6. Common powers and subscripts in Physics/Electronics
   formula = formula
-    .replace(/R_s/g, 'R_s')
-    .replace(/R_p/g, 'R_p')
-    .replace(/R1/g, 'R_1')
-    .replace(/R2/g, 'R_2')
-    .replace(/I\^2/g, 'I^2');
+    .replace(/\bR_s\b/g, 'R_s')
+    .replace(/\bR_p\b/g, 'R_p')
+    .replace(/\bR1\b/g, 'R_1')
+    .replace(/\bR2\b/g, 'R_2')
+    .replace(/\bI\^2\b/g, 'I^2');
+
+  // Clean double spaces
+  formula = formula.replace(/\s{2,}/g, ' ');
 
   return formula.trim();
 }
 
 /**
- * Regular expressions detecting mathematical equations, state tuples, and formal theoretical expressions.
+ * Discrete formula boundary extractor.
+ * Extracts mathematically clean expressions without trailing English clauses.
  */
-const FORMULA_PATTERNS: RegExp[] = [
-  // 5-tuple automaton definition: (Q, Σ, δ, q0, F) or with Greek symbols
-  /\((?:Q|q),\s*(?:Σ|\\Sigma|Sigma),\s*(?:δ|\\delta|delta),\s*(?:q0|q_0),\s*F\)/i,
-  // Transition functions: δ: Q × Σ → Q, δ: Q × (Σ ∪ {ε}) → P(Q), etc.
-  /(?:δ|\\delta|delta)\s*:\s*[A-Za-z0-9_\\^\{\}\s\+\-\*\/\(\)\=\.·×→∪ε\emptyset,]+/i,
-  // Regular expressions theorems / formulas: R = Q + RP, R = QP*, etc.
-  /\b[A-Za-z]\s*=\s*[A-Za-z0-9_\^\*\+\(\)\s\cdot\\\{]+(?:\*|\+)[A-Za-z0-9_\^\*\+\(\)\s\cdot\\\}]*/,
-  // Language set definitions: L = { ... }, L = \emptyset, L = \Sigma*
-  /\bL\s*=\s*(?:\\\{[^\}]+\\\}|\{[^\}]+\}|∅|\\emptyset|Σ\*|\\Sigma\*|\{[^:]+:\s*[^}]+\})/,
-  // Physics & Electronics laws: V = I * R, I = Q / t, V = W / Q, H = I^2 * R * t, 1/R_p = 1/R_1 + 1/R_2
-  /\b(?:V\s*=\s*I\s*[\*·\s]\s*R|I\s*=\s*Q\s*\/\s*t|V\s*=\s*W\s*\/\s*Q|H\s*=\s*I\^?2\s*[\*·\s]\s*R\s*[\*·\s]\s*t|R_s\s*=\s*R1\s*\+\s*R2|1\s*\/\s*R_p\s*=\s*1\s*\/\s*R1\s*\+\s*1\s*\/\s*R2)/i,
-  // Standard equations: [Variable] = [Expression with math operators]
-  /\b[A-Za-z_][A-Za-z0-9_]*\s*=\s*[^;\.\n,]{2,40}(?:[\+\-\*\/×·\^\\_]|\\frac|\\Sigma|\\delta)/,
-  // Tuple definitions: e.g. 5-tuple (Q, \Sigma, ...)
-  /5-tuple\s*\([^\)]+\)/i,
-];
+function extractDiscreteFormulasFromLine(line: string): string[] {
+  const formulas: string[] = [];
+  const trimmed = line.trim();
+  if (!trimmed) return formulas;
+
+  // 1. 5-Tuple definitions: (Q, Σ, δ, q0, F)
+  const tupleMatch = trimmed.match(/\((?:Q|q),\s*(?:Σ|\\Sigma|Sigma),\s*(?:δ|\\delta|delta),\s*(?:q0|q_0),\s*F\)/i);
+  if (tupleMatch) {
+    formulas.push(tupleMatch[0]);
+  }
+
+  // 2. Transition functions: δ: Q × Σ → Q or δ: Q × (Σ ∪ {ε}) → 2^Q
+  const transMatch = trimmed.match(/(?:δ|\\delta|delta)\s*:\s*Q\s*(?:×|\\times)\s*(?:\([^\)]+\)|[A-Za-zΣ\\{\\}ε]+)\s*(?:→|->|\\rightarrow)\s*(?:2\^Q|P\(Q\)|Q)/i);
+  if (transMatch) {
+    formulas.push(transMatch[0]);
+  }
+
+  // 3. Arden's & Regular Expression Equations: R = Q + RP, R = QP*, X = AX + B, X = A*B
+  const reEqMatches = trimmed.matchAll(/\b([R|X|L|V|I|H|W])\s*=\s*([^,;\.\n]+?)(?=\s+(?:has|where|is|if|then|with|and|given|\(|$)|[,;\.]|$)/gi);
+  for (const m of reEqMatches) {
+    const fullExpr = `${m[1]} = ${m[2]}`.trim();
+    // Validate that it looks like a valid mathematical/theoretical equation
+    if (/[=\+\-\*\/\^\\_×→∪ε∅Σ\{]/.test(fullExpr) && fullExpr.length >= 3 && fullExpr.length <= 50) {
+      // Exclude simple plain english words falsely matched
+      if (!/\b(?:is|are|the|this|that|can|be|for)\b/i.test(fullExpr)) {
+        formulas.push(fullExpr);
+      }
+    }
+  }
+
+  // 4. Language definitions: L = {a, ab}, L = {a^n : n >= 0}, L = ∅, L = Σ*
+  const langMatch = trimmed.match(/\bL\s*=\s*(?:\\\{[^\}]+\\\}|\{[^\}]+\}|∅|\\emptyset|Σ\*|\\Sigma\*|\{[^:]+:\s*[^}]+\})/);
+  if (langMatch && !formulas.some((f) => f.includes(langMatch[0]))) {
+    formulas.push(langMatch[0]);
+  }
+
+  // 5. String length / empty string: |w|, |ε| = 0
+  const strLenMatch = trimmed.match(/\|(?:ε|\\varepsilon|w)\|\s*=\s*0/);
+  if (strLenMatch) {
+    formulas.push(strLenMatch[0]);
+  }
+
+  // 6. Physics/Circuit equations: V = I * R, I = Q / t, V = W / Q, H = I^2 * R * t, R_s = R1 + R2, 1 / R_p = 1 / R1 + 1 / R2
+  const physicsMatches = trimmed.matchAll(/\b(?:V\s*=\s*I\s*[\*·\s]\s*R|I\s*=\s*Q\s*\/\s*t|V\s*=\s*W\s*\/\s*Q|H\s*=\s*I\^?2\s*[\*·\s]\s*R\s*[\*·\s]\s*t|R_s\s*=\s*R1\s*\+\s*R2|1\s*\/\s*R_p\s*=\s*1\s*\/\s*R1\s*\+\s*1\s*\/\s*R2)/gi);
+  for (const pm of physicsMatches) {
+    if (!formulas.some((f) => f.includes(pm[0]))) {
+      formulas.push(pm[0]);
+    }
+  }
+
+  return formulas;
+}
 
 /**
  * Extracts and registers all mathematical expressions into an immutable FormulaVault.
@@ -94,56 +143,51 @@ export function extractFormulaVault(rawText: string): {
   const sourceSpans: SourceRef[] = [];
   const seenNormalized = new Set<string>();
 
-  let sanitized = rawText;
   let counter = 1;
-
-  // Split lines to detect line-level or inline mathematical formulas
   const lines = rawText.split('\n');
   let currentOffset = 0;
 
   for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
     const line = lines[lineIdx];
     const lineStart = currentOffset;
-    const lineEnd = currentOffset + line.length;
     currentOffset += line.length + 1; // +1 for newline
 
-    for (const pattern of FORMULA_PATTERNS) {
-      const match = line.match(pattern);
-      if (match && match[0]) {
-        const rawFormula = match[0].trim();
-        const normalized = normalizeMathFormula(rawFormula);
-        const normKey = normalized.replace(/\s+/g, '');
+    const discreteFormulas = extractDiscreteFormulasFromLine(line);
 
-        if (!seenNormalized.has(normKey) && normalized.length > 1) {
-          seenNormalized.add(normKey);
-          const formulaId = `FORMULA_${counter++}`;
-          const sourceSpanId = `src-form-${formulaId.toLowerCase()}`;
+    for (const rawFormula of discreteFormulas) {
+      const normalized = normalizeMathFormula(rawFormula);
+      const normKey = normalized.replace(/\s+/g, '');
 
-          const span: SourceRef = {
-            id: sourceSpanId,
-            start: lineStart + (match.index || 0),
-            end: lineStart + (match.index || 0) + rawFormula.length,
-            rawText: rawFormula,
-            type: 'formula',
-          };
+      if (!seenNormalized.has(normKey) && normalized.length >= 2) {
+        seenNormalized.add(normKey);
+        const formulaId = `FORMULA_${counter++}`;
+        const sourceSpanId = `src-form-${formulaId.toLowerCase()}`;
 
-          sourceSpans.push(span);
+        const matchIdx = line.indexOf(rawFormula);
+        const span: SourceRef = {
+          id: sourceSpanId,
+          start: lineStart + (matchIdx >= 0 ? matchIdx : 0),
+          end: lineStart + (matchIdx >= 0 ? matchIdx : 0) + rawFormula.length,
+          rawText: rawFormula,
+          type: 'formula',
+        };
 
-          vault.push({
-            id: formulaId,
-            raw: rawFormula,
-            latex: normalized,
-            meaning: line.slice(0, 80).trim(),
-            sourceRef: sourceSpanId,
-          });
-        }
+        sourceSpans.push(span);
+
+        vault.push({
+          id: formulaId,
+          raw: rawFormula,
+          latex: normalized,
+          meaning: line.slice(0, 80).trim(),
+          sourceRef: sourceSpanId,
+        });
       }
     }
   }
 
   return {
     vault,
-    sanitizedText: sanitized,
+    sanitizedText: rawText,
     sourceSpans,
   };
 }
@@ -172,6 +216,26 @@ export function resolveFormulaRefs(refs: string[], vault: FormulaVaultEntry[]): 
   }
 
   return resolved;
+}
+
+/**
+ * Finds matching Formula Vault entries that are mentioned in or relevant to a given text block.
+ */
+export function findMatchingFormulaRefs(text: string, vault: FormulaVaultEntry[]): string[] {
+  if (!text || !vault || vault.length === 0) return [];
+  const matchedRefs: string[] = [];
+
+  for (const entry of vault) {
+    if (
+      text.includes(entry.id) ||
+      text.includes(entry.raw) ||
+      normalizeMathFormula(text).includes(entry.latex)
+    ) {
+      matchedRefs.push(entry.id);
+    }
+  }
+
+  return Array.from(new Set(matchedRefs));
 }
 
 /**
