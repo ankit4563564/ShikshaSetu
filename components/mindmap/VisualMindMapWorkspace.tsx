@@ -27,8 +27,8 @@ export default function VisualMindMapWorkspace() {
   // Input states
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [title, setTitle] = useState<string>('');
-  const [subject, setSubject] = useState<string>('General Science');
-  const [grade, setGrade] = useState<string>('8');
+  const [subject, setSubject] = useState<string>('');
+  const [grade, setGrade] = useState<string>('');
   const [pastedText, setPastedText] = useState<string>('');
 
   // Map state
