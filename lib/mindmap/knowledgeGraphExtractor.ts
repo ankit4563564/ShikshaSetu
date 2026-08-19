@@ -115,9 +115,8 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
     sectionPath: string[] = []
   ) {
     const cleanTitle = evNode.title || 'Key Concept';
-    const hasStepChildren = evNode.children && evNode.children.some((c: any) => c.detectedType === 'step');
     const isStep = evNode.detectedType === 'step' || /^Step\s*\d+/i.test(cleanTitle);
-    const isAlgo = evNode.detectedType === 'algorithm' || hasStepChildren || /subset\s*construction|algorithm|conversion/i.test(cleanTitle);
+    const isAlgo = evNode.detectedType === 'algorithm' || /subset\s*construction|algorithm|conversion/i.test(cleanTitle);
     const isTheorem = /theorem|law/i.test(cleanTitle);
     const isListItem = evNode.detectedType === 'list_item';
 

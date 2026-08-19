@@ -237,6 +237,9 @@ export function auditKnowledgeGraph(
         autoFixable: true,
       });
     }
+
+    // Trigger span-based coverage report
+    generateSpanCoverageReport(evidence, graph);
   }
 
   // 5. Source Reference Coverage Check
@@ -290,6 +293,119 @@ export function auditKnowledgeGraph(
   };
 }
 
+export type SourceCoverageStatus =
+  | 'represented'
+  | 'merged'
+  | 'summarized'
+  | 'structural_only'
+  | 'ignored_noise'
+  | 'missing';
+
+export interface SpanCoverageReport {
+  totalSpans: number;
+  represented: number;
+  merged: number;
+  summarized: number;
+  structuralOnly: number;
+  ignoredNoise: number;
+  missing: number;
+  duplicated: number;
+}
+
+export function generateSpanCoverageReport(
+  evidence: DocumentStructureEvidence,
+  graph: KnowledgeGraph
+): SpanCoverageReport {
+  const allSpans = evidence.sourceRefs || [];
+  const nodeMap = new Map<string, KnowledgeNode>();
+  graph.nodes.forEach((n) => nodeMap.set(n.id, n));
+
+  const spanToNodeIdMap = new Map<string, string[]>();
+  for (const node of graph.nodes) {
+    if (node.sourceRefs) {
+      for (const refId of node.sourceRefs) {
+        const list = spanToNodeIdMap.get(refId) || [];
+        list.push(node.id);
+        spanToNodeIdMap.set(refId, list);
+      }
+    }
+  }
+
+  let represented = 0;
+  let merged = 0;
+  let summarized = 0;
+  let structuralOnly = 0;
+  let ignoredNoise = 0;
+  let missing = 0;
+  let duplicated = 0;
+
+  for (const span of allSpans) {
+    if (span.id === 'src-root-doc' || span.type === 'noise') {
+      ignoredNoise++;
+      continue;
+    }
+
+    const claimers = spanToNodeIdMap.get(span.id) || [];
+
+    if (claimers.length === 0) {
+      let referenced = false;
+      if (span.type === 'formula') {
+        referenced = graph.nodes.some(
+          (n) => n.formulaRefs?.includes(span.id) || n.formulas?.some((f) => f.sourceRef === span.id)
+        );
+      } else if (span.type === 'table') {
+        referenced = graph.nodes.some(
+          (n) => n.tableRefs?.includes(span.id) || n.table?.sourceRef === span.id
+        );
+      }
+
+      if (referenced) {
+        represented++;
+      } else {
+        missing++;
+      }
+    } else {
+      if (claimers.length > 1) {
+        duplicated++;
+      }
+
+      const firstClaimer = nodeMap.get(claimers[0]);
+      if (firstClaimer) {
+        if (firstClaimer.type === 'root' || firstClaimer.type === 'unit' || firstClaimer.type === 'section') {
+          structuralOnly++;
+        } else {
+          represented++;
+        }
+      } else {
+        missing++;
+      }
+    }
+  }
+
+  const report: SpanCoverageReport = {
+    totalSpans: allSpans.length,
+    represented,
+    merged,
+    summarized,
+    structuralOnly,
+    ignoredNoise,
+    missing,
+    duplicated,
+  };
+
+  console.log('=== SPAN-BASED SOURCE COVERAGE REPORT ===');
+  console.log(`Total Spans: ${report.totalSpans}`);
+  console.log(`Represented: ${report.represented}`);
+  console.log(`Merged: ${report.merged}`);
+  console.log(`Summarized: ${report.summarized}`);
+  console.log(`Structural-only: ${report.structuralOnly}`);
+  console.log(`Ignored noise: ${report.ignoredNoise}`);
+  console.log(`Missing: ${report.missing}`);
+  console.log(`Duplicated: ${report.duplicated}`);
+
+  return report;
+}
+
 /**
  * Stage 5: Deterministic Auto-Repair.
  * Fixes orphan algorithm steps within their local section context (never escaping to root),
@@ -304,60 +420,68 @@ export function autoRepairKnowledgeGraph(
   let nodeMap = new Map<string, KnowledgeNode>();
   nodes.forEach((n) => nodeMap.set(n.id, n));
 
-  // 1. Identify all parent nodes of algorithm_step nodes. If a parent is not an algorithm (and not root/unit), promote it to 'algorithm'
+  // 1. Identify all parent nodes of algorithm_step nodes.
+  // Promote them to 'algorithm' ONLY if they contain semantic algorithm keywords in their title
+  const ALGO_KEYWORDS = /algorithm|procedure|conversion|construction|method|equivalence|minimization|reduction/i;
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
     if (node.type === 'algorithm_step' && node.parentId) {
       const parent = nodeMap.get(node.parentId);
       if (parent && parent.type !== 'algorithm' && parent.type !== 'root' && parent.type !== 'unit') {
-        const parentIdx = nodes.findIndex((n) => n.id === parent.id);
-        if (parentIdx >= 0) {
-          nodes[parentIdx] = {
-            ...nodes[parentIdx],
-            type: 'algorithm',
-          };
-          nodeMap.set(parent.id, nodes[parentIdx]);
+        if (ALGO_KEYWORDS.test(parent.title)) {
+          const parentIdx = nodes.findIndex((n) => n.id === parent.id);
+          if (parentIdx >= 0) {
+            nodes[parentIdx] = {
+              ...nodes[parentIdx],
+              type: 'algorithm',
+            };
+            nodeMap.set(parent.id, nodes[parentIdx]);
+          }
         }
       }
     }
   }
 
-  // 2. Ensure at least one algorithm node exists if steps are present
-  let defaultAlgorithm = nodes.find((n) => n.type === 'algorithm');
-  const hasSteps = nodes.some((n) => n.type === 'algorithm_step');
-
-  if (hasSteps && !defaultAlgorithm) {
-    const algoId = 'node-algorithm-auto';
-    const firstNonStep = nodes.find((n) => n.type !== 'algorithm_step');
-    defaultAlgorithm = {
-      id: algoId,
-      parentId: firstNonStep ? firstNonStep.id : null,
-      title: 'Algorithm & Step Procedure',
-      type: 'algorithm',
-      importance: 'high',
-      summary: 'Algorithm procedure.',
-    };
-    nodes.push(defaultAlgorithm);
-    nodeMap.set(algoId, defaultAlgorithm);
-  }
-
-  // 3. Re-parent any remaining orphan algorithm steps
+  // 2. Re-parent orphan/parentless algorithm steps under their actual local section branch
   nodes = nodes.map((node) => {
     if (node.type === 'algorithm_step') {
       const currentParent = node.parentId ? nodeMap.get(node.parentId) : null;
-      if (!currentParent || currentParent.type !== 'algorithm') {
-        let targetAlgo = nodes.find(
-          (n) => n.type === 'algorithm' && (currentParent ? n.parentId === currentParent.id || n.id === currentParent.parentId : true)
-        );
-        if (!targetAlgo) {
-          targetAlgo = defaultAlgorithm || nodes.find((n) => n.type === 'algorithm');
+      if (currentParent && currentParent.type === 'algorithm') {
+        return node;
+      }
+
+      const nodePath = node.context?.sectionPath || [];
+      let bestParent: KnowledgeNode | null = null;
+      let maxMatchLen = 0;
+
+      for (const candidate of nodes) {
+        if (candidate.id === node.id) continue;
+        if (candidate.type !== 'algorithm') continue;
+
+        const candidatePath = candidate.context?.sectionPath || [];
+        let matchLen = 0;
+        while (matchLen < nodePath.length && matchLen < candidatePath.length && nodePath[matchLen] === candidatePath[matchLen]) {
+          matchLen++;
         }
-        if (targetAlgo) {
-          return {
-            ...node,
-            parentId: targetAlgo.id,
-          };
+
+        if (matchLen > maxMatchLen) {
+          maxMatchLen = matchLen;
+          bestParent = candidate;
         }
+      }
+
+      if (bestParent) {
+        return {
+          ...node,
+          parentId: bestParent.id,
+        };
+      } else {
+        // If no valid algorithm exists in the same branch, preserve as a structured list/step candidate (type = 'property')
+        // under its original local parent (which is a topic or section).
+        return {
+          ...node,
+          type: 'property',
+        };
       }
     }
     return node;
@@ -367,12 +491,11 @@ export function autoRepairKnowledgeGraph(
   nodeMap = new Map<string, KnowledgeNode>();
   nodes.forEach((n) => nodeMap.set(n.id, n));
 
-  // 2. Resolve and attach formula references contextually (WITHOUT dumping all on the first section)
+  // 3. Resolve and attach formula references contextually (WITHOUT dumping all on the first section)
   if (evidence && evidence.formulaVault && evidence.formulaVault.length > 0) {
     const vault = evidence.formulaVault;
 
     nodes = nodes.map((node) => {
-      // Find matching formulas for this specific node
       const matchingRefs = vault
         .filter((v) => {
           const text = (node.title + ' ' + (node.summary || '') + ' ' + (node.definitions || []).join(' ')).toLowerCase();
@@ -395,13 +518,13 @@ export function autoRepairKnowledgeGraph(
     });
   }
 
-  // 3. Clean relationships to ensure valid node IDs
+  // 4. Clean relationships to ensure valid node IDs
   const validNodeIds = new Set(nodes.map((n) => n.id));
   const validRelationships = relationships.filter(
     (r) => validNodeIds.has(r.fromNodeId) && validNodeIds.has(r.toNodeId)
   );
 
-  // 4. Ensure relationships exist for all parent-child links
+  // 5. Ensure relationships exist for all parent-child links
   for (const node of nodes) {
     if (node.parentId && validNodeIds.has(node.parentId)) {
       const hasRel = validRelationships.some(

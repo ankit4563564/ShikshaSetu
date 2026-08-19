@@ -78,71 +78,83 @@ export function normalizeMathFormula(raw: string): string {
  * Discrete formula boundary extractor with balanced bracket support.
  * Extracts mathematically clean expressions without trailing English clauses or broken bracket chops.
  */
+function extractBalancedFormulaAt(line: string, startIndex: number): string {
+  let index = startIndex;
+  const len = line.length;
+  let braces = 0;
+  let parens = 0;
+  let brackets = 0;
+  
+  while (index < len) {
+    const char = line[index];
+    if (char === '{') braces++;
+    else if (char === '}') braces--;
+    else if (char === '(') parens++;
+    else if (char === ')') parens--;
+    else if (char === '[') brackets++;
+    else if (char === ']') brackets--;
+    
+    // Check if we hit an English word boundary (e.g. " where ", " is ", " and ", " let ")
+    if (braces === 0 && parens === 0 && brackets === 0) {
+      const remaining = line.slice(index);
+      if (/^\s+(?:where|is|for|and|let|with|has|defined|given)\b/i.test(remaining)) {
+        break;
+      }
+      // If we encounter a comma/period/semicolon followed by space and an English word or capital letter
+      if (/^[,\.;]\s+[A-Za-z]/i.test(remaining) && !/^[,\.;]\s+\d/i.test(remaining)) {
+        break;
+      }
+    }
+    
+    index++;
+    
+    // If all balances are 0 and we hit a character that cannot possibly be in a formula, stop
+    if (braces === 0 && parens === 0 && brackets === 0) {
+      if (char === '}' || char === ')') {
+        break;
+      }
+    }
+  }
+  
+  let raw = line.slice(startIndex, index).trim();
+  if (raw.endsWith('.') || raw.endsWith(',')) {
+    raw = raw.slice(0, -1).trim();
+  }
+  return raw;
+}
+
 function extractDiscreteFormulasFromLine(line: string): Array<{ raw: string; start: number; end: number }> {
   const matches: Array<{ raw: string; start: number; end: number }> = [];
   const trimmed = line.trim();
   if (!trimmed) return matches;
 
-  // Helper to record non-overlapping formula spans
-  function addMatch(raw: string, offset: number) {
-    const start = offset;
-    const end = offset + raw.length;
-    // Ensure this span doesn't overlap with any previously recorded span
-    const overlaps = matches.some((m) => Math.max(m.start, start) < Math.min(m.end, end));
-    if (!overlaps && raw.length >= 2) {
-      matches.push({ raw, start, end });
+  const PREFIXES = [
+    /\b(?:L|Σ|Sigma)\s*=\s*(?:\\\{|\{|∅|\\emptyset|Σ\*|\\Sigma\*|Σ\+|\\Sigma\+)/gi,
+    /(?:δ|\\delta|delta)\s*:\s*/gi,
+    /\((?:Q|q|Q_0|q_0),\s*(?:Σ|\\Sigma|Sigma)/gi,
+    /\b(?:R|X)\s*=\s*/gi,
+    /\|(?:ε|\\varepsilon|w)\|\s*=\s*/gi,
+    /\b(?:V|I|H|R_s|1\s*\/\s*R_p)\s*=\s*/gi
+  ];
+
+  for (const regex of PREFIXES) {
+    let match: RegExpExecArray | null;
+    regex.lastIndex = 0; // reset regex
+    while ((match = regex.exec(line)) !== null) {
+      const startIndex = match.index;
+      const rawFormula = extractBalancedFormulaAt(line, startIndex);
+      const start = startIndex;
+      const end = startIndex + rawFormula.length;
+      
+      // Ensure this span doesn't overlap with any previously recorded span
+      const overlaps = matches.some((m) => Math.max(m.start, start) < Math.min(m.end, end));
+      if (!overlaps && rawFormula.length >= 2) {
+        matches.push({ raw: rawFormula, start, end });
+      }
     }
   }
 
-  // 1. 5-Tuple definitions: (Q, Σ, δ, q0, F)
-  const tupleRegex = /\((?:Q|q),\s*(?:Σ|\\Sigma|Sigma),\s*(?:δ|\\delta|delta),\s*(?:q0|q_0),\s*F\)/gi;
-  let tMatch: RegExpExecArray | null;
-  while ((tMatch = tupleRegex.exec(line)) !== null) {
-    addMatch(tMatch[0], tMatch.index);
-  }
-
-  // 2. Transition functions: δ: Q × Σ → Q or δ: Q × (Σ ∪ {ε}) → 2^Q
-  const transRegex = /(?:δ|\\delta|delta)\s*:\s*Q\s*(?:×|\\times)\s*(?:\([^\)]+\)|[A-Za-zΣ\\{\\}ε]+)\s*(?:→|->|\\rightarrow)\s*(?:2\^Q|P\(Q\)|Q)/gi;
-  let trMatch: RegExpExecArray | null;
-  while ((trMatch = transRegex.exec(line)) !== null) {
-    addMatch(trMatch[0], trMatch.index);
-  }
-
-  // 3. Set expressions with curly braces (e.g. L = {a, ab, abc}, L = {a^n : n >= 0}, Σ = {0, 1})
-  // Match full balanced { ... } without chopping at commas
-  const setRegex = /\b(?:L|Σ|Sigma)\s*=\s*(?:\\\{[^\}]+\\\}|\{[^\}]+\}|∅|\\emptyset|Σ\*|\\Sigma\*|Σ\+|\\Sigma\+)/gi;
-  let sMatch: RegExpExecArray | null;
-  while ((sMatch = setRegex.exec(line)) !== null) {
-    addMatch(sMatch[0], sMatch.index);
-  }
-
-  // 4. Regular expression and algebraic equations: R = Q + RP, R = QP*, X = AX + B, X = A*B
-  const reEqRegex = /\b([R|X])\s*=\s*([A-Za-z0-9_\^\*\+\(\)\s\cdot\\\{]+(?:\*|\+)[A-Za-z0-9_\^\*\+\(\)\s\cdot\\\}]*)/gi;
-  let eqMatch: RegExpExecArray | null;
-  while ((eqMatch = reEqRegex.exec(line)) !== null) {
-    let cleanEq = eqMatch[0].trim();
-    // Strip trailing clauses if any (e.g. "has", "where", "is")
-    cleanEq = cleanEq.replace(/\s+(?:has|where|is|if|then|with|and|given).*$/i, '').trim();
-    if (cleanEq.length >= 5 && /[=\+\*]/.test(cleanEq)) {
-      addMatch(cleanEq, eqMatch.index);
-    }
-  }
-
-  // 5. String length / empty string: |w|, |ε| = 0
-  const strLenRegex = /\|(?:ε|\\varepsilon|w)\|\s*=\s*0/gi;
-  let lenMatch: RegExpExecArray | null;
-  while ((lenMatch = strLenRegex.exec(line)) !== null) {
-    addMatch(lenMatch[0], lenMatch.index);
-  }
-
-  // 6. Physics/Circuit equations: V = I * R, I = Q / t, V = W / Q, H = I^2 * R * t, R_s = R1 + R2, 1 / R_p = 1 / R1 + 1 / R2
-  const physicsRegex = /\b(?:V\s*=\s*I\s*[\*·\s]\s*R|I\s*=\s*Q\s*\/\s*t|V\s*=\s*W\s*\/\s*Q|H\s*=\s*I\^?2\s*[\*·\s]\s*R\s*[\*·\s]\s*t|R_s\s*=\s*R1\s*\+\s*R2|1\s*\/\s*R_p\s*=\s*1\s*\/\s*R1\s*\+\s*1\s*\/\s*R2)/gi;
-  let pMatch: RegExpExecArray | null;
-  while ((pMatch = physicsRegex.exec(line)) !== null) {
-    addMatch(pMatch[0], pMatch.index);
-  }
-
-  return matches;
+  return matches.sort((a, b) => a.start - b.start);
 }
 
 /**
@@ -155,7 +167,7 @@ export function extractFormulaVault(rawText: string): {
 } {
   const vault: FormulaVaultEntry[] = [];
   const sourceSpans: SourceRef[] = [];
-  const seenNormalized = new Set<string>();
+  const seenSpans = new Set<string>();
 
   let counter = 1;
   const lines = rawText.split('\n');
@@ -171,17 +183,20 @@ export function extractFormulaVault(rawText: string): {
     for (const item of discreteFormulas) {
       const rawFormula = item.raw;
       const normalized = normalizeMathFormula(rawFormula);
-      const normKey = normalized.replace(/\s+/g, '');
 
-      if (!seenNormalized.has(normKey) && normalized.length >= 2) {
-        seenNormalized.add(normKey);
+      const spanStart = lineStart + item.start;
+      const spanEnd = lineStart + item.end;
+      const spanKey = `${spanStart}-${spanEnd}`;
+
+      if (!seenSpans.has(spanKey) && normalized.length >= 2) {
+        seenSpans.add(spanKey);
         const formulaId = `FORMULA_${counter++}`;
         const sourceSpanId = `src-form-${formulaId.toLowerCase()}`;
 
         const span: SourceRef = {
           id: sourceSpanId,
-          start: lineStart + item.start,
-          end: lineStart + item.end,
+          start: spanStart,
+          end: spanEnd,
           rawText: rawFormula,
           type: 'formula',
         };

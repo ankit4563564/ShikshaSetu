@@ -64,6 +64,7 @@ interface PrefixMatch {
   title: string;
   level: number;
   type: 'unit' | 'section' | 'topic' | 'subtopic' | 'algorithm' | 'step' | 'list_item' | 'text';
+  pattern: 'unit' | 'chapter' | 'roman' | 'alphabetic' | 'numeric' | 'bullet' | 'step' | 'heading' | 'unknown' | 'text';
   inlineBody?: string;
 }
 
@@ -74,11 +75,13 @@ export function detectStructuralPrefix(line: string): PrefixMatch | null {
   // Level 1: Unit / Chapter / Semester Course Root (e.g. "UNIT – 1", "UNIT 1:", "Chapter: Theory of Computation", "BCA 5th SEMESTER")
   const unitMatch = trimmed.match(/^(?:UNIT\s*[-–:]?\s*(\d+|[I|V|X]+)|Chapter\s*[:\-]\s*(.+)|(?:BCA|B\.Tech|B\.Sc|Class|Grade)\s*\d+.*)/i);
   if (unitMatch) {
+    const isChapter = trimmed.toLowerCase().includes('chapter');
     return {
       prefix: unitMatch[0],
       title: trimmed.replace(/^[#\-*\s]+/, '').replace(/^UNIT\s*[-–:]?\s*\d+\s*[:\-]?\s*/i, '').trim() || trimmed,
       level: 1,
       type: 'unit',
+      pattern: isChapter ? 'chapter' : 'unit',
     };
   }
 
@@ -90,33 +93,38 @@ export function detectStructuralPrefix(line: string): PrefixMatch | null {
       title: algoMatch[1].trim(),
       level: 3,
       type: 'algorithm',
+      pattern: 'heading',
     };
   }
 
   // Level 2: Major Section Numbering (e.g. "1. Formal Languages:", "2. Finite Automata:", "(a) Introduction", "I. Automata")
   const majorNumMatch = trimmed.match(/^(?:([0-9]{1,2})\.|\(([a-z])\)|([I|V|X]+)\.)\s+([A-Za-z0-9\s&,'\-\(\)\/]{3,80})(?::\s*(.*))?$/i);
   if (majorNumMatch) {
+    const pat = majorNumMatch[1] ? 'numeric' : majorNumMatch[2] ? 'alphabetic' : 'roman';
     return {
       prefix: majorNumMatch[1] ? `${majorNumMatch[1]}.` : majorNumMatch[2] ? `(${majorNumMatch[2]})` : `${majorNumMatch[3]}.`,
       title: majorNumMatch[4].replace(/[:\-#]+$/, '').trim(),
       level: 2,
       type: 'section',
+      pattern: pat,
       inlineBody: majorNumMatch[5]?.trim(),
     };
   }
 
   // Level 3: Subsection / Topic Numbering (e.g. "a. Alphabets: ...", "b. Strings: ...", "i) Formal Languages", "1.1 Alphabets")
-  const subNumMatch = trimmed.match(/^(?:([a-z])[\.\)]|\(([0-9]{1,2})\)|([i|v|x]+)\)|\b(\d+\.\d+)\b)\s*([^:\n]{2,75})(?::\s*(.*))?$/i);
+  const subNumMatch = trimmed.match(/^(?:([a-z])[\.\)]|\(([0-9]{1,2})\)|([i|v|x]+)\b\)|\b(\d+\.\d+)\b)\s*([^:\n]{2,75})(?::\s*(.*))?$/i);
   if (subNumMatch) {
     const rawTitle = subNumMatch[5].replace(/[:\-#]+$/, '').trim();
     const isStep = /^Step\s*\d+/i.test(rawTitle);
     const isAlgo = /algorithm|procedure|conversion/i.test(rawTitle);
+    const pat = subNumMatch[1] ? 'alphabetic' : subNumMatch[2] ? 'numeric' : subNumMatch[3] ? 'roman' : 'numeric';
 
     return {
       prefix: subNumMatch[0].split(/\s+/)[0],
       title: rawTitle,
       level: isStep ? 4 : 3,
       type: isStep ? 'step' : isAlgo ? 'algorithm' : 'topic',
+      pattern: isStep ? 'step' : pat,
       inlineBody: subNumMatch[6]?.trim(),
     };
   }
@@ -129,6 +137,7 @@ export function detectStructuralPrefix(line: string): PrefixMatch | null {
       title: stepMatch[3] ? stepMatch[3].trim() : trimmed,
       level: 4,
       type: 'step',
+      pattern: 'step',
     };
   }
 
@@ -145,6 +154,7 @@ export function detectStructuralPrefix(line: string): PrefixMatch | null {
       title: bulletTitle,
       level: 5,
       type: 'list_item',
+      pattern: 'bullet',
       inlineBody,
     };
   }
@@ -213,6 +223,7 @@ export function parseDocumentStructure(
         rawText: prefixInfo.inlineBody ? prefixInfo.inlineBody : line,
         numberingPrefix: prefixInfo.prefix,
         detectedType: prefixInfo.type,
+        pattern: prefixInfo.pattern,
         parentId: null,
         children: [],
         formulaRefs: matchedFormulaRefs,
@@ -293,6 +304,7 @@ export function parseDocumentStructure(
           level: 6,
           rawText: line,
           detectedType: 'text',
+          pattern: 'text',
           parentId: activeNode.id,
           children: [],
           formulaRefs: matchedFormulaRefs,

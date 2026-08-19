@@ -82,9 +82,9 @@ export interface FormulaVaultEntry {
   readonly id: string;
   readonly raw: string;
   readonly latex: string;
+  readonly sourceRef: string;
   readonly meaning?: string;
   readonly variables?: string[];
-  readonly sourceRef?: string;
   readonly start?: number;
   readonly end?: number;
 }
@@ -230,6 +230,7 @@ export interface StructuralEvidenceNode {
   readonly rawText: string;
   readonly numberingPrefix?: string;
   readonly detectedType: 'unit' | 'section' | 'topic' | 'subtopic' | 'algorithm' | 'step' | 'list_item' | 'table' | 'text';
+  readonly pattern: 'unit' | 'chapter' | 'roman' | 'alphabetic' | 'numeric' | 'bullet' | 'step' | 'heading' | 'unknown' | 'text';
   readonly parentId?: string | null;
   readonly children: StructuralEvidenceNode[];
   readonly formulaRefs: string[];

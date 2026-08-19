@@ -47,7 +47,7 @@ export const FormulaVaultEntrySchema = z.object({
   latex: z.string(),
   meaning: z.string().optional(),
   variables: z.array(z.string()).optional(),
-  sourceRef: z.string().optional(),
+  sourceRef: z.string(),
   start: z.number().optional(),
   end: z.number().optional(),
 });
@@ -251,6 +251,94 @@ export const KnowledgeGraphSchema = z
         });
       }
       relKeySet.add(relKey);
+    }
+
+    // 4. Validate duplicate source ownership
+    const sourceOwnerMap = new Map<string, string>();
+    for (let i = 0; i < kg.nodes.length; i++) {
+      const node = kg.nodes[i];
+      if (node.sourceRefs) {
+        for (const refId of node.sourceRefs) {
+          if (sourceOwnerMap.has(refId)) {
+            const ownerId = sourceOwnerMap.get(refId);
+            if (ownerId !== node.id && refId !== 'src-root-doc') {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Duplicate source ownership: Span ${refId} is claimed by both ${ownerId} and ${node.id}`,
+                path: ['nodes', i, 'sourceRefs'],
+              });
+            }
+          }
+          sourceOwnerMap.set(refId, node.id);
+        }
+      }
+    }
+
+    // 5. Validate missing source ownership
+    if (kg.sourceRefs) {
+      const claimedSpans = new Set<string>();
+      for (const node of kg.nodes) {
+        if (node.sourceRefs) {
+          for (const refId of node.sourceRefs) {
+            claimedSpans.add(refId);
+          }
+        }
+      }
+
+      for (let i = 0; i < kg.sourceRefs.length; i++) {
+        const srcRef = kg.sourceRefs[i];
+        if (srcRef.type !== 'noise' && srcRef.id !== 'src-root-doc') {
+          if (!claimedSpans.has(srcRef.id)) {
+            let referenced = false;
+            if (srcRef.type === 'formula') {
+              referenced = kg.nodes.some(
+                (n) => n.formulaRefs?.includes(srcRef.id) || n.formulas?.some((f) => f.sourceRef === srcRef.id)
+              );
+            } else if (srcRef.type === 'table') {
+              referenced = kg.nodes.some(
+                (n) => n.tableRefs?.includes(srcRef.id) || n.table?.sourceRef === srcRef.id
+              );
+            }
+
+            if (!referenced) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Missing source ownership: Source span ${srcRef.id} ("${srcRef.rawText.slice(0, 30)}") is not claimed by any node`,
+                path: ['sourceRefs', i],
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // 6. Validate invalid source references
+    if (kg.sourceRefs) {
+      const validSpanIds = new Set(kg.sourceRefs.map((s) => s.id));
+      validSpanIds.add('src-root-doc');
+      if (kg.formulas) {
+        kg.formulas.forEach((f) => validSpanIds.add(f.sourceRef));
+      }
+      if (kg.tables) {
+        kg.tables.forEach((t) => {
+          if (t.sourceRef) validSpanIds.add(t.sourceRef);
+        });
+      }
+
+      for (let i = 0; i < kg.nodes.length; i++) {
+        const node = kg.nodes[i];
+        if (node.sourceRefs) {
+          for (const refId of node.sourceRefs) {
+            if (!validSpanIds.has(refId) && !refId.startsWith('src-node-')) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Node ${node.id} has invalid source reference: ${refId}`,
+                path: ['nodes', i, 'sourceRefs'],
+              });
+            }
+          }
+        }
+      }
     }
   });
 
