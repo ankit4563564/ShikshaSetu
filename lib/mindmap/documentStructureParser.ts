@@ -1,7 +1,7 @@
 /**
  * ShikshaSetu — Document Ingestion, Normalization & Structural Evidence Parser
- * Extracts hierarchical outline evidence from academic notes (Units, Chapters, Sections, Subsections, Algorithm Steps).
- * Preserves mathematical Unicode symbols and tracks exact source spans for provenance.
+ * Extracts hierarchical outline evidence from academic notes (Units, Chapters, Sections, Subsections, Algorithm Steps, List Items).
+ * Preserves mathematical Unicode symbols, comprehensive academic content, and tracks exact source spans.
  */
 
 import { extractFormulaVault, findMatchingFormulaRefs } from './formulaVault';
@@ -82,8 +82,8 @@ export function detectStructuralPrefix(line: string): PrefixMatch | null {
     };
   }
 
-  // Algorithm Header (e.g. "Subset Construction Algorithm:", "Euclidean Algorithm:", "Conversion Algorithm:")
-  const algoMatch = trimmed.match(/^([^:\n]{3,65}(?:Algorithm|Procedure|Conversion Method|Construction Method))\s*[:\-]?\s*$/i);
+  // Algorithm Header (e.g. "Subset Construction Algorithm:", "Euclidean Algorithm:", "Conversion Procedure:")
+  const algoMatch = trimmed.match(/^([^:\n]{3,65}(?:Algorithm|Procedure|Conversion Method|Construction Method|Method))\s*[:\-]?\s*$/i);
   if (algoMatch) {
     return {
       prefix: 'Algorithm',
@@ -132,14 +132,20 @@ export function detectStructuralPrefix(line: string): PrefixMatch | null {
     };
   }
 
-  // Level 5: List Items / Bullets (e.g. "• Definition:", "- Precedence: Star > Concatenation", "* Operators:")
+  // Level 5: List Items / Bullets / Keypoints (e.g. "• Automata Theory: Study of abstract state machines", "• Q is a finite set...")
   const bulletMatch = trimmed.match(/^(?:[•\*\-]|--)\s+(.+)/);
   if (bulletMatch) {
+    const content = bulletMatch[1].trim();
+    const colonIdx = content.indexOf(':');
+    const bulletTitle = colonIdx > 2 && colonIdx < 40 ? content.slice(0, colonIdx).trim() : content;
+    const inlineBody = colonIdx > 2 && colonIdx < 40 ? content.slice(colonIdx + 1).trim() : undefined;
+
     return {
       prefix: '•',
-      title: bulletMatch[1].trim(),
+      title: bulletTitle,
       level: 5,
       type: 'list_item',
+      inlineBody,
     };
   }
 
@@ -148,7 +154,7 @@ export function detectStructuralPrefix(line: string): PrefixMatch | null {
 
 /**
  * Stage 2: Structural Evidence Parser.
- * Builds the structural hierarchy evidence tree from normalized notes.
+ * Builds the structural hierarchy evidence tree from normalized notes while preserving ALL academic details.
  */
 export function parseDocumentStructure(
   title: string,
@@ -195,7 +201,7 @@ export function parseDocumentStructure(
       start: lineStart,
       end: lineStart + line.length,
       rawText: line,
-      type: prefixInfo?.type === 'step' ? 'step' : 'heading',
+      type: prefixInfo?.type === 'step' ? 'step' : prefixInfo?.type === 'algorithm' ? 'algorithm' : 'heading',
     };
     allSourceSpans.push(sourceSpan);
 
@@ -206,7 +212,7 @@ export function parseDocumentStructure(
         level: prefixInfo.level,
         rawText: prefixInfo.inlineBody ? prefixInfo.inlineBody : line,
         numberingPrefix: prefixInfo.prefix,
-        detectedType: prefixInfo.type === 'algorithm' ? 'topic' : prefixInfo.type,
+        detectedType: prefixInfo.type,
         parentId: null,
         children: [],
         formulaRefs: matchedFormulaRefs,
@@ -233,7 +239,7 @@ export function parseDocumentStructure(
           rootNodes.push(node);
         }
       } else if (prefixInfo.type === 'algorithm' || /subset\s*construction|algorithm|conversion/i.test(prefixInfo.title)) {
-        // Algorithm node
+        // Algorithm node (Strictly preserved as type = 'algorithm')
         currentAlgorithmNode = node;
         currentTopicNode = node;
         if (currentSectionNode) {
@@ -259,7 +265,7 @@ export function parseDocumentStructure(
           rootNodes.push(node);
         }
       } else if (prefixInfo.level === 4 || prefixInfo.type === 'step') {
-        // Algorithm Step level
+        // Algorithm Step level (Strictly parented to enclosing algorithm node)
         const targetParent = currentAlgorithmNode || currentTopicNode || currentSectionNode;
         if (targetParent) {
           (node as any).parentId = targetParent.id;
@@ -268,24 +274,32 @@ export function parseDocumentStructure(
           rootNodes.push(node);
         }
       } else {
-        // List item / supporting bullet
-        const targetParent = currentTopicNode || currentSectionNode || currentUnitNode;
+        // List item / supporting bullet (Preserved in tree!)
+        const targetParent = currentTopicNode || currentAlgorithmNode || currentSectionNode || currentUnitNode;
         if (targetParent) {
+          (node as any).parentId = targetParent.id;
           targetParent.children.push(node);
         } else {
           rootNodes.push(node);
         }
       }
     } else {
-      // Content line: attach formulas or text body to currently active topic, algorithm, or section
-      const activeNode = currentAlgorithmNode || currentTopicNode || currentSectionNode;
+      // Descriptive content line: capture as a content child rather than dropping it!
+      const activeNode = currentAlgorithmNode || currentTopicNode || currentSectionNode || currentUnitNode;
       if (activeNode) {
-        if (matchedFormulaRefs.length > 0) {
-          activeNode.formulaRefs.push(...matchedFormulaRefs);
-        }
-        if (matchedTableRefs.length > 0) {
-          activeNode.tableRefs.push(...matchedTableRefs);
-        }
+        const textNode: StructuralEvidenceNode = {
+          id: `struct-node-${nodeCounter++}`,
+          title: line.slice(0, 60).replace(/[:\-#]+$/, '').trim(),
+          level: 6,
+          rawText: line,
+          detectedType: 'text',
+          parentId: activeNode.id,
+          children: [],
+          formulaRefs: matchedFormulaRefs,
+          tableRefs: matchedTableRefs,
+          sourceSpan,
+        };
+        activeNode.children.push(textNode);
       }
     }
   }

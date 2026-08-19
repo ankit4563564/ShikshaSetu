@@ -1,7 +1,7 @@
 /**
  * ShikshaSetu — Stage 5: Critic & Deterministic Auto-Repair Engine
  * Validates canonical Knowledge Graphs against source evidence with full Coverage Reporting.
- * Guarantees zero orphan algorithm steps, immutable formula preservation, and duplicate elimination.
+ * Guarantees zero orphan algorithm steps, context preservation, immutable formula preservation, and duplicate elimination.
  */
 
 import { ResilientAIProvider } from '@/lib/intelligence/providers/aiProvider';
@@ -39,7 +39,9 @@ export function validateSourceCoverage(
   const allEvidenceHeadings: string[] = [];
   function collectHeadings(nodes: any[]) {
     for (const n of nodes) {
-      if (n.title && n.title.length > 2) allEvidenceHeadings.push(n.title);
+      if (n.title && n.title.length > 2 && n.detectedType !== 'text' && n.detectedType !== 'list_item') {
+        allEvidenceHeadings.push(n.title);
+      }
       if (n.children && n.children.length > 0) collectHeadings(n.children);
     }
   }
@@ -162,7 +164,7 @@ export function auditKnowledgeGraph(
     nodeMap.set(node.id, node);
   }
 
-  // 2. Orphan Algorithm Step & Invalid Parent Checks
+  // 2. Orphan Algorithm Step & Context Escaping Checks
   let orphanStepsCount = 0;
   for (const node of graph.nodes) {
     if (node.type === 'algorithm_step') {
@@ -290,7 +292,8 @@ export function auditKnowledgeGraph(
 
 /**
  * Stage 5: Deterministic Auto-Repair.
- * Fixes orphan algorithm steps, resolves formula references, repairs relationships, and cleans duplicate concepts.
+ * Fixes orphan algorithm steps within their local section context (never escaping to root),
+ * resolves formula references, repairs relationships, and cleans duplicate concepts.
  */
 export function autoRepairKnowledgeGraph(
   graph: KnowledgeGraph,
@@ -298,42 +301,73 @@ export function autoRepairKnowledgeGraph(
 ): KnowledgeGraph {
   let nodes: KnowledgeNode[] = [...graph.nodes];
   const relationships: KnowledgeRelationship[] = [...graph.relationships];
+  let nodeMap = new Map<string, KnowledgeNode>();
+  nodes.forEach((n) => nodeMap.set(n.id, n));
 
-  // 1. Ensure at least one algorithm node exists if algorithm steps are present
+  // 1. Identify all parent nodes of algorithm_step nodes. If a parent is not an algorithm (and not root/unit), promote it to 'algorithm'
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    if (node.type === 'algorithm_step' && node.parentId) {
+      const parent = nodeMap.get(node.parentId);
+      if (parent && parent.type !== 'algorithm' && parent.type !== 'root' && parent.type !== 'unit') {
+        const parentIdx = nodes.findIndex((n) => n.id === parent.id);
+        if (parentIdx >= 0) {
+          nodes[parentIdx] = {
+            ...nodes[parentIdx],
+            type: 'algorithm',
+          };
+          nodeMap.set(parent.id, nodes[parentIdx]);
+        }
+      }
+    }
+  }
+
+  // 2. Ensure at least one algorithm node exists if steps are present
   let defaultAlgorithm = nodes.find((n) => n.type === 'algorithm');
   const hasSteps = nodes.some((n) => n.type === 'algorithm_step');
 
   if (hasSteps && !defaultAlgorithm) {
     const algoId = 'node-algorithm-auto';
-    const firstSection = nodes.find((n) => n.type === 'section' || n.parentId === 'node-chapter-root') || nodes[0];
+    const firstNonStep = nodes.find((n) => n.type !== 'algorithm_step');
     defaultAlgorithm = {
       id: algoId,
-      parentId: firstSection ? firstSection.id : 'node-chapter-root',
+      parentId: firstNonStep ? firstNonStep.id : null,
       title: 'Algorithm & Step Procedure',
       type: 'algorithm',
-      importance: 'critical',
-      summary: 'Computational algorithm and conversion procedure.',
-      steps: [],
+      importance: 'high',
+      summary: 'Algorithm procedure.',
     };
     nodes.push(defaultAlgorithm);
+    nodeMap.set(algoId, defaultAlgorithm);
   }
 
-  // 2. Re-parent orphan algorithm steps strictly under their algorithm node
+  // 3. Re-parent any remaining orphan algorithm steps
   nodes = nodes.map((node) => {
     if (node.type === 'algorithm_step') {
-      const currentParent = nodes.find((n) => n.id === node.parentId);
+      const currentParent = node.parentId ? nodeMap.get(node.parentId) : null;
       if (!currentParent || currentParent.type !== 'algorithm') {
-        const targetAlgo = defaultAlgorithm || nodes.find((n) => n.type === 'algorithm') || nodes[0];
-        return {
-          ...node,
-          parentId: targetAlgo.id,
-        };
+        let targetAlgo = nodes.find(
+          (n) => n.type === 'algorithm' && (currentParent ? n.parentId === currentParent.id || n.id === currentParent.parentId : true)
+        );
+        if (!targetAlgo) {
+          targetAlgo = defaultAlgorithm || nodes.find((n) => n.type === 'algorithm');
+        }
+        if (targetAlgo) {
+          return {
+            ...node,
+            parentId: targetAlgo.id,
+          };
+        }
       }
     }
     return node;
   });
 
-  // 3. Resolve and attach formula references contextually (WITHOUT dumping all on the first section)
+  // Re-sync nodeMap
+  nodeMap = new Map<string, KnowledgeNode>();
+  nodes.forEach((n) => nodeMap.set(n.id, n));
+
+  // 2. Resolve and attach formula references contextually (WITHOUT dumping all on the first section)
   if (evidence && evidence.formulaVault && evidence.formulaVault.length > 0) {
     const vault = evidence.formulaVault;
 
@@ -361,13 +395,13 @@ export function autoRepairKnowledgeGraph(
     });
   }
 
-  // 4. Clean relationships to ensure valid node IDs
+  // 3. Clean relationships to ensure valid node IDs
   const validNodeIds = new Set(nodes.map((n) => n.id));
   const validRelationships = relationships.filter(
     (r) => validNodeIds.has(r.fromNodeId) && validNodeIds.has(r.toNodeId)
   );
 
-  // 5. Ensure relationships exist for all parent-child links
+  // 4. Ensure relationships exist for all parent-child links
   for (const node of nodes) {
     if (node.parentId && validNodeIds.has(node.parentId)) {
       const hasRel = validRelationships.some(

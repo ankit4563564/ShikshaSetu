@@ -30,6 +30,9 @@ describe('Theory of Computation — Golden Regression Test Suite', () => {
     );
 
     const validation = safeValidateKnowledgeGraph(graph);
+    if (!validation.success) {
+      console.log('VALIDATION ERRORS:', JSON.stringify(validation.error, null, 2));
+    }
     expect(validation.success).toBe(true);
 
     const root = graph.nodes.find((n) => n.type === 'root' || n.type === 'chapter' || n.parentId === null);

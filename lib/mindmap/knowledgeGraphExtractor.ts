@@ -111,12 +111,15 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
   function processEvidenceNode(
     evNode: any,
     parentId: string,
-    depth: number
+    depth: number,
+    sectionPath: string[] = []
   ) {
     const cleanTitle = evNode.title || 'Key Concept';
+    const hasStepChildren = evNode.children && evNode.children.some((c: any) => c.detectedType === 'step');
     const isStep = evNode.detectedType === 'step' || /^Step\s*\d+/i.test(cleanTitle);
-    const isAlgo = evNode.detectedType === 'algorithm' || /subset\s*construction|algorithm|conversion/i.test(cleanTitle);
+    const isAlgo = evNode.detectedType === 'algorithm' || hasStepChildren || /subset\s*construction|algorithm|conversion/i.test(cleanTitle);
     const isTheorem = /theorem|law/i.test(cleanTitle);
+    const isListItem = evNode.detectedType === 'list_item';
 
     const nodeType: KnowledgeNodeType = isStep
       ? 'algorithm_step'
@@ -124,6 +127,8 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
       ? 'algorithm'
       : isTheorem
       ? 'theorem'
+      : isListItem
+      ? 'property'
       : depth === 1
       ? 'section'
       : 'topic';
@@ -132,7 +137,6 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
     const formulas = resolveFormulaRefs(evNode.formulaRefs || [], evidence.formulaVault);
     const tables = resolveTableRefs(evNode.tableRefs || [], evidence.tableVault);
 
-    // Only include definition text if it provides real descriptive content distinct from the heading
     const definitionText = evNode.rawText &&
       !evNode.rawText.startsWith('1.') &&
       !evNode.rawText.startsWith('2.') &&
@@ -144,6 +148,8 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
       evNode.rawText !== cleanTitle
       ? evNode.rawText
       : undefined;
+
+    const currentPath = [...sectionPath, cleanTitle];
 
     const kNode: KnowledgeNode = {
       id: nodeId,
@@ -158,6 +164,12 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
       table: tables.length > 0 ? tables[0] : undefined,
       tableRefs: evNode.tableRefs,
       sourceRefs: [evNode.sourceSpan.id],
+      context: {
+        sourceSpanId: evNode.sourceSpan.id,
+        outlineNodeId: evNode.id,
+        parentKnowledgeNodeId: parentId,
+        sectionPath: currentPath,
+      },
       steps: isAlgo ? [] : undefined,
     };
 
@@ -172,7 +184,7 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
 
     if (evNode.children && evNode.children.length > 0) {
       for (const child of evNode.children) {
-        processEvidenceNode(child, nodeId, depth + 1);
+        processEvidenceNode(child, nodeId, depth + 1, currentPath);
       }
     }
   }
@@ -180,7 +192,7 @@ export function deriveDeterministicKnowledgeGraphFromNotes(
   // Process root structural nodes
   if (evidence.rootNodes.length > 0) {
     for (const topNode of evidence.rootNodes) {
-      processEvidenceNode(topNode, rootId, 1);
+      processEvidenceNode(topNode, rootId, 1, [evidence.title]);
     }
   }
 

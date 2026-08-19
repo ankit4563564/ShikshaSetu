@@ -8,7 +8,7 @@ import type { ConceptMindMap, ConceptAccentColor, KnowledgeGraph } from './types
 
 const ACCENT_COLORS: ConceptAccentColor[] = ['blue', 'green', 'orange', 'purple', 'red', 'teal'];
 
-export const SourceSpanTypeSchema = z.enum(['text', 'heading', 'formula', 'table', 'list', 'step']);
+export const SourceSpanTypeSchema = z.enum(['text', 'heading', 'formula', 'table', 'list', 'step', 'algorithm']);
 
 export const SourceRefSchema = z.object({
   id: z.string(),
@@ -48,6 +48,8 @@ export const FormulaVaultEntrySchema = z.object({
   meaning: z.string().optional(),
   variables: z.array(z.string()).optional(),
   sourceRef: z.string().optional(),
+  start: z.number().optional(),
+  end: z.number().optional(),
 });
 
 export const TableStructureSchema = z.object({
@@ -116,6 +118,13 @@ export const KnowledgeRelationshipTypeSchema = z.enum([
   'converts_to',
 ]);
 
+export const ExtractionContextSchema = z.object({
+  sourceSpanId: z.string(),
+  outlineNodeId: z.string(),
+  parentKnowledgeNodeId: z.string().nullable().optional(),
+  sectionPath: z.array(z.string()),
+});
+
 export const KnowledgeNodeSchema = z.object({
   id: z.string().min(1, 'Node ID is required'),
   parentId: z.string().nullable().optional(),
@@ -125,6 +134,8 @@ export const KnowledgeNodeSchema = z.object({
   summary: z.string().optional(),
   level: z.number().optional(),
   sourceText: z.string().optional(),
+  sourceSpanId: z.string().optional(),
+  context: ExtractionContextSchema.optional(),
   
   definitions: z.array(z.string()).optional().default([]),
   properties: z.array(z.string()).optional().default([]),

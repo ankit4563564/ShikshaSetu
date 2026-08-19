@@ -34,7 +34,7 @@ export type DeclarativeDiagramType =
 // 1. SOURCE PROVENANCE & SPANS
 // ──────────────────────────────────────────
 
-export type SourceSpanType = 'text' | 'heading' | 'formula' | 'table' | 'list' | 'step';
+export type SourceSpanType = 'text' | 'heading' | 'formula' | 'table' | 'list' | 'step' | 'algorithm';
 
 export interface SourceRef {
   readonly id: string;
@@ -54,6 +54,13 @@ export interface SourceReference {
   readonly excerpt: string;
   readonly start?: number;
   readonly end?: number;
+}
+
+export interface ExtractionContext {
+  readonly sourceSpanId: string;
+  readonly outlineNodeId: string;
+  readonly parentKnowledgeNodeId?: string | null;
+  readonly sectionPath: string[];
 }
 
 // ──────────────────────────────────────────
@@ -78,6 +85,8 @@ export interface FormulaVaultEntry {
   readonly meaning?: string;
   readonly variables?: string[];
   readonly sourceRef?: string;
+  readonly start?: number;
+  readonly end?: number;
 }
 
 // ──────────────────────────────────────────
@@ -157,6 +166,8 @@ export interface KnowledgeNode {
   readonly summary?: string;
   readonly level?: number;
   readonly sourceText?: string;
+  readonly sourceSpanId?: string;
+  readonly context?: ExtractionContext;
   
   // Specific semantic structures
   readonly definitions?: string[];
@@ -218,7 +229,7 @@ export interface StructuralEvidenceNode {
   readonly level: number;
   readonly rawText: string;
   readonly numberingPrefix?: string;
-  readonly detectedType: 'unit' | 'section' | 'topic' | 'subtopic' | 'step' | 'list_item' | 'table' | 'text';
+  readonly detectedType: 'unit' | 'section' | 'topic' | 'subtopic' | 'algorithm' | 'step' | 'list_item' | 'table' | 'text';
   readonly parentId?: string | null;
   readonly children: StructuralEvidenceNode[];
   readonly formulaRefs: string[];
