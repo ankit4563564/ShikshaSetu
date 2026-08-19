@@ -13,8 +13,8 @@ import type {
 } from './types';
 
 /**
- * Stage 1: Robust Text Normalizer.
- * Cleans OCR artifacts and page markers while preserving all mathematical Unicode symbols and numbering.
+ * Stage 1: Robust Text Normalizer (GraphifyPDF content purification pattern).
+ * Cleans OCR artifacts, PDF streams, HTML/CSS garbage, and page markers while preserving all mathematical Unicode symbols and numbering.
  */
 export function normalizeDocumentText(rawText: string): {
   cleanedText: string;
@@ -30,17 +30,44 @@ export function normalizeDocumentText(rawText: string): {
     .replace(/\r/g, '\n')
     .replace(/[\u200B-\u200D\uFEFF]/g, '');
 
-  // 2. Strip page headers/footers and OCR artifacts like "[Page 1]", "Page 1 of 5", "--- Page 2 ---"
+  // 2. Strip HTML/CSS tags, inline scripts, and stylesheets
+  text = text
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<[^>]+>/g, ' ');
+
+  // 3. Strip PDF internal stream objects, xref tables, and metadata tags
+  text = text
+    .replace(/\/Type\s*\/[A-Za-z0-9]+/gi, '')
+    .replace(/\/Filter\s*\/[A-Za-z0-9]+/gi, '')
+    .replace(/\bobj\b[\s\S]*?\bendobj\b/gi, '')
+    .replace(/\bxref\b[\s\S]*?\btrailer\b/gi, '')
+    .replace(/\bstream\b[\s\S]*?\bendstream\b/gi, '')
+    .replace(/<<\s*\/[^\>]+>>/g, '');
+
+  // 4. Strip page headers/footers and OCR artifacts like "[Page 1]", "Page 1 of 5", "--- Page 2 ---"
   text = text
     .replace(/\[\s*Page\s*\d+\s*(?:of\s*\d+)?\s*\]/gi, '')
     .replace(/---\s*Page\s*\d+\s*---/gi, '')
     .replace(/^Page\s*\d+\s*(?:of\s*\d+)?\s*$/gim, '');
 
-  // 3. Clean trailing whitespace per line
-  const lines = text.split('\n').map((l) => l.trimEnd());
-  const cleaned = lines.join('\n').trim();
+  // 5. Clean trailing whitespace & filter out binary/base64 noise lines
+  const lines = text.split('\n')
+    .map((l) => l.trimEnd())
+    .filter((l) => {
+      const trimmed = l.trim();
+      if (!trimmed) return true; // keep blank line delimiters
+      // Drop standalone binary/base64 garbage lines (over 40 chars without spaces and without math symbols)
+      if (trimmed.length > 40 && !trimmed.includes(' ') && !/[=+\-*/\\{}\(\)ΣδερλΩπ]/.test(trimmed)) {
+        return false;
+      }
+      return true;
+    });
 
-  // 4. Generate base source span
+  const cleaned = lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+
+  // 6. Generate base source span
   const baseSpan: SourceRef = {
     id: 'src-root-doc',
     start: 0,

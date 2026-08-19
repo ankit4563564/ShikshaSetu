@@ -7,6 +7,52 @@
 import type { FormulaVaultEntry, FormulaBlock, SourceRef } from './types';
 
 /**
+ * Strict semantic and syntax validator to ensure candidate text is a genuine mathematical formula
+ * and reject PDF metadata, CSS/HTML tokens, file paths, URLs, and English sentences.
+ */
+export function isValidMathematicalFormula(raw: string): boolean {
+  if (!raw || typeof raw !== 'string') return false;
+  const trimmed = raw.trim();
+
+  // Length constraints
+  if (trimmed.length < 2 || trimmed.length > 250) return false;
+
+  // 1. Reject URLs and web links
+  if (/^(?:https?:\/\/|www\.|\/\/|mailto:)/i.test(trimmed) || /\b(?:https?:\/\/\S+|www\.\S+)/i.test(trimmed)) {
+    return false;
+  }
+
+  // 2. Reject file paths and system artifacts
+  if (/(?:^[A-Za-z]:\\|^\/[A-Za-z0-9_\.\-]+|\b\.(?:pdf|docx|html|css|js|ts|json|png|jpg)\b)/i.test(trimmed)) {
+    return false;
+  }
+
+  // 3. Reject HTML/CSS properties and DOM tags
+  if (/<[A-Za-z\/][^>]*>|font-(?:size|family|weight)|margin|padding|background|border|color\s*:|class=|id=/i.test(trimmed)) {
+    return false;
+  }
+
+  // 4. Reject PDF structural metadata, stream markers, and binary internals
+  if (/\/Type\s*\/|\/Filter\s*\/|<<|>>|\bobj\b|\bendobj\b|\bxref\b|\btrailer\b|\bstream\b|\bendstream\b|FlateDecode/i.test(trimmed)) {
+    return false;
+  }
+
+  // 5. Reject English explanatory sentences disguised as formulas (e.g. "X = the student who studied")
+  const words = trimmed.split(/\s+/);
+  const commonEnglishWords = trimmed.match(/\b(?:the|this|that|these|those|is|are|was|were|has|have|had|with|without|from|into|about|because|which|where|when|who|whose)\b/gi);
+  if (commonEnglishWords && commonEnglishWords.length >= 3 && !/[ΣδερλΩπ\+\*\/\^\\\{\}]/.test(trimmed)) {
+    return false;
+  }
+
+  // 6. Must contain mathematical indicator: operators, Greek characters, state tuples, or fractions
+  const hasMathSymbols = /[=><≤≥≠≈≡∈⊆∪∩×·\+\-\*\/\\^_{}\(\)ΣδερλΩπ]/.test(trimmed);
+  const hasTupleStructure = /^\([A-Za-z0-9_,\s\Sigma\delta\ε\λ]+\)$/.test(trimmed);
+  const hasSetStructure = /^(?:[A-Za-z0-9_]+\s*=\s*)?\{[^\}]*\}$/.test(trimmed);
+
+  return hasMathSymbols || hasTupleStructure || hasSetStructure;
+}
+
+/**
  * Robust LaTeX & KaTeX normalizer for mathematical and theoretical expressions.
  */
 export function normalizeMathFormula(raw: string): string {
@@ -29,6 +75,11 @@ export function normalizeMathFormula(raw: string): string {
     .replace(/δ/g, '\\delta')
     .replace(/ε/g, '\\varepsilon')
     .replace(/λ/g, '\\lambda')
+    .replace(/ρ|\brho\b/g, '\\rho')
+    .replace(/Ω|\bOhm\b|\bohms\b/gi, '\\Omega')
+    .replace(/π|\bpi\b/gi, '\\pi')
+    .replace(/θ|\btheta\b/gi, '\\theta')
+    .replace(/μ|\bmu\b/gi, '\\mu')
     .replace(/∅/g, '\\emptyset')
     .replace(/∈/g, '\\in')
     .replace(/⊆/g, '\\subseteq')
@@ -66,7 +117,9 @@ export function normalizeMathFormula(raw: string): string {
     .replace(/\bR_p\b/g, 'R_p')
     .replace(/\bR1\b/g, 'R_1')
     .replace(/\bR2\b/g, 'R_2')
-    .replace(/\bI\^2\b/g, 'I^2');
+    .replace(/\bR3\b/g, 'R_3')
+    .replace(/\bI\^2\b/g, 'I^2')
+    .replace(/\bV\^2\b/g, 'V^2');
 
   // Clean double spaces
   formula = formula.replace(/\s{2,}/g, ' ');
@@ -128,28 +181,32 @@ function extractDiscreteFormulasFromLine(line: string): Array<{ raw: string; sta
   const trimmed = line.trim();
   if (!trimmed) return matches;
 
+  // Strict domain-specific and mathematical formula prefixes
   const PREFIXES = [
     /\b(?:L|Σ|Sigma)\s*=\s*(?:\\\{|\{|∅|\\emptyset|Σ\*|\\Sigma\*|Σ\+|\\Sigma\+)/gi,
     /(?:δ|\\delta|delta)\s*:\s*/gi,
     /\((?:Q|q|Q_0|q_0),\s*(?:Σ|\\Sigma|Sigma)/gi,
-    /\b(?:R|X)\s*=\s*/gi,
+    /\b(?:R|R_s|1\s*\/\s*R_p|R_p)\s*=\s*(?:[A-Za-z0-9_\+\-\*\/\(\)\{\}\\\.\s\rho\Omega]+)/gi,
     /\|(?:ε|\\varepsilon|w)\|\s*=\s*/gi,
-    /\b(?:V|I|H|R_s|1\s*\/\s*R_p)\s*=\s*/gi
+    /\b(?:V|I|H|P|W|E|F|a|v|u|s|t)\s*=\s*(?:[A-Za-z0-9_\+\-\*\/\(\)\{\}\\\.\s]+)/gi,
+    /\b(?:[A-Za-z0-9_]+)\s*=\s*(?:\\[A-Za-z]+|[A-Za-z0-9_]+\s*[\+\-\*\/\^]\s*[A-Za-z0-9_]+)/gi
   ];
 
   for (const regex of PREFIXES) {
     let match: RegExpExecArray | null;
-    regex.lastIndex = 0; // reset regex
+    regex.lastIndex = 0;
     while ((match = regex.exec(line)) !== null) {
       const startIndex = match.index;
       const rawFormula = extractBalancedFormulaAt(line, startIndex);
       const start = startIndex;
       const end = startIndex + rawFormula.length;
       
-      // Ensure this span doesn't overlap with any previously recorded span
-      const overlaps = matches.some((m) => Math.max(m.start, start) < Math.min(m.end, end));
-      if (!overlaps && rawFormula.length >= 2) {
-        matches.push({ raw: rawFormula, start, end });
+      // Strict semantic and mathematical syntax check
+      if (isValidMathematicalFormula(rawFormula)) {
+        const overlaps = matches.some((m) => Math.max(m.start, start) < Math.min(m.end, end));
+        if (!overlaps) {
+          matches.push({ raw: rawFormula, start, end });
+        }
       }
     }
   }

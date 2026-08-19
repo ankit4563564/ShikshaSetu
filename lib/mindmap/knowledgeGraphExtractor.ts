@@ -648,6 +648,114 @@ Return ONLY valid JSON matching this schema:
   }));
 }
 
+/**
+ * Section-level text slice and source span resolver (Paper2CMap & Hanxiao patterns).
+ * Extracts the bounded text segment for a specific section from the document evidence.
+ */
+function getSectionTextSlice(
+  nodeTitle: string,
+  evidence: DocumentStructureEvidence
+): { text: string; spanIds: string[] } {
+  const normTitle = nodeTitle.toLowerCase().trim();
+  let matchedEvidence = evidence.rootNodes.find((r) => 
+    r.title.toLowerCase().includes(normTitle) || normTitle.includes(r.title.toLowerCase())
+  );
+
+  if (!matchedEvidence && evidence.rootNodes.length > 0) {
+    for (const r of evidence.rootNodes) {
+      const childMatch = r.children.find((c) => 
+        c.title.toLowerCase().includes(normTitle) || normTitle.includes(c.title.toLowerCase())
+      );
+      if (childMatch) {
+        matchedEvidence = childMatch;
+        break;
+      }
+    }
+  }
+
+  if (matchedEvidence && matchedEvidence.sourceSpan) {
+    const start = matchedEvidence.sourceSpan.start;
+    const subsequentNodes = evidence.rootNodes.filter((r) => r.sourceSpan.start > start);
+    const end = subsequentNodes.length > 0 
+      ? Math.min(...subsequentNodes.map((r) => r.sourceSpan.start)) 
+      : evidence.cleanedText.length;
+    
+    const sliceText = evidence.cleanedText.slice(start, end).trim() || evidence.cleanedText.slice(0, 4000);
+    const spanIds = (evidence.sourceRefs || [])
+      .filter((s) => s.start >= start && s.end <= end)
+      .map((s) => s.id);
+    
+    if (spanIds.length === 0) spanIds.push(matchedEvidence.sourceSpan.id);
+    return { text: sliceText, spanIds };
+  }
+
+  return {
+    text: evidence.cleanedText.slice(0, 6000),
+    spanIds: evidence.sourceRefs?.map((s) => s.id) || ['src-root-doc'],
+  };
+}
+
+/**
+ * Global Graph Merge & Semantic Deduplication Engine.
+ * Merges local section subgraphs into the canonical Knowledge Graph, consolidating duplicate concept
+ * nodes while preserving their definitions, formulas, and relationship links.
+ */
+function mergeAndDeduplicateNodes(
+  nodes: KnowledgeNode[],
+  relationships: KnowledgeRelationship[]
+): { nodes: KnowledgeNode[]; relationships: KnowledgeRelationship[] } {
+  const merged: KnowledgeNode[] = [];
+  const titleMap = new Map<string, KnowledgeNode>();
+  const idRemap = new Map<string, string>();
+
+  for (const node of nodes) {
+    if (node.type === 'root') {
+      merged.push(node);
+      continue;
+    }
+
+    const key = `${node.parentId || 'root'}::${node.title.trim().toLowerCase()}`;
+    const existing = titleMap.get(key);
+
+    if (existing) {
+      idRemap.set(node.id, existing.id);
+      (existing as any).definitions = Array.from(new Set([...(existing.definitions || []), ...(node.definitions || [])]));
+      (existing as any).properties = Array.from(new Set([...(existing.properties || []), ...(node.properties || [])]));
+      (existing as any).keyPoints = Array.from(new Set([...(existing.keyPoints || []), ...(node.keyPoints || [])]));
+      (existing as any).examples = Array.from(new Set([...(existing.examples || []), ...(node.examples || [])]));
+      (existing as any).applications = Array.from(new Set([...(existing.applications || []), ...(node.applications || [])]));
+      (existing as any).formulaRefs = Array.from(new Set([...(existing.formulaRefs || []), ...(node.formulaRefs || [])]));
+      (existing as any).tableRefs = Array.from(new Set([...(existing.tableRefs || []), ...(node.tableRefs || [])]));
+      (existing as any).sourceRefs = Array.from(new Set([...(existing.sourceRefs || []), ...(node.sourceRefs || [])]));
+    } else {
+      titleMap.set(key, node);
+      merged.push(node);
+    }
+  }
+
+  const cleanRelationships: KnowledgeRelationship[] = [];
+  const seenRels = new Set<string>();
+
+  for (const r of relationships) {
+    const fromId = idRemap.get(r.fromNodeId) || r.fromNodeId;
+    const toId = idRemap.get(r.toNodeId) || r.toNodeId;
+    if (fromId === toId) continue;
+
+    const relKey = `${fromId}->${r.type}->${toId}`;
+    if (!seenRels.has(relKey) && merged.some((n) => n.id === fromId) && merged.some((n) => n.id === toId)) {
+      seenRels.add(relKey);
+      cleanRelationships.push({
+        fromNodeId: fromId,
+        toNodeId: toId,
+        type: r.type,
+        label: r.label,
+      });
+    }
+  }
+
+  return { nodes: merged, relationships: cleanRelationships };
+}
+
 export async function extractKnowledgeGraphFromText(
   options: ExtractKnowledgeGraphOptions
 ): Promise<ExtractKnowledgeGraphResult> {
@@ -682,7 +790,7 @@ export async function extractKnowledgeGraphFromText(
     const archOutline = await extractArchitectureOutline(evidence, notesText);
     const architectMs = Date.now() - tArchStart;
 
-    // Stage 6: Knowledge Extraction LLM
+    // Stage 6: Knowledge Extraction LLM (Section-Level Processing)
     const tExtractStart = Date.now();
     const synthesizedNodes: KnowledgeNode[] = [];
     const rootId = 'node-chapter-root';
@@ -694,20 +802,22 @@ export async function extractKnowledgeGraphFromText(
       type: 'root',
       importance: 'critical',
       summary: archOutline.summary || `Concept map for ${title}`,
-      sourceRefs: ['src-root-doc']
+      sourceRefs: ['src-root-doc'],
     });
 
     let nodeCounter = 1;
     const architectNodeMap = new Map<string, string>();
 
     const topLevelNodes = archOutline.structure || [];
-    const extractPromises = topLevelNodes.map(node =>
+    const sectionSlices = topLevelNodes.map((node) => getSectionTextSlice(node.title, evidence));
+
+    const extractPromises = topLevelNodes.map((node, idx) =>
       extractSemanticDetails(
         node.title,
         node.type,
-        notesText,
-        evidence.formulaVault.map(f => ({ id: f.id, raw: f.raw, meaning: f.meaning })),
-        evidence.tableVault.map(t => ({ id: t.id, columns: t.columns }))
+        sectionSlices[idx].text,
+        evidence.formulaVault.map((f) => ({ id: f.id, raw: f.raw, meaning: f.meaning })),
+        evidence.tableVault.map((t) => ({ id: t.id, columns: t.columns }))
       ).catch(() => ({}) as NodeDetails)
     );
 
@@ -719,6 +829,7 @@ export async function extractKnowledgeGraphFromText(
       architectNodeMap.set(node.id, currentId);
 
       const details = detailResults[idx];
+      const slice = sectionSlices[idx];
       const formulas = resolveFormulaRefs(details.formulaRefs || [], evidence.formulaVault);
 
       synthesizedNodes.push({
@@ -735,13 +846,14 @@ export async function extractKnowledgeGraphFromText(
         formulas: formulas.length > 0 ? formulas : undefined,
         formulaRefs: details.formulaRefs || [],
         tableRefs: details.tableRefs || [],
-        sourceRefs: [evidence.sourceRefs?.[nodeCounter % (evidence.sourceRefs?.length || 1)]?.id || 'src-root-doc']
+        sourceRefs: slice.spanIds.length > 0 ? slice.spanIds : ['src-root-doc'],
       });
 
       if (node.children && node.children.length > 0) {
-        node.children.forEach(child => {
+        node.children.forEach((child) => {
           const childId = `node-concept-${nodeCounter++}`;
           architectNodeMap.set(child.id, childId);
+          const childSlice = getSectionTextSlice(child.title, evidence);
           synthesizedNodes.push({
             id: childId,
             parentId: currentId,
@@ -751,7 +863,7 @@ export async function extractKnowledgeGraphFromText(
             definitions: [],
             properties: [],
             keyPoints: [],
-            sourceRefs: [evidence.sourceRefs?.[nodeCounter % (evidence.sourceRefs?.length || 1)]?.id || 'src-root-doc']
+            sourceRefs: childSlice.spanIds.length > 0 ? childSlice.spanIds : slice.spanIds,
           });
         });
       }
@@ -762,32 +874,37 @@ export async function extractKnowledgeGraphFromText(
     const parsedRelationships = await extractRelationships(synthesizedNodes, notesText).catch(() => []);
     const relationshipsMs = Date.now() - tRelStart;
 
-    const finalRelationships: KnowledgeRelationship[] = parsedRelationships.map(r => {
+    const rawRelationships: KnowledgeRelationship[] = parsedRelationships.map((r) => {
       const fromMapped = architectNodeMap.get(r.fromNodeId) || r.fromNodeId;
       const toMapped = architectNodeMap.get(r.toNodeId) || r.toNodeId;
       return {
         fromNodeId: fromMapped,
         toNodeId: toMapped,
         type: r.type,
-        label: r.label
+        label: r.label,
       };
-    }).filter(r => 
-      synthesizedNodes.some(n => n.id === r.fromNodeId) && 
-      synthesizedNodes.some(n => n.id === r.toNodeId)
+    }).filter((r) => 
+      synthesizedNodes.some((n) => n.id === r.fromNodeId) && 
+      synthesizedNodes.some((n) => n.id === r.toNodeId)
     );
 
-    // Stage 8: Controlled Synthesis
+    // Stage 8: Controlled Synthesis & Global Graph Merge
     const tSynthStart = Date.now();
+    const { nodes: deduplicatedNodes, relationships: finalRelationships } = mergeAndDeduplicateNodes(
+      synthesizedNodes,
+      rawRelationships
+    );
+
     const synthesizedGraph: KnowledgeGraph = {
       title: archOutline.title || title,
       subject,
       grade,
       summary: archOutline.summary || `Concept map for ${title}`,
-      nodes: synthesizedNodes,
+      nodes: deduplicatedNodes,
       relationships: finalRelationships,
       formulas: evidence.formulaVault,
       tables: evidence.tableVault,
-      sourceRefs: evidence.sourceRefs
+      sourceRefs: evidence.sourceRefs,
     };
     const synthesisMs = Date.now() - tSynthStart;
 
@@ -809,7 +926,7 @@ export async function extractKnowledgeGraphFromText(
     // Stage 11: Deterministic Validation & Quality Gate check
     const tValStart = Date.now();
     const coverage = validateSourceCoverage(evidence, repairedGraph);
-    const criticalFindings = criticReport.findings.filter(f => f.severity === 'critical').length;
+    const criticalFindings = criticReport.findings.filter((f) => f.severity === 'critical').length;
     const passesQualityGate = 
       coverage.sourceSpanCoverage >= 80 &&
       coverage.orphanSteps.length === 0 &&
@@ -841,7 +958,7 @@ export async function extractKnowledgeGraphFromText(
       validationMs,
       projectionMs,
       pdfMs: 2100,
-      totalMs
+      totalMs,
     };
 
     const qualityReport = {
@@ -861,7 +978,7 @@ export async function extractKnowledgeGraphFromText(
       structuralIntegrity: coverage.missingHeadings.length === 0 ? 'PASS' : 'FAIL',
       graphIntegrity: passesQualityGate ? 'PASS' : 'FAIL',
       qualityGate: passesQualityGate ? 'PASS' : 'FAIL',
-      sectionDepths: criticReport.sectionDepths
+      sectionDepths: criticReport.sectionDepths,
     };
 
     console.log(`
@@ -902,8 +1019,8 @@ TOTAL RUNTIME: ${(telemetry.totalMs / 1000).toFixed(2)}s
       mindMap: {
         ...mindMap,
         telemetry,
-        qualityReport
-      } as any
+        qualityReport,
+      } as any,
     };
 
   } catch (err: any) {
@@ -913,7 +1030,7 @@ TOTAL RUNTIME: ${(telemetry.totalMs / 1000).toFixed(2)}s
     return {
       success: true,
       knowledgeGraph: derived,
-      mindMap
+      mindMap,
     };
   }
 }
