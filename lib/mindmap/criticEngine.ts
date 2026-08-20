@@ -62,14 +62,17 @@ export function validateSourceCoverage(
     graph.nodes.flatMap((n) => [
       ...(n.formulaRefs || []),
       ...(n.formulas || []).map((f) => f.id || ''),
-    ]).filter(Boolean)
+    ]).filter(Boolean).map((id) => id.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
   );
 
-  const allGraphLatex = graph.nodes.flatMap((n) => (n.formulas || []).map((f) => f.latex.replace(/\s+/g, '')));
+  const allGraphLatex = graph.nodes.flatMap((n) => (n.formulas || []).map((f) => f.latex.replace(/\s+/g, '').toLowerCase()));
 
   const missingFormulas = evidence.formulaVault.filter((f) => {
-    const normKey = f.latex.replace(/\s+/g, '');
-    return !allGraphFormulaIds.has(f.id) && !allGraphLatex.some((gl) => gl.includes(normKey) || normKey.includes(gl));
+    const normId = f.id.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    const normKey = f.latex.replace(/\s+/g, '').toLowerCase();
+    const normRaw = f.raw.replace(/\s+/g, '').toLowerCase();
+    return !allGraphFormulaIds.has(normId) &&
+      !allGraphLatex.some((gl) => gl.includes(normKey) || normKey.includes(gl) || gl.includes(normRaw) || normRaw.includes(gl));
   }).map((f) => f.raw);
 
   const formulaCoverage = evidence.formulaVault.length > 0
@@ -499,10 +502,16 @@ export function autoRepairKnowledgeGraph(
       const matchingRefs = vault
         .filter((v) => {
           const text = (node.title + ' ' + (node.summary || '') + ' ' + (node.definitions || []).join(' ')).toLowerCase();
+          const normLatex = v.latex.replace(/\s+/g, '').toLowerCase();
+          const normRaw = v.raw.replace(/\s+/g, '').toLowerCase();
+          const normText = text.replace(/\s+/g, '');
+          const normId = v.id.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+          const hasRef = node.formulaRefs && node.formulaRefs.some((r) => r.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === normId);
           return (
-            (node.formulaRefs && node.formulaRefs.includes(v.id)) ||
+            hasRef ||
             (v.meaning && text.includes(v.meaning.toLowerCase().slice(0, 15))) ||
-            text.includes(v.raw.toLowerCase())
+            (normRaw.length >= 3 && normText.includes(normRaw)) ||
+            (normLatex.length >= 3 && normText.includes(normLatex))
           );
         })
         .map((v) => v.id);

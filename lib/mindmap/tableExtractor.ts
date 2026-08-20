@@ -145,12 +145,23 @@ export function resolveTableRefs(refs: string[], vault: TableVaultEntry[]): Tabl
   if (!refs || refs.length === 0 || !vault || vault.length === 0) return [];
 
   const vaultMap = new Map<string, TableVaultEntry>();
-  vault.forEach((v) => vaultMap.set(v.id, v));
+  vault.forEach((v) => {
+    vaultMap.set(v.id, v);
+    vaultMap.set(v.id.toLowerCase(), v);
+    vaultMap.set(v.id.replace(/_/g, '-').toLowerCase(), v);
+    vaultMap.set(v.id.replace(/-/g, '_').toLowerCase(), v);
+    vaultMap.set(v.id.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(), v);
+  });
 
   const resolved: TableStructure[] = [];
+  const seenIds = new Set<string>();
+
   for (const ref of refs) {
-    const entry = vaultMap.get(ref);
-    if (entry) {
+    if (!ref) continue;
+    const cleanRefKey = ref.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    const entry = vaultMap.get(cleanRefKey) || vaultMap.get(ref) || vaultMap.get(ref.toLowerCase());
+    if (entry && !seenIds.has(entry.id)) {
+      seenIds.add(entry.id);
       resolved.push({
         id: entry.id,
         headers: entry.columns,

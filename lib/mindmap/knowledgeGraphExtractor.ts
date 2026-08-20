@@ -428,8 +428,18 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       });
     }
 
-    if (items.length === 0) {
-      items.push({
+    const seenItemKey = new Set<string>();
+    const dedupedItems: MindMapItem[] = [];
+    for (const item of items) {
+      const key = (item.title || '') + '::' + item.content.trim().toLowerCase();
+      if (!seenItemKey.has(key)) {
+        seenItemKey.add(key);
+        dedupedItems.push(item);
+      }
+    }
+
+    if (dedupedItems.length === 0) {
+      dedupedItems.push({
         id: `${node.id}-default`,
         type: 'concept',
         content: node.summary || node.title,
@@ -454,7 +464,7 @@ export function convertKnowledgeGraphToMindMap(graph: KnowledgeGraph): ConceptMi
       definition: node.definitions?.[0],
       formulas: nodeFormulas.length > 0 ? deduplicateFormulas(nodeFormulas) : [],
       keyPoints: node.keyPoints,
-      items,
+      items: dedupedItems,
       relatedSectionIds: graph.relationships
         .filter((r) => r.fromNodeId === node.id || r.toNodeId === node.id)
         .map((r) => (r.fromNodeId === node.id ? `sec-${r.toNodeId}` : `sec-${r.fromNodeId}`)),
