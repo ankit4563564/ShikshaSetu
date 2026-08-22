@@ -68,14 +68,18 @@ export async function extractTextFromFile(file: File): Promise<{
         }
       }
 
-      const fullText = pageTexts.join('\n\n');
+      const rawFullText = pageTexts.join('\n\n');
 
-      if (!fullText || fullText.trim().length < 20) {
+      if (!rawFullText || rawFullText.trim().length < 20) {
         throw new Error('PDF text layer is empty — this document may be a scanned image. Please use OCR or paste the text manually.');
       }
 
-      console.log(`[extractTextFromFile] PDF.js extracted ${numPages} pages, ${fullText.length} characters`);
-      return { text: fullText.trim(), inferredTitle, pageCount: numPages };
+      const cleanedText = deduplicateAndCleanExtractedText(rawFullText, numPages);
+
+      console.log(
+        `[extractTextFromFile] PDF.js extracted ${numPages} pages: ${rawFullText.length} raw chars -> ${cleanedText.length} deduped chars`
+      );
+      return { text: cleanedText, inferredTitle, pageCount: numPages };
     } catch (pdfErr: any) {
       console.error('[extractTextFromFile] PDF.js extraction failed:', pdfErr?.message);
 
@@ -84,8 +88,9 @@ export async function extractTextFromFile(file: File): Promise<{
       const fallbackText = extractReadableTextFromRawPDF(new Uint8Array(arrayBuffer));
 
       if (fallbackText && fallbackText.trim().length >= 50) {
-        console.log(`[extractTextFromFile] Fallback extracted ${fallbackText.length} characters from raw PDF streams`);
-        return { text: fallbackText.trim(), inferredTitle, pageCount: 1 };
+        const cleaned = deduplicateAndCleanExtractedText(fallbackText, 1);
+        console.log(`[extractTextFromFile] Fallback extracted ${cleaned.length} characters from raw PDF streams`);
+        return { text: cleaned, inferredTitle, pageCount: 1 };
       }
 
       throw new Error(
@@ -108,13 +113,126 @@ export async function extractTextFromFile(file: File): Promise<{
     const xmlMatches = decoded.match(/<w:t[^>]*>([^<]+)<\/w:t>/g);
     if (xmlMatches && xmlMatches.length > 0) {
       const text = xmlMatches.map((m) => m.replace(/<[^>]+>/g, '')).join(' ');
-      return { text: text.trim(), inferredTitle };
+      const cleaned = deduplicateAndCleanExtractedText(text, 1);
+      return { text: cleaned, inferredTitle };
     }
 
     throw new Error('Could not extract text from this DOCX file. Please upload as PDF or paste notes directly.');
   }
 
   throw new Error(`Unsupported file type: .${extension}. Please upload a PDF, DOCX, or TXT file.`);
+}
+
+/**
+ * Deduplicates and normalizes multi-page extracted text:
+ * 1. Counts line frequencies across pages. Lines appearing >= 3 times (headers, footers, chapter labels) are stripped.
+ * 2. Removes consecutive identical lines and duplicate paragraphs.
+ * 3. Joins sentences broken across line wraps (preventing mid-sentence cuts).
+ * 4. Eliminates duplicate OCR/visible text layers.
+ */
+export function deduplicateAndCleanExtractedText(rawText: string, numPages: number = 1): string {
+  if (!rawText || typeof rawText !== 'string') return '';
+
+  const lines = rawText.split('\n');
+  const lineFrequency = new Map<string, number>();
+
+  // Count frequency of normalized lines
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (trimmed.length > 0) {
+      lineFrequency.set(trimmed, (lineFrequency.get(trimmed) || 0) + 1);
+    }
+  });
+
+  // Filter out running headers, repeated footers, and recurring page marks
+  const filteredLines: string[] = [];
+  let previousTrimmed = '';
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      filteredLines.push('');
+      continue;
+    }
+
+    // Skip verbatim consecutive duplicates
+    if (trimmed === previousTrimmed) continue;
+
+    const count = lineFrequency.get(trimmed) || 0;
+    // Lines that appear >= 3 times across a multi-page document are headers/footers/running labels
+    if (numPages >= 2 && count >= 3 && trimmed.length <= 100) {
+      continue;
+    }
+
+    // Skip isolated page number lines like "Page 11", "12", "11.4" if isolated
+    if (/^(?:Page\s*\d+|\d{1,3})$/i.test(trimmed)) {
+      continue;
+    }
+
+    filteredLines.push(line);
+    previousTrimmed = trimmed;
+  }
+
+  // Join lines within paragraphs where sentences were broken across lines
+  const paragraphs: string[] = [];
+  let currentParaLines: string[] = [];
+
+  for (const line of filteredLines) {
+    if (!line.trim()) {
+      if (currentParaLines.length > 0) {
+        paragraphs.push(joinParagraphLines(currentParaLines));
+        currentParaLines = [];
+      }
+    } else {
+      currentParaLines.push(line);
+    }
+  }
+  if (currentParaLines.length > 0) {
+    paragraphs.push(joinParagraphLines(currentParaLines));
+  }
+
+  // Deduplicate consecutive or identical paragraphs
+  const uniqueParas: string[] = [];
+  const seenParaSignatures = new Set<string>();
+
+  for (const p of paragraphs) {
+    const trimmed = p.trim();
+    if (!trimmed) continue;
+    // Signature: first 80 chars normalized
+    const sig = trimmed.slice(0, 80).toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (sig.length > 15 && seenParaSignatures.has(sig)) {
+      continue;
+    }
+    if (sig.length > 15) {
+      seenParaSignatures.add(sig);
+    }
+    uniqueParas.push(trimmed);
+  }
+
+  return uniqueParas.join('\n\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function joinParagraphLines(lines: string[]): string {
+  if (lines.length === 0) return '';
+  let result = lines[0].trim();
+
+  for (let i = 1; i < lines.length; i++) {
+    const nextLine = lines[i].trim();
+    if (!nextLine) continue;
+
+    // Check if previous line ended with a terminal punctuation or heading marker
+    const endsWithTerminal = /[.!?:;—–\-]$/.test(result);
+    const startsWithHeading = /^(?:[0-9]{1,2}\.|\([a-z]\)|[•\*\-]|Step\s*\d+|UNIT|Chapter)/i.test(nextLine);
+
+    if (startsWithHeading || endsWithTerminal) {
+      result += '\n' + nextLine;
+    } else {
+      // Connect as continuation of the sentence
+      result += ' ' + nextLine;
+    }
+  }
+
+  return result;
 }
 
 /**

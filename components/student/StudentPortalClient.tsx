@@ -4,16 +4,23 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import SchoolMitra from '@/components/student/SchoolMitra';
 import QuestBoard from '@/components/student/QuestBoard';
-import { StudentCopilotStrip } from '@/components/copilot/StudentCopilotStrip';
+import StudentTodayTasks from '@/components/student/StudentTodayTasks';
+import StudentCompactTimetable from '@/components/student/StudentCompactTimetable';
+import StudentLearningFocus from '@/components/student/StudentLearningFocus';
+import StudentUpcomingTests from '@/components/student/StudentUpcomingTests';
+import StudentProgressSummary from '@/components/student/StudentProgressSummary';
+import StudentStudyHelpCard from '@/components/student/StudentStudyHelpCard';
+import StudentMobileNav from '@/components/student/StudentMobileNav';
 import { getCanonicalStudentState } from '@/lib/canonical';
 import { usePortalSync } from '@/hooks/usePortalSync';
 import { useTimeGreeting } from '@/lib/utils/timeGreeting';
-// Fallback to demo universe for data not yet in canonical
+import type { StudentWithFlag } from '@/lib/supabase/getStudentsData';
+
+// Demo universe constants
 import {
   TODAYS_SCHEDULE,
   ACHIEVEMENTS,
   UPCOMING_EXAMS,
-  AI_STUDY_TIPS,
 } from '@/lib/demo/schoolUniverse';
 
 import VisualMindMapWorkspace from '@/components/mindmap/VisualMindMapWorkspace';
@@ -22,7 +29,15 @@ interface StudentPortalClientProps {
   student?: StudentWithFlag;
 }
 
-const TAB_LABELS = ['Today', 'Revision Maps', 'Homework', 'Exams', 'Achievements', 'Missions', 'Wellbeing'] as const;
+const TAB_LABELS = [
+  'Today',
+  'Revision Maps',
+  'Homework',
+  'Exams',
+  'Achievements',
+  'Missions',
+  'Wellbeing',
+] as const;
 type Tab = typeof TAB_LABELS[number];
 
 export default function StudentPortalClient({ student }: StudentPortalClientProps) {
@@ -61,19 +76,18 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
   const doneHW = (homework || []).filter((h: any) => Boolean(h && (h.isSubmitted || h.is_submitted)));
 
   // Use canonical attendance if available
-  const attendanceSummary = canonicalState?.attendanceSummary || { rate: 0.97, streak: 12 };
-
-  const studyTipText = typeof AI_STUDY_TIPS[0] === 'string' 
-    ? AI_STUDY_TIPS[0] 
-    : (AI_STUDY_TIPS[0] as any)?.tip || '';
+  const attendanceSummary = canonicalState?.attendanceSummary || { rate: 0.97, streak: 14 };
 
   const studentGrade = student?.grade || '8';
   const studentSection = student?.section || 'A';
-  const studentRoll = student?.roll_number || '14';
+  const studentRoll = student?.roll_number || '801';
   const studentGrades = student?.grades || [];
+  const effectiveGrades = studentGrades.length > 0 ? studentGrades : (canonicalState?.grades || []);
+
+  const pendingCount = pendingHW.length;
 
   return (
-    <div className="student-portal-shell min-h-screen bg-paper px-3 py-3 sm:px-6 sm:py-5 lg:pl-72">
+    <div className="student-portal-shell min-h-screen bg-paper px-3 py-3 sm:px-6 sm:py-5 lg:pl-72 pb-24 lg:pb-8">
 
       {/* ── Sidebar ── */}
       <aside className="student-sidebar fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/60 bg-white/65 px-5 py-7 shadow-[8px_0_35px_rgba(63,81,181,.06)] backdrop-blur-xl lg:flex">
@@ -99,14 +113,27 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-bold transition ${
+              className={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-bold transition cursor-pointer ${
                 activeTab === tab
                   ? 'bg-primary/10 text-primary'
                   : 'text-muted hover:bg-primary/5 hover:text-primary'
               }`}
             >
-              {{ Today:'⌂', 'Revision Maps':'🗺️', Homework:'📋', Exams:'📝', Achievements:'🏆', Missions:'✦', Wellbeing:'◌' }[tab]}
+              {{
+                Today: '⌂',
+                'Revision Maps': '🗺️',
+                Homework: '📋',
+                Exams: '📝',
+                Achievements: '🏆',
+                Missions: '✦',
+                Wellbeing: '◌',
+              }[tab]}
               <span>{tab}</span>
+              {tab === 'Homework' && pendingCount > 0 && (
+                <span className="ml-auto rounded-full bg-amber-100 px-2 py-0.2 text-[10px] font-extrabold text-amber-800">
+                  {pendingCount}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -115,7 +142,7 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
           <div className="rounded-2xl bg-secondary/10 p-3">
             <p className="text-[11px] font-bold text-[#1f4e5f]">Grade {studentGrade}{studentSection} · Roll #{studentRoll}</p>
           </div>
-          <SignOutButton className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-display text-xs font-bold transition-all border border-rose-200/60">
+          <SignOutButton className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-display text-xs font-bold transition-all border border-rose-200/60 cursor-pointer">
             <span className="flex items-center gap-2">
               <span>🚪</span>
               <span>Sign Out</span>
@@ -135,8 +162,13 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
             <h1 className="font-display text-base font-black tracking-tight text-deep-teal lg:text-lg">
               {timeGreeting}, {firstName}
             </h1>
-            <p className="text-[11px] font-semibold text-muted">
-              Class {studentGrade}{studentSection} · Roll #{studentRoll}
+            <p className="text-[11px] font-bold text-muted">
+              Class {studentGrade}{studentSection} · Roll #{studentRoll} ·{' '}
+              <span className={pendingCount > 0 ? 'text-amber-700' : 'text-sage'}>
+                {pendingCount === 0
+                  ? 'All caught up 🎉'
+                  : `${pendingCount} thing${pendingCount === 1 ? '' : 's'} to finish today`}
+              </span>
             </p>
           </div>
         </div>
@@ -153,103 +185,64 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
 
       {/* ── Main content area ── */}
       <main className="mx-auto max-w-6xl space-y-5">
-        {/* Ambient Copilot strip */}
-        <StudentCopilotStrip />
 
-        {/* ══ TODAY TAB ══ */}
+        {/* ══ TODAY TAB (PRIORITIZED & SIMPLIFIED) ══ */}
         {activeTab === 'Today' && (
-          <>
-            {/* Today schedule */}
-            <section className="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-sm backdrop-blur-xl">
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted">Today&apos;s Schedule</p>
-                  <h2 className="font-display text-base font-black text-deep-teal">Class {studentGrade}{studentSection} timetable</h2>
-                </div>
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-bold text-primary">
-                  {TODAYS_SCHEDULE.length} classes today
-                </span>
-              </div>
+          <div className="space-y-5">
+            {/* Priority 1: What to finish today */}
+            <StudentTodayTasks
+              homework={homework}
+              onOpenHomeworkTab={() => setActiveTab('Homework')}
+              onOpenRevisionMaps={() => setActiveTab('Revision Maps')}
+            />
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {TODAYS_SCHEDULE.map((cls, i) => (
-                  <div
-                    key={cls.period}
-                    className={`rounded-xl border p-4 transition ${
-                      i === 1 ? 'border-primary/30 bg-primary/5 shadow-xs' : 'border-slate-100 bg-white/80'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-[10px] font-extrabold tracking-wider text-muted">
-                      <span>{cls.time}</span>
-                      {i === 1 && <span className="rounded-full bg-primary px-2 py-0.5 text-white">NEXT</span>}
-                    </div>
-                    <p className="mt-2 text-sm font-extrabold text-deep-teal">{cls.subject}</p>
-                    <p className="text-[11px] font-semibold text-muted">{cls.teacher}</p>
-                    <p className="mt-1 text-[10px] font-bold text-sage">{cls.room}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
+            {/* Priority 2: What class is next */}
+            <StudentCompactTimetable
+              schedule={TODAYS_SCHEDULE}
+              studentGrade={studentGrade}
+              studentSection={studentSection}
+            />
 
-            {/* AI Study tip banner */}
-            <section className="rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-white p-5 shadow-sm">
-              <div className="flex items-start gap-4">
-                <span className="text-3xl shrink-0">✨</span>
-                <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-primary">AI Learning Nudge</p>
-                  <h3 className="font-display text-sm font-black text-deep-teal">Quick tip for today&apos;s Science lab</h3>
-                  <p className="mt-1 text-xs font-semibold text-muted leading-relaxed">
-                    {studyTipText}
-                  </p>
-                </div>
-              </div>
-            </section>
+            {/* Priority 3: What to study next (real learning focus) */}
+            <StudentLearningFocus
+              grades={effectiveGrades}
+              onOpenRevisionMaps={() => setActiveTab('Revision Maps')}
+              onOpenStudyHelp={() => setActiveTab('Wellbeing')}
+            />
 
-            {/* School Mitra & Quest Board side by side */}
+            {/* Priority 4: Upcoming Tests & Progress side-by-side */}
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-              <SchoolMitra studentName={displayName} />
-              <QuestBoard student={student} />
+              <StudentUpcomingTests
+                exams={UPCOMING_EXAMS}
+                onPrepareExam={() => setActiveTab('Revision Maps')}
+              />
+              <StudentProgressSummary grades={effectiveGrades} />
             </div>
 
-            {/* Peer recognition cards */}
-            <section className="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-sm backdrop-blur-xl">
-              <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted">Peer Recognition &amp; Growth</p>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div className="p-3 rounded-2xl bg-white/90 border border-sage/20 shadow-2xs space-y-1">
-                  <span className="text-lg block">🌟</span>
-                  <p className="text-xs font-bold text-ink">Star Performer</p>
-                  <small className="text-[9px] font-medium text-muted/60">Science quiz high score</small>
-                </div>
+            {/* Priority 5: Study Help (Clean, uncluttered AI entry point) */}
+            <StudentStudyHelpCard onAskAI={() => setActiveTab('Wellbeing')} />
 
-                <div className="p-3 rounded-2xl bg-white/90 border border-sage/20 shadow-2xs space-y-1">
-                  <span className="text-lg block">🤝</span>
-                  <p className="text-xs font-bold text-ink">Helped Classmate</p>
-                  <small className="text-[9px] font-medium text-muted/60">Peer kindness</small>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-white/90 border border-sage/20 shadow-2xs space-y-1">
-                  <span className="text-lg block">🎯</span>
-                  <p className="text-xs font-bold text-ink">Public Speaking</p>
-                  <small className="text-[9px] font-medium text-muted/60">Current goal</small>
-                </div>
+            {/* Secondary navigation footer */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-2 py-1 text-xs text-muted">
+              <span>Looking for your badges, quests, or rewards?</span>
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('Achievements')}
+                  className="font-bold text-deep-teal hover:underline cursor-pointer"
+                >
+                  🏆 Badges &amp; Trophy Cabinet →
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('Missions')}
+                  className="font-bold text-deep-teal hover:underline cursor-pointer"
+                >
+                  ✦ Missions &amp; Quests →
+                </button>
               </div>
-            </section>
-
-            {/* Upcoming exams strip */}
-            <section className="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-sm backdrop-blur-xl">
-              <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted">Upcoming tests</p>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                {UPCOMING_EXAMS.map(exam => (
-                  <div key={exam.id} className="rounded-xl border border-primary/10 bg-primary/5 p-4">
-                    <p className="text-sm font-extrabold text-primary">{exam.subject}</p>
-                    <p className="mt-1 text-[11px] font-bold text-deep-teal">{exam.date}</p>
-                    <p className="text-[10px] text-muted">{exam.type}</p>
-                    <span className="mt-2 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">{exam.daysLeft} days left</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </>
+            </div>
+          </div>
         )}
 
         {/* ══ REVISION MIND MAPS TAB ══ */}
@@ -301,56 +294,111 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
         {activeTab === 'Exams' && (
           <section className="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-sm backdrop-blur-xl">
             <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-muted">Exams &amp; Assessments</p>
-            <div className="space-y-3">
-              {studentGrades.map((g, idx) => (
-                <div key={g.id || `grade-${idx}`} className="flex items-center justify-between rounded-xl border border-primary/10 bg-white p-4">
-                  <div>
-                    <p className="text-sm font-extrabold text-deep-teal">{g.assessmentName}</p>
-                    <p className="text-[11px] font-semibold text-muted">{g.subject} · {g.assessmentDate}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-display text-lg font-black text-primary">{g.score}/{g.maxScore}</p>
-                    <p className="text-[10px] font-bold text-sage">{Math.round((g.score / g.maxScore) * 100)}%</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {effectiveGrades.length === 0 ? (
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-6 text-center">
+                <span className="text-2xl block mb-1">📝</span>
+                <p className="text-xs font-bold text-deep-teal">No exam scores released yet</p>
+                <p className="text-[11px] text-muted">Assessment evaluations will appear here once published by your teachers.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {effectiveGrades.map((g: any, idx: number) => {
+                  const max = g.maxScore || g.max_score || 100;
+                  const score = g.score || 0;
+                  const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+                  return (
+                    <div key={g.id || `grade-${idx}`} className="flex items-center justify-between rounded-xl border border-primary/10 bg-white p-4">
+                      <div>
+                        <p className="text-sm font-extrabold text-deep-teal">{g.assessmentName || g.assessment_name || 'Assessment'}</p>
+                        <p className="text-[11px] font-semibold text-muted">{g.subject} · {g.assessmentDate || g.assessment_date || 'Recent'}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-display text-lg font-black text-primary">{score}/{max}</p>
+                        <p className="text-[10px] font-bold text-sage">{pct}%</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </section>
         )}
 
-        {/* ══ ACHIEVEMENTS TAB ══ */}
+        {/* ══ ACHIEVEMENTS TAB (ENRICHED WITH BADGES + PEER RECOGNITION) ══ */}
         {activeTab === 'Achievements' && (
-          <section className="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-sm backdrop-blur-xl">
-            <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-muted">Badges &amp; Trophy Cabinet</p>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              {ACHIEVEMENTS.map(ach => (
-                <div key={ach.id} className={`rounded-xl border p-4 text-center ${ach.unlocked ? 'border-amber-200 bg-amber-50/50' : 'border-slate-100 bg-slate-50 opacity-50'}`}>
-                  <span className="text-4xl block mb-2">{ach.icon}</span>
-                  <p className="text-sm font-extrabold text-deep-teal">{ach.title}</p>
-                  <p className="mt-1 text-[11px] font-semibold text-muted">{ach.description}</p>
+          <div className="space-y-5">
+            {/* Badges & Trophy Cabinet */}
+            <section className="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-sm backdrop-blur-xl">
+              <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-muted">Badges &amp; Trophy Cabinet</p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {ACHIEVEMENTS.map(ach => (
+                  <div key={ach.id} className={`rounded-xl border p-4 text-center ${ach.unlocked ? 'border-amber-200 bg-amber-50/50' : 'border-slate-100 bg-slate-50 opacity-60'}`}>
+                    <span className="text-4xl block mb-2">{ach.icon}</span>
+                    <p className="text-sm font-extrabold text-deep-teal">{ach.title}</p>
+                    <p className="mt-1 text-[11px] font-semibold text-muted">{ach.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Peer Recognition & Growth (Moved out of main dashboard into Achievements) */}
+            <section className="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-sm backdrop-blur-xl">
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted">Peer Recognition &amp; Social Growth</p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="p-3.5 rounded-2xl bg-white border border-sage/20 shadow-2xs space-y-1">
+                  <span className="text-2xl block">🌟</span>
+                  <p className="text-xs font-bold text-ink">Star Performer</p>
+                  <p className="text-[10px] font-medium text-muted">Science quiz high score</p>
                 </div>
-              ))}
-            </div>
-          </section>
+
+                <div className="p-3.5 rounded-2xl bg-white border border-sage/20 shadow-2xs space-y-1">
+                  <span className="text-2xl block">🤝</span>
+                  <p className="text-xs font-bold text-ink">Helped Classmate</p>
+                  <p className="text-[10px] font-medium text-muted">Peer kindness</p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-white border border-sage/20 shadow-2xs space-y-1">
+                  <span className="text-2xl block">🎯</span>
+                  <p className="text-xs font-bold text-ink">Public Speaking</p>
+                  <p className="text-[10px] font-medium text-muted">Current growth goal</p>
+                </div>
+              </div>
+            </section>
+          </div>
         )}
 
-        {/* ══ MISSIONS TAB ══ */}
+        {/* ══ MISSIONS TAB (QUESTS, SHOP & LEADERBOARD) ══ */}
         {activeTab === 'Missions' && (
           <section className="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-sm backdrop-blur-xl">
-            <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-muted">Weekly Learning Quests</p>
-            <QuestBoard student={student} />
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-muted">Learning Quests &amp; Reward Shop</p>
+            <QuestBoard
+              student={student}
+              setActiveAvatar={setActiveAvatar}
+              setActiveTitle={setActiveTitle}
+              activeAvatar={activeAvatar}
+              activeTitle={activeTitle}
+            />
           </section>
         )}
 
-        {/* ══ WELLBEING TAB ══ */}
+        {/* ══ WELLBEING & STUDY HELP TAB ══ */}
         {activeTab === 'Wellbeing' && (
           <section className="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-sm backdrop-blur-xl">
-            <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-muted">Daily Check-in &amp; Wellness</p>
-            <SchoolMitra studentName={displayName} />
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-muted">School Mitra Socratic Coach &amp; Wellbeing</p>
+            <SchoolMitra studentName={displayName} studentId={studentIdForChannel} />
           </section>
         )}
 
       </main>
+
+      {/* ── Mobile Navigation Bar ── */}
+      <StudentMobileNav
+        activeTab={activeTab}
+        onTabChange={(t) => setActiveTab(t as Tab)}
+        unreadCounts={{
+          homework: pendingCount,
+        }}
+      />
     </div>
   );
 }

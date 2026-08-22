@@ -2,48 +2,65 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import * as d3 from 'd3-hierarchy';
-import type { ConceptMindMap, MindMapSection, MindMapItem } from '@/lib/mindmap/types';
+import type { ConceptMindMap, KnowledgeGraph } from '@/lib/mindmap/types';
+import {
+  buildVisualMindMapModel,
+  VisualMindMapModel,
+  VisualMindMapNode,
+  VisualTreeNode,
+} from '@/lib/mindmap/visualMindMapModel';
 
 interface D3MindMapCanvasProps {
   mindMap: ConceptMindMap;
+  knowledgeGraph?: KnowledgeGraph;
   className?: string;
+  onSelectConceptForRevision?: (conceptTitle: string) => void;
 }
-
-interface TreeNodeData {
-  id: string;
-  name: string;
-  type: 'root' | 'section' | 'concept' | 'definition' | 'formula' | 'process' | 'table' | 'key_point' | 'example';
-  color?: string;
-  details?: string;
-  children?: TreeNodeData[];
-}
-
-const ACCENT_COLORS: Record<string, string> = {
-  blue: '#3b82f6',
-  green: '#10b981',
-  orange: '#f97316',
-  purple: '#a855f7',
-  red: '#ef4444',
-  teal: '#14b8a6',
-};
 
 export default function D3MindMapCanvas({
   mindMap,
+  knowledgeGraph,
   className = '',
+  onSelectConceptForRevision,
 }: D3MindMapCanvasProps) {
-  const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
-  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  // 1. Build controlled Visual Mind Map Model from canonical knowledge graph or concept map
+  const visualModel = useMemo<VisualMindMapModel>(() => {
+    return buildVisualMindMapModel(
+      knowledgeGraph || mindMap,
+      mindMap.subject,
+      mindMap.grade
+    );
+  }, [mindMap, knowledgeGraph]);
 
-  // Zoom and Pan states
+  // State: collapsed node IDs (depth >= 2 collapsed by default)
+  const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(() => {
+    const initialCollapsed = new Set<string>();
+    (Object.values(visualModel.nodes) as VisualMindMapNode[]).forEach((n) => {
+      if (n.depth >= 2 && n.childIds.length > 0) {
+        initialCollapsed.add(n.id);
+      }
+    });
+    return initialCollapsed;
+  });
+
+  // State: active selected concept for the side detail panel
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Zoom & Pan state
   const [zoom, setZoom] = useState(0.85);
-  const [pan, setPan] = useState({ x: 100, y: 300 });
+  const [pan, setPan] = useState({ x: 80, y: 300 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // Toggle node collapse state
-  const handleNodeClick = (nodeId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
+  // Selected node metadata
+  const selectedNode = selectedNodeId ? visualModel.nodes[selectedNodeId] : null;
+
+  // Toggle node collapse
+  const handleToggleCollapse = (nodeId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     setCollapsedNodes((prev) => {
       const next = new Set(prev);
       if (next.has(nodeId)) {
@@ -55,114 +72,69 @@ export default function D3MindMapCanvas({
     });
   };
 
-  // Convert raw ConceptMindMap into strict hierarchical tree data
-  const rawTreeData = useMemo<TreeNodeData>(() => {
-    // Map items recursively
-    function mapItem(item: MindMapItem, color: string): TreeNodeData {
-      return {
-        id: item.id,
-        name: item.content || item.title || 'Concept',
-        type: item.type as any,
-        color,
-        details: item.details,
-        children: item.children ? item.children.map((c) => mapItem(c, color)) : undefined,
-      };
+  // Node click: select for detail panel & optionally expand
+  const handleNodeClick = (nodeId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedNodeId((prev) => (prev === nodeId ? null : nodeId));
+    // If collapsed, expand on click
+    if (collapsedNodes.has(nodeId)) {
+      setCollapsedNodes((prev) => {
+        const next = new Set(prev);
+        next.delete(nodeId);
+        return next;
+      });
     }
+  };
 
-    const sections = mindMap.sections.map((sec) => {
-      const color = ACCENT_COLORS[sec.accentColor] || '#3b82f6';
-      
-      const children: TreeNodeData[] = [];
-
-      // Add definition if present
-      if (sec.definition) {
-        children.push({
-          id: `${sec.id}-def`,
-          name: sec.definition,
-          type: 'definition',
-          color,
-        });
-      }
-
-      // Add formulas if present
-      if (sec.formulas && sec.formulas.length > 0) {
-        sec.formulas.forEach((f, idx) => {
-          children.push({
-            id: `${sec.id}-form-${idx}`,
-            name: f.latex,
-            type: 'formula',
-            color,
-            details: f.variables || f.meaning,
-          });
-        });
-      }
-
-      // Map inner items
-      if (sec.items) {
-        sec.items.forEach((item) => {
-          children.push(mapItem(item, color));
-        });
-      }
-
-      return {
-        id: sec.id,
-        name: sec.title,
-        type: 'section' as const,
-        color,
-        details: sec.summary,
-        children: children.length > 0 ? children : undefined,
-      };
+  // Expand All / Collapse All
+  const handleExpandAll = () => setCollapsedNodes(new Set());
+  const handleCollapseToLevel1 = () => {
+    const next = new Set<string>();
+    (Object.values(visualModel.nodes) as VisualMindMapNode[]).forEach((n) => {
+      if (n.depth >= 1 && n.childIds.length > 0) next.add(n.id);
     });
-
-    return {
-      id: 'root-node',
-      name: mindMap.title,
-      type: 'root' as const,
-      color: '#ffffff',
-      details: mindMap.summary,
-      children: sections,
-    };
-  }, [mindMap]);
+    setCollapsedNodes(next);
+  };
 
   // Filter tree data dynamically to respect collapsed nodes
-  const filteredTreeData = useMemo(() => {
-    function filterNode(node: TreeNodeData): TreeNodeData {
-      if (collapsedNodes.has(node.id)) {
-        return { ...node, children: undefined };
+  const filteredTreeData = useMemo<VisualTreeNode>(() => {
+    function filterNode(treeNode: VisualTreeNode): VisualTreeNode {
+      if (collapsedNodes.has(treeNode.id)) {
+        return { ...treeNode, children: undefined };
       }
       return {
-        ...node,
-        children: node.children ? node.children.map(filterNode) : undefined,
+        ...treeNode,
+        children: treeNode.children ? treeNode.children.map(filterNode) : undefined,
       };
     }
-    return filterNode(rawTreeData);
-  }, [rawTreeData, collapsedNodes]);
+    return filterNode(visualModel.tree);
+  }, [visualModel.tree, collapsedNodes]);
 
-  // Compute layout coordinates using d3-hierarchy tree layout
-  const { nodes, links } = useMemo(() => {
-    const root = d3.hierarchy(filteredTreeData);
-    
-    // Width and height spacing between hierarchy nodes
-    const treeLayout = d3.tree<TreeNodeData>().nodeSize([65, 260]);
+  // Compute D3 Tree Layout
+  const { layoutNodes, layoutLinks } = useMemo(() => {
+    const root = d3.hierarchy<VisualTreeNode>(filteredTreeData);
+
+    // Spacing between nodes: [vertical height, horizontal depth separation]
+    const treeLayout = d3.tree<VisualTreeNode>().nodeSize([70, 280]);
     treeLayout(root);
 
     return {
-      nodes: root.descendants(),
-      links: root.links(),
+      layoutNodes: root.descendants(),
+      layoutLinks: root.links(),
     };
   }, [filteredTreeData]);
 
   // Zoom Controls
   const handleZoomIn = () => setZoom((z) => Math.min(2, z + 0.15));
-  const handleZoomOut = () => setZoom((z) => Math.max(0.4, z - 0.15));
+  const handleZoomOut = () => setZoom((z) => Math.max(0.35, z - 0.15));
   const handleResetZoom = () => {
     setZoom(0.85);
-    setPan({ x: 100, y: 300 });
+    setPan({ x: 80, y: 300 });
   };
 
   // Panning Event Handlers
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 0) return; // Only left click drag
+    if (e.button !== 0) return;
     setIsDragging(true);
     dragStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
   };
@@ -175,28 +147,27 @@ export default function D3MindMapCanvas({
     });
   };
 
-  const handleMouseUpOrLeave = () => {
-    setIsDragging(false);
-  };
+  const handleMouseUpOrLeave = () => setIsDragging(false);
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     const factor = e.deltaY < 0 ? 1.05 : 0.95;
-    setZoom((z) => Math.max(0.4, Math.min(2, z * factor)));
+    setZoom((z) => Math.max(0.35, Math.min(2, z * factor)));
   };
 
-  // Prevent scroll propagation
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    const preventScroll = (e: WheelEvent) => {
-      e.preventDefault();
-    };
-
+    const preventScroll = (e: WheelEvent) => e.preventDefault();
     canvas.addEventListener('wheel', preventScroll, { passive: false });
     return () => canvas.removeEventListener('wheel', preventScroll);
   }, []);
+
+  // Filter highlight logic
+  const isNodeMatchingSearch = (label: string) => {
+    if (!searchQuery.trim()) return true;
+    return label.toLowerCase().includes(searchQuery.toLowerCase().trim());
+  };
 
   return (
     <div
@@ -206,78 +177,105 @@ export default function D3MindMapCanvas({
       onMouseUp={handleMouseUpOrLeave}
       onMouseLeave={handleMouseUpOrLeave}
       onWheel={handleWheel}
-      className={`relative w-full h-[620px] bg-[#0b0c10] border border-white/10 rounded-[2rem] overflow-hidden select-none cursor-grab active:cursor-grabbing shadow-2xl ${className}`}
+      className={`relative w-full h-[640px] bg-[#07080b] border border-white/10 rounded-3xl overflow-hidden select-none cursor-grab active:cursor-grabbing shadow-2xl ${className}`}
     >
-      {/* Dynamic Background Star Field grid */}
-      <div 
-        className="absolute inset-0 opacity-[0.06] pointer-events-none"
+      {/* ── 1. BACKGROUND GRID ── */}
+      <div
+        className="absolute inset-0 opacity-[0.05] pointer-events-none"
         style={{
           backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)',
-          backgroundSize: '32px 32px',
+          backgroundSize: '28px 28px',
           transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
           transformOrigin: '0 0',
         }}
       />
 
-      {/* Floating Canvas Controls */}
-      <div className="absolute top-6 left-6 z-30 flex flex-col gap-2.5 bg-black/60 backdrop-blur-md border border-white/10 px-3.5 py-3 rounded-2xl">
-        <div className="text-[10px] text-white/50 font-extrabold uppercase tracking-widest border-b border-white/10 pb-1.5 mb-1 text-left">
-          Viewport
+      {/* ── 2. TOP TOOLBAR ── */}
+      <div className="absolute top-4 left-4 z-30 flex items-center gap-2 bg-slate-950/80 backdrop-blur-md border border-white/10 p-1.5 rounded-2xl shadow-lg">
+        {/* Search Input */}
+        <div className="relative w-44">
+          <span className="absolute left-2.5 top-2 text-white/40 text-xs">🔍</span>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search concepts..."
+            className="w-full pl-7 pr-3 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
+          />
         </div>
+
+        <div className="h-4 w-px bg-white/10" />
+
+        {/* Viewport Zoom */}
         <div className="flex items-center gap-1">
           <button
             onClick={handleZoomIn}
-            className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/15 transition-all text-sm font-bold cursor-pointer"
+            className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/80 hover:bg-white/15 transition-all text-sm font-bold cursor-pointer"
             title="Zoom In"
           >
             +
           </button>
           <button
             onClick={handleZoomOut}
-            className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/15 transition-all text-sm font-bold cursor-pointer"
+            className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/80 hover:bg-white/15 transition-all text-sm font-bold cursor-pointer"
             title="Zoom Out"
           >
             −
           </button>
           <button
             onClick={handleResetZoom}
-            className="px-2.5 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/90 hover:bg-white/15 transition-all text-xs font-mono font-bold cursor-pointer"
-            title="Reset Zoom"
+            className="px-2 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/80 hover:bg-white/15 transition-all text-[11px] font-mono cursor-pointer"
+            title="Reset View"
           >
             {Math.round(zoom * 100)}%
           </button>
         </div>
+
+        <div className="h-4 w-px bg-white/10" />
+
+        {/* Expand / Collapse Controls */}
+        <button
+          onClick={handleExpandAll}
+          className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[11px] font-medium text-white/70 hover:text-white hover:bg-white/15 transition-all cursor-pointer"
+        >
+          Expand All
+        </button>
+        <button
+          onClick={handleCollapseToLevel1}
+          className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[11px] font-medium text-white/70 hover:text-white hover:bg-white/15 transition-all cursor-pointer"
+        >
+          Collapse Deep
+        </button>
       </div>
 
-      <div className="absolute top-6 right-6 z-30 bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-2xl flex items-center gap-4 text-xs font-semibold text-white/80">
+      {/* Top Right Header Badge */}
+      <div className="absolute top-4 right-4 z-30 bg-slate-950/80 backdrop-blur-md border border-white/10 px-3.5 py-2 rounded-2xl flex items-center gap-3 text-xs text-white/80 shadow-lg">
         <span className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#3b82f6] animate-pulse" />
-          <span>Interactive Mind Map Canvas</span>
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="font-semibold text-white/90">{visualModel.title}</span>
         </span>
-        <span className="text-white/40">|</span>
-        <span className="text-[11px] text-white/50">Click node to expand/collapse</span>
+        <span className="text-white/30">&bull;</span>
+        <span className="text-[11px] text-white/50">
+          {visualModel.visualNodeCount} Concepts ({visualModel.totalKnowledgeNodes} in Graph)
+        </span>
       </div>
 
-      {/* Primary SVG Rendering Canvas */}
+      {/* ── 3. SVG TREE RENDERING ── */}
       <svg className="w-full h-full block">
-        {/* Glow Filters */}
         <defs>
-          <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="6" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
+          <linearGradient id="link-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#818cf8" stopOpacity="0.4" />
+          </linearGradient>
         </defs>
 
         <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
-          {/* Curved Bezier Connectors */}
-          {links.map((link, idx) => {
+          {/* Tree Connectors (Bezier curves) */}
+          {layoutLinks.map((link, idx) => {
             const from = link.source;
             const to = link.target;
-            const strokeColor = to.data.color || '#3b82f6';
             const isHovered = hoveredNodeId === to.data.id || hoveredNodeId === from.data.id;
+            const strokeColor = to.data.color || '#6366f1';
 
             return (
               <path
@@ -286,133 +284,267 @@ export default function D3MindMapCanvas({
                 fill="none"
                 stroke={strokeColor}
                 strokeWidth={isHovered ? 2.5 : 1.5}
-                strokeOpacity={isHovered ? 0.95 : 0.4}
-                filter={isHovered ? 'url(#neon-glow)' : 'none'}
-                transition-all="true"
-                className="transition-all duration-300"
+                strokeOpacity={isHovered ? 0.9 : 0.4}
+                className="transition-all duration-200"
               />
             );
           })}
 
-          {/* Interactive SVG Node Cards */}
-          {nodes.map((node) => {
-            const { x, y, data } = node;
+          {/* Render Nodes */}
+          {layoutNodes.map((layoutNode) => {
+            const { x, y, data } = layoutNode;
+            const nodeMeta = visualModel.nodes[data.id];
+            const isSelected = selectedNodeId === data.id;
             const isHovered = hoveredNodeId === data.id;
+            const hasChildren = nodeMeta?.childIds && nodeMeta.childIds.length > 0;
             const isCollapsed = collapsedNodes.has(data.id);
-            const hasChildren = rawTreeData.children?.some(
-              (s) => s.id === data.id && (s.children && s.children.length > 0)
-            ) || data.children && data.children.length > 0;
+            const matchesSearch = isNodeMatchingSearch(data.label);
 
-            const accentColor = data.color || '#3b82f6';
+            const isRoot = data.depth === 0;
+            const isMajor = data.depth === 1;
 
-            // Determine size based on hierarchy level
-            const isRoot = data.type === 'root';
-            const isSection = data.type === 'section';
-            const isFormula = data.type === 'formula';
-            
-            const cardWidth = isRoot ? 190 : isSection ? 170 : 160;
-            const cardHeight = isRoot ? 54 : isSection ? 48 : 42;
+            // Dimensions
+            const cardWidth = isRoot ? 200 : isMajor ? 180 : 160;
+            const cardHeight = isRoot ? 48 : isMajor ? 44 : 38;
 
             return (
               <g
                 key={data.id}
-                transform={`translate(${y - cardWidth / 2}, ${x - cardHeight / 2})`}
+                transform={`translate(${y}, ${x})`}
+                className={`transition-all duration-200 cursor-pointer ${
+                  !matchesSearch ? 'opacity-25' : 'opacity-100'
+                }`}
                 onMouseEnter={() => setHoveredNodeId(data.id)}
                 onMouseLeave={() => setHoveredNodeId(null)}
-                onClick={(e) => hasChildren && handleNodeClick(data.id, e)}
-                className={`transition-all duration-300 ${hasChildren ? 'cursor-pointer' : ''}`}
+                onClick={(e) => handleNodeClick(data.id, e)}
               >
-                {/* Neon glow hover background */}
-                {isHovered && (
-                  <rect
-                    width={cardWidth}
-                    height={cardHeight}
-                    rx={isRoot ? 18 : 12}
-                    fill="none"
-                    stroke={accentColor}
-                    strokeWidth={4}
-                    opacity={0.3}
-                    filter="url(#neon-glow)"
-                  />
-                )}
-
-                {/* Node Glass Card Body */}
+                {/* Node Card Background */}
                 <rect
+                  x={0}
+                  y={-cardHeight / 2}
                   width={cardWidth}
                   height={cardHeight}
-                  rx={isRoot ? 18 : 12}
-                  fill={isRoot ? '#1e293b' : 'rgba(255, 255, 255, 0.04)'}
-                  stroke={isHovered ? accentColor : 'rgba(255, 255, 255, 0.12)'}
-                  strokeWidth={isRoot ? 2.5 : 1.2}
-                  backdrop-filter="blur(16px)"
-                  className="transition-all duration-200"
+                  rx={isRoot ? 24 : 14}
+                  fill={
+                    isSelected
+                      ? '#1e1b4b'
+                      : isRoot
+                      ? '#0f172a'
+                      : isHovered
+                      ? '#1e293b'
+                      : '#0f172a'
+                  }
+                  stroke={
+                    isSelected
+                      ? '#818cf8'
+                      : isHovered
+                      ? data.color || '#6366f1'
+                      : isRoot
+                      ? '#3b82f6'
+                      : `${data.color || '#6366f1'}66`
+                  }
+                  strokeWidth={isSelected ? 2.5 : isHovered || isRoot ? 2 : 1.2}
+                  className="transition-all duration-200 shadow-md"
                 />
 
-                {/* Left Accent indicator line */}
+                {/* Accent Color Left Strip / Dot */}
                 {!isRoot && (
-                  <path
-                    d={`M 1.5 8 L 1.5 ${cardHeight - 8}`}
-                    stroke={accentColor}
-                    strokeWidth={3}
-                    strokeLinecap="round"
+                  <circle
+                    cx={12}
+                    cy={0}
+                    r={isMajor ? 4.5 : 3.5}
+                    fill={data.color || '#6366f1'}
                   />
                 )}
 
-                {/* Expand / Collapse Indicator Ring */}
-                {hasChildren && (
-                  <g transform={`translate(${cardWidth}, ${cardHeight / 2})`}>
-                    <circle
-                      r={7}
-                      fill="#0b0c10"
-                      stroke={accentColor}
-                      strokeWidth={1.5}
-                    />
-                    <path
-                      d={isCollapsed ? 'M -4 0 L 4 0 M 0 -4 L 0 4' : 'M -4 0 L 4 0'}
-                      stroke={accentColor}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                  </g>
+                {/* Node Label Text */}
+                <text
+                  x={isRoot ? 16 : 24}
+                  y={nodeMeta?.formulas && nodeMeta.formulas.length > 0 && !isRoot ? -3 : 4}
+                  fill={isSelected ? '#ffffff' : '#f1f5f9'}
+                  fontSize={isRoot ? 13 : isMajor ? 12 : 11}
+                  fontWeight={isRoot || isMajor ? 700 : 600}
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                >
+                  {data.label.length > 20 ? `${data.label.slice(0, 19)}…` : data.label}
+                </text>
+
+                {/* Sub-label / Formula Indicator */}
+                {nodeMeta?.formulas && nodeMeta.formulas.length > 0 && !isRoot && (
+                  <text
+                    x={24}
+                    y={11}
+                    fill="#94a3b8"
+                    fontSize={9}
+                    fontFamily="monospace"
+                  >
+                    📐 {nodeMeta.formulas[0].latex.slice(0, 16)}
+                  </text>
                 )}
 
-                {/* Text Content & Labels */}
-                <foreignObject
-                  x={10}
-                  y={4}
-                  width={cardWidth - 20}
-                  height={cardHeight - 8}
-                  className="pointer-events-none select-none overflow-hidden"
-                >
-                  <div className="w-full h-full flex flex-col justify-center text-left leading-tight">
-                    {isRoot && (
-                      <span className="text-[8px] text-white/50 uppercase tracking-widest font-extrabold mb-0.5">
-                        COURSE CHAPTER
-                      </span>
-                    )}
-                    {isSection && (
-                      <span className="text-[8px] uppercase tracking-widest font-bold mb-0.5" style={{ color: accentColor }}>
-                        CONCEPT SECTION
-                      </span>
-                    )}
-                    <h3
-                      className={`text-white font-sans truncate ${
-                        isRoot
-                          ? 'text-xs font-black'
-                          : isSection
-                          ? 'text-[11px] font-extrabold'
-                          : 'text-[10px] font-semibold text-white/90'
-                      }`}
+                {/* Expand / Collapse Indicator Button */}
+                {hasChildren && (
+                  <g
+                    transform={`translate(${cardWidth - 16}, 0)`}
+                    onClick={(e) => handleToggleCollapse(data.id, e)}
+                    className="hover:scale-110 transition-transform"
+                  >
+                    <circle
+                      cx={0}
+                      cy={0}
+                      r={9}
+                      fill={isCollapsed ? data.color || '#6366f1' : '#334155'}
+                    />
+                    <text
+                      x={0}
+                      y={3.5}
+                      textAnchor="middle"
+                      fill="#ffffff"
+                      fontSize={11}
+                      fontWeight="bold"
                     >
-                      {data.name}
-                    </h3>
-                  </div>
-                </foreignObject>
+                      {isCollapsed ? `+` : `−`}
+                    </text>
+                  </g>
+                )}
               </g>
             );
           })}
         </g>
       </svg>
+
+      {/* ── 4. SLIDE-OUT CONCEPT DETAIL PANEL ── */}
+      {selectedNode && (
+        <div className="absolute top-0 right-0 bottom-0 w-80 sm:w-96 bg-slate-950/95 backdrop-blur-xl border-l border-white/15 p-6 z-40 flex flex-col justify-between shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
+          <div className="space-y-5">
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-white/10 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-white"
+                    style={{ backgroundColor: selectedNode.accentColor || '#3b82f6' }}
+                  >
+                    {selectedNode.type.replace('_', ' ')}
+                  </span>
+                  <span className="text-[11px] text-white/50">Level {selectedNode.depth}</span>
+                </div>
+                <h2 className="text-lg font-bold text-white mt-1.5 leading-snug">
+                  {selectedNode.label}
+                </h2>
+              </div>
+              <button
+                onClick={() => setSelectedNodeId(null)}
+                className="h-7 w-7 rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white flex items-center justify-center font-bold text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Definition / Summary */}
+            {(selectedNode.definition || selectedNode.summary) && (
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-white/40">
+                  Concept Overview
+                </span>
+                <p className="text-xs text-slate-300 leading-relaxed bg-white/5 p-3.5 rounded-xl border border-white/5">
+                  {selectedNode.definition || selectedNode.summary}
+                </p>
+              </div>
+            )}
+
+            {/* Mathematical Formulas */}
+            {selectedNode.formulas && selectedNode.formulas.length > 0 && (
+              <div className="space-y-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
+                  Mathematical Formula
+                </span>
+                {selectedNode.formulas.map((f, fIdx) => (
+                  <div
+                    key={fIdx}
+                    className="bg-amber-950/30 border border-amber-500/20 p-3 rounded-xl space-y-1"
+                  >
+                    <div className="text-sm font-mono font-bold text-amber-200">
+                      {f.latex}
+                    </div>
+                    {f.meaning && (
+                      <p className="text-[11px] text-amber-300/80">{f.meaning}</p>
+                    )}
+                    {f.variables && (
+                      <p className="text-[10px] text-amber-400/60">{f.variables}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Key Points */}
+            {selectedNode.keyPoints && selectedNode.keyPoints.length > 0 && (
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-white/40">
+                  Key Principles
+                </span>
+                <ul className="space-y-1">
+                  {selectedNode.keyPoints.map((kp, kIdx) => (
+                    <li
+                      key={kIdx}
+                      className="text-xs text-slate-300 flex items-start gap-2 bg-white/5 p-2 rounded-lg"
+                    >
+                      <span className="text-indigo-400 mt-0.5">&bull;</span>
+                      <span>{kp}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Algorithm Steps */}
+            {selectedNode.steps && selectedNode.steps.length > 0 && (
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
+                  Sequential Steps
+                </span>
+                <div className="space-y-1.5">
+                  {selectedNode.steps.map((step, sIdx) => (
+                    <div
+                      key={sIdx}
+                      className="text-xs text-slate-300 flex items-start gap-2 bg-cyan-950/20 border border-cyan-500/20 p-2.5 rounded-lg"
+                    >
+                      <span className="font-mono font-bold text-cyan-400">{sIdx + 1}.</span>
+                      <span>{step}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Source Provenance */}
+            {selectedNode.sourceNodeIds && selectedNode.sourceNodeIds.length > 0 && (
+              <div className="text-[10px] text-white/30 pt-2 border-t border-white/5">
+                Source Entity: {selectedNode.sourceNodeIds.join(', ')}
+              </div>
+            )}
+          </div>
+
+          {/* Action Footer */}
+          <div className="pt-4 border-t border-white/10 flex flex-col gap-2">
+            {onSelectConceptForRevision && (
+              <button
+                onClick={() => onSelectConceptForRevision(selectedNode.label)}
+                className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>📋 View in Revision Sheet</span>
+              </button>
+            )}
+            <button
+              onClick={() => setSelectedNodeId(null)}
+              className="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 text-xs font-medium transition-all cursor-pointer"
+            >
+              Close Details
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

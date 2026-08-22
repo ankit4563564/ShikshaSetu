@@ -232,17 +232,47 @@ export function parseDocumentStructure(
     const tableRefMatch = line.match(/\[TABLE_REF:\s*(TABLE_\d+)\]/);
     const matchedTableRefs = tableRefMatch ? [tableRefMatch[1]] : [];
 
-    const spanId = `src-node-${nodeCounter}`;
-    const sourceSpan: SourceRef = {
-      id: spanId,
-      start: lineStart,
-      end: lineStart + line.length,
-      rawText: line,
-      type: prefixInfo?.type === 'step' ? 'step' : prefixInfo?.type === 'algorithm' ? 'algorithm' : 'heading',
-    };
-    allSourceSpans.push(sourceSpan);
-
     if (prefixInfo) {
+      const spanId = `src-node-${nodeCounter}`;
+      const sourceSpan: SourceRef = {
+        id: spanId,
+        start: lineStart,
+        end: lineStart + line.length,
+        rawText: line,
+        type: prefixInfo.type === 'step' ? 'step' : prefixInfo.type === 'algorithm' ? 'algorithm' : 'heading',
+      };
+      allSourceSpans.push(sourceSpan);
+
+      // Check if active parent already has a child with the same normalized title
+      const parentTarget =
+        prefixInfo.level === 1
+          ? null
+          : prefixInfo.level === 2
+          ? currentUnitNode
+          : prefixInfo.type === 'algorithm'
+          ? (currentSectionNode || currentUnitNode)
+          : prefixInfo.level === 3
+          ? (currentSectionNode || currentUnitNode)
+          : (currentAlgorithmNode || currentTopicNode || currentSectionNode || currentUnitNode);
+
+      const targetList = parentTarget ? parentTarget.children : rootNodes;
+      const normTitle = prefixInfo.title.trim().toLowerCase();
+      const existing = targetList.find((c) => c.title.trim().toLowerCase() === normTitle);
+
+      if (existing) {
+        // Merge refs and text instead of duplicating node
+        if (prefixInfo.inlineBody) {
+          existing.rawText = (existing.rawText ? existing.rawText + '\n' : '') + prefixInfo.inlineBody;
+        }
+        if (matchedFormulaRefs.length > 0) {
+          (existing as any).formulaRefs = Array.from(new Set([...(existing.formulaRefs || []), ...matchedFormulaRefs]));
+        }
+        if (matchedTableRefs.length > 0) {
+          (existing as any).tableRefs = Array.from(new Set([...(existing.tableRefs || []), ...matchedTableRefs]));
+        }
+        continue;
+      }
+
       const node: StructuralEvidenceNode = {
         id: `struct-node-${nodeCounter++}`,
         title: prefixInfo.title,
@@ -251,7 +281,7 @@ export function parseDocumentStructure(
         numberingPrefix: prefixInfo.prefix,
         detectedType: prefixInfo.type,
         pattern: prefixInfo.pattern,
-        parentId: null,
+        parentId: parentTarget ? parentTarget.id : null,
         children: [],
         formulaRefs: matchedFormulaRefs,
         tableRefs: matchedTableRefs,
@@ -322,23 +352,19 @@ export function parseDocumentStructure(
         }
       }
     } else {
-      // Descriptive content line: capture as a content child rather than dropping it!
+      // Descriptive body sentence: append into active node's descriptive content and attach refs cleanly
       const activeNode = currentAlgorithmNode || currentTopicNode || currentSectionNode || currentUnitNode;
       if (activeNode) {
-        const textNode: StructuralEvidenceNode = {
-          id: `struct-node-${nodeCounter++}`,
-          title: line.slice(0, 60).replace(/[:\-#]+$/, '').trim(),
-          level: 6,
-          rawText: line,
-          detectedType: 'text',
-          pattern: 'text',
-          parentId: activeNode.id,
-          children: [],
-          formulaRefs: matchedFormulaRefs,
-          tableRefs: matchedTableRefs,
-          sourceSpan,
-        };
-        activeNode.children.push(textNode);
+        const trimmedLine = line.trim();
+        if (trimmedLine.length > 0) {
+          activeNode.rawText = activeNode.rawText ? `${activeNode.rawText}\n${trimmedLine}` : trimmedLine;
+          if (matchedFormulaRefs.length > 0) {
+            (activeNode as any).formulaRefs = Array.from(new Set([...(activeNode.formulaRefs || []), ...matchedFormulaRefs]));
+          }
+          if (matchedTableRefs.length > 0) {
+            (activeNode as any).tableRefs = Array.from(new Set([...(activeNode.tableRefs || []), ...matchedTableRefs]));
+          }
+        }
       }
     }
   }

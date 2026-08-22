@@ -78,28 +78,39 @@ export default function MindMapExportModal({
       const element = printSheetRef.current;
       if (!element) throw new Error('Print container unavailable');
 
+      // 1. Wait for DOM, fonts, and KaTeX math formulas to fully render
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      if (typeof document !== 'undefined' && document.fonts) {
+        await document.fonts.ready;
+      }
+
+      console.log('[MindMapExportModal] Starting PDF generation, container width:', element.offsetWidth, 'height:', element.offsetHeight);
+
       const html2pdf = (await import('html2pdf.js')).default;
 
       const opt = {
-        margin: [6, 6, 6, 6],
+        margin: [4, 4, 4, 4],
         filename: `${mindMap.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-revision-sheet.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
           useCORS: true,
-          logging: false,
+          logging: true,
+          allowTaint: true,
           scrollY: 0,
           scrollX: 0,
+          windowWidth: orientation === 'landscape' ? 1120 : 800,
         },
         jsPDF: {
           unit: 'mm',
           format: 'a4',
           orientation: orientation,
         },
-        pagebreak: { mode: ['css'] },
+        pagebreak: { mode: ['css', 'legacy'] },
       };
 
       await html2pdf().set(opt).from(element).save();
+      console.log('[MindMapExportModal] PDF export completed successfully');
       setExportSuccess(true);
       setTimeout(() => {
         setExportSuccess(false);
@@ -218,12 +229,22 @@ export default function MindMapExportModal({
         </div>
       </div>
 
-      {/* ── OFF-SCREEN DEDICATED HIGH-DPI A4 PRINT CONTAINER ── */}
-      <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+      {/* ── HIGH-DPI A4 PRINT CONTAINER (Visible in layout tree for html2canvas to capture styles & fonts) ── */}
+      <div
+        style={{
+          position: 'fixed',
+          left: '0px',
+          top: '0px',
+          zIndex: -100,
+          opacity: 1,
+          pointerEvents: 'none',
+          overflow: 'visible',
+        }}
+      >
         <div
           ref={printSheetRef}
           style={{ width: orientation === 'landscape' ? '1080px' : '760px' }}
-          className="bg-white text-slate-900 font-sans"
+          className="bg-white text-slate-900 font-sans p-2"
         >
           {pagedSections.map((pageSections, pIdx) => {
             const pageNum = pIdx + 1;

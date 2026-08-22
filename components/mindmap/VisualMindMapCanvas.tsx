@@ -95,6 +95,23 @@ export default function VisualMindMapCanvas({
           </button>
         </div>
 
+        {/* Telemetry Status Indicator */}
+        {mindMap.telemetry && (
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-50 border border-slate-200 text-[11px] font-medium text-slate-600">
+            {mindMap.telemetry.fallbackUsed ? (
+              <span className="flex items-center gap-1.5 text-amber-700 font-bold" title={mindMap.telemetry.fallbackReason || 'Deterministic engine active'}>
+                <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                ⚙️ Regex Parser ({mindMap.telemetry.nodeCount} nodes &bull; {((mindMap.telemetry.totalMs || 0) / 1000).toFixed(1)}s)
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-emerald-700 font-bold" title={`AI Latency: ${mindMap.telemetry.aiCallMs}ms, Deduplicated: ${mindMap.telemetry.duplicateNodesRemoved}`}>
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                ⚡ AI Synthesized ({mindMap.telemetry.nodeCount} nodes &bull; {((mindMap.telemetry.totalMs || 0) / 1000).toFixed(1)}s)
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Viewport Zoom & Actions */}
         <div className="flex items-center gap-2">
           {viewMode === 'poster' && (
@@ -163,7 +180,13 @@ export default function VisualMindMapCanvas({
       {/* ── 2. VIEWPORT ── */}
       {viewMode === 'interactive' ? (
         <div className="flex-1 p-6 bg-[#08080c] overflow-hidden">
-          <D3MindMapCanvas mindMap={mindMap} />
+          <D3MindMapCanvas
+            mindMap={mindMap}
+            onSelectConceptForRevision={(concept) => {
+              setSearchQuery(concept);
+              setViewMode('poster');
+            }}
+          />
         </div>
       ) : (
         <div className="flex-1 overflow-auto p-4 sm:p-8 relative bg-[#F8F8F6]">

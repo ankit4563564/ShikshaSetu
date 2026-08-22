@@ -19,6 +19,16 @@ export interface GenerateMindMapResponse {
   success: boolean;
   mindMap?: ConceptMindMap;
   knowledgeGraph?: KnowledgeGraph;
+  telemetry?: {
+    extractionMs: number;
+    aiCallMs: number;
+    fallbackUsed: boolean;
+    fallbackReason?: string;
+    nodeCount: number;
+    avgNodeSize: number;
+    duplicateNodesRemoved: number;
+    totalMs: number;
+  };
   error?: string;
 }
 
@@ -30,6 +40,7 @@ export interface GenerateMindMapResponse {
 export async function generateMindMapAction(
   request: GenerateMindMapRequest
 ): Promise<GenerateMindMapResponse> {
+  const tStart = Date.now();
   try {
     const authContext = await getAuthContext();
 
@@ -46,6 +57,8 @@ export async function generateMindMapAction(
       };
     }
 
+    console.log(`[generateMindMapAction] Processing "${title}" (${rawNotes.length} chars)`);
+
     const result = await extractKnowledgeGraphFromText({
       title: title.trim(),
       subject: subject.trim(),
@@ -53,12 +66,41 @@ export async function generateMindMapAction(
       notesText: rawNotes.trim(),
     });
 
-    return result;
+    const telemetry = (result.mindMap as any)?.telemetry || {
+      extractionMs: Date.now() - tStart,
+      aiCallMs: 0,
+      fallbackUsed: true,
+      nodeCount: result.knowledgeGraph?.nodes.length || 0,
+      avgNodeSize: 0,
+      duplicateNodesRemoved: 0,
+      totalMs: Date.now() - tStart,
+    };
+
+    console.log('[generateMindMapAction] Success:', {
+      fallbackUsed: telemetry.fallbackUsed,
+      nodeCount: telemetry.nodeCount,
+      totalMs: telemetry.totalMs,
+    });
+
+    return {
+      ...result,
+      telemetry,
+    };
   } catch (err: any) {
     console.error('[generateMindMapAction] Error:', err);
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Failed to generate visual mind map',
+      telemetry: {
+        extractionMs: 0,
+        aiCallMs: 0,
+        fallbackUsed: true,
+        fallbackReason: err?.message,
+        nodeCount: 0,
+        avgNodeSize: 0,
+        duplicateNodesRemoved: 0,
+        totalMs: Date.now() - tStart,
+      },
     };
   }
 }

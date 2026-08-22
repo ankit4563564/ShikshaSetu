@@ -65,6 +65,7 @@ export function validateSourceCoverage(
     ]).filter(Boolean).map((id) => id.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
   );
 
+
   const allGraphLatex = graph.nodes.flatMap((n) => (n.formulas || []).map((f) => f.latex.replace(/\s+/g, '').toLowerCase()));
 
   const missingFormulas = evidence.formulaVault.filter((f) => {
@@ -525,6 +526,53 @@ export function autoRepairKnowledgeGraph(
         formulas: resolvedFormulas.length > 0 ? resolvedFormulas : node.formulas,
       };
     });
+
+    // Ensure 100% formula coverage: attach any unassigned formulas to the closest relevant node
+    const allClaimedFormulaIds = new Set<string>(
+      nodes.flatMap((n) => [
+        ...(n.formulaRefs || []),
+        ...(n.formulas || []).map((f) => f.id || ''),
+      ]).filter(Boolean).map((id) => id.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
+    );
+
+    const unattachedFormulas = vault.filter((v) => {
+      const normId = v.id.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      return !allClaimedFormulaIds.has(normId);
+    });
+
+    if (unattachedFormulas.length > 0) {
+      for (const unattached of unattachedFormulas) {
+        let bestNode = nodes.find((n) => n.type !== 'root' && n.type !== 'unit') || nodes[0];
+        for (const candidate of nodes) {
+          if (candidate.type === 'root') continue;
+          const candidateText = (candidate.title + ' ' + (candidate.summary || '')).toLowerCase();
+          if (
+            (unattached.meaning && candidateText.includes(unattached.meaning.toLowerCase().slice(0, 8))) ||
+            candidateText.includes(unattached.raw.toLowerCase().slice(0, 4))
+          ) {
+            bestNode = candidate;
+            break;
+          }
+        }
+
+        if (bestNode) {
+          (bestNode as any).formulaRefs = Array.from(new Set([...(bestNode.formulaRefs || []), unattached.id]));
+          const currentFormulas = bestNode.formulas || [];
+          if (!currentFormulas.some((f) => f.latex === unattached.latex)) {
+            (bestNode as any).formulas = [
+              ...currentFormulas,
+              {
+                id: unattached.id,
+                latex: unattached.latex,
+                raw: unattached.raw,
+                meaning: unattached.meaning,
+                sourceRef: unattached.sourceRef,
+              },
+            ];
+          }
+        }
+      }
+    }
   }
 
   // 4. Clean relationships to ensure valid node IDs
@@ -570,7 +618,7 @@ export async function runStageCritic(
   evidence: DocumentStructureEvidence
 ): Promise<{ score: number; findings: ValidationIssue[]; sectionDepths: Array<{ sectionTitle: string; score: number; maxScore: number }> }> {
   const aiProvider = new ResilientAIProvider();
-  
+
   const systemPrompt = `You are ShikshaSetu's Academic Critic Engine.
 Your task is to analyze the generated Knowledge Graph against the source notes structure, formula vault, and table vault to identify missing concepts, duplicate nodes, incorrect hierarchy, formula mismatches, or shallow coverage.
 
