@@ -1,4 +1,0 @@
-ShikshaSetu Project Note
-========================
-Created text file to verify GitHub integration and project tracking.
-Timestamp: 2026-08-22

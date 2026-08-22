@@ -42,3 +42,13 @@ yarn-error.log*
 # Test reports & build artifacts
 /test-results/
 /playwright-report/
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Visual audit files
+/visual-audit/
+visual-audit-*.js
+
+# Temp files
+sample.txt
+
