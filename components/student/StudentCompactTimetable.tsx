@@ -12,8 +12,20 @@ export interface ScheduleClass {
   icon?: string;
 }
 
+// Transparent sample schedule used only when no live timetable is configured
+const SAMPLE_SCHEDULE: ScheduleClass[] = [
+  { period: 1, time: '8:00–8:45', subject: 'Mathematics', teacher: 'Mrs. Kavita Rao', room: 'R-201', status: 'done', icon: '📐' },
+  { period: 2, time: '8:45–9:30', subject: 'Science', teacher: 'Mr. Deepak Nair', room: 'Lab-1', status: 'done', icon: '🔬' },
+  { period: 3, time: '9:30–10:15', subject: 'English', teacher: 'Ms. Preethi Anand', room: 'R-202', status: 'done', icon: '📚' },
+  { period: 0, time: '10:15–10:30', subject: 'Break', teacher: '', room: '', status: 'done', icon: '☕' },
+  { period: 4, time: '10:30–11:15', subject: 'Social Studies', teacher: 'Mr. Sanjay Sharma', room: 'R-203', status: 'current', icon: '🌍' },
+  { period: 5, time: '11:15–12:00', subject: 'Computer Science', teacher: 'Ms. Ritu Chauhan', room: 'Lab-2', status: 'upcoming', icon: '💻' },
+  { period: 0, time: '12:00–12:45', subject: 'Lunch', teacher: '', room: '', status: 'upcoming', icon: '🍱' },
+  { period: 6, time: '12:45–1:30', subject: 'Physical Ed.', teacher: 'Mr. Vinod Pillai', room: 'Ground', status: 'upcoming', icon: '🏃' },
+];
+
 interface StudentCompactTimetableProps {
-  schedule: ScheduleClass[];
+  schedule?: ScheduleClass[];
   studentGrade?: string;
   studentSection?: string;
 }
@@ -25,12 +37,16 @@ export default function StudentCompactTimetable({
 }: StudentCompactTimetableProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Filter out break/lunch for the main NOW/NEXT view if preferred, or keep them with clear labels
-  const academicClasses = schedule.filter((c) => c.period > 0);
+  const hasLiveSchedule = Array.isArray(schedule) && schedule.length > 0;
+  const effectiveSchedule = hasLiveSchedule ? schedule : SAMPLE_SCHEDULE;
+  const isSample = !hasLiveSchedule;
+
+  // Filter out break/lunch for the main NOW/NEXT view
+  const academicClasses = effectiveSchedule.filter((c) => c.period > 0);
 
   // Find current and next classes
-  let currentClass = schedule.find((c) => c.status === 'current');
-  let nextClass = schedule.find((c) => c.status === 'upcoming');
+  let currentClass = effectiveSchedule.find((c) => c.status === 'current');
+  let nextClass = effectiveSchedule.find((c) => c.status === 'upcoming');
 
   // Fallbacks if status flags are not preset
   if (!currentClass && academicClasses.length > 0) {
@@ -43,14 +59,23 @@ export default function StudentCompactTimetable({
 
   return (
     <section className="rounded-2xl border border-white/80 bg-white/85 p-5 shadow-sm backdrop-blur-xl transition-all">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-widest text-deep-teal/60">
-            Priority 2 · Today&apos;s Schedule
-          </p>
-          <h2 className="font-display text-base font-black text-deep-teal">
-            Class {studentGrade}{studentSection} Classes
-          </h2>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-deep-teal/60">
+                Today&apos;s Schedule
+              </p>
+              {isSample && (
+                <span className="rounded-md bg-amber-50 border border-amber-200/60 px-2 py-0.2 text-[9px] font-bold text-amber-800">
+                  Sample Schedule
+                </span>
+              )}
+            </div>
+            <h2 className="font-display text-base font-black text-deep-teal">
+              Class {studentGrade}{studentSection} Timetable
+            </h2>
+          </div>
         </div>
         <button
           type="button"
@@ -131,10 +156,10 @@ export default function StudentCompactTimetable({
       {isExpanded && (
         <div className="mt-4 pt-4 border-t border-slate-100 space-y-2 animate-in fade-in duration-200">
           <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
-            All periods today ({schedule.length} sessions)
+            All periods today ({effectiveSchedule.length} sessions)
           </p>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            {schedule.map((cls, idx) => {
+            {effectiveSchedule.map((cls, idx) => {
               const isCurrent = cls.status === 'current';
               return (
                 <div

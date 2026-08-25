@@ -4,7 +4,7 @@ import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createScopedClient } from '@/lib/supabase/scoped';
-import { getAuthContext, requirePermission } from '@/lib/auth/getAuthContext';
+import { getAuthContext, requirePermission, validateParentStudentAccess } from '@/lib/auth/getAuthContext';
 import { revalidatePath } from 'next/cache';
 import {
   createEcosystemNotifications,
@@ -388,10 +388,11 @@ export async function getExamMarksAction(examId: string) {
 }
 
 export async function getStudentMarksAction(studentId: string) {
-  const user = await requireAuth();
-  const supabase = createClient();
+  const context = await getAuthContext();
+  validateParentStudentAccess(context, studentId);
+  const scopedDb = createScopedClient(context);
 
-  const { data, error } = await supabase
+  const { data, error } = await scopedDb
     .from('grades')
     .select(`
       id, subject, assessment_name, score, max_score,
@@ -419,10 +420,11 @@ export async function getStudentMarksAction(studentId: string) {
 }
 
 export async function getStudentTrendAction(studentId: string, subject: string) {
-  const user = await requireAuth();
-  const supabase = createClient();
+  const context = await getAuthContext();
+  validateParentStudentAccess(context, studentId);
+  const scopedDb = createScopedClient(context);
 
-  const { data, error } = await supabase
+  const { data, error } = await scopedDb
     .from('grades')
     .select('score, max_score, assessment_name, assessment_date, is_published')
     .eq('student_id', studentId)

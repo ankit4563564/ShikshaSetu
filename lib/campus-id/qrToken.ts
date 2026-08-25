@@ -69,11 +69,12 @@ export function decodeQrContent(qrContent: string): { payload: QrTokenPayload | 
     return { payload: null, error: 'Failed to decode payload' };
   }
 
-  const secret = getSecret();
   const expectedSig = signPayload(raw);
   const actualSig = parts[1];
+  const expBuf = Buffer.from(expectedSig);
+  const actBuf = Buffer.from(actualSig);
 
-  if (!crypto.timingSafeEqual(Buffer.from(expectedSig), Buffer.from(actualSig))) {
+  if (expBuf.length !== actBuf.length || !crypto.timingSafeEqual(expBuf, actBuf)) {
     return { payload: null, error: 'Invalid signature' };
   }
 

@@ -5,7 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifications } from './NotificationContext';
 import { NotificationCenter } from './NotificationCenter';
 
-export default function NotificationBell() {
+interface NotificationBellProps {
+  recipientId?: string | null;
+}
+
+export default function NotificationBell({ recipientId: explicitRecipientId }: NotificationBellProps = {}) {
   const { unreadCount, dbNotifications, markAllAsRead, registerRecipientId } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
@@ -22,6 +26,12 @@ export default function NotificationBell() {
   }, []);
 
   useEffect(() => {
+    if (explicitRecipientId) {
+      registerRecipientId(explicitRecipientId);
+    }
+  }, [explicitRecipientId, registerRecipientId]);
+
+  useEffect(() => {
     if (unreadCount > prevCount.current) {
       prevCount.current = unreadCount;
     }
@@ -29,8 +39,8 @@ export default function NotificationBell() {
 
   const safeCount = unreadCount ?? 0;
 
-  // Extract recipientId from first loaded notification
-  const recipientId = dbNotifications.length > 0 ? dbNotifications[0].recipientId : null;
+  // Extract recipientId from props or first loaded notification or default
+  const effectiveRecipientId = explicitRecipientId || (dbNotifications.length > 0 ? dbNotifications[0].recipientId : 'guardian');
 
   return (
     <div className="relative" ref={bellRef}>
@@ -58,7 +68,7 @@ export default function NotificationBell() {
       <AnimatePresence>
         {isOpen && (
           <NotificationCenterWrapper
-            recipientId={recipientId}
+            recipientId={effectiveRecipientId}
             onClose={() => setIsOpen(false)}
           />
         )}
@@ -74,31 +84,5 @@ function NotificationCenterWrapper({
   recipientId: string | null;
   onClose: () => void;
 }) {
-  // If no recipientId from notifications yet, show a loading state
-  if (!recipientId) {
-    return (
-      <>
-        <div 
-          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]" 
-          onClick={onClose} 
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: -10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: -10 }}
-          className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-sm sm:max-w-md max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 flex flex-col overflow-hidden"
-        >
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-            <h3 className="font-display text-sm font-extrabold text-slate-900">Notifications</h3>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xs font-bold">✕</button>
-          </div>
-          <div className="flex items-center justify-center py-12">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
-          </div>
-        </motion.div>
-      </>
-    );
-  }
-
-  return <NotificationCenter recipientId={recipientId} isOpen={true} onClose={onClose} />;
+  return <NotificationCenter recipientId={recipientId || 'guardian'} isOpen={true} onClose={onClose} />;
 }

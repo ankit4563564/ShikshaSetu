@@ -82,19 +82,48 @@ export class PermissionEngine {
     const q = query.toLowerCase();
 
     if (role === 'student') {
-      if (q.includes('teacher note') || q.includes('salary') || q.includes('ptm report for') || q.includes('risk score') || q.includes('fee collection') || q.includes('teacher assistant')) {
+      if (
+        q.includes('teacher note') ||
+        q.includes('private note') ||
+        q.includes('counselor note') ||
+        q.includes('counselor private') ||
+        q.includes('mental health') ||
+        q.includes('other student') ||
+        q.includes('another student') ||
+        q.includes('salary') ||
+        q.includes('ptm report for') ||
+        q.includes('risk score') ||
+        q.includes('fee collection') ||
+        q.includes('teacher assistant') ||
+        q.includes('staff note')
+      ) {
         return {
           isAllowed: false,
-          refusalReason: "As your AI Study Partner, I can help you with homework practice, chapter explanations, study revision, and exam preparation! Administrative teacher tools and internal records are outside my student assistant scope."
+          refusalReason: "As your AI Study Partner, I can help you with homework practice, chapter explanations, study revision, and exam preparation! Administrative teacher tools, counselor evaluations, and internal records are outside my student assistant scope."
         };
       }
     }
 
     if (role === 'parent') {
-      if (q.includes('internal teacher note') || q.includes('salary') || q.includes('class ranking') || q.includes('other student marks') || q.includes('teacher workstation')) {
+      if (
+        q.includes('internal teacher note') ||
+        q.includes('counselor note') ||
+        q.includes('counselor private') ||
+        q.includes('salary') ||
+        q.includes('class ranking') ||
+        q.includes('other student') ||
+        q.includes('another student') ||
+        q.includes('other child') ||
+        q.includes('unpublished marks') ||
+        q.includes('unpublished grade') ||
+        q.includes('teacher workstation') ||
+        q.includes('ignore rules') ||
+        q.includes('ignore the privacy rules') ||
+        q.includes('show all student data')
+      ) {
         return {
           isAllowed: false,
-          refusalReason: "As your Parent Assistant, I can help you with your child's safety, attendance, bus location, homework, and teacher messages. Detailed internal teacher records and classmate data are restricted."
+          refusalReason: "As your Parent Assistant, I can help you with your child's safety, attendance, bus location, homework, and teacher messages. Detailed internal teacher/counselor records, unpublished scores, and other students' data are strictly restricted."
         };
       }
     }

@@ -1,9 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { getAuthContext, validateParentStudentAccess } from '@/lib/auth/getAuthContext';
+import { createScopedClient } from '@/lib/supabase/scoped';
 import { revalidatePath } from 'next/cache';
 import { recordEcosystemEvent } from '@/lib/ecosystem';
-import { requireAuth, requireRole } from '@/lib/auth/getUser';
 
 export interface ChatMessageData {
   id: string;
@@ -17,12 +17,15 @@ export interface ChatMessageData {
 
 /**
  * Fetches message history for a given student thread.
+ * Enforces server-side authentication, tenant scoping, and guardian-child boundary.
  */
 export async function fetchChatMessagesAction(studentId: string): Promise<ChatMessageData[]> {
-  await requireAuth();
-  const supabase = createClient();
+  const context = await getAuthContext();
+  validateParentStudentAccess(context, studentId);
 
-  const { data, error } = await supabase
+  const scopedDb = createScopedClient(context);
+
+  const { data, error } = await scopedDb
     .from('chat_messages')
     .select('*')
     .eq('student_id', studentId)
@@ -46,62 +49,78 @@ export async function fetchChatMessagesAction(studentId: string): Promise<ChatMe
 
 /**
  * Sends a message from parent or teacher.
+ * Enforces server-side authentication, overrides client-supplied sender credentials,
+ * and validates tenant & student authorization.
  */
 export async function sendChatMessageAction(data: {
   studentId: string;
   text: string;
-  senderRole: 'teacher' | 'parent';
-  senderId: string;
+  senderRole?: 'teacher' | 'parent';
+  senderId?: string;
   isContextFlag?: boolean;
 }): Promise<{ success: boolean; message?: ChatMessageData; error?: string }> {
-  await requireAuth();
-  const supabase = createClient();
+  try {
+    const context = await getAuthContext();
+    validateParentStudentAccess(context, data.studentId);
 
-  const { data: newRow, error } = await supabase
-    .from('chat_messages')
-    .insert({
-      student_id: data.studentId,
-      sender_id: data.senderId,
-      sender_role: data.senderRole,
-      content: data.text,
-      is_context_flag: data.isContextFlag || false,
-      created_at: new Date().toISOString(),
-    })
-    .select('*')
-    .single();
+    const scopedDb = createScopedClient(context);
 
-  if (error) {
-    console.error(`[sendChatMessageAction] Error:`, error.message);
-    return { success: false, error: error.message };
+    // Enforce server-authoritative sender credentials
+    const authoritativeSenderId = context.userId;
+    const authoritativeSenderRole = context.role === 'teacher' ? 'teacher' : 'parent';
+
+    const { data: newRow, error } = await scopedDb
+      .from('chat_messages')
+      .insert({
+        student_id: data.studentId,
+        sender_id: authoritativeSenderId,
+        sender_role: authoritativeSenderRole,
+        content: data.text.trim(),
+        is_context_flag: data.isContextFlag || false,
+        created_at: new Date().toISOString(),
+      })
+      .select('*')
+      .single();
+
+    if (error || !newRow) {
+      console.error(`[sendChatMessageAction] Error:`, error?.message);
+      return { success: false, error: error?.message || 'Failed to send note' };
+    }
+
+    try {
+      await recordEcosystemEvent({
+        event_type: 'chat_message_sent',
+        student_id: data.studentId,
+        actor_id: authoritativeSenderId,
+        actor_role: authoritativeSenderRole,
+        title: data.isContextFlag ? 'Parent context note sent' : 'Chat message sent',
+        description: data.text.trim(),
+        metadata: {
+          messageId: newRow.id,
+          isContextFlag: data.isContextFlag || false,
+        },
+      });
+    } catch (evtErr) {
+      console.warn('[sendChatMessageAction] Event propagation note:', evtErr);
+    }
+
+    // Revalidate paths to sync data across portals
+    revalidatePath('/parent');
+    revalidatePath('/teacher');
+
+    return {
+      success: true,
+      message: {
+        id: newRow.id,
+        studentId: newRow.student_id,
+        senderId: newRow.sender_id,
+        senderRole: newRow.sender_role as 'teacher' | 'parent',
+        messageText: newRow.content,
+        isContextFlag: newRow.is_context_flag || false,
+        createdAt: newRow.created_at,
+      },
+    };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Unauthorized chat operation' };
   }
-
-  await recordEcosystemEvent(supabase, {
-    eventType: 'chat_message_sent',
-    studentId: data.studentId,
-    actorId: data.senderId,
-    actorRole: data.senderRole,
-    title: data.isContextFlag ? 'Parent context note sent' : 'Chat message sent',
-    body: data.text,
-    metadata: {
-      messageId: newRow.id,
-      isContextFlag: data.isContextFlag || false,
-    },
-  });
-
-  // Revalidate paths to sync data
-  revalidatePath('/parent');
-  revalidatePath('/teacher');
-
-  return {
-    success: true,
-    message: {
-      id: newRow.id,
-      studentId: newRow.student_id,
-      senderId: newRow.sender_id,
-      senderRole: newRow.sender_role as 'teacher' | 'parent',
-      messageText: newRow.content,
-      isContextFlag: newRow.is_context_flag || false,
-      createdAt: newRow.created_at,
-    },
-  };
 }

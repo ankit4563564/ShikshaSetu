@@ -6,6 +6,8 @@ import { SignOutButton } from '@/components/auth/SignOutButton';
 interface Student {
   studentId: string;
   displayName: string;
+  grade?: string | null;
+  section?: string | null;
 }
 
 interface ParentStudentHeaderProps {
@@ -25,6 +27,8 @@ export function ParentStudentHeader({
   isLoading = false,
   rightActions,
 }: ParentStudentHeaderProps) {
+  const gradeSection = `Grade ${activeStudent?.grade || '8'}${activeStudent?.section || 'A'}`;
+
   return (
     <header className="parent-portal-header bg-white/95 backdrop-blur-xl border-b border-deep-teal/10 px-4 py-3 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs">
       <div className="flex items-center gap-3">
@@ -47,7 +51,7 @@ export function ParentStudentHeader({
               >
                 {currentStudents.map((child) => (
                   <option key={child.studentId} value={child.studentId}>
-                    {child.displayName}
+                    {child.displayName} ({child.grade || '8'}{child.section || 'A'})
                   </option>
                 ))}
               </select>
@@ -61,9 +65,9 @@ export function ParentStudentHeader({
             </h2>
           )}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-deep-teal/60 font-medium">Grade 8A · Ms. Mehra</span>
+            <span className="text-xs text-deep-teal/60 font-medium">{gradeSection} · Ms. Mehra</span>
             <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-semibold text-emerald-600">At school</span>
+            <span className="text-xs font-semibold text-emerald-600">Active Profile</span>
           </div>
         </div>
       </div>

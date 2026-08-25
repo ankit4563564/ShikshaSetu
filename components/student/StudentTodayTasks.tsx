@@ -17,13 +17,14 @@ export interface HomeworkItem {
 interface StudentTodayTasksProps {
   homework: HomeworkItem[];
   onOpenHomeworkTab?: () => void;
-  onOpenRevisionMaps?: () => void;
+  onOpenRevisionNotes?: () => void;
+  onOpenStudyHelp?: (hwTitle?: string) => void;
 }
 
 export default function StudentTodayTasks({
   homework,
   onOpenHomeworkTab,
-  onOpenRevisionMaps,
+  onOpenRevisionNotes,
 }: StudentTodayTasksProps) {
   // Filter only pending items
   const pendingTasks = (homework || []).filter(
@@ -129,6 +130,16 @@ export default function StudentTodayTasks({
                 </div>
 
                 <div className="flex items-center justify-end gap-2 shrink-0 pt-1 sm:pt-0">
+                  {onOpenStudyHelp && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenStudyHelp(task.title)}
+                      className="inline-flex items-center gap-1 rounded-xl border border-deep-teal/20 bg-white px-3 py-1.5 text-xs font-bold text-deep-teal transition hover:bg-deep-teal/5 cursor-pointer shadow-2xs"
+                      title="Ask SchoolMitra for guidance on this assignment"
+                    >
+                      <span>💡 Hint</span>
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={onOpenHomeworkTab}

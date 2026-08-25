@@ -46,12 +46,12 @@ export default function QuestBoard({ student, setActiveAvatar, setActiveTitle, a
     description: `${homework.subject} assignment${homework.isSubmitted ? ' submitted successfully.' : ` due ${homework.dueDate}.`}`,
   })));
 
-  // Shop state
+  // Shop state — avatar and profile customization rewards
   const [shopItems, setShopItems] = useState([
     { id: 's1', name: 'Astro-Scholar Avatar', cost: 100, emoji: '👩‍🚀', unlocked: false },
-    { id: 's2', name: 'Math Extra Credit (+2 Marks)', cost: 200, emoji: '📈', unlocked: false },
-    { id: 's3', name: 'Math Wizard Profile Title', cost: 50, emoji: '🧙‍♂️', unlocked: false },
-    { id: 's4', name: 'Science Extra Credit (+2 Marks)', cost: 200, emoji: '🧪', unlocked: false },
+    { id: 's2', name: 'Math Wizard Profile Title', cost: 50, emoji: '🧙‍♂️', unlocked: false },
+    { id: 's3', name: 'Science Explorer Badge', cost: 75, emoji: '🧪', unlocked: false },
+    { id: 's4', name: 'Focus Master Avatar', cost: 120, emoji: '🧘', unlocked: false },
   ]);
 
 
@@ -110,19 +110,20 @@ export default function QuestBoard({ student, setActiveAvatar, setActiveTitle, a
     let itemName = '';
     // Equip the item instantly!
     if (itemId === 's1') {
-      setActiveAvatar('👩‍🚀');
+      setActiveAvatar?.('👩‍🚀');
       setToastMessage('🎉 Success! You unlocked and equipped the Astro-Scholar Avatar!');
       itemName = 'Astro-Scholar Avatar';
     } else if (itemId === 's2') {
-      setToastMessage('🎉 Success! Redeemed +2 Extra Credit Marks in Math. The request has been sent to Ms. Ananya Mehra for approval!');
-      itemName = 'Math Extra Credit (+2 Marks)';
-    } else if (itemId === 's3') {
-      setActiveTitle('Math Wizard');
+      setActiveTitle?.('Math Wizard');
       setToastMessage('🎉 Success! You unlocked and equipped the Math Wizard Title!');
       itemName = 'Math Wizard Profile Title';
+    } else if (itemId === 's3') {
+      setToastMessage('🎉 Success! Unlocked the Science Explorer Badge in your profile!');
+      itemName = 'Science Explorer Badge';
     } else if (itemId === 's4') {
-      setToastMessage('🎉 Success! Redeemed +2 Extra Credit Marks in Science. The request has been sent to Ms. Ananya Mehra for approval!');
-      itemName = 'Science Extra Credit (+2 Marks)';
+      setActiveAvatar?.('🧘');
+      setToastMessage('🎉 Success! You unlocked and equipped the Focus Master Avatar!');
+      itemName = 'Focus Master Avatar';
     }
 
     if (itemName) {

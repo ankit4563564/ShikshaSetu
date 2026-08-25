@@ -15,10 +15,10 @@ import AiHomeworkModal from './AiHomeworkModal';
 import SchoolPulsePDF from './SchoolPulsePDF';
 import TeacherMarksPanel from './TeacherMarksPanel';
 import TeacherChat from './TeacherChat';
-import VisualMindMapWorkspace from '../mindmap/VisualMindMapWorkspace';
 import { useTimeGreeting } from '@/lib/utils/timeGreeting';
 import { useAmbientAICore } from '../schoolgpt/core/AmbientIntelligenceCore';
-import { useContextRegistry } from '../schoolgpt/context/ContextRegistry';
+import ClassroomInsightCard from './ClassroomInsightCard';
+import TeacherAiToolkitModal, { type ToolkitTab } from './TeacherAiToolkitModal';
 import { TakeAttendanceModal } from './TakeAttendanceModal';
 import type { TeacherClassContext } from '@/app/teacher/page';
 import type { AttendanceRosterStudent } from '@/lib/attendance/types';
@@ -56,6 +56,8 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
   const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [isMarksModalOpen, setIsMarksModalOpen] = useState(false);
+  const [isAiToolkitOpen, setIsAiToolkitOpen] = useState(false);
+  const [aiToolkitTab, setAiToolkitTab] = useState<ToolkitTab>('exit_ticket');
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
   // Chat with parent state
@@ -139,18 +141,19 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
     setIsDrawerOpen(true);
   };
 
-  const handleFocusItemClick = (item: string) => {
-    if (item.includes('follow-up') || item.includes('student')) {
+  const handleFocusItemClick = (actionKey: string) => {
+    if (actionKey === 'needs_attention_students' || actionKey.includes('student')) {
       setStatusFilter('needs_attention');
       setActiveTab('students');
-    } else if (item.includes('homework')) {
+    } else if (actionKey === 'open_homework_hub' || actionKey.includes('homework')) {
       setIsHomeworkModalOpen(true);
-    } else if (item.includes('PTM') || item.includes('parent')) {
-      setActiveTab('parents');
-    } else if (item.includes('Attendance')) {
+    } else if (actionKey === 'view_attendance_modal' || actionKey.includes('Attendance')) {
       setIsAttendanceModalOpen(true);
+    } else if (actionKey === 'open_ai_toolkit') {
+      setAiToolkitTab('lesson');
+      setIsAiToolkitOpen(true);
     } else {
-      handleQuerySend(`Tell me more about: ${item}`);
+      handleQuerySend(`Tell me more about: ${actionKey}`);
     }
   };
 
@@ -266,7 +269,27 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
             </div>
 
             {/* Today's Focus Priorities Bar */}
-            <TodaysFocusBar onSelectItem={handleFocusItemClick} />
+            <TodaysFocusBar
+              needsAttentionCount={studentCounts.needsAttention}
+              pendingHomeworkCount={3}
+              attendanceRate={96}
+              totalStudents={students.length}
+              onSelectItem={handleFocusItemClick}
+            />
+
+            {/* AI Classroom Overview & Insight */}
+            <ClassroomInsightCard
+              grade={grade}
+              section={section}
+              totalStudents={students.length}
+              needsAttentionCount={studentCounts.needsAttention}
+              worthWatchingCount={studentCounts.worthWatching}
+              onTrackCount={studentCounts.onTrack}
+              onOpenToolkitTab={(tab) => {
+                setAiToolkitTab(tab);
+                setIsAiToolkitOpen(true);
+              }}
+            />
 
             {/* Persistent Mockup AI Search Anchor */}
             <div className="space-y-4">
@@ -686,15 +709,6 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
         )}
 
         {/* ============================================================ */}
-        {/* TAB 3.5: VISUAL REVISION MIND MAPS                          */}
-        {/* ============================================================ */}
-        {activeTab === 'mindmaps' && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <VisualMindMapWorkspace />
-          </div>
-        )}
-
-        {/* ============================================================ */}
         {/* TAB 4: ASSIGNMENTS (HOMEWORK & TASKS)                         */}
         {/* ============================================================ */}
         {activeTab === 'assignments' && (
@@ -893,13 +907,26 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                       Student: {activeParentStudent.displayName} • Grade {grade}{section}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedStudentId(activeParentStudent.studentId)}
-                    className="text-xs font-bold text-indigo-600 hover:underline cursor-pointer"
-                  >
-                    View Student 360° Profile →
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAiToolkitTab('parent_message');
+                        setIsAiToolkitOpen(true);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-xs transition border border-indigo-200/80 cursor-pointer flex items-center gap-1"
+                    >
+                      <span>✨</span>
+                      <span>Draft with AI</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStudentId(activeParentStudent.studentId)}
+                      className="text-xs font-bold text-slate-500 hover:text-indigo-600 hover:underline cursor-pointer"
+                    >
+                      360° Profile →
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex-1">
@@ -1063,6 +1090,17 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
           </div>
         </div>
       )}
+
+      {/* Teacher AI Toolkit Modal (Lesson Planner, Differentiation, Parent Messages) */}
+      <TeacherAiToolkitModal
+        isOpen={isAiToolkitOpen}
+        onClose={() => setIsAiToolkitOpen(false)}
+        defaultGrade={grade}
+        defaultSection={section}
+        initialTab={aiToolkitTab}
+        initialStudentName={activeParentStudent?.displayName || 'Aarav Sharma'}
+        initialParentName={PARENT_MAP[activeParentStudent?.displayName]?.parentName || 'Sunita Sharma'}
+      />
 
       {/* Floating Spotlight Command Palette */}
       <SchoolGPTSpotlight

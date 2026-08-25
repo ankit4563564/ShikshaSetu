@@ -3,26 +3,23 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-type Tab = 'Today' | 'Revision Maps' | 'Homework' | 'Exams' | 'Achievements' | 'Missions' | 'Wellbeing';
+type Tab = 'Today' | 'Academics' | 'Revision Notes' | 'Homework' | 'Missions' | 'Wellbeing';
 
 interface MobileNavProps {
   activeTab: Tab;
   onTabChange: (tab: Tab) => void;
   unreadCounts?: {
     homework?: number;
-    achievements?: number;
-    missions?: number;
   };
 }
 
-const TAB_CONFIG: Record<Tab, { icon: string; label: string; color: string }> = {
-  Today: { icon: '⌂', label: 'Today', color: 'text-primary' },
-  'Revision Maps': { icon: '🗺️', label: 'Maps', color: 'text-deep-teal' },
-  Homework: { icon: '📋', label: 'Work', color: 'text-marigold' },
-  Exams: { icon: '📝', label: 'Exams', color: 'text-warm-clay' },
-  Achievements: { icon: '🏆', label: 'Awards', color: 'text-sage' },
-  Missions: { icon: '✦', label: 'Quests', color: 'text-primary' },
-  Wellbeing: { icon: '◌', label: 'Help', color: 'text-sage' },
+const TAB_CONFIG: Record<Tab, { icon: string; label: string }> = {
+  Today: { icon: '⌂', label: 'Today' },
+  Academics: { icon: '📊', label: 'Marks' },
+  'Revision Notes': { icon: '📚', label: 'Revise' },
+  Homework: { icon: '📋', label: 'Work' },
+  Missions: { icon: '✦', label: 'Quests' },
+  Wellbeing: { icon: '✨', label: 'Help' },
 };
 
 export default function StudentMobileNav({ activeTab, onTabChange, unreadCounts }: MobileNavProps) {
@@ -46,7 +43,7 @@ export default function StudentMobileNav({ activeTab, onTabChange, unreadCounts 
           <button
             type="button"
             onClick={() => handleTabClick('Today')}
-            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
+            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all cursor-pointer ${
               activeTab === 'Today'
                 ? 'bg-primary/10 text-primary'
                 : 'text-muted hover:text-primary hover:bg-primary/5'
@@ -54,9 +51,7 @@ export default function StudentMobileNav({ activeTab, onTabChange, unreadCounts 
             aria-label="Today"
             aria-current={activeTab === 'Today' ? 'page' : undefined}
           >
-            <span className="text-xl" aria-hidden="true">
-              {TAB_CONFIG.Today.icon}
-            </span>
+            <span className="text-xl" aria-hidden="true">{TAB_CONFIG.Today.icon}</span>
             <span className="text-[10px] font-bold">{TAB_CONFIG.Today.label}</span>
           </button>
 
@@ -64,10 +59,10 @@ export default function StudentMobileNav({ activeTab, onTabChange, unreadCounts 
           <button
             type="button"
             onClick={() => handleTabClick('Homework')}
-            className={`relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
+            className={`relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all cursor-pointer ${
               activeTab === 'Homework'
-                ? 'bg-marigold/10 text-marigold'
-                : 'text-muted hover:text-marigold hover:bg-marigold/5'
+                ? 'bg-amber-50 text-amber-700'
+                : 'text-muted hover:text-amber-700 hover:bg-amber-50/50'
             }`}
             aria-label={`Homework${unreadCounts?.homework ? ` (${unreadCounts.homework} pending)` : ''}`}
             aria-current={activeTab === 'Homework' ? 'page' : undefined}
@@ -77,35 +72,31 @@ export default function StudentMobileNav({ activeTab, onTabChange, unreadCounts 
                 {unreadCounts.homework > 9 ? '9+' : unreadCounts.homework}
               </span>
             )}
-            <span className="text-xl" aria-hidden="true">
-              {TAB_CONFIG.Homework.icon}
-            </span>
+            <span className="text-xl" aria-hidden="true">{TAB_CONFIG.Homework.icon}</span>
             <span className="text-[10px] font-bold">{TAB_CONFIG.Homework.label}</span>
           </button>
 
-          {/* Revision Maps */}
+          {/* Wellbeing / AI Help */}
           <button
             type="button"
-            onClick={() => handleTabClick('Revision Maps')}
-            className={`relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
-              activeTab === 'Revision Maps'
+            onClick={() => handleTabClick('Wellbeing')}
+            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'Wellbeing'
                 ? 'bg-primary/10 text-primary'
                 : 'text-muted hover:text-primary hover:bg-primary/5'
             }`}
-            aria-label="Revision Maps"
-            aria-current={activeTab === 'Revision Maps' ? 'page' : undefined}
+            aria-label="Study Help"
+            aria-current={activeTab === 'Wellbeing' ? 'page' : undefined}
           >
-            <span className="text-xl" aria-hidden="true">
-              {TAB_CONFIG['Revision Maps'].icon}
-            </span>
-            <span className="text-[10px] font-bold">{TAB_CONFIG['Revision Maps'].label}</span>
+            <span className="text-xl" aria-hidden="true">{TAB_CONFIG.Wellbeing.icon}</span>
+            <span className="text-[10px] font-bold">{TAB_CONFIG.Wellbeing.label}</span>
           </button>
 
           {/* More Menu */}
           <button
             type="button"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
+            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all cursor-pointer ${
               isMenuOpen
                 ? 'bg-primary/10 text-primary'
                 : 'text-muted hover:text-primary hover:bg-primary/5'
@@ -114,9 +105,7 @@ export default function StudentMobileNav({ activeTab, onTabChange, unreadCounts 
             aria-expanded={isMenuOpen}
             aria-controls="mobile-more-menu"
           >
-            <span className="text-xl" aria-hidden="true">
-              ⋮
-            </span>
+            <span className="text-xl" aria-hidden="true">⋮</span>
             <span className="text-[10px] font-bold">More</span>
           </button>
         </div>
@@ -126,7 +115,6 @@ export default function StudentMobileNav({ activeTab, onTabChange, unreadCounts 
       <AnimatePresence>
         {isMenuOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -137,7 +125,6 @@ export default function StudentMobileNav({ activeTab, onTabChange, unreadCounts 
               aria-hidden="true"
             />
 
-            {/* Menu Panel */}
             <motion.div
               id="mobile-more-menu"
               initial={{ y: '100%' }}
@@ -153,94 +140,62 @@ export default function StudentMobileNav({ activeTab, onTabChange, unreadCounts 
                 <button
                   type="button"
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-primary/5 hover:text-primary"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-primary/5 hover:text-primary cursor-pointer"
                   aria-label="Close menu"
                 >
-                  <span className="text-lg" aria-hidden="true">
-                    ×
-                  </span>
+                  <span className="text-lg" aria-hidden="true">×</span>
                 </button>
               </div>
 
               <div className="space-y-1">
                 <button
                   type="button"
-                  onClick={() => handleTabClick('Exams')}
-                  className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
-                    activeTab === 'Exams'
-                      ? 'bg-warm-clay/10 text-warm-clay'
+                  onClick={() => handleTabClick('Academics')}
+                  className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition-all cursor-pointer ${
+                    activeTab === 'Academics'
+                      ? 'bg-primary/10 text-primary'
                       : 'text-muted hover:bg-primary/5 hover:text-primary'
                   }`}
                   role="menuitem"
                 >
-                  <span className="text-2xl" aria-hidden="true">
-                    {TAB_CONFIG.Exams.icon}
-                  </span>
+                  <span className="text-2xl" aria-hidden="true">{TAB_CONFIG.Academics.icon}</span>
                   <div className="flex-1">
-                    <div className="text-sm font-bold">{TAB_CONFIG.Exams.label}</div>
-                    <div className="text-xs text-muted">Upcoming tests & marks</div>
+                    <div className="text-sm font-bold">Academics</div>
+                    <div className="text-xs text-muted">Marks, performance & AI insights</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleTabClick('Revision Notes')}
+                  className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition-all cursor-pointer ${
+                    activeTab === 'Revision Notes'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted hover:bg-primary/5 hover:text-primary'
+                  }`}
+                  role="menuitem"
+                >
+                  <span className="text-2xl" aria-hidden="true">{TAB_CONFIG['Revision Notes'].icon}</span>
+                  <div className="flex-1">
+                    <div className="text-sm font-bold">Revision Notes</div>
+                    <div className="text-xs text-muted">AI summary notes &amp; quick quizzes</div>
                   </div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleTabClick('Missions')}
-                  className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
+                  className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition-all cursor-pointer ${
                     activeTab === 'Missions'
                       ? 'bg-primary/10 text-primary'
                       : 'text-muted hover:bg-primary/5 hover:text-primary'
                   }`}
                   role="menuitem"
                 >
-                  <span className="text-2xl" aria-hidden="true">
-                    {TAB_CONFIG.Missions.icon}
-                  </span>
+                  <span className="text-2xl" aria-hidden="true">{TAB_CONFIG.Missions.icon}</span>
                   <div className="flex-1">
-                    <div className="text-sm font-bold">{TAB_CONFIG.Missions.label}</div>
-                    <div className="text-xs text-muted">Quests & reward shop</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleTabClick('Achievements')}
-                  className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
-                    activeTab === 'Achievements'
-                      ? 'bg-sage/10 text-sage'
-                      : 'text-muted hover:bg-primary/5 hover:text-primary'
-                  }`}
-                  role="menuitem"
-                >
-                  <span className="text-2xl" aria-hidden="true">
-                    {TAB_CONFIG.Achievements.icon}
-                  </span>
-                  <div className="flex-1">
-                    <div className="text-sm font-bold">{TAB_CONFIG.Achievements.label}</div>
-                    <div className="text-xs text-muted">Badges & trophies</div>
-                  </div>
-                  {unreadCounts?.achievements && unreadCounts.achievements > 0 && (
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sage text-xs font-bold text-white">
-                      {unreadCounts.achievements}
-                    </span>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleTabClick('Wellbeing')}
-                  className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
-                    activeTab === 'Wellbeing'
-                      ? 'bg-sage/10 text-sage'
-                      : 'text-muted hover:bg-primary/5 hover:text-primary'
-                  }`}
-                  role="menuitem"
-                >
-                  <span className="text-2xl" aria-hidden="true">
-                    {TAB_CONFIG.Wellbeing.icon}
-                  </span>
-                  <div className="flex-1">
-                    <div className="text-sm font-bold">{TAB_CONFIG.Wellbeing.label}</div>
-                    <div className="text-xs text-muted">School Mitra Socratic study coach</div>
+                    <div className="text-sm font-bold">Quests & Rewards</div>
+                    <div className="text-xs text-muted">Learning missions</div>
                   </div>
                 </button>
               </div>
