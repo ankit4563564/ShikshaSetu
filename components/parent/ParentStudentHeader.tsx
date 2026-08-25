@@ -27,14 +27,6 @@ export function ParentStudentHeader({
   isLoading = false,
   rightActions,
 }: ParentStudentHeaderProps) {
-export function ParentStudentHeader({
-  activeStudent,
-  currentStudents,
-  selectedStudentId,
-  onStudentChange,
-  isLoading = false,
-  rightActions,
-}: ParentStudentHeaderProps) {
   const gradeSection = `Class ${activeStudent?.grade || '8'}${activeStudent?.section || 'A'}`;
 
   return (
