@@ -19,44 +19,44 @@ export function EcosystemNavbar() {
 
   return (
     <header
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+      className={`fixed top-0 w-full z-50 transition-all duration-200 ${
         isScrolled
-          ? 'bg-white/85 backdrop-blur-2xl border-b border-slate-200/80 shadow-xs py-3.5'
-          : 'bg-transparent py-5'
+          ? 'bg-[#FAF9F6]/95 backdrop-blur-md border-b border-stone-200/80 shadow-xs py-3.5'
+          : 'bg-[#FAF9F6] py-5 border-b border-stone-200/40'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-slate-900 via-indigo-950 to-indigo-900 flex items-center justify-center font-display font-black text-white text-base shadow-md shadow-slate-900/20 group-hover:scale-105 transition-transform">
+          <div className="w-9 h-9 rounded-xl bg-[#2563EB] flex items-center justify-center font-display font-black text-white text-base shadow-xs">
             S
           </div>
           <div>
-            <span className="font-display text-lg font-black text-slate-900 tracking-tight block leading-none">
+            <span className="font-display text-lg font-black text-[#172033] tracking-tight block leading-none">
               ShikshaSetu
             </span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">
-              Learning Ecosystem
+            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500">
+              The Learning Ecosystem
             </span>
           </div>
         </Link>
 
-        {/* Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-black text-slate-600">
-          <a href="#the-difference" className="hover:text-indigo-600 transition-colors">
+        {/* Clean Editorial Navigation */}
+        <nav className="hidden md:flex items-center gap-8 text-xs font-bold text-[#172033]/80">
+          <a href="#the-difference" className="hover:text-[#2563EB] transition-colors">
             The Difference
           </a>
-          <a href="#learning-loop" className="hover:text-indigo-600 transition-colors">
+          <a href="#learning-loop" className="hover:text-[#2563EB] transition-colors">
             Learning Loop
           </a>
-          <a href="#perspectives" className="hover:text-indigo-600 transition-colors">
-            3 Perspectives
+          <a href="#perspectives" className="hover:text-[#2563EB] transition-colors">
+            Three Perspectives
           </a>
-          <a href="#ai-intelligence" className="hover:text-indigo-600 transition-colors flex items-center gap-1">
-            <span className="text-indigo-600">✨</span> AI Ecosystem
+          <a href="#product-showcase" className="hover:text-[#2563EB] transition-colors">
+            Product UI
           </a>
-          <a href="#features" className="hover:text-indigo-600 transition-colors">
-            Features
+          <a href="#ai-intelligence" className="hover:text-[#2563EB] transition-colors">
+            Intelligence
           </a>
         </nav>
 
@@ -64,19 +64,19 @@ export function EcosystemNavbar() {
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="text-xs font-black text-slate-700 hover:text-slate-900 px-3.5 py-2 rounded-xl hover:bg-slate-100/80 transition-all hidden sm:inline-block"
+            className="text-xs font-bold text-[#172033] hover:text-[#2563EB] px-3.5 py-2 rounded-lg hover:bg-stone-100 transition-all hidden sm:inline-block"
           >
             Sign In
           </Link>
           <motion.button
             type="button"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={openRoleSelector}
-            className="bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 text-white text-xs font-black px-5 py-2.5 rounded-full shadow-md shadow-indigo-950/20 hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+            className="bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
           >
             <span>Explore Portals</span>
-            <span className="text-indigo-400 font-bold">&rarr;</span>
+            <span className="font-bold">&rarr;</span>
           </motion.button>
         </div>
       </div>

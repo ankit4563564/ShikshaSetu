@@ -8,110 +8,100 @@ export function NextBestActionSection() {
     {
       role: 'TEACHER',
       question: 'WHO NEEDS ME?',
-      icon: '🎯',
-      color: 'border-blue-200/80 bg-gradient-to-b from-blue-50/60 to-white text-blue-950',
-      tagColor: 'bg-blue-100 text-blue-800',
+      tag: 'Faculty Focus',
       description:
-        'Instant support radar highlights exactly which learners need targeted homeroom attention before misconceptions compound.',
+        'Support radar pinpoints the 3 students in Section 8A who struggled with fractions, so teachers can conduct a 5-minute review before misconceptions compound.',
       outcome: 'No student slips through the cracks unseen.',
     },
     {
       role: 'STUDENT',
       question: 'WHAT SHOULD I LEARN?',
-      icon: '🚀',
-      color: 'border-indigo-200/80 bg-gradient-to-b from-indigo-50/60 to-white text-indigo-950',
-      tagColor: 'bg-indigo-100 text-indigo-800',
+      tag: 'Learner Clarity',
       description:
-        'Personalized digital study notebook serving high-yield 15-minute revision notes, worked examples, and instant self-checks.',
+        'Personalized digital study notebook serving high-yield 15-minute revision notes, worked examples, and instant 3-question quick checks.',
       outcome: 'Zero guesswork about what to study tonight.',
     },
     {
       role: 'PARENT',
       question: 'HOW CAN I HELP?',
-      icon: '❤️',
-      color: 'border-amber-200/80 bg-gradient-to-b from-amber-50/60 to-white text-amber-950',
-      tagColor: 'bg-amber-100 text-amber-800',
+      tag: 'Home Support',
       description:
-        'Clear, constructive dinner conversation starters and supportive prompts instead of raw percentages and anxious interrogations.',
-      outcome: 'Replaces anxiety with meaningful family support.',
+        'Clear, constructive dinner conversation starters and supportive prompts instead of confusing raw percentages and stressful interrogations.',
+      outcome: 'Replaces anxiety with encouraging family dialogue.',
     },
   ];
 
   return (
-    <section className="py-24 bg-white relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
+    <section className="py-20 bg-white border-b border-stone-200/80">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full">
-            Action-Oriented Architecture
+        <div className="max-w-3xl space-y-3">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB]">
+            Action-Oriented Design
           </span>
-          <h2 className="font-display text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
-            Every login should answer one question:
+          <h2 className="font-display text-3xl sm:text-4xl font-black text-[#172033] tracking-tight">
+            Every login should answer one question.
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 font-medium leading-relaxed">
-            ShikshaSetu turns school data into the{' '}
-            <strong className="text-slate-900 font-black">next useful action</strong> for every stakeholder.
+          <p className="text-base text-stone-600 font-normal leading-relaxed">
+            ShikshaSetu turns school data into the <strong className="text-[#172033] font-bold">next useful action</strong> for every stakeholder.
           </p>
         </div>
 
-        {/* 3 Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+        {/* 3 Action Pillars */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {cards.map((c) => (
-            <motion.div
+            <div
               key={c.role}
-              whileHover={{ scale: 1.02, translateY: -3 }}
-              className={`p-7 sm:p-8 rounded-3xl border ${c.color} shadow-xs hover:shadow-xl transition-all space-y-5 flex flex-col justify-between`}
+              className="p-7 rounded-2xl bg-[#FAF9F6] border border-stone-300 space-y-4 flex flex-col justify-between"
             >
-              <div className="space-y-3.5">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${c.tagColor}`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500">
                     {c.role}
                   </span>
-                  <span className="text-3xl">{c.icon}</span>
+                  <span className="text-[10px] font-mono font-bold text-[#2563EB] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded">
+                    {c.tag}
+                  </span>
                 </div>
 
-                <h3 className="font-display text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                <h3 className="font-display text-xl font-bold text-[#172033] tracking-tight">
                   &quot;{c.question}&quot;
                 </h3>
 
-                <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                <p className="text-xs text-stone-600 leading-relaxed font-normal">
                   {c.description}
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-slate-200/60">
-                <span className="text-[11px] font-black text-slate-900 block">
-                  ✓ {c.outcome}
-                </span>
+              <div className="pt-3 border-t border-stone-200 text-[11px] font-bold text-[#16836A] flex items-center gap-1.5">
+                <span>✓</span>
+                <span>{c.outcome}</span>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* The 4th Synthesis Banner */}
-        <motion.div
-          whileHover={{ scale: 1.01 }}
-          className="p-7 sm:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border border-indigo-800/40 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6"
-        >
-          <div className="space-y-1.5 text-center sm:text-left">
-            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-300">
-              The Ecosystem Connection
+        <div className="p-7 rounded-2xl bg-stone-100 border border-stone-300 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563EB]">
+              The Ecosystem Synthesis
             </span>
-            <h4 className="font-display text-lg sm:text-xl font-black text-white">
+            <h4 className="font-display text-lg font-bold text-[#172033]">
               SHIKSHASETU: &quot;WHAT SHOULD HAPPEN NEXT?&quot;
             </h4>
-            <p className="text-xs sm:text-sm text-indigo-200/80 font-medium max-w-xl">
-              The intelligent learning engine synthesizes attendance, homework, and quiz evidence to connect teacher intervention, student study, and parent support.
+            <p className="text-xs text-stone-600 max-w-xl">
+              The intelligent engine connects all three answers into one continuous feedback loop around the student&apos;s real-time journey.
             </p>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl text-center shrink-0">
-            <span className="text-[11px] font-black text-emerald-300 block">
+          <div className="px-4 py-2 bg-white border border-stone-200 rounded-xl text-center shrink-0 shadow-2xs">
+            <span className="text-xs font-bold text-[#16836A] block">
               100% Loop Closure
             </span>
-            <span className="text-[10px] text-indigo-200">Zero orphaned data</span>
+            <span className="text-[10px] text-stone-500">One connected dataset</span>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

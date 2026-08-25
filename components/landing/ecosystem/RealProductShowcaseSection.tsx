@@ -6,160 +6,143 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function RealProductShowcaseSection() {
-  const [activePortal, setActivePortal] = useState<'teacher' | 'student' | 'parent'>('teacher');
+  const [activeTab, setActiveTab] = useState<'teacher' | 'student' | 'parent'>('teacher');
 
-  const portals = {
+  const views = {
     teacher: {
-      name: 'Teacher Workspace',
-      badge: 'Faculty Command Center',
-      tagline: 'Student Support Radar & Homeroom Intelligence',
-      description:
-        'Instantly view who needs targeted support, generate lesson recommendations, and communicate directly with families without paperwork.',
+      title: 'Teacher Workspace V2',
+      url: 'app.shikshasetu.edu/teacher',
+      tag: 'Faculty Intelligence',
+      description: 'Support radar highlights students needing help, today’s focus items, and instant lesson intervention drafts.',
       image: '/screenshots/teacher_page.png',
       href: '/teacher',
-      cta: 'Explore Teacher Workspace',
-      highlights: ['Support Radar for At-Risk Topics', 'Today’s Homeroom Focus', 'One-Click Lesson Interventions'],
     },
     student: {
-      name: 'Student Portal',
-      badge: 'Learner Workspace',
-      tagline: 'AI Revision Notes & SchoolMitra Study Companion',
-      description:
-        'Personalized digital lined study notebooks with 1-minute cheat sheets, worked examples, formula breakdowns, and interactive concept checks.',
+      title: 'Student Portal & Study Notebook',
+      url: 'app.shikshasetu.edu/student',
+      tag: 'Learner Workspace',
+      description: 'AI revision notes, lined digital study notebook, interactive quiz checks, and SchoolMitra companion.',
       image: '/screenshots/student_page.png',
       href: '/student',
-      cta: 'Explore Student Portal',
-      highlights: ['Digital Lined Study Sheets', 'SchoolMitra Study Companion', 'Interactive Concept Quick Checks'],
     },
     parent: {
-      name: 'Parent Today Portal',
-      badge: 'Family Partnership',
-      tagline: 'Live Child Digest, Transport Telemetry & Gate Security',
-      description:
-        'Meaningful dinner talking prompts, real-time GPS bus telemetry with driver calling, and encrypted QR gate pass approvals.',
+      title: 'Parent Today Portal',
+      url: 'app.shikshasetu.edu/parent',
+      tag: 'Family Partnership',
+      description: 'Live child progress digest, real-time GPS bus telemetry with driver direct calling, and encrypted QR gate passes.',
       image: '/screenshots/parent_page.png',
       href: '/parent',
-      cta: 'Explore Parent Portal',
-      highlights: ['Constructive Family Prompts', 'Live GPS Bus Tracking & ETA', 'Encrypted QR Gate Pass'],
     },
   };
 
-  const current = portals[activePortal];
+  const current = views[activeTab];
 
   return (
-    <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
-      {/* Ambient background glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-indigo-600/15 rounded-full blur-[140px] pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 relative z-10">
+    <section id="product-showcase" className="py-20 bg-[#FAF9F6] border-b border-stone-200/80">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 bg-white/10 border border-white/10 px-3.5 py-1 rounded-full backdrop-blur-md">
-            Production UI
-          </span>
-          <h2 className="font-display text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-            See the actual product in action.
-          </h2>
-          <p className="text-base sm:text-lg text-indigo-200/80 font-medium leading-relaxed">
-            No mockups or fabricated dashboards. Real, working software built around the live student journey.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+          <div className="max-w-2xl space-y-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB]">
+              Production Software
+            </span>
+            <h2 className="font-display text-3xl sm:text-4xl font-black text-[#172033] tracking-tight">
+              See the actual product in action.
+            </h2>
+            <p className="text-base text-stone-600 font-normal leading-relaxed">
+              Real interfaces built around the continuous student journey. No mockups or fake marketing screens.
+            </p>
+          </div>
+
+          {/* Clean Portal Selector */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('teacher')}
+              className={`px-4 py-2 rounded-lg font-display text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'teacher'
+                  ? 'bg-[#172033] text-white shadow-xs'
+                  : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
+              }`}
+            >
+              Teacher UI
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('student')}
+              className={`px-4 py-2 rounded-lg font-display text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'student'
+                  ? 'bg-[#172033] text-white shadow-xs'
+                  : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
+              }`}
+            >
+              Student UI
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('parent')}
+              className={`px-4 py-2 rounded-lg font-display text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'parent'
+                  ? 'bg-[#172033] text-white shadow-xs'
+                  : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
+              }`}
+            >
+              Parent UI
+            </button>
+          </div>
         </div>
 
-        {/* Portal Switcher Tabs */}
-        <div className="flex justify-center gap-2.5 sm:gap-3">
-          <button
-            type="button"
-            onClick={() => setActivePortal('teacher')}
-            className={`px-5 sm:px-6 py-3 rounded-2xl font-display text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
-              activePortal === 'teacher'
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 scale-105'
-                : 'bg-white/10 text-white/70 hover:bg-white/15'
-            }`}
-          >
-            <span>👨‍🏫</span>
-            <span>Teacher Portal</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActivePortal('student')}
-            className={`px-5 sm:px-6 py-3 rounded-2xl font-display text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
-              activePortal === 'student'
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 scale-105'
-                : 'bg-white/10 text-white/70 hover:bg-white/15'
-            }`}
-          >
-            <span>🎓</span>
-            <span>Student Portal</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActivePortal('parent')}
-            className={`px-5 sm:px-6 py-3 rounded-2xl font-display text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
-              activePortal === 'parent'
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 scale-105'
-                : 'bg-white/10 text-white/70 hover:bg-white/15'
-            }`}
-          >
-            <span>👨‍👩‍👧</span>
-            <span>Parent Portal</span>
-          </button>
-        </div>
-
-        {/* Portal Screen Showcase */}
+        {/* Realistic Browser Window Frame */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={activePortal}
-            initial={{ opacity: 0, y: 15 }}
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-8"
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+            className="rounded-2xl overflow-hidden border border-stone-300 bg-white shadow-xl space-y-0"
           >
-            {/* Context bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 rounded-3xl bg-white/10 border border-white/15 backdrop-blur-xl">
-              <div className="space-y-1 text-center sm:text-left">
-                <span className="text-[10px] font-mono font-black uppercase text-indigo-400">
-                  {current.badge}
-                </span>
-                <h3 className="font-display text-lg sm:text-xl font-black text-white">
-                  {current.tagline}
-                </h3>
-                <p className="text-xs text-indigo-200/80 font-medium max-w-2xl">
-                  {current.description}
-                </p>
+            {/* Realistic Browser Chrome Header */}
+            <div className="px-4 py-3 bg-stone-100 border-b border-stone-200 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-stone-300" />
+                <span className="w-3 h-3 rounded-full bg-stone-300" />
+                <span className="w-3 h-3 rounded-full bg-stone-300" />
+              </div>
+
+              {/* URL Address Bar */}
+              <div className="px-4 py-1 rounded-md bg-white border border-stone-200 text-[11px] font-mono text-stone-600 max-w-sm w-full text-center truncate">
+                https://{current.url}
               </div>
 
               <Link
                 href={current.href}
-                className="px-6 py-3 rounded-xl bg-white text-slate-900 font-display text-xs font-black hover:bg-slate-100 transition-all shadow-md shrink-0 flex items-center gap-2"
+                className="text-xs font-bold text-[#2563EB] hover:underline"
               >
-                <span>{current.cta}</span>
-                <span className="text-indigo-600 font-bold">&rarr;</span>
+                Open Live &rarr;
               </Link>
             </div>
 
-            {/* High-Resolution Screenshot Frame */}
-            <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl bg-slate-950/60 aspect-[16/10] w-full group">
+            {/* Screenshot Body */}
+            <div className="relative aspect-[16/10] w-full bg-stone-50">
               <Image
                 src={current.image}
-                alt={current.name}
+                alt={current.title}
                 fill
-                className="object-cover object-top group-hover:scale-101 transition-transform duration-500"
+                className="object-cover object-top"
                 sizes="(max-width: 1200px) 100vw, 1200px"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
+            </div>
 
-              {/* Bottom Feature Tags */}
-              <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2">
-                {current.highlights.map((h) => (
-                  <span
-                    key={h}
-                    className="text-[11px] font-bold text-white bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20"
-                  >
-                    ✓ {h}
-                  </span>
-                ))}
+            {/* Bottom Annotation Bar */}
+            <div className="p-4 bg-white border-t border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <div className="space-y-0.5">
+                <span className="font-bold text-[#172033]">{current.title}</span>
+                <p className="text-stone-500">{current.description}</p>
               </div>
+              <span className="text-[11px] font-mono font-bold text-[#16836A] shrink-0">
+                ✓ Production Live
+              </span>
             </div>
           </motion.div>
         </AnimatePresence>

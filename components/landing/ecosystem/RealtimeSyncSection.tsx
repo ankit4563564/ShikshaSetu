@@ -1,82 +1,74 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 
 export function RealtimeSyncSection() {
   const syncSteps = [
     {
-      actor: '👩‍🏫 Teacher',
+      actor: 'Teacher',
       action: 'Publishes Science Homework',
-      detail: 'Assigned to Class 8A via Teacher Portal',
-      tag: 'Mutation Event',
+      detail: 'Assigned to Class 8A via Teacher Workspace',
+      tag: 'Event 01',
     },
     {
-      actor: '🎓 Student',
+      actor: 'Student',
       action: 'Receives & Submits Online',
       detail: 'Completes lab report on Student Portal',
-      tag: 'Instant Sync',
+      tag: 'Event 02',
     },
     {
-      actor: '👨‍👩‍👧 Parent',
+      actor: 'Parent',
       action: 'Notified on Parent Today',
       detail: 'Sees completed status & verified check-in',
-      tag: 'Zero Lag',
+      tag: 'Event 03',
     },
     {
-      actor: '🤖 AI Brain',
+      actor: 'AI Engine',
       action: 'Updates Mastery Context',
-      detail: 'SchoolGPT & Mitra reflect updated understanding',
-      tag: 'Live Memory',
+      detail: 'SchoolMitra reflects updated understanding',
+      tag: 'Event 04',
     },
   ];
 
   return (
-    <section className="py-24 bg-white border-t border-slate-200/80 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+    <section className="py-20 bg-[#FAF9F6] border-b border-stone-200/80">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+        <div className="max-w-3xl space-y-3">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB]">
             Event-Driven Architecture
           </span>
-          <h2 className="font-display text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+          <h2 className="font-display text-3xl sm:text-4xl font-black text-[#172033] tracking-tight">
             One action. Everyone stays in sync.
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 font-medium leading-relaxed">
-            No duplicate records. No disconnected portals. <strong className="text-slate-900 font-black">Zero conflicting versions of the truth.</strong>
+          <p className="text-base text-stone-600 font-normal leading-relaxed">
+            No duplicate databases. No out-of-sync portals. <strong className="text-[#172033] font-bold">Zero conflicting versions of the truth.</strong>
           </p>
         </div>
 
         {/* Sync Timeline Flow */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
-          {syncSteps.map((step, idx) => (
-            <motion.div
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {syncSteps.map((step) => (
+            <div
               key={step.actor}
-              whileHover={{ scale: 1.03, y: -4 }}
-              className="p-6 rounded-3xl bg-slate-50 border border-slate-200/90 shadow-xs hover:shadow-lg transition-all space-y-4 relative"
+              className="p-6 rounded-2xl bg-white border border-stone-300 space-y-3 shadow-2xs"
             >
               <div className="flex items-center justify-between">
-                <span className="font-display text-xs font-black text-slate-900">{step.actor}</span>
-                <span className="text-[9px] font-mono font-black uppercase text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md">
+                <span className="font-display text-xs font-bold text-[#172033]">{step.actor}</span>
+                <span className="text-[10px] font-mono font-bold uppercase text-[#2563EB] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded">
                   {step.tag}
                 </span>
               </div>
 
               <div className="space-y-1">
-                <h4 className="font-display text-sm font-black text-slate-900 leading-snug">
-                  {step.action}
-                </h4>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  {step.detail}
-                </p>
+                <h4 className="font-display text-sm font-bold text-[#172033]">{step.action}</h4>
+                <p className="text-xs text-stone-500 font-medium leading-relaxed">{step.detail}</p>
               </div>
 
-              <div className="pt-2 flex items-center gap-1.5 text-[10px] font-mono font-bold text-slate-400">
-                <span>0{idx + 1}</span>
-                <span className="w-8 h-px bg-slate-200" />
-                <span>SYNCED</span>
+              <div className="pt-2 border-t border-stone-100 text-[11px] font-bold text-[#16836A]">
+                ✓ Synchronized across all 3 portals
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

@@ -6,235 +6,173 @@ import { motion } from 'framer-motion';
 export function LearningLoopSection() {
   const [activeStep, setActiveStep] = useState(0);
 
-  const scenarioStages = [
+  const stages = [
     {
       num: '01',
       stage: 'Observe',
-      actor: '👩‍🏫 Teacher',
-      badge: 'Real Classroom Evidence',
-      metricBefore: 'Unit Test: 58%',
-      metricAfter: 'Misconception Flagged',
-      headline: 'Teacher observes learning evidence on Support Radar',
+      actor: 'Teacher',
+      role: 'Classroom Evidence',
+      scoreBadge: 'Initial: 58%',
+      headline: 'Teacher sees student evidence on Support Radar',
       story:
-        'During the weekly Mathematics unit assessment, Priya scores 58%. Rather than an obscure mark on a spreadsheet, the system tracks specific question responses.',
-      uiCard: {
-        title: 'Class 8A Assessment Intake',
-        detail: 'Priya Patel • Mathematics Unit Test 1',
-        tag: 'Score: 58/100',
-        action: 'Formative diagnosis triggered automatically',
-      },
+        'Priya scores 58% on her weekly Mathematics unit test. Instead of remaining an isolated number on a grade sheet, the system tracks specific concept questions.',
+      actionDetail: 'Formative diagnosis triggered automatically from assessment items.',
     },
     {
       num: '02',
       stage: 'Understand',
-      actor: '🧠 AI Brain',
-      badge: 'Concept Level Diagnosis',
-      metricBefore: '58% Raw Score',
-      metricAfter: 'Identified: Equivalent Fractions',
-      headline: 'AI pinpoints the specific conceptual misconception',
+      actor: 'AI Brain',
+      role: 'Concept Analysis',
+      scoreBadge: 'Gap Identified',
+      headline: 'AI pinpoints the specific learning misconception',
       story:
-        'SchoolGPT analyzes error patterns across Section 8A: Priya understands integer arithmetic, but struggles with multiplying denominators when finding equivalent fractions.',
-      uiCard: {
-        title: 'Learning Gap Diagnosis',
-        detail: 'Concept #M8-F02: Equivalent Fractions Simplification',
-        tag: '3 Students Impacted',
-        action: 'Pinpointed: Non-general failure, isolated to 1 subtopic',
-      },
+        'The diagnostic engine identifies that Priya understands integer arithmetic, but struggles with multiplying denominators in Equivalent Fractions.',
+      actionDetail: 'Misconception isolated to 1 subtopic (Concept #M8-F02).',
     },
     {
       num: '03',
       stage: 'Act',
-      actor: '✨ Teacher Copilot',
-      badge: 'Pedagogy Recommendation',
-      metricBefore: 'Unsure what to teach',
-      metricAfter: '5-Min Visual Review Planned',
-      headline: 'Teacher receives targeted, differentiated teaching action',
+      actor: 'Teacher Copilot',
+      role: 'Pedagogy Plan',
+      scoreBadge: '5-Min Review',
+      headline: 'Teacher gets recommended next teaching action',
       story:
-        'Teacher Copilot suggests: "Spend 5 minutes tomorrow using visual fraction bars to illustrate equivalence before moving to mixed fractions." Teacher approves the plan with one click.',
-      uiCard: {
-        title: 'Recommended Micro-Intervention',
-        detail: 'Visual bar comparison model for Section 8A',
-        tag: 'Approved by Teacher',
-        action: 'Integrated into tomorrow’s period 1 lesson plan',
-      },
+        'Teacher Copilot suggests a 5-minute visual fraction bar comparison for Class 8A before progressing to mixed fractions. Teacher approves with one tap.',
+      actionDetail: 'Integrated into tomorrow’s Period 1 lesson plan.',
     },
     {
       num: '04',
       stage: 'Learn',
-      actor: '🎓 Student Learner',
-      badge: 'Digital Study Notebook',
-      metricBefore: '58% Confidence',
-      metricAfter: '15-Min Focused Study',
-      headline: 'Priya receives personalized digital revision notes',
+      actor: 'Student',
+      role: 'Personalized Study',
+      scoreBadge: '15-Min Notebook',
+      headline: 'Priya receives 15-minute digital revision notes',
       story:
-        'On Priya’s student portal, SchoolMitra generates a lined digital study sheet with worked fraction examples, 1-minute cheat sheets, and common exam trap warnings.',
-      uiCard: {
-        title: 'AI Revision Notes Studio',
-        detail: 'Topic: Equivalent Fractions & Simplifying',
-        tag: '15-Min Targeted Notebook',
-        action: 'Cheat sheet + worked examples ready',
-      },
+        'On Priya’s portal, SchoolMitra delivers a lined digital study sheet complete with worked examples, 1-minute cheat sheets, and common exam trap warnings.',
+      actionDetail: 'Digital lined study sheet with step-by-step worked examples.',
     },
     {
       num: '05',
       stage: 'Check',
-      actor: '⚡ Self Assessment',
-      badge: 'Confidence Verification',
-      metricBefore: 'Reviewing Notes',
-      metricAfter: '3/3 Quick Check Correct',
+      actor: 'Self Assessment',
+      role: 'Mastery Verification',
+      scoreBadge: '3 / 3 Correct',
       headline: 'Priya completes interactive 3-question quick check',
       story:
-        'Priya solves 3 quick practice problems. When she simplifies 6/8 to 3/4 correctly, SchoolMitra provides instant encouraging feedback.',
-      uiCard: {
-        title: 'Interactive Concept Check',
-        detail: '3 Formative Quiz Items Completed',
-        tag: '3 / 3 Correct (100%)',
-        action: 'Mastery confirmed in realtime memory',
-      },
+        'Priya completes 3 quick practice problems. When she simplifies 6/8 to 3/4 correctly, SchoolMitra confirms her mastery in real-time memory.',
+      actionDetail: 'Instant feedback verifies conceptual understanding.',
     },
     {
       num: '06',
       stage: 'Improve',
-      actor: '📈 Progress Engine',
-      badge: 'Measurable Mastery Growth',
-      metricBefore: 'Initial: 58%',
-      metricAfter: 'Mastery Score: 78%',
+      actor: 'Progress Engine',
+      role: 'Verified Growth',
+      scoreBadge: 'Score: 78%',
       headline: 'ShikshaSetu measures verified understanding improvement',
       story:
-        'On the follow-up recheck, Priya’s score rises from 58% to 78%. All records update across Teacher, Student, and Parent portals simultaneously.',
-      uiCard: {
-        title: 'Canonical Grade Sync',
-        detail: 'Priya Patel • Mathematics Progress',
-        tag: 'Updated: 78% (+20% Growth)',
-        action: 'Canonical database updated & synced across all portals',
-      },
+        'On the follow-up recheck, Priya’s score rises from 58% to 78%. The canonical grade record updates across Teacher, Student, and Parent views simultaneously.',
+      actionDetail: 'Canonical database updated (+20% measurable growth).',
     },
     {
       num: '07',
       stage: 'Connect',
-      actor: '👨‍👩‍👧 Parent Guardian',
-      badge: 'Home Support Sync',
-      metricBefore: 'Anxious interrogation',
-      metricAfter: 'Warm dinner conversation',
+      actor: 'Parent',
+      role: 'Home Partnership',
+      scoreBadge: 'Dinner Prompt',
       headline: 'Parent receives meaningful, actionable context',
       story:
-        'Rajesh Patel gets a warm digest note: "Priya mastered equivalent fractions today! Ask her to explain one problem to you tonight." Home anxiety is replaced with encouragement.',
-      uiCard: {
-        title: 'Parent Today Family Digest',
-        detail: 'Rajesh Patel • Encouragement Prompt',
-        tag: 'Family Partnership Active',
-        action: 'Loops back to Step 01 Observe for next unit topic',
-      },
+        'Rajesh Patel gets a warm digest note: "Priya mastered equivalent fractions today! Ask her to explain one problem to you tonight." Anxiety is replaced with support.',
+      actionDetail: 'Home encouragement active; loops back to Step 01 Observe.',
     },
   ];
 
-  const current = scenarioStages[activeStep];
+  const current = stages[activeStep];
 
   return (
-    <section id="learning-loop" className="py-24 bg-white relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
+    <section id="learning-loop" className="py-20 bg-[#FAF9F6] border-b border-stone-200/80">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full">
+        <div className="max-w-3xl space-y-3">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB]">
             Real Student Journey: 58% &rarr; 78%
           </span>
-          <h2 className="font-display text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+          <h2 className="font-display text-3xl sm:text-4xl font-black text-[#172033] tracking-tight">
             From data to measurable improvement.
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 font-medium leading-relaxed">
+          <p className="text-base text-stone-600 font-normal leading-relaxed">
             Follow how a single learning gap in Mathematics transforms into mastery across the continuous ShikshaSetu feedback loop.
           </p>
         </div>
 
-        {/* Continuous Step Tabs */}
-        <div className="flex items-center justify-start lg:justify-center gap-2 sm:gap-2.5 overflow-x-auto pb-2 scrollbar-none">
-          {scenarioStages.map((s, idx) => {
-            const isSelected = activeStep === idx;
+        {/* Clean Editorial Stage Selector */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {stages.map((s, idx) => {
+            const isCurrent = activeStep === idx;
             return (
               <button
                 key={s.num}
                 type="button"
                 onClick={() => setActiveStep(idx)}
-                className={`px-3.5 py-2.5 rounded-2xl text-xs font-black transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
-                  isSelected
-                    ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20 scale-105'
-                    : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:bg-slate-100/80 hover:text-slate-900'
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
+                  isCurrent
+                    ? 'bg-[#172033] text-white shadow-xs'
+                    : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 hover:text-stone-900'
                 }`}
               >
-                <span>{s.actor.split(' ')[0]}</span>
-                <span>{s.num} {s.stage}</span>
+                <span className="font-mono opacity-60">{s.num}</span>
+                <span>{s.stage}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Active Stage Showcase Card */}
+        {/* Active Stage Editorial Card */}
         <motion.div
           key={activeStep}
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
-          className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white border border-indigo-800/40 shadow-2xl relative overflow-hidden"
+          className="p-8 sm:p-10 rounded-2xl bg-white border border-stone-300 shadow-sm space-y-6"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Story Description Left */}
-            <div className="lg:col-span-7 space-y-4">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="font-mono text-xs font-black uppercase tracking-widest text-indigo-300 bg-white/10 px-3 py-1 rounded-full border border-white/10">
+            <div className="lg:col-span-8 space-y-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#2563EB] bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded">
                   Step {current.num} • {current.actor}
                 </span>
-                <span className="text-xs text-emerald-400 font-bold">
-                  ✓ {current.badge}
+                <span className="text-xs font-bold text-[#16836A] bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded">
+                  {current.role}
+                </span>
+                <span className="text-xs font-mono font-bold text-stone-700 bg-stone-100 px-2.5 py-0.5 rounded">
+                  {current.scoreBadge}
                 </span>
               </div>
 
-              <h3 className="font-display text-2xl sm:text-3xl font-black text-white leading-tight">
+              <h3 className="font-display text-2xl font-black text-[#172033] leading-snug">
                 {current.headline}
               </h3>
 
-              <p className="text-sm sm:text-base text-indigo-200/90 font-medium leading-relaxed max-w-2xl">
+              <p className="text-sm text-stone-600 font-normal leading-relaxed max-w-2xl">
                 {current.story}
               </p>
 
-              {/* Data Transformation Metric Pill */}
-              <div className="pt-2 flex items-center gap-3 text-xs font-mono font-bold">
-                <span className="px-3 py-1 rounded-lg bg-white/10 text-rose-300 border border-white/10">
-                  {current.metricBefore}
-                </span>
-                <span className="text-indigo-400">&rarr;</span>
-                <span className="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  {current.metricAfter}
-                </span>
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-lg text-xs font-medium text-stone-700 flex items-center gap-2">
+                <span className="text-[#16836A] font-bold">✓</span>
+                <span>{current.actionDetail}</span>
               </div>
             </div>
 
-            {/* Simulated Live Product Card Right */}
-            <div className="lg:col-span-5 p-6 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl space-y-4 shadow-xl">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <span className="text-[10px] font-black uppercase text-indigo-300 tracking-wider">
-                  ShikshaSetu Live Event
-                </span>
-                <span className="text-[10px] bg-emerald-400/20 text-emerald-300 font-mono font-bold px-2 py-0.5 rounded-md border border-emerald-400/30">
-                  {current.uiCard.tag}
-                </span>
+            {/* Stage Summary Right */}
+            <div className="lg:col-span-4 p-6 rounded-xl bg-[#FAF9F6] border border-stone-200 text-center space-y-3">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-stone-400">
+                Loop Sequence
+              </span>
+              <div className="font-display text-lg font-bold text-[#172033]">
+                {current.stage} &rarr; {stages[(activeStep + 1) % stages.length].stage}
               </div>
-
-              <div className="space-y-1">
-                <h4 className="font-display text-sm font-black text-white">
-                  {current.uiCard.title}
-                </h4>
-                <p className="text-xs text-indigo-200 font-medium">
-                  {current.uiCard.detail}
-                </p>
-              </div>
-
-              <div className="p-3 rounded-xl bg-black/20 border border-white/10 text-[11px] text-emerald-300 font-semibold flex items-center gap-2">
-                <span>⚡</span>
-                <span>{current.uiCard.action}</span>
-              </div>
-
-              <p className="text-[10px] text-slate-400 font-mono text-center pt-1">
-                Loops to Step {scenarioStages[(activeStep + 1) % scenarioStages.length].num} ({scenarioStages[(activeStep + 1) % scenarioStages.length].stage}) &rarr;
+              <p className="text-xs text-stone-500">
+                Loops continuously back to Step 01 (Observe) for every subsequent learning topic.
               </p>
             </div>
           </div>
