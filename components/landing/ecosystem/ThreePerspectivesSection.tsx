@@ -9,10 +9,10 @@ export function ThreePerspectivesSection() {
   const [selectedRole, setSelectedRole] = useState<'teacher' | 'student' | 'parent'>('teacher');
 
   return (
-    <section id="perspectives" className="py-20 bg-white border-b border-stone-200/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <section id="perspectives" className="py-16 md:py-20 bg-[#FAF9F6] border-b border-stone-200/80">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         {/* Section Header */}
-        <div className="max-w-3xl space-y-3">
+        <div className="max-w-3xl space-y-2.5">
           <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB]">
             Single Source of Truth
           </span>
@@ -20,14 +20,14 @@ export function ThreePerspectivesSection() {
             One student. Three perspectives. One truth.
           </h2>
           <p className="text-base text-stone-600 font-normal leading-relaxed">
-            Different permissions and experiences. <strong className="text-[#172033] font-bold">Same underlying school facts.</strong>
+            Different permissions. Different human experiences. <strong className="text-[#172033] font-bold">Same underlying school facts.</strong>
           </p>
         </div>
 
         {/* Central Anchor Pill */}
-        <div className="p-4 rounded-xl bg-[#FAF9F6] border border-stone-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="p-3.5 rounded-xl bg-white border border-stone-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-stone-300">
+            <div className="relative w-9 h-9 rounded-lg overflow-hidden border border-stone-300">
               <Image
                 src="/images/editorial_hero_student.jpg"
                 alt="Priya Patel"
@@ -36,8 +36,8 @@ export function ThreePerspectivesSection() {
               />
             </div>
             <div>
-              <h4 className="font-display text-sm font-bold text-[#172033]">Priya Patel • Class 8A</h4>
-              <p className="text-xs text-stone-500 font-medium">Canonical Record • Mathematics Unit Test 1: 58%</p>
+              <h4 className="font-display text-xs font-bold text-[#172033]">Priya Patel • Class 8A</h4>
+              <p className="text-[11px] text-stone-500 font-medium">Canonical Record • Mathematics Unit Test: 58%</p>
             </div>
           </div>
           <span className="text-xs font-bold text-[#16836A] bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-md self-start sm:self-auto">
@@ -50,51 +50,50 @@ export function ThreePerspectivesSection() {
           <button
             type="button"
             onClick={() => setSelectedRole('teacher')}
-            className={`px-5 py-2.5 rounded-lg font-display text-xs font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-lg font-display text-xs font-bold transition-all cursor-pointer ${
               selectedRole === 'teacher'
                 ? 'bg-[#172033] text-white'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200/70'
+                : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
             }`}
           >
-            Teacher Perspective
+            Teacher: &quot;Who needs my attention?&quot;
           </button>
           <button
             type="button"
             onClick={() => setSelectedRole('student')}
-            className={`px-5 py-2.5 rounded-lg font-display text-xs font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-lg font-display text-xs font-bold transition-all cursor-pointer ${
               selectedRole === 'student'
                 ? 'bg-[#172033] text-white'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200/70'
+                : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
             }`}
           >
-            Student Perspective
+            Student: &quot;What should I learn?&quot;
           </button>
           <button
             type="button"
             onClick={() => setSelectedRole('parent')}
-            className={`px-5 py-2.5 rounded-lg font-display text-xs font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-lg font-display text-xs font-bold transition-all cursor-pointer ${
               selectedRole === 'parent'
                 ? 'bg-[#172033] text-white'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200/70'
+                : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
             }`}
           >
-            Parent Perspective
+            Parent: &quot;How can I help?&quot;
           </button>
         </div>
 
-        {/* Editorial Showpiece */}
+        {/* Editorial Content Frame */}
         <AnimatePresence mode="wait">
           {selectedRole === 'teacher' && (
             <motion.div
               key="teacher"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
+              exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
-              className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center p-7 sm:p-9 rounded-2xl bg-[#FAF9F6] border border-stone-300"
+              className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center p-6 sm:p-8 rounded-2xl bg-white border border-stone-300 shadow-sm"
             >
-              {/* Photo Frame */}
-              <div className="lg:col-span-5 relative rounded-xl overflow-hidden border border-stone-300 aspect-[4/3] bg-stone-100 shadow-sm">
+              <div className="lg:col-span-5 relative rounded-xl overflow-hidden border border-stone-300 aspect-[4/3] bg-stone-100 shadow-2xs">
                 <Image
                   src="/images/editorial_teacher_support.jpg"
                   alt="Teacher assisting student in classroom"
@@ -103,11 +102,10 @@ export function ThreePerspectivesSection() {
                 />
               </div>
 
-              {/* Editorial UI Content */}
               <div className="lg:col-span-7 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563EB] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded">
-                    Teacher Focus: &quot;Who needs my attention?&quot;
+                    Teacher Perspective
                   </span>
                   <span className="text-xs font-mono font-bold text-stone-500">Priya: 58% Maths</span>
                 </div>
@@ -117,7 +115,7 @@ export function ThreePerspectivesSection() {
                 </h3>
 
                 <p className="text-xs text-stone-600 leading-relaxed">
-                  Support Radar flags the specific misconception. Recommended Action: Conduct a 5-minute visual fraction bar comparison in tomorrow&apos;s period 1 lesson.
+                  Support Radar flags the misconception. Recommended Action: Conduct a 5-minute visual fraction bar comparison in tomorrow&apos;s period 1 lesson.
                 </p>
 
                 <div className="pt-2 flex items-center justify-between">
@@ -136,14 +134,13 @@ export function ThreePerspectivesSection() {
           {selectedRole === 'student' && (
             <motion.div
               key="student"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
+              exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
-              className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center p-7 sm:p-9 rounded-2xl bg-[#FAF9F6] border border-stone-300"
+              className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center p-6 sm:p-8 rounded-2xl bg-white border border-stone-300 shadow-sm"
             >
-              {/* Photo Frame */}
-              <div className="lg:col-span-5 relative rounded-xl overflow-hidden border border-stone-300 aspect-[4/3] bg-stone-100 shadow-sm">
+              <div className="lg:col-span-5 relative rounded-xl overflow-hidden border border-stone-300 aspect-[4/3] bg-stone-100 shadow-2xs">
                 <Image
                   src="/images/editorial_hero_student.jpg"
                   alt="Student revising with digital notebook"
@@ -152,11 +149,10 @@ export function ThreePerspectivesSection() {
                 />
               </div>
 
-              {/* Editorial UI Content */}
               <div className="lg:col-span-7 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563EB] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded">
-                    Student Focus: &quot;What should I learn?&quot;
+                    Student Perspective
                   </span>
                   <span className="text-xs font-mono font-bold text-stone-500">Your Score: 58% Maths</span>
                 </div>
@@ -166,7 +162,7 @@ export function ThreePerspectivesSection() {
                 </h3>
 
                 <p className="text-xs text-stone-600 leading-relaxed">
-                  SchoolMitra generates a digital lined study notebook with worked examples, 1-minute cheat sheets, and 3 quick concept verification questions.
+                  SchoolMitra provides a lined study notebook with worked examples, 1-minute cheat sheets, and 3 quick concept verification questions.
                 </p>
 
                 <div className="pt-2 flex items-center justify-between">
@@ -185,14 +181,13 @@ export function ThreePerspectivesSection() {
           {selectedRole === 'parent' && (
             <motion.div
               key="parent"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
+              exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
-              className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center p-7 sm:p-9 rounded-2xl bg-[#FAF9F6] border border-stone-300"
+              className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center p-6 sm:p-8 rounded-2xl bg-white border border-stone-300 shadow-sm"
             >
-              {/* Photo Frame */}
-              <div className="lg:col-span-5 relative rounded-xl overflow-hidden border border-stone-300 aspect-[4/3] bg-stone-100 shadow-sm">
+              <div className="lg:col-span-5 relative rounded-xl overflow-hidden border border-stone-300 aspect-[4/3] bg-stone-100 shadow-2xs">
                 <Image
                   src="/images/editorial_parent_child.jpg"
                   alt="Father discussing schoolwork with daughter"
@@ -201,11 +196,10 @@ export function ThreePerspectivesSection() {
                 />
               </div>
 
-              {/* Editorial UI Content */}
               <div className="lg:col-span-7 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563EB] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded">
-                    Parent Focus: &quot;How can I help?&quot;
+                    Parent Perspective
                   </span>
                   <span className="text-xs font-mono font-bold text-stone-500">Priya: 58% Maths</span>
                 </div>
@@ -215,7 +209,7 @@ export function ThreePerspectivesSection() {
                 </h3>
 
                 <p className="text-xs text-stone-600 leading-relaxed">
-                  Priya is doing well overall (98% attendance). Mathematics fractions is the single concept needing light practice. Replace stress with encouragement.
+                  Priya is doing well overall (98% attendance). Mathematics fractions is the single concept needing light practice. Replace interrogation with support.
                 </p>
 
                 <div className="pt-2 flex items-center justify-between">

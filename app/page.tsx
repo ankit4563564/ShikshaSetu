@@ -1,14 +1,11 @@
 import { EcosystemNavbar } from '@/components/landing/ecosystem/EcosystemNavbar';
 import { EcosystemHero } from '@/components/landing/ecosystem/EcosystemHero';
 import { TheDifferenceSection } from '@/components/landing/ecosystem/TheDifferenceSection';
-import { LearningLoopSection } from '@/components/landing/ecosystem/LearningLoopSection';
 import { ThreePerspectivesSection } from '@/components/landing/ecosystem/ThreePerspectivesSection';
+import { LearningLoopSection } from '@/components/landing/ecosystem/LearningLoopSection';
 import { RealProductShowcaseSection } from '@/components/landing/ecosystem/RealProductShowcaseSection';
-import { NextBestActionSection } from '@/components/landing/ecosystem/NextBestActionSection';
 import { AiEcosystemSection } from '@/components/landing/ecosystem/AiEcosystemSection';
-import { RealtimeSyncSection } from '@/components/landing/ecosystem/RealtimeSyncSection';
 import { OutcomesFeatureSection } from '@/components/landing/ecosystem/OutcomesFeatureSection';
-import { TrustPhilosophySection } from '@/components/landing/ecosystem/TrustPhilosophySection';
 import { FinalCTA } from '@/components/landing/ecosystem/FinalCTA';
 import { Footer } from '@/components/landing/Footer';
 import { LandingMotion } from '@/components/landing/Motion';
@@ -18,46 +15,37 @@ export default function Home() {
   return (
     <LandingModalProvider>
       <LandingMotion>
-        <div className="bg-white text-slate-900 font-sans antialiased overflow-x-hidden selection:bg-indigo-500 selection:text-white">
-          {/* 1. Translucent Sticky Ecosystem Navbar */}
+        <div className="bg-[#FAF9F6] text-[#172033] font-sans antialiased overflow-x-hidden selection:bg-[#2563EB] selection:text-white">
+          {/* Top Sticky Navigation */}
           <EcosystemNavbar />
 
-          <main className="pt-16 sm:pt-20">
-            {/* 2. Visual Hero: Real Student Imagery + Real Teacher Copilot UI */}
+          <main className="pt-14 sm:pt-16">
+            {/* 1. HERO — The school ERP that actually understands learning */}
             <EcosystemHero />
 
-            {/* 3. The Difference: Disconnected Traditional ERP vs Connected Action Loop */}
+            {/* 2. THE DIFFERENCE — Traditional ERP (Recorded) vs ShikshaSetu (Action) */}
             <TheDifferenceSection />
 
-            {/* 4. The 7-Step Continuous Learning Cycle (Priya's 58% -> 78% Journey) */}
-            <LearningLoopSection />
-
-            {/* 5. One Student, Three Perspectives, One Truth (Real Imagery + Real Portal Cards) */}
+            {/* 3. ONE STUDENT — THREE PERSPECTIVES — ONE TRUTH */}
             <ThreePerspectivesSection />
 
-            {/* 6. Production UI Showcase: Real Teacher, Student & Parent Workspaces */}
+            {/* 4. THE LEARNING LOOP — 58% to 78% concrete mastery story */}
+            <LearningLoopSection />
+
+            {/* 5. SEE THE REAL PRODUCT — Live portal switcher & actual UI screenshots */}
             <RealProductShowcaseSection />
 
-            {/* 7. Signature Next Best Action (Who Needs Me? What Should I Learn? How Can I Help?) */}
-            <NextBestActionSection />
-
-            {/* 8. Tri-AI Ecosystem (SchoolMitra, Teacher Copilot, Parent Guide) */}
+            {/* 6. AI THAT KNOWS ITS ROLE — Context-grounded intelligence */}
             <AiEcosystemSection />
 
-            {/* 9. Event-Driven Realtime Sync Lifecycle */}
-            <RealtimeSyncSection />
-
-            {/* 10. Grouped Outcomes & Real Capabilities */}
+            {/* 7. WHAT SHIKSHASETU RUNS — 4 compact capability categories */}
             <OutcomesFeatureSection />
 
-            {/* 11. AI Governance & Philosophy Quote */}
-            <TrustPhilosophySection />
-
-            {/* 12. Final Conversion CTA */}
+            {/* 8. FINAL CTA — Don't just manage your school. Understand every learner. */}
             <FinalCTA />
           </main>
 
-          {/* 13. Full-Featured Footer */}
+          {/* Clean Footer */}
           <Footer />
         </div>
       </LandingMotion>
