@@ -3,6 +3,7 @@ import { EcosystemHero } from '@/components/landing/ecosystem/EcosystemHero';
 import { TheDifferenceSection } from '@/components/landing/ecosystem/TheDifferenceSection';
 import { LearningLoopSection } from '@/components/landing/ecosystem/LearningLoopSection';
 import { ThreePerspectivesSection } from '@/components/landing/ecosystem/ThreePerspectivesSection';
+import { RealProductShowcaseSection } from '@/components/landing/ecosystem/RealProductShowcaseSection';
 import { NextBestActionSection } from '@/components/landing/ecosystem/NextBestActionSection';
 import { AiEcosystemSection } from '@/components/landing/ecosystem/AiEcosystemSection';
 import { RealtimeSyncSection } from '@/components/landing/ecosystem/RealtimeSyncSection';
@@ -22,38 +23,41 @@ export default function Home() {
           <EcosystemNavbar />
 
           <main className="pt-16 sm:pt-20">
-            {/* 2. WOW Hero: Central Living Student Journey & Connected Roles */}
+            {/* 2. Visual Hero: Real Student Imagery + Real Teacher Copilot UI */}
             <EcosystemHero />
 
             {/* 3. The Difference: Disconnected Traditional ERP vs Connected Action Loop */}
             <TheDifferenceSection />
 
-            {/* 4. The 7-Step Continuous Learning Cycle */}
+            {/* 4. The 7-Step Continuous Learning Cycle (Priya's 58% -> 78% Journey) */}
             <LearningLoopSection />
 
-            {/* 5. One Student, Three Perspectives, One Truth (Priya Patel 58% Maths) */}
+            {/* 5. One Student, Three Perspectives, One Truth (Real Imagery + Real Portal Cards) */}
             <ThreePerspectivesSection />
 
-            {/* 6. Signature Next Best Action (Who Needs Me? What Should I Learn? How Can I Help?) */}
+            {/* 6. Production UI Showcase: Real Teacher, Student & Parent Workspaces */}
+            <RealProductShowcaseSection />
+
+            {/* 7. Signature Next Best Action (Who Needs Me? What Should I Learn? How Can I Help?) */}
             <NextBestActionSection />
 
-            {/* 7. Tri-AI Ecosystem (SchoolMitra, Teacher Copilot, Parent Guide) */}
+            {/* 8. Tri-AI Ecosystem (SchoolMitra, Teacher Copilot, Parent Guide) */}
             <AiEcosystemSection />
 
-            {/* 8. Event-Driven Realtime Sync Lifecycle */}
+            {/* 9. Event-Driven Realtime Sync Lifecycle */}
             <RealtimeSyncSection />
 
-            {/* 9. Grouped Outcomes & Real Capabilities */}
+            {/* 10. Grouped Outcomes & Real Capabilities */}
             <OutcomesFeatureSection />
 
-            {/* 10. AI Governance & Philosophy Quote */}
+            {/* 11. AI Governance & Philosophy Quote */}
             <TrustPhilosophySection />
 
-            {/* 11. Final Conversion CTA */}
+            {/* 12. Final Conversion CTA */}
             <FinalCTA />
           </main>
 
-          {/* 12. Full-Featured Footer */}
+          {/* 13. Full-Featured Footer */}
           <Footer />
         </div>
       </LandingMotion>
