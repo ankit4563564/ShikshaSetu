@@ -17,7 +17,6 @@ import SchoolPulsePDF from './SchoolPulsePDF';
 import TeacherMarksPanel from './TeacherMarksPanel';
 import TeacherChat from './TeacherChat';
 import { useTimeGreeting } from '@/lib/utils/timeGreeting';
-import { useAmbientAICore } from '../schoolgpt/core/AmbientIntelligenceCore';
 import ClassroomInsightCard from './ClassroomInsightCard';
 import TeacherAiToolkitModal, { type ToolkitTab } from './TeacherAiToolkitModal';
 import { TakeAttendanceModal } from './TakeAttendanceModal';
@@ -66,10 +65,6 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
   const [activeParentTabStudentId, setActiveParentTabStudentId] = useState<string>(
     classContext.students[0]?.studentId || 'b1000000-0000-4000-8000-000000000001'
   );
-
-  const { ask, isLoading } = useAmbientAICore();
-  const { setContext } = useContextRegistry();
-
   const displayName = classContext.teacherName;
   const teacherId = classContext.teacherId;
   const { grade, section, students } = classContext;

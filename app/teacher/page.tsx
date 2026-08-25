@@ -40,15 +40,20 @@ export default async function TeacherPage() {
       redirect('/login');
     }
 
-    // Server-authoritative role check
-    const { getAuthContext } = await import('@/lib/auth/getAuthContext');
+    let unauthorizedUrl: string | null = null;
     try {
       const context = await getAuthContext();
       if (context.role !== 'teacher' && context.role !== 'admin' && context.role !== 'principal') {
-        redirect(`/unauthorized?portal=teacher&currentRole=${context.role}`);
+        unauthorizedUrl = `/unauthorized?portal=teacher&currentRole=${context.role}`;
       }
-    } catch (_err) {
-      redirect('/unauthorized?reason=unconfigured_account');
+    } catch (err: any) {
+      if (err?.digest?.startsWith('NEXT_REDIRECT')) {
+        throw err;
+      }
+      unauthorizedUrl = '/unauthorized?reason=unconfigured_account';
+    }
+    if (unauthorizedUrl) {
+      redirect(unauthorizedUrl);
     }
 
     const adminDb = createAdminClient();
