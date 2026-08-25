@@ -67,97 +67,97 @@ export function ParentBusTrackingTab({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-deep-teal/10 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h3 className="font-display text-lg font-extrabold text-deep-teal">
-              School Transport &amp; Route
+          <div className="flex items-center gap-2.5">
+            <h3 className="font-display text-lg font-black text-slate-900">
+              School Transport &amp; Route Telemetry
             </h3>
             <span
-              className={`px-2.5 py-0.5 rounded-full font-extrabold text-[10px] uppercase tracking-wider border ${
+              className={`px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest border shadow-2xs ${
                 busData.isLive
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-300 animate-pulse'
-                  : 'bg-amber-50 text-amber-700 border-amber-300'
+                  : 'bg-indigo-50 text-indigo-700 border-indigo-200'
               }`}
             >
               {busData.isLive ? '📡 Live GPS Connected' : '🚌 Route Timetable'}
             </span>
           </div>
-          <p className="font-body text-xs text-deep-teal/60 font-medium mt-0.5">
-            Designated bus route and pickup timetable for {studentName}.
+          <p className="font-body text-xs text-slate-500 font-medium mt-0.5">
+            Verified school bus route and pickup schedule for {studentName}.
           </p>
         </div>
       </div>
 
       {/* Route Overview Hero */}
-      <div className="rounded-3xl bg-white border border-deep-teal/10 p-6 shadow-xs space-y-4">
+      <div className="rounded-3xl bg-white/90 border border-slate-200/80 p-6 sm:p-7 shadow-sm backdrop-blur-xl space-y-5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-deep-teal/10 text-deep-teal flex items-center justify-center text-2xl font-bold shadow-2xs">
+          <div className="flex items-center gap-3.5">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center text-2xl font-bold shadow-md shadow-amber-500/20">
               🚌
             </div>
             <div>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-deep-teal/40 font-mono">
+              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-full inline-block mb-1">
                 Assigned Route #04
               </span>
-              <h4 className="font-display text-lg font-extrabold text-deep-teal">
-                Central Sector Route · Bus #DL-1PB-4820
+              <h4 className="font-display text-lg font-black text-slate-900">
+                Central Sector Route • Bus #DL-1PB-4820
               </h4>
             </div>
           </div>
         </div>
 
         {/* Schedule & Stops */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-          <div className="p-3.5 rounded-2xl bg-paper border border-deep-teal/10 shadow-2xs space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-deep-teal/40 block">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
+          <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 shadow-2xs space-y-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
               📍 Designated Stop
             </span>
-            <p className="font-display text-sm font-extrabold text-deep-teal">
+            <p className="font-display text-sm font-black text-slate-900">
               {busData.nextStop}
             </p>
-            <p className="text-[10px] text-deep-teal/50">Stop #4 on morning route</p>
+            <p className="text-[11px] text-slate-500 font-medium">Stop #4 on morning route</p>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-paper border border-deep-teal/10 shadow-2xs space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-deep-teal/40 block">
+          <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 shadow-2xs space-y-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
               🌅 Morning Pickup
             </span>
-            <p className="font-display text-sm font-extrabold text-deep-teal">
+            <p className="font-display text-sm font-black text-slate-900">
               07:45 AM
             </p>
-            <p className="text-[10px] text-deep-teal/50">Arrives at school by 08:15 AM</p>
+            <p className="text-[11px] text-slate-500 font-medium">Arrives at school by 08:15 AM</p>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-paper border border-deep-teal/10 shadow-2xs space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-deep-teal/40 block">
+          <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 shadow-2xs space-y-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
               🌇 Afternoon Drop
             </span>
-            <p className="font-display text-sm font-extrabold text-deep-teal">
+            <p className="font-display text-sm font-black text-slate-900">
               03:45 PM
             </p>
-            <p className="text-[10px] text-deep-teal/50">Departs school at 03:15 PM</p>
+            <p className="text-[11px] text-slate-500 font-medium">Departs school at 03:15 PM</p>
           </div>
         </div>
 
         {/* Driver Contact */}
-        <div className="p-3.5 rounded-2xl bg-deep-teal/5 border border-deep-teal/10 flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-slate-50/90 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-deep-teal text-white flex items-center justify-center text-xs font-bold">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-700 flex items-center justify-center text-base font-bold">
               👨‍✈️
             </div>
             <div>
-              <p className="font-display text-xs font-bold text-deep-teal">
-                Driver: Mr. Rajesh Kumar · Helper: Ramu
+              <p className="font-display text-xs font-black text-slate-900">
+                Driver: Mr. Rajesh Kumar • Attendant: Ramu
               </p>
-              <p className="text-[10px] text-deep-teal/50">Verified School Transport Staff</p>
+              <p className="text-[11px] text-slate-500 font-medium">Verified School Transport Staff</p>
             </div>
           </div>
           <a
             href="tel:+919876543210"
-            className="px-3 py-1.5 rounded-xl bg-white border border-deep-teal/20 text-deep-teal hover:bg-deep-teal hover:text-white font-display text-xs font-bold transition-all shadow-2xs"
+            className="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 text-indigo-700 hover:bg-indigo-50 font-display text-xs font-black transition-all shadow-2xs text-center cursor-pointer"
           >
             Call Driver 📞
           </a>
@@ -166,18 +166,18 @@ export function ParentBusTrackingTab({
 
       {/* Truthful Telemetry Disclaimer */}
       {!busData.isLive ? (
-        <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 text-amber-900 text-xs space-y-1">
-          <p className="font-bold flex items-center gap-1.5">
+        <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 text-indigo-950 text-xs space-y-1 shadow-2xs">
+          <p className="font-extrabold flex items-center gap-2">
             <span>ℹ</span> Live GPS hardware telemetry is currently standby.
           </p>
-          <p className="text-amber-800/80 leading-relaxed text-[11px]">
+          <p className="text-indigo-900/80 leading-relaxed text-[11px] font-medium">
             Live tracking activates automatically when the bus driver starts the GPS trip broadcast on the active school route.
           </p>
         </div>
       ) : (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs space-y-1">
-          <p className="font-bold flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Live Telemetry Active: Speed {busData.speed} km/h · ETA {busData.eta} mins
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs space-y-1 shadow-2xs">
+          <p className="font-extrabold flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping" /> Live Telemetry Active: Speed {busData.speed} km/h • ETA {busData.eta} mins
           </p>
         </div>
       )}

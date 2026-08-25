@@ -1,12 +1,14 @@
-import { LandingNavbar } from '@/components/landing/LandingNavbar';
-import { HeroSection } from '@/components/landing/HeroSection';
-import { DualExperienceHubSection } from '@/components/landing/DualExperienceHubSection';
-import { SchoolDayStorySection } from '@/components/landing/SchoolDayStorySection';
-import { SchoolGPTSection } from '@/components/landing/SchoolGPTSection';
-import { TransitSection } from '@/components/landing/TransitSection';
-import { AdminOperationsSection } from '@/components/landing/AdminOperationsSection';
-import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
-import { CTASection } from '@/components/landing/CTASection';
+import { EcosystemNavbar } from '@/components/landing/ecosystem/EcosystemNavbar';
+import { EcosystemHero } from '@/components/landing/ecosystem/EcosystemHero';
+import { TheDifferenceSection } from '@/components/landing/ecosystem/TheDifferenceSection';
+import { LearningLoopSection } from '@/components/landing/ecosystem/LearningLoopSection';
+import { ThreePerspectivesSection } from '@/components/landing/ecosystem/ThreePerspectivesSection';
+import { NextBestActionSection } from '@/components/landing/ecosystem/NextBestActionSection';
+import { AiEcosystemSection } from '@/components/landing/ecosystem/AiEcosystemSection';
+import { RealtimeSyncSection } from '@/components/landing/ecosystem/RealtimeSyncSection';
+import { OutcomesFeatureSection } from '@/components/landing/ecosystem/OutcomesFeatureSection';
+import { TrustPhilosophySection } from '@/components/landing/ecosystem/TrustPhilosophySection';
+import { FinalCTA } from '@/components/landing/ecosystem/FinalCTA';
 import { Footer } from '@/components/landing/Footer';
 import { LandingMotion } from '@/components/landing/Motion';
 import { LandingModalProvider } from '@/components/landing/LandingModalContext';
@@ -15,43 +17,43 @@ export default function Home() {
   return (
     <LandingModalProvider>
       <LandingMotion>
-        <div className="bg-background text-on-surface font-body-md antialiased overflow-x-hidden">
-          <LandingNavbar />
-          <main className="pt-20">
-            {/* 1. High-Energy Hero Section */}
-            <HeroSection />
+        <div className="bg-white text-slate-900 font-sans antialiased overflow-x-hidden selection:bg-indigo-500 selection:text-white">
+          {/* 1. Translucent Sticky Ecosystem Navbar */}
+          <EcosystemNavbar />
 
-            {/* 2. Dual-Experience Hub (Parent & Teacher Dual Showcase Connected by SchoolGPT) */}
-            <DualExperienceHubSection />
+          <main className="pt-16 sm:pt-20">
+            {/* 2. WOW Hero: Central Living Student Journey & Connected Roles */}
+            <EcosystemHero />
 
-            {/* 3. Connected School Day Timeline Arc */}
-            <div id="school-story">
-              <SchoolDayStorySection />
-            </div>
+            {/* 3. The Difference: Disconnected Traditional ERP vs Connected Action Loop */}
+            <TheDifferenceSection />
 
-            {/* 4. Ambient SchoolGPT Intelligence Console */}
-            <SchoolGPTSection />
+            {/* 4. The 7-Step Continuous Learning Cycle */}
+            <LearningLoopSection />
 
-            {/* 5. Dominant 80% Width Interactive Transit Map Showcase */}
-            <TransitSection />
+            {/* 5. One Student, Three Perspectives, One Truth (Priya Patel 58% Maths) */}
+            <ThreePerspectivesSection />
 
-            {/* 6. Supporting Infrastructure & Admin Automation */}
-            <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter pt-12 pb-4">
-              <div className="text-center max-w-2xl mx-auto space-y-3 mb-8">
-                <span className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest">SUPPORTING INFRASTRUCTURE</span>
-                <h3 className="text-2xl md:text-3xl font-bold font-display text-slate-900">Everything is Synchronized Automatically</h3>
-                <p className="text-[15px] text-slate-600 font-medium leading-relaxed">Gate security, transport telemetry, fee ledgers, and campus administration run seamlessly behind the scenes.</p>
-              </div>
-              <AdminOperationsSection />
-            </div>
+            {/* 6. Signature Next Best Action (Who Needs Me? What Should I Learn? How Can I Help?) */}
+            <NextBestActionSection />
 
-            {/* 7. High-Trust Quantifiable Outcomes & Testimonials */}
-            <TestimonialsSection />
+            {/* 7. Tri-AI Ecosystem (SchoolMitra, Teacher Copilot, Parent Guide) */}
+            <AiEcosystemSection />
 
-            {/* 8. Final Action CTA */}
-            <CTASection />
+            {/* 8. Event-Driven Realtime Sync Lifecycle */}
+            <RealtimeSyncSection />
+
+            {/* 9. Grouped Outcomes & Real Capabilities */}
+            <OutcomesFeatureSection />
+
+            {/* 10. AI Governance & Philosophy Quote */}
+            <TrustPhilosophySection />
+
+            {/* 11. Final Conversion CTA */}
+            <FinalCTA />
           </main>
-          {/* 9. Enhanced Footer with Badges, Mini CTA & Contact Info */}
+
+          {/* 12. Full-Featured Footer */}
           <Footer />
         </div>
       </LandingMotion>

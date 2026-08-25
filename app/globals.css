@@ -8,23 +8,100 @@
 
 .hero-gradient { background: linear-gradient(135deg, #1f4247 0%, #153338 100%); }
 .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
-.glass-panel-light { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.5); }
+.glass-panel-light { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.6); }
 .ambient-shadow { box-shadow: 0 20px 40px -10px rgba(0, 39, 44, 0.08); }
 .glow-text { text-shadow: 0 0 20px rgba(252, 186, 82, 0.3); }
 .route-line { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: drawRoute 3s ease-out forwards infinite; }
 @keyframes drawRoute { to { stroke-dashoffset: 0; } }
 
+/* Next-Level ShikshaSetu Luxury UI System */
+.shiksha-hero-mesh {
+  background: 
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+    linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.shiksha-card-premium {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+.shiksha-card-premium:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: 0 16px 36px -4px rgba(99, 102, 241, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  transform: translateY(-2px);
+}
+
+.shiksha-notebook-page {
+  background-color: #fdfdfd;
+  background-image: 
+    radial-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 0),
+    linear-gradient(to bottom, transparent 96%, rgba(226, 232, 240, 0.5) 96%);
+  background-size: 20px 20px, 100% 28px;
+}
+
+.text-gradient-indigo {
+  background: linear-gradient(135deg, #3730a3 0%, #4f46e5 50%, #6366f1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-ai {
+  background: linear-gradient(135deg, #0284c7 0%, #6366f1 50%, #9333ea 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glow-pill-indigo {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.35);
+}
+
+.glow-pill-amber {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.35);
+}
+
+.glow-pill-emerald {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+}
+
+.btn-tactile {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease, filter 0.15s ease;
+}
+.btn-tactile:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+.btn-tactile:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+@keyframes pulseRadar {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 0.15; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.animate-radar-ping {
+  animation: pulseRadar 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
 @keyframes floatSlow {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-6px); }
 }
 @keyframes floatMedium {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-12px); }
+  50% { transform: translateY(-10px); }
 }
 @keyframes floatFast {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-4px); }
 }
 
 .animate-float-slow { animation: floatSlow 5.5s ease-in-out infinite; }

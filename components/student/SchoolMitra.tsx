@@ -211,36 +211,43 @@ Keep it concise and immediately actionable. Use the student's recent performance
   const firstName = studentName.split(' ')[0];
 
   return (
-    <div className="school-mitra-container rounded-2xl border border-white/80 bg-white/85 p-5 shadow-sm backdrop-blur-xl space-y-5 sm:p-6">
+    <div className="school-mitra-container rounded-3xl border border-indigo-100 bg-white/90 p-6 shadow-sm backdrop-blur-xl space-y-6 sm:p-7">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-deep-teal/10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-sage flex items-center justify-center text-white text-lg shadow-sm">
-            ✨
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white text-xl shadow-md shadow-indigo-500/25">
+            🤖
           </div>
           <div>
-            <h3 className="font-display text-base font-black text-deep-teal">School Mitra</h3>
-            <p className="text-[11px] text-muted font-medium">Your study companion — ask any doubt</p>
+            <div className="flex items-center gap-2">
+              <h3 className="font-display text-lg font-black text-slate-900">School Mitra</h3>
+              <span className="text-[10px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full">
+                AI Study Companion
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Socratic concept guidance • Ask any academic doubt</p>
           </div>
         </div>
 
         {/* Honest session stats */}
         {sessionStats.questions > 0 && (
-          <div className="flex items-center gap-3 text-[10px] font-bold text-muted">
-            <span>{sessionStats.questions} question{sessionStats.questions !== 1 ? 's' : ''} asked</span>
-            <span className="h-3 w-px bg-deep-teal/10" />
-            <span>{sessionStats.topics.size} topic{sessionStats.topics.size !== 1 ? 's' : ''} explored</span>
+          <div className="flex items-center gap-3 text-xs font-bold text-slate-500 bg-slate-50 border border-slate-200/80 px-3.5 py-1.5 rounded-xl">
+            <span>💡 {sessionStats.questions} question{sessionStats.questions !== 1 ? 's' : ''}</span>
+            <span className="h-3 w-px bg-slate-200" />
+            <span>📖 {sessionStats.topics.size} topic{sessionStats.topics.size !== 1 ? 's' : ''}</span>
           </div>
         )}
       </div>
 
       {/* Mode Tabs */}
-      <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-50 border border-slate-100">
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/60">
         <button
           type="button"
           onClick={() => setActiveTab('copilot')}
-          className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'copilot' ? 'bg-white text-primary shadow-xs' : 'text-muted hover:text-primary'
+          className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            activeTab === 'copilot'
+              ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-500/20'
+              : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           📖 Study Coach
@@ -248,8 +255,10 @@ Keep it concise and immediately actionable. Use the student's recent performance
         <button
           type="button"
           onClick={() => setActiveTab('sprint')}
-          className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'sprint' ? 'bg-white text-amber-700 shadow-xs' : 'text-muted hover:text-amber-700'
+          className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            activeTab === 'sprint'
+              ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md shadow-amber-500/20'
+              : 'text-slate-600 hover:text-amber-700'
           }`}
         >
           ⚡ 15-Min Sprint
@@ -257,57 +266,61 @@ Keep it concise and immediately actionable. Use the student's recent performance
         <button
           type="button"
           onClick={() => setActiveTab('support')}
-          className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'support' ? 'bg-white text-sage shadow-xs' : 'text-muted hover:text-sage'
+          className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            activeTab === 'support'
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/20'
+              : 'text-slate-600 hover:text-emerald-700'
           }`}
         >
-          💬 Talk to Someone
+          💬 Counselor &amp; Support
         </button>
       </div>
 
       {/* ══ TAB 1: STUDY COACH (Real AI) ══ */}
       {activeTab === 'copilot' && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {/* Quick starters */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            <span className="text-[10px] font-bold text-muted/50 uppercase tracking-wider shrink-0">Try:</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">Try Asking:</span>
             {[
               'Explain photosynthesis simply',
-              'Help me with algebra equations',
-              'What homework is due?',
+              'Help me solve linear equations',
+              'What homework is due today?',
             ].map((q) => (
-              <button
+              <motion.button
                 key={q}
                 type="button"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => handleSendQuery(q)}
-                className="shrink-0 px-3 py-1.5 rounded-lg bg-white border border-slate-100 text-[11px] font-bold text-deep-teal hover:border-primary/30 hover:bg-primary/5 transition-all shadow-2xs cursor-pointer"
+                className="shrink-0 px-3.5 py-1.5 rounded-xl bg-indigo-50/70 border border-indigo-100 text-xs font-bold text-indigo-700 hover:bg-indigo-100 hover:border-indigo-200 transition-all shadow-2xs cursor-pointer"
               >
-                {q}
-              </button>
+                {q} ✨
+              </motion.button>
             ))}
           </div>
 
           {/* Chat window */}
-          <div className="h-72 overflow-y-auto space-y-3 p-4 rounded-xl bg-slate-50/80 border border-slate-100">
+          <div className="h-80 overflow-y-auto space-y-3.5 p-5 rounded-2xl bg-slate-50/90 border border-slate-200/80 shadow-inner">
             {messages.map((msg) => (
               <motion.div
                 key={msg.id}
-                initial={{ opacity: 0, y: 4 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={`flex flex-col ${msg.sender === 'student' ? 'items-end' : 'items-start'}`}
               >
                 <div
-                  className={`max-w-[85%] p-3 rounded-2xl text-xs font-medium leading-relaxed whitespace-pre-wrap ${
+                  className={`max-w-[85%] p-4 rounded-3xl text-xs font-medium leading-relaxed whitespace-pre-wrap shadow-sm ${
                     msg.sender === 'student'
-                      ? 'bg-primary text-white rounded-br-sm'
+                      ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-br-xs shadow-indigo-500/20'
                       : msg.isError
-                      ? 'bg-warm-clay/10 border border-warm-clay/20 text-warm-clay rounded-bl-sm'
-                      : 'bg-white border border-slate-100 text-ink rounded-bl-sm shadow-2xs'
+                      ? 'bg-rose-50 border border-rose-200 text-rose-900 rounded-bl-xs'
+                      : 'bg-white border border-slate-200 text-slate-900 rounded-bl-xs'
                   }`}
                 >
                   {msg.text}
-                  <span className={`block text-[9px] mt-1.5 text-right font-mono ${
-                    msg.sender === 'student' ? 'text-white/60' : 'text-muted/40'
+                  <span className={`block text-[9px] mt-2 font-mono ${
+                    msg.sender === 'student' ? 'text-white/70 text-right' : 'text-slate-400 text-left'
                   }`}>
                     {msg.timestamp}
                   </span>
@@ -316,23 +329,23 @@ Keep it concise and immediately actionable. Use the student's recent performance
             ))}
 
             {isThinking && (
-              <div className="flex items-center gap-2 text-xs font-bold text-primary bg-white p-3 rounded-xl border border-primary/10 w-fit">
-                <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-                <span>Thinking...</span>
+              <div className="flex items-center gap-2.5 text-xs font-bold text-indigo-700 bg-white px-4 py-3 rounded-2xl border border-indigo-100 shadow-sm w-fit animate-pulse">
+                <span className="flex h-2.5 w-2.5 rounded-full bg-indigo-600 animate-ping" />
+                <span>Mitra is formulating a step-by-step hint...</span>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
 
           {/* Input */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <button
               type="button"
               onClick={toggleVoiceRecording}
-              className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
+              className={`p-3 rounded-2xl border transition-all cursor-pointer ${
                 isRecording
-                  ? 'bg-warm-clay text-white border-warm-clay animate-pulse'
-                  : 'bg-white border-slate-200 text-primary hover:bg-primary/5'
+                  ? 'bg-rose-600 text-white border-rose-600 animate-pulse shadow-md shadow-rose-500/30'
+                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'
               }`}
               title={isRecording ? 'Stop recording' : 'Speak your question'}
             >
@@ -343,18 +356,20 @@ Keep it concise and immediately actionable. Use the student's recent performance
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSendQuery()}
-              placeholder="Ask a doubt..."
-              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-ink focus:border-primary focus:outline-none"
+              placeholder="Ask any doubt or concept question..."
+              className="flex-1 px-4 py-3 rounded-2xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:border-indigo-600 focus:outline-none shadow-sm"
               disabled={isThinking}
             />
-            <button
+            <motion.button
               type="button"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => handleSendQuery()}
               disabled={isThinking || !inputQuery.trim()}
-              className="px-4 py-2.5 rounded-xl bg-primary text-white font-bold text-xs hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-black text-xs hover:shadow-md hover:shadow-indigo-500/25 transition-all disabled:opacity-40 cursor-pointer shrink-0"
             >
-              Ask →
-            </button>
+              Ask Mitra →
+            </motion.button>
           </div>
         </div>
       )}

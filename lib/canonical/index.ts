@@ -8,10 +8,20 @@ import { createClient } from '@/lib/supabase/client';
 
 /** @deprecated Do not use as a default fallback. Pass real studentId from auth context. */
 export const CANONICAL_STUDENT_ID = 'b1000000-0000-4000-8000-000000000001'; // Aarav Sharma (seed.sql)
+export const CANONICAL_PRIYA_STUDENT_ID = 'b1000000-0000-4000-8000-000000000002'; // Priya Patel (seed.sql)
+export const CANONICAL_ROHAN_STUDENT_ID = 'b1000000-0000-4000-8000-000000000003'; // Rohan Singh (seed.sql)
+export const CANONICAL_ANANYA_G_STUDENT_ID = 'b1000000-0000-4000-8000-000000000004'; // Ananya Gupta (seed.sql)
+export const CANONICAL_KABIR_STUDENT_ID = 'b1000000-0000-4000-8000-000000000005'; // Kabir Khan (seed.sql)
+
 /** Seed teacher ID — Ananya Mehra (class 8A). Demo/test use only. */
 export const CANONICAL_TEACHER_ID = 'a1000000-0000-4000-8000-000000000001';
 /** Seed guardian ID — Sunita Sharma (Aarav's parent). Demo/test use only. */
 export const CANONICAL_GUARDIAN_ID = 'c1000000-0000-4000-8000-000000000001';
+/** Seed guardian ID — Rajesh Patel (Priya's parent). Demo/test use only. */
+export const CANONICAL_RAJESH_GUARDIAN_ID = 'c1000000-0000-4000-8000-000000000002';
+
+/** Canonical demo school ID */
+export const CANONICAL_SCHOOL_ID = 'sch-demo-001';
 
 // Shared global in-memory homework store for seamless demo/dev synchronization
 declare global {
@@ -441,4 +451,45 @@ export async function getCanonicalStudentState(studentId: string = CANONICAL_STU
     statusFlag,
     busLocation,
   };
+}
+
+// ============================================================================
+// Canonical Guardian & Relationship Queries
+// ============================================================================
+
+export interface CanonicalGuardian {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  preferred_language: string | null;
+}
+
+export async function getCanonicalGuardian(guardianId: string): Promise<CanonicalGuardian | null> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('guardians')
+    .select('*')
+    .eq('id', guardianId)
+    .single();
+
+  if (error) {
+    console.error('[Canonical] Failed to fetch guardian:', error);
+    return null;
+  }
+  return data;
+}
+
+export async function getCanonicalGuardianStudents(guardianId: string): Promise<string[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('guardian_access')
+    .select('student_id')
+    .eq('guardian_id', guardianId);
+
+  if (error || !data) {
+    return [];
+  }
+  return data.map((d: any) => d.student_id);
 }

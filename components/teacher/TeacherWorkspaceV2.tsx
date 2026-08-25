@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import TeacherSidebar from './TeacherSidebar';
 import TodaysFocusBar from './TodaysFocusBar';
 import PersistentAISearch from './PersistentAISearch';
@@ -244,7 +245,11 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
   ];
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-body text-slate-900 overflow-x-hidden">
+    <div className="flex min-h-screen bg-slate-50/70 font-body text-slate-900 overflow-x-hidden relative selection:bg-indigo-500 selection:text-white">
+      {/* Ambient background glows */}
+      <div className="fixed top-0 left-64 w-96 h-96 bg-indigo-500/10 rounded-full blur-[140px] pointer-events-none -z-10" />
+      <div className="fixed bottom-10 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-[140px] pointer-events-none -z-10" />
+
       {/* Left Task-Oriented Sidebar */}
       <TeacherSidebar
         activeTab={activeTab}
@@ -259,13 +264,18 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
         {/* TAB 1: TODAY (DEFAULT HERO VIEW)                             */}
         {/* ============================================================ */}
         {activeTab === 'today' && (
-          <div className="space-y-8 animate-in fade-in duration-300">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-8"
+          >
             {/* Header Greeting */}
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <h1 className="font-display text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-                {timeGreeting}, {displayName} 👋
+                {timeGreeting}, <span className="text-indigo-600">{displayName}</span> 👋
               </h1>
-              <p className="text-sm font-medium text-slate-500">How can I help you today?</p>
+              <p className="text-sm font-bold text-slate-500">Class {grade}{section} Command Center • Real-time intelligence &amp; action radar</p>
             </div>
 
             {/* Today's Focus Priorities Bar */}
@@ -291,56 +301,60 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
               }}
             />
 
-            {/* Persistent Mockup AI Search Anchor */}
+            {/* Persistent AI Search Anchor */}
             <div className="space-y-4">
               <PersistentAISearch onSend={handleQuerySend} isLoading={isLoading} />
 
               {/* 6 Adaptive Suggested Prompt Cards */}
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between px-1">
-                  <span className="text-[11px] font-mono font-extrabold uppercase tracking-widest text-slate-400">
-                    ✨ Suggested for you
+                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full">
+                    ✨ Suggested AI Actions
                   </span>
-                  <span className="text-[11px] font-medium text-slate-400">Select to analyze</span>
+                  <span className="text-xs font-bold text-slate-400">Click to execute or inspect</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                   {suggestedCards.map((card) => (
-                    <button
+                    <motion.button
                       key={card.title}
                       type="button"
+                      whileHover={{ scale: 1.02, translateY: -2 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => handlePromptCardClick(card.title, card.prompt)}
-                      className="p-4 bg-white hover:bg-slate-50/80 border border-slate-200/80 rounded-3xl text-left transition-all shadow-2xs hover:shadow-xs group flex items-center justify-between gap-3 active:scale-95 cursor-pointer"
+                      className="p-4 bg-white/90 hover:bg-white border border-slate-200/80 hover:border-indigo-300 rounded-3xl text-left transition-all shadow-sm hover:shadow-md group flex items-center justify-between gap-3 cursor-pointer backdrop-blur-xl"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-base border shrink-0 ${card.bg}`}>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg border shrink-0 ${card.bg} shadow-2xs`}>
                           {card.icon}
                         </div>
-                        <div>
-                          <h4 className="font-display text-xs sm:text-sm font-extrabold text-slate-900">{card.title}</h4>
-                          <p className="text-[11px] text-slate-500 line-clamp-1 font-medium">{card.prompt}</p>
+                        <div className="min-w-0">
+                          <h4 className="font-display text-xs sm:text-sm font-black text-slate-900 truncate">{card.title}</h4>
+                          <p className="text-[11px] text-slate-500 line-clamp-1 font-medium mt-0.5">{card.prompt}</p>
                         </div>
                       </div>
-                      <span className="text-slate-400 group-hover:text-slate-900 transition-colors shrink-0">&rarr;</span>
-                    </button>
+                      <span className="text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all shrink-0 font-bold">&rarr;</span>
+                    </motion.button>
                   ))}
                 </div>
               </div>
 
               {/* Quick Actions Row */}
               <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400 shrink-0 mr-1">
-                  ⚡ Quick actions:
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 shrink-0 mr-1">
+                  ⚡ Quick:
                 </span>
                 {quickActions.map((act) => (
-                  <button
+                  <motion.button
                     key={act}
                     type="button"
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
                     onClick={() => handleQuerySend(act)}
-                    className="px-3.5 py-1.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shrink-0 active:scale-95 shadow-2xs cursor-pointer"
+                    className="px-4 py-2 rounded-full border border-slate-200/80 bg-white/90 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 text-slate-700 text-xs font-extrabold transition-all shrink-0 shadow-2xs cursor-pointer"
                   >
                     {act} &rarr;
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -374,7 +388,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                 <ScheduleCalendarWidget />
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* ============================================================ */}

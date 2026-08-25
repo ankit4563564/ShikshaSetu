@@ -4,6 +4,7 @@ import TeacherWorkspaceV2 from '@/components/teacher/TeacherWorkspaceV2';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { auth } from '@clerk/nextjs/server';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { getDemoSessionFromCookies } from '@/lib/demo/session';
 import { getStudentsForTeacher } from '@/lib/supabase/getStudentsData';
 import type { StudentWithFlag } from '@/lib/supabase/getStudentsData';

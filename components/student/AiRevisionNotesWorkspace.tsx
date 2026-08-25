@@ -320,70 +320,78 @@ export default function AiRevisionNotesWorkspace({
 
       {/* ── Active Revision Notes View ── */}
       {isGenerating ? (
-        <div className="bg-white rounded-3xl p-8 border border-slate-200 text-center space-y-3 animate-pulse">
-          <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 mx-auto flex items-center justify-center text-xl font-bold">
+        <div className="bg-white/90 rounded-3xl p-10 border border-indigo-100 text-center space-y-4 shadow-sm backdrop-blur-xl animate-pulse">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white mx-auto flex items-center justify-center text-2xl font-bold shadow-md shadow-indigo-500/25">
             ✨
           </div>
-          <p className="font-display text-sm font-bold text-slate-700">
-            Synthesizing key revision concepts for {selectedTopic}...
-          </p>
-          <p className="text-xs text-slate-400">Extracting definitions, formulas, and common exam mistakes.</p>
+          <div>
+            <p className="font-display text-base font-black text-slate-900">
+              Synthesizing key revision concepts for {selectedTopic}...
+            </p>
+            <p className="text-xs text-slate-500 mt-1">Extracting core formulas, high-yield definitions, and common exam traps.</p>
+          </div>
         </div>
       ) : currentNotes ? (
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Header & Quick Action Bar */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="bg-white/90 rounded-3xl p-6 border border-slate-200/80 shadow-sm backdrop-blur-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-indigo-600 block">
-                {currentNotes.subject} • Class {currentNotes.grade || '8'} Revision Notes
+              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full inline-block mb-2">
+                {currentNotes.subject} • Class {currentNotes.grade || '8'} Digital Notebook
               </span>
-              <h1 className="font-display text-xl sm:text-2xl font-black text-slate-900">
+              <h1 className="font-display text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                 {currentNotes.title}
               </h1>
             </div>
 
             {/* Revision Action Tools */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={handleStartQuiz}
-                className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs transition shadow-xs cursor-pointer flex items-center gap-1.5 active:scale-95"
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black text-xs transition shadow-md shadow-purple-500/20 cursor-pointer flex items-center gap-2"
               >
                 <span>🧠</span>
                 <span>Quiz Me</span>
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setIsShortenedMode(!isShortenedMode)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 border ${
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 border ${
                   isShortenedMode
-                    ? 'bg-amber-100 text-amber-900 border-amber-300'
+                    ? 'bg-amber-100 text-amber-900 border-amber-300 shadow-sm'
                     : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                 }`}
               >
-                <span>✂️</span>
-                <span>{isShortenedMode ? 'Full Notes' : 'Make It Shorter'}</span>
-              </button>
+                <span>⚡</span>
+                <span>{isShortenedMode ? 'Full Notebook' : '1-Min Cheat Sheet'}</span>
+              </motion.button>
 
-              <button
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleSaveNote}
                 disabled={isSaved}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 border ${
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2 border ${
                   isSaved
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                     : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                 }`}
               >
                 <span>{isSaved ? '✓ Saved' : '💾 Save Note'}</span>
-              </button>
+              </motion.button>
 
               <button
                 type="button"
                 onClick={() => handleGenerateNotes(selectedSubject, selectedTopic)}
-                className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition cursor-pointer"
-                title="Regenerate"
+                className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition cursor-pointer"
+                title="Regenerate Notes"
               >
                 🔄
               </button>
@@ -392,127 +400,139 @@ export default function AiRevisionNotesWorkspace({
 
           {/* Shortened Cheat-Sheet Mode */}
           {isShortenedMode ? (
-            <div className="bg-amber-50/70 rounded-3xl p-6 border border-amber-200/80 space-y-4 animate-in fade-in">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">⚡</span>
-                <h3 className="font-display text-sm font-black text-amber-950 uppercase tracking-wide">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-gradient-to-br from-amber-50/90 to-amber-100/50 rounded-3xl p-6 sm:p-7 border border-amber-200 shadow-sm space-y-4"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">⚡</span>
+                <h3 className="font-display text-sm font-black text-amber-950 uppercase tracking-wider">
                   1-Minute Quick Recap Cheat Sheet
                 </h3>
               </div>
-              <ul className="space-y-2 text-xs text-amber-950 font-medium">
-                <li className="flex items-start gap-2">
-                  <span className="font-bold text-amber-700">• Key Idea:</span>
-                  <span>{currentNotes.keyIdea}</span>
+              <ul className="space-y-3 text-xs text-amber-950 font-medium">
+                <li className="flex items-start gap-2.5 bg-white/70 p-3 rounded-2xl border border-amber-200/60">
+                  <span className="font-extrabold text-amber-800 shrink-0">• Key Idea:</span>
+                  <span className="font-bold text-slate-900">{currentNotes.keyIdea}</span>
                 </li>
                 {currentNotes.formulaOrEquation && (
-                  <li className="flex items-start gap-2">
-                    <span className="font-bold text-amber-700">• Core Formula:</span>
-                    <span className="font-mono bg-white px-2 py-0.5 rounded-md border border-amber-200">{currentNotes.formulaOrEquation}</span>
+                  <li className="flex items-start gap-2.5 bg-white/70 p-3 rounded-2xl border border-amber-200/60">
+                    <span className="font-extrabold text-amber-800 shrink-0">• Formula:</span>
+                    <span className="font-mono bg-slate-900 text-emerald-400 font-bold px-2.5 py-1 rounded-lg text-xs">{currentNotes.formulaOrEquation}</span>
                   </li>
                 )}
                 {currentNotes.rememberThis.map((r, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="font-bold text-amber-700">• Point {i + 1}:</span>
-                    <span>{r}</span>
+                  <li key={i} className="flex items-start gap-2.5 bg-white/70 p-3 rounded-2xl border border-amber-200/60">
+                    <span className="font-extrabold text-amber-800 shrink-0">• Point {i + 1}:</span>
+                    <span className="text-slate-800">{r}</span>
                   </li>
                 ))}
-                <li className="flex items-start gap-2">
-                  <span className="font-bold text-rose-700">• Avoid:</span>
-                  <span>{currentNotes.commonMistake}</span>
+                <li className="flex items-start gap-2.5 bg-rose-50 p-3 rounded-2xl border border-rose-200">
+                  <span className="font-extrabold text-rose-700 shrink-0">• Avoid Trap:</span>
+                  <span className="font-semibold text-rose-900">{currentNotes.commonMistake}</span>
                 </li>
               </ul>
-            </div>
+            </motion.div>
           ) : (
             /* Standard Full Structured Notes View */
-            <div className="space-y-4">
+            <div className="space-y-5">
               {/* 🔑 Key Idea Hero Card */}
-              <div className="bg-gradient-to-r from-indigo-50/80 via-white to-white rounded-3xl p-5 sm:p-6 border border-indigo-100 shadow-2xs space-y-2">
+              <div className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 text-white rounded-3xl p-6 sm:p-7 shadow-md shadow-indigo-500/20 space-y-2.5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
                 <div className="flex items-center gap-2">
-                  <span className="text-base">🔑</span>
-                  <h3 className="font-display text-xs font-black text-indigo-900 uppercase tracking-wide">
-                    The Big Key Idea
+                  <span className="text-lg">🔑</span>
+                  <h3 className="font-display text-[11px] font-black uppercase tracking-widest text-indigo-200">
+                    The Big Core Idea
                   </h3>
                 </div>
-                <p className="text-sm font-bold text-slate-900 leading-relaxed">
+                <p className="text-base sm:text-lg font-black text-white leading-relaxed">
                   {currentNotes.keyIdea}
                 </p>
               </div>
 
               {/* 📌 Interactive Important Concepts Chips */}
-              <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs space-y-3">
+              <div className="bg-white/90 rounded-3xl p-6 border border-slate-200/80 shadow-sm backdrop-blur-xl space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-base">📌</span>
-                    <h3 className="font-display text-xs font-black text-slate-900 uppercase tracking-wide">
+                    <span className="text-lg">📌</span>
+                    <h3 className="font-display text-xs font-black text-slate-900 uppercase tracking-wider">
                       Important Concepts
                     </h3>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-medium">
-                    Tap any concept for instant simple explanation
+                  <span className="text-[11px] text-indigo-600 font-bold bg-indigo-50 px-2.5 py-0.5 rounded-full">
+                    Tap any concept for AI breakdown
                   </span>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2.5">
                   {currentNotes.importantConcepts.map((concept) => (
-                    <button
+                    <motion.button
                       key={concept}
                       type="button"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
                       onClick={() => handleExplainConcept(concept)}
-                      className="px-3.5 py-1.5 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-200/80 hover:border-indigo-300 text-xs font-bold text-slate-800 hover:text-indigo-700 transition cursor-pointer flex items-center gap-1.5 group active:scale-95"
+                      className="px-4 py-2 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-200/90 hover:border-indigo-300 text-xs font-extrabold text-slate-800 hover:text-indigo-700 transition cursor-pointer flex items-center gap-2 group shadow-2xs"
                     >
                       <span>{concept}</span>
-                      <span className="text-[10px] text-slate-400 group-hover:text-indigo-600 font-normal">✨</span>
-                    </button>
+                      <span className="text-[11px] text-indigo-500 font-bold">✨</span>
+                    </motion.button>
                   ))}
                 </div>
 
                 {/* Instant Concept Explainer Drawer */}
                 {isExplainingConcept && (
-                  <div className="p-3.5 bg-slate-50 rounded-2xl text-xs text-slate-500 font-medium animate-pulse">
+                  <div className="p-4 bg-indigo-50/70 rounded-2xl text-xs text-indigo-700 font-bold animate-pulse border border-indigo-100">
                     AI is preparing simple explanation and real-life analogy...
                   </div>
                 )}
                 {activeConceptExplanation && !isExplainingConcept && (
-                  <div className="p-4 bg-gradient-to-r from-purple-50/80 via-white to-white rounded-2xl border border-purple-200 space-y-2.5 animate-in fade-in">
-                    <div className="flex items-center justify-between border-b border-purple-100 pb-2">
-                      <span className="font-display text-xs font-black text-purple-950 uppercase">
-                        💡 Explaining: {activeConceptExplanation.concept}
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-5 bg-gradient-to-br from-purple-50/90 via-indigo-50/40 to-white rounded-2xl border border-purple-200 shadow-sm space-y-3"
+                  >
+                    <div className="flex items-center justify-between border-b border-purple-100 pb-2.5">
+                      <span className="font-display text-xs font-black text-purple-950 uppercase flex items-center gap-2">
+                        <span>💡</span>
+                        <span>Concept Focus: {activeConceptExplanation.concept}</span>
                       </span>
                       <button
                         type="button"
                         onClick={() => setActiveConceptExplanation(null)}
-                        className="text-slate-400 hover:text-slate-600 text-xs font-bold"
+                        className="text-slate-400 hover:text-slate-700 text-sm font-bold cursor-pointer"
                       >
                         ✕
                       </button>
                     </div>
-                    <p className="text-xs text-slate-800 font-medium leading-relaxed">
+                    <p className="text-xs text-slate-900 font-medium leading-relaxed">
                       {activeConceptExplanation.simpleExplanation}
                     </p>
-                    <div className="p-2.5 bg-amber-50/80 rounded-xl border border-amber-200/60 text-xs text-amber-950">
-                      <span className="font-bold block text-[10px] uppercase text-amber-800 mb-0.5">🍕 Real-Life Analogy:</span>
+                    <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-950">
+                      <span className="font-extrabold block text-[10px] uppercase text-amber-800 mb-1">🍕 Real-Life Analogy:</span>
                       {activeConceptExplanation.analogy}
                     </div>
-                    <div className="p-2.5 bg-emerald-50/80 rounded-xl border border-emerald-200/60 text-xs text-emerald-950">
-                      <span className="font-bold block text-[10px] uppercase text-emerald-800 mb-0.5">❓ Quick Check:</span>
+                    <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-950">
+                      <span className="font-extrabold block text-[10px] uppercase text-emerald-800 mb-1">❓ Quick Check:</span>
                       {activeConceptExplanation.checkQuestion}
                     </div>
-                  </div>
+                  </motion.div>
                 )}
               </div>
 
               {/* 📖 Important Definitions */}
-              <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs space-y-3">
+              <div className="bg-white/90 rounded-3xl p-6 border border-slate-200/80 shadow-sm backdrop-blur-xl space-y-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-base">📖</span>
-                  <h3 className="font-display text-xs font-black text-slate-900 uppercase tracking-wide">
-                    Definitions to Know
+                  <span className="text-lg">📖</span>
+                  <h3 className="font-display text-xs font-black text-slate-900 uppercase tracking-wider">
+                    Core Definitions
                   </h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   {currentNotes.definitions.map((def, idx) => (
-                    <div key={idx} className="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200/70 space-y-1">
-                      <span className="text-xs font-extrabold text-indigo-900 block">{def.term}</span>
+                    <div key={idx} className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-1.5 shadow-2xs">
+                      <span className="text-xs font-black text-indigo-900 block">{def.term}</span>
                       <p className="text-xs text-slate-700 font-medium leading-relaxed">{def.definition}</p>
                     </div>
                   ))}
@@ -520,69 +540,69 @@ export default function AiRevisionNotesWorkspace({
               </div>
 
               {/* ⚡ Remember This & 🧮 Formula Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* ⚡ Remember This */}
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs space-y-3">
+                <div className="bg-white/90 rounded-3xl p-6 border border-slate-200/80 shadow-sm backdrop-blur-xl space-y-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-base">⚡</span>
-                    <h3 className="font-display text-xs font-black text-slate-900 uppercase tracking-wide">
-                      Remember This (Exam High-Yield)
+                    <span className="text-lg">⚡</span>
+                    <h3 className="font-display text-xs font-black text-slate-900 uppercase tracking-wider">
+                      Exam High-Yield Pointers
                     </h3>
                   </div>
-                  <ul className="space-y-2 text-xs text-slate-700 font-medium">
+                  <ul className="space-y-2.5 text-xs text-slate-700 font-medium">
                     {currentNotes.rememberThis.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-indigo-600 font-bold mt-0.5">✓</span>
-                        <span>{item}</span>
+                      <li key={idx} className="flex items-start gap-2.5">
+                        <span className="text-emerald-600 font-black mt-0.5">✓</span>
+                        <span className="leading-snug">{item}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                {/* 🧮 Formula / Equation (or key relationship) */}
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs space-y-3">
+                {/* 🧮 Formula / Equation */}
+                <div className="bg-white/90 rounded-3xl p-6 border border-slate-200/80 shadow-sm backdrop-blur-xl space-y-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-base">🧮</span>
-                    <h3 className="font-display text-xs font-black text-slate-900 uppercase tracking-wide">
-                      Formula / Equation
+                    <span className="text-lg">🧮</span>
+                    <h3 className="font-display text-xs font-black text-slate-900 uppercase tracking-wider">
+                      Essential Formula
                     </h3>
                   </div>
                   {currentNotes.formulaOrEquation ? (
-                    <div className="p-4 bg-slate-900 rounded-2xl text-emerald-400 font-mono text-xs sm:text-sm font-bold text-center tracking-wide overflow-x-auto">
+                    <div className="p-5 bg-slate-950 rounded-2xl border border-slate-800 text-emerald-400 font-mono text-sm sm:text-base font-bold text-center tracking-wider overflow-x-auto shadow-inner">
                       {currentNotes.formulaOrEquation}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500 font-medium italic">
-                      Conceptual chapter: focus on definition rules and process steps.
-                    </p>
+                    <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-500 font-medium italic text-center">
+                      Conceptual chapter: master definition rules, steps, and classifications.
+                    </div>
                   )}
                 </div>
               </div>
 
               {/* 💡 Worked Example & ⚠️ Common Mistake */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Worked Example */}
-                <div className="bg-emerald-50/60 rounded-3xl p-5 border border-emerald-100 shadow-2xs space-y-2">
+                <div className="bg-emerald-50/80 rounded-3xl p-6 border border-emerald-200/80 shadow-sm space-y-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-base">💡</span>
-                    <h3 className="font-display text-xs font-black text-emerald-950 uppercase tracking-wide">
-                      Worked Example
+                    <span className="text-lg">💡</span>
+                    <h3 className="font-display text-xs font-black text-emerald-950 uppercase tracking-wider">
+                      Step-by-Step Worked Example
                     </h3>
                   </div>
-                  <p className="text-xs text-emerald-950 font-medium leading-relaxed">
+                  <p className="text-xs text-emerald-950 font-medium leading-relaxed bg-white/70 p-3.5 rounded-2xl border border-emerald-100">
                     {currentNotes.example}
                   </p>
                 </div>
 
                 {/* Common Mistake */}
-                <div className="bg-rose-50/60 rounded-3xl p-5 border border-rose-100 shadow-2xs space-y-2">
+                <div className="bg-rose-50/80 rounded-3xl p-6 border border-rose-200/80 shadow-sm space-y-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-base">⚠️</span>
-                    <h3 className="font-display text-xs font-black text-rose-950 uppercase tracking-wide">
-                      Common Mistake to Avoid
+                    <span className="text-lg">⚠️</span>
+                    <h3 className="font-display text-xs font-black text-rose-950 uppercase tracking-wider">
+                      Common Exam Pitfall to Avoid
                     </h3>
                   </div>
-                  <p className="text-xs text-rose-950 font-medium leading-relaxed">
+                  <p className="text-xs text-rose-950 font-semibold leading-relaxed bg-white/70 p-3.5 rounded-2xl border border-rose-100">
                     {currentNotes.commonMistake}
                   </p>
                 </div>

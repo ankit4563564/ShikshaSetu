@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 
 interface TeacherSidebarProps {
@@ -28,7 +28,6 @@ export default function TeacherSidebar({
   onOpenSpotlight,
   teacherName,
 }: TeacherSidebarProps) {
-
   const displayName = teacherName || 'Teacher';
   const initials = displayName
     .split(' ')
@@ -38,67 +37,73 @@ export default function TeacherSidebar({
     .toUpperCase() || 'T';
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200/80 flex flex-col justify-between p-4 shrink-0 hidden md:flex min-h-screen">
+    <aside className="w-64 bg-white/85 border-r border-slate-200/80 flex flex-col justify-between p-5 shrink-0 hidden md:flex min-h-screen shadow-[4px_0_24px_rgba(15,23,42,0.02)] backdrop-blur-2xl">
       <div className="space-y-6">
         {/* Logo Brand Header */}
         <div className="flex items-center gap-3 px-2 py-1">
-          <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center font-display font-black text-white text-sm shadow-xs">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-slate-900 via-indigo-950 to-indigo-900 flex items-center justify-center font-display font-black text-white text-base shadow-md shadow-slate-900/20">
             S
           </div>
           <div>
-            <h3 className="font-display font-black text-slate-900 text-sm tracking-tight">ShikshaSetu</h3>
-            <p className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">Teacher Portal</p>
+            <h3 className="font-display font-black text-slate-900 text-base tracking-tight leading-none">ShikshaSetu</h3>
+            <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mt-1">Teacher Copilot</p>
           </div>
         </div>
 
         {/* Navigation List */}
-        <nav className="space-y-1">
+        <nav className="space-y-1.5">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
             return (
-              <button
+              <motion.button
                 key={item.id}
+                type="button"
+                whileHover={{ scale: 1.01, x: 2 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => onTabChange(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-display text-xs font-bold transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-display text-xs font-black transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ? 'bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white shadow-md shadow-slate-900/25'
+                    : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
                 }`}
               >
                 <span className="text-base">{item.icon}</span>
                 <span>{item.label}</span>
-              </button>
+              </motion.button>
             );
           })}
         </nav>
       </div>
 
       {/* Bottom Profile Footer */}
-      <div className="space-y-3 pt-4 border-t border-slate-100">
-        <button
+      <div className="space-y-3.5 pt-4 border-t border-slate-200/80">
+        <motion.button
+          type="button"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={onOpenSpotlight}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-500 hover:text-slate-900 transition-all text-xs font-semibold"
+          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/90 text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 transition-all text-xs font-extrabold cursor-pointer shadow-2xs"
         >
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-2">
             <span>🔍</span>
-            <span>Spotlight</span>
+            <span>AI Spotlight</span>
           </span>
-          <span className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono text-[9px] font-bold text-slate-500">
+          <span className="px-2 py-0.5 rounded-md bg-white border border-slate-200/80 font-mono text-[10px] font-black text-slate-500 shadow-2xs">
             ⌘K
           </span>
-        </button>
+        </motion.button>
 
         <div className="flex items-center gap-3 px-2 py-1">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 text-white text-xs font-black flex items-center justify-center shadow-xs">
+          <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white text-xs font-black flex items-center justify-center shadow-md shadow-indigo-500/20">
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-display text-xs font-extrabold text-slate-900 truncate">{displayName}</h4>
-            <p className="text-[10px] text-slate-500 truncate font-medium">Class Teacher</p>
+            <h4 className="font-display text-xs font-black text-slate-900 truncate">{displayName}</h4>
+            <p className="text-[10px] text-slate-500 truncate font-semibold">Faculty / Class Teacher</p>
           </div>
         </div>
 
-        <SignOutButton className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-rose-50/80 hover:bg-rose-100 text-rose-700 font-display text-xs font-bold transition-all border border-rose-200/60">
+        <SignOutButton className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-rose-50/80 hover:bg-rose-100 text-rose-700 font-display text-xs font-bold transition-all border border-rose-200/60 cursor-pointer shadow-sm">
           <span className="flex items-center gap-2">
             <span>🚪</span>
             <span>Sign Out</span>

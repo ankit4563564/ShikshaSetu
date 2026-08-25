@@ -2,24 +2,24 @@ import { ParentRecord } from './types';
 
 export const PARENTS_DATA: ParentRecord[] = [
   {
-    id: 'prn-001',
+    id: 'c1000000-0000-4000-8000-000000000001',
     name: 'Sunita Sharma',
-    email: 'sunita.sharma@example.com',
-    phone: '+91 98765 43210',
-    childrenIds: ['std-001'],
+    email: 'sunita.sharma@email.com',
+    phone: '+91 98765 10001',
+    childrenIds: ['b1000000-0000-4000-8000-000000000001'],
   },
   {
-    id: 'prn-002',
-    name: 'Amit Patel',
-    email: 'amit.patel@example.com',
-    phone: '+91 98765 43211',
-    childrenIds: ['std-002'],
+    id: 'c1000000-0000-4000-8000-000000000002',
+    name: 'Rajesh Patel',
+    email: 'rajesh.patel@email.com',
+    phone: '+91 98765 10002',
+    childrenIds: ['b1000000-0000-4000-8000-000000000002'],
   },
   {
-    id: 'prn-003',
-    name: 'Reena Khan',
-    email: 'reena.khan@example.com',
-    phone: '+91 98765 43212',
-    childrenIds: ['std-003'],
+    id: 'c1000000-0000-4000-8000-000000000003',
+    name: 'Priya Singh',
+    email: 'priya.singh@email.com',
+    phone: '+91 98765 10003',
+    childrenIds: ['b1000000-0000-4000-8000-000000000003'],
   },
 ];

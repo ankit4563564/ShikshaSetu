@@ -10,6 +10,8 @@ import { createScopedClient } from '@/lib/supabase/scoped';
 vi.mock('@/lib/auth/getAuthContext', () => ({
   getAuthContext: vi.fn(),
   validateParentStudentAccess: vi.fn(),
+  requirePermission: vi.fn(),
+  hasPermission: vi.fn().mockReturnValue(true),
 }));
 
 vi.mock('@/lib/supabase/scoped', () => ({
@@ -224,6 +226,14 @@ describe('ShikshaSetu AI Intelligence Architecture — One Source of Truth, Thre
       expect(weakRes.notes?.commonMistake).toBeDefined();
 
       // Scenario B: Classroom insights update with changing student count
+      vi.mocked(getAuthContext).mockResolvedValueOnce({
+        userId: 'usr-teacher-1',
+        clerkUserId: 'clerk_teacher_1',
+        schoolId: 'e0000000-0000-4000-8000-000000000001',
+        role: 'teacher',
+        permissions: ['students:read_class', 'teacher:write', 'insights:read'],
+      } as any);
+
       const insightRes = await generateClassroomInsightsAction({
         grade: '8',
         section: 'A',

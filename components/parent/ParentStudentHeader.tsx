@@ -27,17 +27,25 @@ export function ParentStudentHeader({
   isLoading = false,
   rightActions,
 }: ParentStudentHeaderProps) {
-  const gradeSection = `Grade ${activeStudent?.grade || '8'}${activeStudent?.section || 'A'}`;
+export function ParentStudentHeader({
+  activeStudent,
+  currentStudents,
+  selectedStudentId,
+  onStudentChange,
+  isLoading = false,
+  rightActions,
+}: ParentStudentHeaderProps) {
+  const gradeSection = `Class ${activeStudent?.grade || '8'}${activeStudent?.section || 'A'}`;
 
   return (
-    <header className="parent-portal-header bg-white/95 backdrop-blur-xl border-b border-deep-teal/10 px-4 py-3 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs">
-      <div className="flex items-center gap-3">
+    <header className="parent-portal-header bg-white/90 backdrop-blur-2xl border-b border-slate-200/80 px-4 py-3.5 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs">
+      <div className="flex items-center gap-3.5">
         <div className="relative">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-deep-teal to-teal-600 font-display text-lg font-bold text-white shadow-md">
-            {activeStudent?.displayName.split(' ').map((n) => n[0]).join('') || 'NA'}
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 font-display text-lg font-black text-white shadow-md shadow-indigo-500/20">
+            {activeStudent?.displayName.split(' ').map((n) => n[0]).join('') || 'S'}
           </div>
-          <div className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 border-2 border-white">
-            <span className="text-[8px] font-bold text-white">✓</span>
+          <div className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 border-2 border-white shadow-xs">
+            <span className="text-[8px] font-black text-white">✓</span>
           </div>
         </div>
         <div className="space-y-0.5">
@@ -47,7 +55,7 @@ export function ParentStudentHeader({
                 value={activeStudent?.studentId || ''}
                 onChange={(e) => onStudentChange(e.target.value)}
                 disabled={isLoading}
-                className="bg-transparent font-display text-base font-extrabold text-deep-teal outline-none focus:ring-2 focus:ring-deep-teal/20 rounded cursor-pointer border border-transparent hover:border-deep-teal/10 py-0.5 px-1 transition-all disabled:opacity-50 appearance-none pr-6"
+                className="bg-transparent font-display text-base font-black text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500/20 rounded-xl cursor-pointer border border-transparent hover:border-slate-200/80 py-0.5 px-1.5 transition-all disabled:opacity-50 appearance-none pr-6"
               >
                 {currentStudents.map((child) => (
                   <option key={child.studentId} value={child.studentId}>
@@ -55,27 +63,27 @@ export function ParentStudentHeader({
                   </option>
                 ))}
               </select>
-              <svg className="absolute right-0 top-1/2 -translate-y-1/2 h-4 w-4 text-deep-teal/40 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="absolute right-1 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </div>
           ) : (
-            <h2 className="font-display text-base font-extrabold leading-tight text-deep-teal">
+            <h2 className="font-display text-base font-black leading-tight text-slate-900">
               {activeStudent?.displayName || 'Student'}
             </h2>
           )}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-deep-teal/60 font-medium">{gradeSection} · Ms. Mehra</span>
+            <span className="text-xs text-slate-500 font-semibold">{gradeSection}</span>
             <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-semibold text-emerald-600">Active Profile</span>
+            <span className="text-xs font-bold text-emerald-700">Live Campus Sync</span>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         {rightActions}
         <SignOutButton
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-display text-xs font-bold transition-all border border-rose-200/60"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50/80 hover:bg-rose-100 text-rose-700 font-display text-xs font-bold transition-all border border-rose-200/60 shadow-2xs cursor-pointer"
           title="Sign Out"
         >
           <span>🚪</span>

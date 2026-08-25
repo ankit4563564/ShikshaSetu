@@ -83,33 +83,33 @@ export function ParentGatePassTab({
   const qrContent = activePass.status === 'approved' ? generateGatePassQrContent(activePass.id) : '';
 
   return (
-    <div className="rounded-3xl border border-deep-teal/10 bg-white p-6 shadow-xs space-y-4">
+    <div className="rounded-3xl border border-slate-200/80 bg-white/90 p-6 sm:p-7 shadow-sm backdrop-blur-xl space-y-5">
       {/* Pass Status Header */}
-      <div className="flex items-center justify-between border-b border-deep-teal/10 pb-3">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
         <div className="flex items-center gap-2">
-          <span className="font-display text-sm font-extrabold text-deep-teal">
+          <span className="font-display text-base font-black text-slate-900">
             🎫 Gate Pass #{activePass.pass_code || activePass.id.slice(0, 8)}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {activePass.status === 'pending' && (
-            <span className="px-2.5 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800 border border-amber-300 animate-pulse">
+            <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-50 text-amber-800 border border-amber-300 animate-pulse">
               ⏳ Pending Approval
             </span>
           )}
           {activePass.status === 'approved' && (
-            <span className="px-2.5 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
-              ✓ Ready at Gate
+            <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-50 text-emerald-800 border border-emerald-300">
+              ✓ Ready at School Gate
             </span>
           )}
           {activePass.status === 'used' && (
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-deep-teal/10 text-deep-teal">
+            <span className="px-3 py-1 rounded-full text-xs font-black bg-slate-100 text-slate-700">
               Checked Out
             </span>
           )}
           {activePass.status === 'rejected' && (
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
+            <span className="px-3 py-1 rounded-full text-xs font-black bg-rose-50 text-rose-800 border border-rose-200">
               Rejected
             </span>
           )}
@@ -118,18 +118,18 @@ export function ParentGatePassTab({
 
       {/* Pending State */}
       {activePass.status === 'pending' && (
-        <div className="space-y-3 bg-amber-50/50 p-4 rounded-2xl border border-amber-200">
-          <p className="font-body text-xs text-amber-900 leading-relaxed">
-            Your pickup request for <span className="font-bold">{studentName}</span> has been sent to the class teacher for verification.
+        <div className="space-y-3 bg-amber-50/80 p-5 rounded-2xl border border-amber-200 shadow-2xs">
+          <p className="font-body text-xs text-amber-950 font-medium leading-relaxed">
+            Your early pickup request for <span className="font-extrabold text-slate-900">{studentName}</span> has been dispatched to the faculty for security verification.
           </p>
           <div className="flex items-center justify-between pt-1">
-            <span className="text-[11px] text-amber-800/70 font-semibold">
+            <span className="text-[11px] text-amber-900 font-bold">
               Reason: {activePass.reason || 'Medical / Personal'}
             </span>
             <button
               onClick={() => onCancelPass(activePass.id)}
               disabled={isLoading}
-              className="text-xs font-bold text-rose-600 hover:underline"
+              className="text-xs font-black text-rose-600 hover:text-rose-800 hover:underline cursor-pointer"
             >
               Cancel Request
             </button>
@@ -140,54 +140,56 @@ export function ParentGatePassTab({
       {/* Approved State with QR & Passcode */}
       {activePass.status === 'approved' && (
         <div className="space-y-4">
-          <div className="bg-sage/10 border border-sage/30 rounded-2xl p-5 text-center space-y-3">
+          <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-3xl p-6 text-center space-y-3 shadow-2xs">
             <div>
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-sage font-mono">
-                Official Pickup Passcode
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-800 font-mono">
+                Official Campus Pickup Passcode
               </span>
-              <h2 className="font-mono text-4xl font-black text-deep-teal tracking-widest mt-1">
+              <h2 className="font-mono text-4xl sm:text-5xl font-black text-slate-900 tracking-widest mt-1.5">
                 {activePass.pass_code}
               </h2>
             </div>
 
             <div className="flex justify-center">
-              <button
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => setShowQrModal(!showQrModal)}
-                className="bg-sage hover:bg-sage/90 text-white text-xs font-bold py-2 px-4 rounded-xl transition-all shadow-xs"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black py-2.5 px-5 rounded-xl transition-all shadow-md shadow-emerald-600/20 cursor-pointer"
               >
-                {showQrModal ? 'Hide Digital QR' : 'Show Digital Gate QR'}
-              </button>
+                {showQrModal ? 'Hide Digital Gate QR' : 'Show Digital Gate QR'}
+              </motion.button>
             </div>
 
             {showQrModal && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="p-3 bg-white rounded-2xl border border-sage/40 shadow-inner flex flex-col items-center space-y-2"
+                className="p-4 bg-white rounded-2xl border border-emerald-200 shadow-inner flex flex-col items-center space-y-2.5"
               >
-                <div className="bg-slate-900 text-white font-mono text-[9px] p-3 rounded-xl break-all max-w-full select-all">
+                <div className="bg-slate-950 text-emerald-400 font-mono text-[9px] p-4 rounded-xl break-all max-w-full select-all border border-slate-800 shadow-inner">
                   {qrContent}
                 </div>
-                <p className="text-[10px] text-deep-teal/60 font-semibold">
-                  🔒 Show this QR code or 6-digit passcode at the school gate for pickup
+                <p className="text-[11px] text-slate-600 font-bold">
+                  🔒 Present this encrypted token or 6-digit passcode to the gate security officer
                 </p>
               </motion.div>
             )}
 
             {timeLeftText && (
-              <p className="font-body text-xs text-sage font-extrabold">
+              <p className="font-body text-xs text-emerald-800 font-black">
                 ⏳ {timeLeftText}
               </p>
             )}
           </div>
 
-          <div className="flex items-center justify-between text-xs text-deep-teal/60 px-1">
-            <span>Authorized Pickup: <strong className="text-deep-teal">{guardianName}</strong></span>
+          <div className="flex items-center justify-between text-xs text-slate-500 px-1 font-semibold">
+            <span>Authorized Pickup: <strong className="text-slate-900 font-black">{guardianName}</strong></span>
             <button
               onClick={() => onCancelPass(activePass.id)}
               disabled={isLoading}
-              className="text-rose-600 hover:underline font-bold"
+              className="text-rose-600 hover:text-rose-800 hover:underline font-black cursor-pointer"
             >
               Cancel Pass
             </button>

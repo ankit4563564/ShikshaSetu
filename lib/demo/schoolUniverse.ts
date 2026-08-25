@@ -19,29 +19,29 @@ export const SCHOOL = {
 
 // ─── STUDENTS ──────────────────────────────────────────────────────────────
 export const STUDENTS = [
-  { id: 's001', name: 'Aarav Sharma',    grade: '8A', rollNo: 'DPS14/8A/01', coins: 340, streak: 14, avatar: '/aarav.png',  busStop: 'Sector 12 Market',   house: 'Ashoka' },
-  { id: 's002', name: 'Priya Mehta',     grade: '8A', rollNo: 'DPS14/8A/02', coins: 210, streak: 7,  avatar: '/priya.png',  busStop: 'Rajouri Garden',     house: 'Chanakya' },
-  { id: 's003', name: 'Rohan Verma',     grade: '8B', rollNo: 'DPS14/8B/03', coins: 155, streak: 3,  avatar: '/rohan.png',  busStop: 'Paschim Vihar',     house: 'Tagore' },
-  { id: 's004', name: 'Ananya Singh',    grade: '9A', rollNo: 'DPS14/9A/04', coins: 420, streak: 21, avatar: '/ananya.png', busStop: 'Sector 12 Market',   house: 'Ashoka' },
-  { id: 's005', name: 'Kabir Malhotra',  grade: '9B', rollNo: 'DPS14/9B/05', coins: 90,  streak: 2,  avatar: '/kabir.png',  busStop: 'Pitampura Station',  house: 'Chanakya' },
-  { id: 's006', name: 'Ishaan Gupta',    grade: '7C', rollNo: 'DPS14/7C/06', coins: 275, streak: 10, avatar: null,          busStop: 'Paschim Vihar',     house: 'Tagore' },
-  { id: 's007', name: 'Meera Joshi',     grade: '7C', rollNo: 'DPS14/7C/07', coins: 190, streak: 8,  avatar: null,          busStop: 'Sector 12 Market',   house: 'Bose' },
-  { id: 's008', name: 'Arjun Kapoor',    grade: '10A', rollNo: 'DPS14/10A/08', coins: 510, streak: 28, avatar: null,         busStop: 'Rajouri Garden',     house: 'Bose' },
+  { id: 'b1000000-0000-4000-8000-000000000001', name: 'Aarav Sharma',    grade: '8A', rollNo: 'DPS14/8A/01', coins: 340, streak: 14, avatar: '/aarav.png',  busStop: 'Sector 12 Market',   house: 'Ashoka' },
+  { id: 'b1000000-0000-4000-8000-000000000002', name: 'Priya Patel',     grade: '8A', rollNo: 'DPS14/8A/02', coins: 210, streak: 7,  avatar: '/priya.png',  busStop: 'Rajouri Garden',     house: 'Chanakya' },
+  { id: 'b1000000-0000-4000-8000-000000000003', name: 'Rohan Singh',     grade: '8A', rollNo: 'DPS14/8A/03', coins: 155, streak: 3,  avatar: '/rohan.png',  busStop: 'Paschim Vihar',     house: 'Tagore' },
+  { id: 'b1000000-0000-4000-8000-000000000004', name: 'Ananya Gupta',    grade: '8A', rollNo: 'DPS14/8A/04', coins: 420, streak: 21, avatar: '/ananya.png', busStop: 'Sector 12 Market',   house: 'Ashoka' },
+  { id: 'b1000000-0000-4000-8000-000000000005', name: 'Kabir Khan',      grade: '8A', rollNo: 'DPS14/8A/05', coins: 90,  streak: 2,  avatar: '/kabir.png',  busStop: 'Pitampura Station',  house: 'Chanakya' },
+  { id: 'b1000000-0000-4000-8000-000000000006', name: 'Diya Mehta',      grade: '8B', rollNo: 'DPS14/8B/06', coins: 275, streak: 10, avatar: null,          busStop: 'Paschim Vihar',     house: 'Tagore' },
+  { id: 'b1000000-0000-4000-8000-000000000007', name: 'Arjun Reddy',     grade: '8B', rollNo: 'DPS14/8B/07', coins: 190, streak: 8,  avatar: null,          busStop: 'Sector 12 Market',   house: 'Bose' },
+  { id: 'b1000000-0000-4000-8000-000000000008', name: 'Meera Nair',      grade: '8B', rollNo: 'DPS14/8B/08', coins: 510, streak: 28, avatar: null,         busStop: 'Rajouri Garden',     house: 'Bose' },
 ];
 
-export const PRIMARY_STUDENT = STUDENTS[0]; // Aarav — the "logged-in" student
+export const PRIMARY_STUDENT = STUDENTS[0]; // Aarav — the canonical seed student
 
 // ─── TEACHERS ──────────────────────────────────────────────────────────────
 export const TEACHERS = [
-  { id: 't001', name: 'Mrs. Kavita Rao',      subject: 'Mathematics',       grade: '8A', emoji: '📐' },
-  { id: 't002', name: 'Mr. Deepak Nair',      subject: 'Science',           grade: '8A', emoji: '🔬' },
-  { id: 't003', name: 'Ms. Preethi Anand',    subject: 'English',           grade: '8A', emoji: '📚' },
+  { id: 'a1000000-0000-4000-8000-000000000001', name: 'Ms. Ananya Mehra',    subject: 'Mathematics',       grade: '8A', emoji: '📐' },
+  { id: 'a1000000-0000-4000-8000-000000000002', name: 'Mr. Vikram Joshi',     subject: 'Science',           grade: '8B', emoji: '🔬' },
+  { id: 'a1000000-0000-4000-8000-000000000003', name: 'Ms. Kavita Deshmukh',  subject: 'English',           grade: '8C', emoji: '📚' },
   { id: 't004', name: 'Mr. Sanjay Sharma',    subject: 'Social Studies',    grade: '8A', emoji: '🌍' },
   { id: 't005', name: 'Ms. Ritu Chauhan',     subject: 'Computer Science',  grade: '8A', emoji: '💻' },
   { id: 't006', name: 'Mr. Vinod Pillai',     subject: 'Physical Education', grade: 'All', emoji: '🏃' },
 ];
 
-export const CLASS_TEACHER = TEACHERS[0]; // Mrs. Kavita Rao
+export const CLASS_TEACHER = TEACHERS[0]; // Ms. Ananya Mehra
 
 // ─── TODAY'S SCHEDULE (Aarav's timetable) ──────────────────────────────────
 export const TODAYS_SCHEDULE = [

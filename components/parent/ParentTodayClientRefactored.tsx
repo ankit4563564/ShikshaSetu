@@ -336,80 +336,79 @@ export default function ParentTodayClient({
             <div className="space-y-5">
               {/* Daily Greeting Bar */}
               <div className="flex items-center justify-between">
-                <span className="font-display text-xs font-bold text-deep-teal/70 uppercase tracking-widest">
-                  {timeGreeting} · Today's Update
+                <span className="font-display text-xs font-bold text-slate-500 uppercase tracking-widest">
+                  {timeGreeting} · Today's Campus Digest
                 </span>
-                <span className="text-xs text-deep-teal/50 font-semibold">
+                <span className="text-xs text-slate-400 font-semibold">
                   {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
                 </span>
               </div>
-
-              {/* ── 1. Real Status Hero ── */}
               <motion.div
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-deep-teal to-teal-800 p-6 shadow-md text-white space-y-4"
+                className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-7 shadow-lg shadow-indigo-950/20 text-white space-y-4 border border-indigo-900/50"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+                <div className="flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-2.5">
                     <span
                       className={`h-2.5 w-2.5 rounded-full ${
                         todayAttendance?.status === 'present'
-                          ? 'bg-emerald-400 animate-pulse'
+                          ? 'bg-emerald-400 animate-ping'
                           : todayAttendance?.status === 'absent'
                           ? 'bg-rose-400'
                           : 'bg-amber-400'
                       }`}
                     />
-                    <span className="font-display text-xs font-bold text-white/80 uppercase tracking-wider">
+                    <span className="font-display text-xs font-black text-white/90 uppercase tracking-widest">
                       {todayAttendance?.status === 'present'
                         ? `${studentShortName} is at School`
                         : todayAttendance?.status === 'absent'
                         ? 'Marked Absent Today'
                         : todayAttendance?.status === 'late'
                         ? 'Marked Late Today'
-                        : 'Attendance Pending'}
+                        : 'Attendance In Progress'}
                     </span>
                   </div>
 
-                  <span className="px-3 py-1 rounded-full bg-white/10 text-white font-mono text-xs font-bold border border-white/10">
+                  <span className="px-3.5 py-1 rounded-full bg-white/10 text-white font-mono text-xs font-black border border-white/15 backdrop-blur-md">
                     Class {studentGradeStr}
                   </span>
                 </div>
 
-                <div className="space-y-1">
-                  <h2 className="font-display text-xl sm:text-2xl font-black text-white leading-tight">
+                <div className="space-y-1.5 relative z-10">
+                  <h2 className="font-display text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight">
                     {todayAttendance?.status === 'present'
                       ? `${studentShortName} is in class today.`
                       : todayAttendance?.status === 'absent'
                       ? `${studentShortName} is marked absent today.`
                       : `Welcome, ${activeStudent?.parentName || 'Parent'}.`}
                   </h2>
-                  <p className="font-body text-xs text-white/70">
+                  <p className="font-body text-xs text-white/80 font-medium">
                     {pendingHomework.length === 0
-                      ? 'No pending homework due. All work is done!'
-                      : `${pendingHomework.length} homework task${pendingHomework.length > 1 ? 's' : ''} to do.`}
+                      ? 'No pending homework due. All assignments are completed! 🎉'
+                      : `${pendingHomework.length} homework task${pendingHomework.length > 1 ? 's' : ''} to complete.`}
                   </p>
                 </div>
 
                 {/* Status Snapshot Badges */}
-                <div className="flex flex-wrap gap-2 pt-1">
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
-                    <span className="text-emerald-300">✓</span>
-                    <span className="text-xs font-semibold">
+                <div className="flex flex-wrap gap-2.5 pt-1 relative z-10">
+                  <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
+                    <span className="text-emerald-400 font-bold">✓</span>
+                    <span className="text-xs font-bold text-white">
                       Attendance: {attendancePercentage}%
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
+                  <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
                     <span>📚</span>
-                    <span className="text-xs font-semibold">
+                    <span className="text-xs font-bold text-white">
                       {pendingHomework.length} Due
                     </span>
                   </div>
                   {activeGatePass && (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-400/20 backdrop-blur-sm border border-amber-400/30">
+                    <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-400/20 backdrop-blur-md border border-amber-400/40">
                       <span>🎫</span>
-                      <span className="text-xs font-semibold text-amber-200">
+                      <span className="text-xs font-bold text-amber-300">
                         Gate Pass: {activeGatePass.status.toUpperCase()}
                       </span>
                     </div>
@@ -418,19 +417,19 @@ export default function ParentTodayClient({
               </motion.div>
 
               {/* ── 2. AI Insight for Your Child Card ── */}
-              <div className="rounded-3xl bg-white border border-teal-600/20 p-5 shadow-xs space-y-3">
-                <div className="flex items-center justify-between border-b border-deep-teal/5 pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">✨</span>
-                    <h3 className="font-display text-xs font-extrabold uppercase tracking-wider text-deep-teal">
-                      AI Insight for {studentShortName}
+              <div className="rounded-3xl bg-white/90 border border-indigo-100 p-6 shadow-sm backdrop-blur-xl space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-lg">✨</span>
+                    <h3 className="font-display text-xs font-black uppercase tracking-wider text-slate-900">
+                      AI Daily Digest for {studentShortName}
                     </h3>
                   </div>
                   <button
                     type="button"
                     onClick={() => activeStudent && loadAiInsights(activeStudent.studentId)}
                     disabled={isAiLoading}
-                    className="text-[10px] text-teal-800 font-bold hover:underline flex items-center gap-1 disabled:opacity-50"
+                    className="text-xs text-indigo-600 font-extrabold hover:text-indigo-800 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
                   >
                     <span>🔄</span>
                     <span>{isAiLoading ? 'Analyzing...' : 'Refresh'}</span>
@@ -438,33 +437,33 @@ export default function ParentTodayClient({
                 </div>
 
                 {isAiLoading ? (
-                  <div className="space-y-2 py-1">
-                    <div className="h-4 bg-deep-teal/5 rounded animate-pulse w-full" />
-                    <div className="h-4 bg-deep-teal/5 rounded animate-pulse w-3/4" />
+                  <div className="space-y-2.5 py-2">
+                    <div className="h-4 bg-slate-100 rounded-xl animate-pulse w-full" />
+                    <div className="h-4 bg-slate-100 rounded-xl animate-pulse w-3/4" />
                   </div>
                 ) : aiInsight ? (
-                  <div className="space-y-3 text-xs">
-                    <p className="font-display text-sm font-bold text-deep-teal leading-snug">
+                  <div className="space-y-3.5 text-xs">
+                    <p className="font-display text-sm font-black text-slate-900 leading-snug">
                       {aiInsight.headline}
                     </p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200/60 space-y-1">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 block">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200/70 space-y-1.5 shadow-2xs">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 block">
                           🌟 Current Strengths
                         </span>
-                        <ul className="text-emerald-900 font-medium space-y-0.5 list-disc list-inside text-[11px]">
+                        <ul className="text-emerald-950 font-medium space-y-1 list-disc list-inside text-xs">
                           {aiInsight.strengths.map((s, i) => (
                             <li key={i}>{s}</li>
                           ))}
                         </ul>
                       </div>
 
-                      <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200/60 space-y-1">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-800 block">
-                          🎯 Focus &amp; Attention
+                      <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/70 space-y-1.5 shadow-2xs">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 block">
+                          🎯 Suggested Focus
                         </span>
-                        <ul className="text-amber-900 font-medium space-y-0.5 list-disc list-inside text-[11px]">
+                        <ul className="text-amber-950 font-medium space-y-1 list-disc list-inside text-xs">
                           {aiInsight.attentionAreas.map((a, i) => (
                             <li key={i}>{a}</li>
                           ))}
@@ -472,11 +471,11 @@ export default function ParentTodayClient({
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-deep-teal/5 border border-deep-teal/10 flex items-start gap-2">
-                      <span className="text-base shrink-0">💡</span>
+                    <div className="p-4 rounded-2xl bg-indigo-50/80 border border-indigo-100 flex items-start gap-3 shadow-2xs">
+                      <span className="text-lg shrink-0">💡</span>
                       <div>
-                        <span className="font-extrabold text-deep-teal block text-[11px]">Recommended for Tonight:</span>
-                        <p className="text-deep-teal/80 font-medium text-[11px] mt-0.5">{aiInsight.recommendedAction}</p>
+                        <span className="font-black text-indigo-950 block text-xs">Recommended for Tonight:</span>
+                        <p className="text-indigo-900/90 font-medium text-xs mt-0.5 leading-relaxed">{aiInsight.recommendedAction}</p>
                       </div>
                     </div>
                   </div>
