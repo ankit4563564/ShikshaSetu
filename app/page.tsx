@@ -15,33 +15,33 @@ export default function Home() {
   return (
     <LandingModalProvider>
       <LandingMotion>
-        <div className="bg-[#FAF9F6] text-[#172033] font-sans antialiased overflow-x-hidden selection:bg-[#2563EB] selection:text-white">
+        <div className="bg-[#FFF9F0] text-[#102A43] font-sans antialiased overflow-x-hidden selection:bg-[#2563EB] selection:text-white">
           {/* Top Sticky Navigation */}
           <EcosystemNavbar />
 
           <main className="pt-14 sm:pt-16">
-            {/* 1. HERO — The school ERP that actually understands learning */}
+            {/* 1. HERO (Warm Cream) — The school ERP that actually understands learning */}
             <EcosystemHero />
 
-            {/* 2. THE DIFFERENCE — Traditional ERP (Recorded) vs ShikshaSetu (Action) */}
+            {/* 2. THE DIFFERENCE (White) — Traditional ERP (Recorded) vs ShikshaSetu (Action) */}
             <TheDifferenceSection />
 
-            {/* 3. ONE STUDENT — THREE PERSPECTIVES — ONE TRUTH */}
+            {/* 3. ONE STUDENT — THREE PERSPECTIVES — ONE TRUTH (Soft Blue) */}
             <ThreePerspectivesSection />
 
-            {/* 4. THE LEARNING LOOP — 58% to 78% concrete mastery story */}
+            {/* 4. THE LEARNING LOOP (Warm Cream) — 58% (Amber) to 78% (Mint) concrete story */}
             <LearningLoopSection />
 
-            {/* 5. SEE THE REAL PRODUCT — Live portal switcher & actual UI screenshots */}
+            {/* 5. SEE THE REAL PRODUCT (White) — Live portal switcher & actual UI screenshots */}
             <RealProductShowcaseSection />
 
-            {/* 6. AI THAT KNOWS ITS ROLE — Context-grounded intelligence */}
+            {/* 6. AI THAT KNOWS ITS ROLE (Deep Ink) — 3-tier insight architecture */}
             <AiEcosystemSection />
 
-            {/* 7. WHAT SHIKSHASETU RUNS — 4 compact capability categories */}
+            {/* 7. WHAT SHIKSHASETU RUNS (Warm Cream) — 4 semantic capability categories */}
             <OutcomesFeatureSection />
 
-            {/* 8. FINAL CTA — Don't just manage your school. Understand every learner. */}
+            {/* 8. FINAL CTA (Deep Ink) — Don't just manage your school. Understand every learner. */}
             <FinalCTA />
           </main>
 

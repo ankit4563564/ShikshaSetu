@@ -12,7 +12,8 @@ export function RealProductShowcaseSection() {
     teacher: {
       title: 'Teacher Workspace — Student Support & Focus',
       url: 'app.shikshasetu.edu/teacher',
-      tag: 'Faculty Workspace',
+      tag: 'Teacher Intelligence (Blue)',
+      activeColor: 'bg-[#2563EB] text-white shadow-[0_4px_12px_rgba(37,99,235,0.25)]',
       description: 'Support radar highlights students needing help, today’s focus items, and instant lesson intervention drafts.',
       image: '/screenshots/teacher_page.png',
       href: '/teacher',
@@ -20,7 +21,8 @@ export function RealProductShowcaseSection() {
     student: {
       title: 'Student Portal — AI Revision Notes & Mitra',
       url: 'app.shikshasetu.edu/student',
-      tag: 'Learner Workspace',
+      tag: 'Learner Workspace (Amber)',
+      activeColor: 'bg-[#F59E0B] text-white shadow-[0_4px_12px_rgba(245,158,11,0.25)]',
       description: 'AI revision notes, lined digital study notebook, interactive quiz checks, and SchoolMitra study companion.',
       image: '/screenshots/student_page.png',
       href: '/student',
@@ -28,7 +30,8 @@ export function RealProductShowcaseSection() {
     parent: {
       title: 'Parent Today — Child Progress & Daily Insight',
       url: 'app.shikshasetu.edu/parent',
-      tag: 'Family Partnership',
+      tag: 'Family Partnership (Coral)',
+      activeColor: 'bg-[#F97360] text-white shadow-[0_4px_12px_rgba(249,115,96,0.25)]',
       description: 'Live child progress digest, real-time GPS bus telemetry with driver direct calling, and encrypted QR gate passes.',
       image: '/screenshots/parent_page.png',
       href: '/parent',
@@ -38,7 +41,7 @@ export function RealProductShowcaseSection() {
   const current = views[activeTab];
 
   return (
-    <section id="product-showcase" className="py-16 md:py-20 bg-[#FAF9F6] border-b border-stone-200/80">
+    <section id="product-showcase" className="py-16 md:py-20 bg-white border-b border-[#102A43]/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5">
@@ -46,10 +49,10 @@ export function RealProductShowcaseSection() {
             <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB]">
               Production Software
             </span>
-            <h2 className="font-display text-3xl sm:text-4xl font-black text-[#172033] tracking-tight">
+            <h2 className="font-display text-3xl sm:text-4xl font-black text-[#102A43] tracking-tight">
               See ShikshaSetu in action.
             </h2>
-            <p className="text-base text-stone-600 font-normal leading-relaxed">
+            <p className="text-base text-[#102A43]/70 font-normal leading-relaxed">
               Real interfaces built around the continuous student journey.
             </p>
           </div>
@@ -61,8 +64,8 @@ export function RealProductShowcaseSection() {
               onClick={() => setActiveTab('teacher')}
               className={`px-4 py-2 rounded-lg font-display text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'teacher'
-                  ? 'bg-[#172033] text-white shadow-xs'
-                  : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
+                  ? current.activeColor
+                  : 'bg-[#F8FAFC] text-[#102A43] border border-stone-200 hover:bg-stone-100'
               }`}
             >
               Teacher Portal
@@ -72,8 +75,8 @@ export function RealProductShowcaseSection() {
               onClick={() => setActiveTab('student')}
               className={`px-4 py-2 rounded-lg font-display text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'student'
-                  ? 'bg-[#172033] text-white shadow-xs'
-                  : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
+                  ? current.activeColor
+                  : 'bg-[#F8FAFC] text-[#102A43] border border-stone-200 hover:bg-stone-100'
               }`}
             >
               Student Portal
@@ -83,8 +86,8 @@ export function RealProductShowcaseSection() {
               onClick={() => setActiveTab('parent')}
               className={`px-4 py-2 rounded-lg font-display text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'parent'
-                  ? 'bg-[#172033] text-white shadow-xs'
-                  : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
+                  ? current.activeColor
+                  : 'bg-[#F8FAFC] text-[#102A43] border border-stone-200 hover:bg-stone-100'
               }`}
             >
               Parent Portal
@@ -100,10 +103,10 @@ export function RealProductShowcaseSection() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="rounded-2xl overflow-hidden border border-stone-300 bg-white shadow-lg space-y-0"
+            className="rounded-2xl overflow-hidden border border-[#102A43]/15 bg-white shadow-[0_16px_48px_rgba(16,42,67,0.08)] space-y-0"
           >
             {/* Browser Chrome Header */}
-            <div className="px-4 py-2.5 bg-stone-100 border-b border-stone-200 flex items-center justify-between">
+            <div className="px-4 py-2.5 bg-[#F8FAFC] border-b border-stone-200 flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-stone-300" />
                 <span className="w-2.5 h-2.5 rounded-full bg-stone-300" />
@@ -111,7 +114,7 @@ export function RealProductShowcaseSection() {
               </div>
 
               {/* URL Address Bar */}
-              <div className="px-3 py-0.5 rounded bg-white border border-stone-200 text-[11px] font-mono text-stone-600 max-w-sm w-full text-center truncate">
+              <div className="px-3 py-0.5 rounded bg-white border border-stone-200 text-[11px] font-mono text-[#102A43]/70 max-w-sm w-full text-center truncate">
                 https://{current.url}
               </div>
 
@@ -119,7 +122,7 @@ export function RealProductShowcaseSection() {
                 href={current.href}
                 className="text-xs font-bold text-[#2563EB] hover:underline"
               >
-                Launch &rarr;
+                Launch Live &rarr;
               </Link>
             </div>
 
@@ -137,10 +140,10 @@ export function RealProductShowcaseSection() {
             {/* Bottom Annotation Bar */}
             <div className="p-3.5 bg-white border-t border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
               <div className="space-y-0.5">
-                <span className="font-bold text-[#172033]">{current.title}</span>
-                <p className="text-stone-500 text-[11px]">{current.description}</p>
+                <span className="font-bold text-[#102A43]">{current.title}</span>
+                <p className="text-[#102A43]/60 text-[11px]">{current.description}</p>
               </div>
-              <span className="text-[11px] font-mono font-bold text-[#16836A] shrink-0">
+              <span className="text-[11px] font-mono font-bold text-[#16A085] shrink-0">
                 ✓ Production Live
               </span>
             </div>

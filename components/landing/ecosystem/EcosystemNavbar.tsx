@@ -11,7 +11,7 @@ export function EcosystemNavbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 15);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -21,28 +21,29 @@ export function EcosystemNavbar() {
     <header
       className={`fixed top-0 w-full z-50 transition-all duration-200 ${
         isScrolled
-          ? 'bg-[#FAF9F6]/95 backdrop-blur-md border-b border-stone-200 shadow-xs py-3'
-          : 'bg-[#FAF9F6] py-4 border-b border-stone-200/50'
+          ? 'bg-[#FFF9F0]/95 backdrop-blur-md border-b border-[#102A43]/10 shadow-[0_4px_20px_rgba(16,42,67,0.06)] py-3'
+          : 'bg-[#FFF9F0] py-4 border-b border-[#102A43]/5'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-        {/* Brand Logo */}
+        {/* Brand Logo with Blue + Amber Mark */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center font-display font-black text-white text-sm shadow-xs">
-            S
+          <div className="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center font-display font-black text-white text-sm shadow-xs relative overflow-hidden">
+            <span>S</span>
+            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#F59E0B] rounded-tl-sm" />
           </div>
           <div>
-            <span className="font-display text-base font-black text-[#172033] tracking-tight block leading-none">
+            <span className="font-display text-base font-black text-[#102A43] tracking-tight block leading-none">
               ShikshaSetu
             </span>
-            <span className="text-[9px] font-bold uppercase tracking-wider text-stone-500">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-[#102A43]/60">
               The Learning Ecosystem
             </span>
           </div>
         </Link>
 
-        {/* Clean 4-Link Navigation */}
-        <nav className="hidden md:flex items-center gap-7 text-xs font-bold text-[#172033]/80">
+        {/* Clean Deep Ink Navigation */}
+        <nav className="hidden md:flex items-center gap-7 text-xs font-bold text-[#102A43]/80">
           <a href="#the-difference" className="hover:text-[#2563EB] transition-colors">
             The Difference
           </a>
@@ -56,7 +57,7 @@ export function EcosystemNavbar() {
             Product UI
           </a>
           <a href="#ai-intelligence" className="hover:text-[#2563EB] transition-colors">
-            AI &amp; Capabilities
+            Intelligence
           </a>
         </nav>
 
@@ -64,7 +65,7 @@ export function EcosystemNavbar() {
         <div className="flex items-center gap-2.5">
           <Link
             href="/login"
-            className="text-xs font-bold text-[#172033] hover:text-[#2563EB] px-3 py-2 rounded-lg hover:bg-stone-100 transition-all hidden sm:inline-block"
+            className="text-xs font-bold text-[#102A43] hover:text-[#2563EB] px-3 py-2 rounded-lg hover:bg-black/5 transition-all hidden sm:inline-block"
           >
             Sign In
           </Link>
@@ -73,7 +74,7 @@ export function EcosystemNavbar() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={openRoleSelector}
-            className="bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+            className="bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-[0_4px_14px_rgba(37,99,235,0.25)] transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <span>Explore Portals</span>
             <span className="font-bold">&rarr;</span>
