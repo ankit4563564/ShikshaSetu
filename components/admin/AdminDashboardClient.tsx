@@ -576,6 +576,7 @@ export default function AdminDashboardClient({
                   Send Fee Reminders &rarr;
                 </button>
               </div>
+            </div>
           </motion.section>
 
           {activeTab === 'overview' && (
