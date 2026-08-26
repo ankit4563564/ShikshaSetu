@@ -1,29 +1,55 @@
 -- ============================================================================
 -- Migration 038: Canonical Multi-Tenant Scoping for chat_messages
--- 1. Adds school_id column referencing schools(id)
--- 2. Safely backfills existing chat records from student's school_id / default school
--- 3. Sets NOT NULL constraint and performance indexes
--- 4. Replaces legacy RLS with strict school-scoped tenant isolation policies
--- 5. Signals PostgREST schema cache reload
+-- 1. Ensures schools base table and default tenant exist
+-- 2. Adds school_id column referencing schools(id)
+-- 3. Safely backfills existing chat records from student's school_id / default school
+-- 4. Sets NOT NULL constraint and performance indexes
+-- 5. Replaces legacy RLS with strict school-scoped tenant isolation policies
+-- 6. Signals PostgREST schema cache reload
 -- ============================================================================
 
--- ── 1. Add school_id column to chat_messages ──
+-- ── 1. Ensure schools table and default school exist ──
+CREATE TABLE IF NOT EXISTS schools (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        TEXT NOT NULL,
+  slug        TEXT UNIQUE NOT NULL,
+  created_at  TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+INSERT INTO schools (id, name, slug)
+VALUES ('e0000000-0000-4000-8000-000000000001', 'Greenwood High International School', 'greenwood-high')
+ON CONFLICT (slug) DO NOTHING;
+
+CREATE OR REPLACE FUNCTION get_default_school_id()
+RETURNS UUID AS $$
+  SELECT id FROM schools WHERE slug = 'greenwood-high' LIMIT 1;
+$$ LANGUAGE sql STABLE;
+
+-- ── 2. Add school_id column to chat_messages ──
 ALTER TABLE chat_messages
 ADD COLUMN IF NOT EXISTS school_id UUID REFERENCES schools(id) ON DELETE RESTRICT;
 
--- ── 2. Backfill existing records ──
--- First match student's assigned school_id
-UPDATE chat_messages cm
-SET school_id = s.school_id
-FROM students s
-WHERE cm.student_id = s.id AND cm.school_id IS NULL;
+-- ── 3. Backfill existing records ──
+-- First match student's assigned school_id (if students table has school_id)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'students' AND column_name = 'school_id'
+  ) THEN
+    UPDATE chat_messages cm
+    SET school_id = s.school_id
+    FROM students s
+    WHERE cm.student_id = s.id AND cm.school_id IS NULL;
+  END IF;
+END $$;
 
 -- Fallback to default school for any standalone or seed records
 UPDATE chat_messages
 SET school_id = get_default_school_id()
 WHERE school_id IS NULL;
 
--- ── 3. Enforce NOT NULL & Indexes ──
+-- ── 4. Enforce NOT NULL & Indexes ──
 ALTER TABLE chat_messages
 ALTER COLUMN school_id SET NOT NULL;
 
