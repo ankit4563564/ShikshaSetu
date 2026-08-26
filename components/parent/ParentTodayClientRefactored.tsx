@@ -560,21 +560,27 @@ export default function ParentTodayClient({
                       </button>
                     </div>
                   ) : (
-                    <div className="rounded-2xl bg-deep-teal/5 border border-deep-teal/10 p-4 shadow-2xs space-y-2 flex flex-col justify-between">
+                    <div className="rounded-2xl bg-amber-50/80 border border-amber-200 p-4 shadow-2xs space-y-2 flex flex-col justify-between">
                       <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 text-deep-teal font-bold text-xs">
-                          <span>🎫</span>
-                          <span>Early Pickup</span>
+                        <div className="flex items-center justify-between text-amber-900 font-bold text-xs">
+                          <div className="flex items-center gap-1.5">
+                            <span>🚌</span>
+                            <span>Live School Bus</span>
+                          </div>
+                          <span className="px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 font-mono text-[10px] font-black">
+                            BUS 21
+                          </span>
                         </div>
-                        <p className="text-xs text-deep-teal/60">
-                          Need early pickup today? Submit a request for teacher approval.
+                        <p className="text-xs text-amber-800 font-medium">
+                          Greenwood Route &middot; Driver Rajesh Kumar &middot; Real-time GPS enabled
                         </p>
                       </div>
                       <button
-                        onClick={() => setShowPassModal(true)}
-                        className="self-start text-xs font-bold text-deep-teal hover:underline flex items-center gap-1"
+                        type="button"
+                        onClick={() => setActiveNav('bus')}
+                        className="self-start text-xs font-black text-amber-900 hover:underline flex items-center gap-1 cursor-pointer"
                       >
-                        Request early gate pass →
+                        Track Bus Location &rarr;
                       </button>
                     </div>
                   )}

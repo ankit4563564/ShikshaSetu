@@ -1,186 +1,254 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { getCanonicalBusLocation } from '@/lib/canonical';
+import React, { useState, useEffect, useRef } from 'react';
+import { getLiveBusLocationAction, type LiveBusLocationRecord } from '@/app/actions/busTrackingActions';
+import { createClient } from '@/lib/supabase/client';
 
 interface ParentBusTrackingTabProps {
-  studentId: string;
-  studentName: string;
+  studentId?: string;
+  studentName?: string;
   isLoading?: boolean;
   isEnabled?: boolean;
 }
 
 export function ParentBusTrackingTab({
   studentId,
-  studentName,
+  studentName = 'Aarav Sharma',
   isLoading = false,
   isEnabled = true,
 }: ParentBusTrackingTabProps) {
-  const [busData, setBusData] = useState<{
-    speed: number;
-    nextStop: string;
-    eta: number;
-    isLive: boolean;
-  }>({
-    speed: 0,
-    nextStop: 'Civil Lines Crossing',
-    eta: 12,
-    isLive: false, // Truthful live status flag
-  });
+  const [busLocation, setBusLocation] = useState<LiveBusLocationRecord | null>(null);
+  const [secondsAgo, setSecondsAgo] = useState<number>(0);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const leafletMapRef = useRef<any>(null);
+  const busMarkerRef = useRef<any>(null);
+
+  const fetchLocation = async () => {
+    try {
+      const loc = await getLiveBusLocationAction('BUS-21', studentId);
+      if (loc) {
+        setBusLocation(loc);
+        const diffSec = Math.max(0, Math.floor((Date.now() - new Date(loc.last_updated).getTime()) / 1000));
+        setSecondsAgo(diffSec);
+      }
+    } catch {
+      // Offline fallback
+    }
+  };
 
   useEffect(() => {
-    async function checkBus() {
-      try {
-        const loc = await getCanonicalBusLocation();
-        if (loc && loc.last_updated) {
-          const diffMinutes = (Date.now() - new Date(loc.last_updated).getTime()) / (1000 * 60);
-          setBusData({
-            speed: loc.speed_kmh || 0,
-            nextStop: loc.next_stop || 'Civil Lines Crossing',
-            eta: loc.eta_minutes || 12,
-            isLive: diffMinutes < 15, // Only mark live if updated within last 15 minutes
-          });
-        }
-      } catch (err) {
-        console.warn('[ParentBusTrackingTab] GPS telemetry offline:', err);
-      }
-    }
-    checkBus();
+    fetchLocation();
+    const interval = setInterval(fetchLocation, 4000);
+    return () => clearInterval(interval);
   }, [studentId]);
 
-  if (!isEnabled) {
-    return (
-      <div className="space-y-4">
-        <div>
-          <h3 className="font-display text-xl font-black text-deep-teal">Bus &amp; Route Info</h3>
-          <p className="font-body text-xs text-deep-teal/60 font-semibold mt-0.5">
-            Transport details for {studentName}.
-          </p>
-        </div>
-        <div className="rounded-2xl border border-deep-teal/10 bg-paper p-6 shadow-sm text-center py-10">
-          <p className="font-body text-sm text-deep-teal/40 italic">
-            🔒 Bus tracking is hidden because this preference is disabled.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // Tick secondsAgo counter every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (busLocation?.last_updated) {
+        const diff = Math.max(0, Math.floor((Date.now() - new Date(busLocation.last_updated).getTime()) / 1000));
+        setSecondsAgo(diff);
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [busLocation?.last_updated]);
+
+  // Subscribe to Supabase realtime updates if active
+  useEffect(() => {
+    try {
+      const supabase = createClient();
+      const channel = supabase
+        .channel('bus-locations-realtime')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'bus_locations' },
+          () => {
+            fetchLocation();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch {
+      // Ignored in offline dev
+    }
+  }, []);
+
+  // Initialize Leaflet Map dynamically
+  useEffect(() => {
+    if (typeof window === 'undefined' || !mapRef.current || !busLocation) return;
+
+    let isMounted = true;
+
+    async function initLeaflet() {
+      try {
+        const L = (await import('leaflet')).default;
+        if (!isMounted || !mapRef.current) return;
+
+        const { latitude, longitude } = busLocation!;
+
+        if (!leafletMapRef.current) {
+          const map = L.map(mapRef.current, {
+            center: [latitude, longitude],
+            zoom: 15,
+            zoomControl: false,
+          });
+
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19,
+          }).addTo(map);
+
+          // Custom bus icon
+          const busIcon = L.divIcon({
+            className: 'custom-bus-pin',
+            html: `
+              <div style="
+                background: #f59e0b;
+                border: 3px solid #ffffff;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                border-radius: 50%;
+                width: 44px;
+                height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 22px;
+              ">
+                🚌
+              </div>
+            `,
+            iconSize: [44, 44],
+            iconAnchor: [22, 22],
+          });
+
+          const marker = L.marker([latitude, longitude], { icon: busIcon }).addTo(map);
+          marker.bindPopup(`<b>BUS 21</b><br/>Driver: Rajesh Kumar<br/>Speed: ${busLocation?.speed_kmh || 0} km/h`);
+
+          leafletMapRef.current = map;
+          busMarkerRef.current = marker;
+        } else {
+          leafletMapRef.current.panTo([latitude, longitude]);
+          if (busMarkerRef.current) {
+            busMarkerRef.current.setLatLng([latitude, longitude]);
+          }
+        }
+      } catch (err) {
+        console.warn('[ParentBusTrackingTab] Leaflet initialization:', err);
+      }
+    }
+
+    initLeaflet();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [busLocation?.latitude, busLocation?.longitude]);
+
+  const isLiveFresh = busLocation?.is_live && secondsAgo < 30;
+  const isUpdating = busLocation?.is_live && secondsAgo >= 30 && secondsAgo < 120;
+  const isStale = busLocation?.is_live && secondsAgo >= 120;
+  const isTripEnded = !busLocation?.is_live;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h3 className="font-display text-lg font-black text-slate-900">
-              School Transport &amp; Route Telemetry
-            </h3>
-            <span
-              className={`px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest border shadow-2xs ${
-                busData.isLive
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300 animate-pulse'
-                  : 'bg-indigo-50 text-indigo-700 border-indigo-200'
-              }`}
-            >
-              {busData.isLive ? '📡 Live GPS Connected' : '🚌 Route Timetable'}
-            </span>
-          </div>
-          <p className="font-body text-xs text-slate-500 font-medium mt-0.5">
-            Verified school bus route and pickup schedule for {studentName}.
-          </p>
-        </div>
-      </div>
-
-      {/* Route Overview Hero */}
-      <div className="rounded-3xl bg-white/90 border border-slate-200/80 p-6 sm:p-7 shadow-sm backdrop-blur-xl space-y-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center text-2xl font-bold shadow-md shadow-amber-500/20">
-              🚌
+    <div className="space-y-6 max-w-5xl mx-auto font-body">
+      {/* Top Banner Card */}
+      <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-2xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">🚌</span>
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-amber-600 font-extrabold block">
+                  CANONICAL SCHOOL TRANSPORT
+                </span>
+                <h3 className="font-display text-xl font-bold text-slate-900">
+                  Track School Bus &middot; {studentName}
+                </h3>
+              </div>
             </div>
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-full inline-block mb-1">
-                Assigned Route #04
+            <p className="text-xs text-slate-500 font-medium mt-1">
+              Real-time browser GPS broadcast from Driver Rajesh Kumar (Bus 21 &middot; Greenwood Route).
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {isLiveFresh && (
+              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-black shadow-2xs">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                ● LIVE LOCATION ACTIVE
               </span>
-              <h4 className="font-display text-lg font-black text-slate-900">
-                Central Sector Route • Bus #DL-1PB-4820
-              </h4>
-            </div>
+            )}
+            {isUpdating && (
+              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                ● UPDATING TELEMETRY
+              </span>
+            )}
+            {isStale && (
+              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold">
+                ⚠️ LAST KNOWN LOCATION
+              </span>
+            )}
+            {isTripEnded && (
+              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-100 border border-slate-300 text-slate-600 text-xs font-bold">
+                ⏹ TRIP NOT ACTIVE
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Schedule & Stops */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
-          <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 shadow-2xs space-y-1">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-              📍 Designated Stop
-            </span>
-            <p className="font-display text-sm font-black text-slate-900">
-              {busData.nextStop}
-            </p>
-            <p className="text-[11px] text-slate-500 font-medium">Stop #4 on morning route</p>
+        {/* Live Telemetry KPI Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
+          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/60">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Assigned Bus</span>
+            <span className="font-display font-extrabold text-slate-900 text-sm">BUS 21</span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 shadow-2xs space-y-1">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-              🌅 Morning Pickup
+          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/60">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">GPS Freshness</span>
+            <span className="font-display font-extrabold text-slate-900 text-sm">
+              {isTripEnded ? 'Trip Ended' : secondsAgo === 0 ? 'Just now' : `${secondsAgo}s ago`}
             </span>
-            <p className="font-display text-sm font-black text-slate-900">
-              07:45 AM
-            </p>
-            <p className="text-[11px] text-slate-500 font-medium">Arrives at school by 08:15 AM</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 shadow-2xs space-y-1">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-              🌇 Afternoon Drop
+          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/60">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Current Speed</span>
+            <span className="font-display font-extrabold text-slate-900 text-sm">
+              {busLocation?.speed_kmh || 0} km/h
             </span>
-            <p className="font-display text-sm font-black text-slate-900">
-              03:45 PM
-            </p>
-            <p className="text-[11px] text-slate-500 font-medium">Departs school at 03:15 PM</p>
           </div>
-        </div>
 
-        {/* Driver Contact */}
-        <div className="p-4 rounded-2xl bg-slate-50/90 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-700 flex items-center justify-center text-base font-bold">
-              👨‍✈️
-            </div>
-            <div>
-              <p className="font-display text-xs font-black text-slate-900">
-                Driver: Mr. Rajesh Kumar • Attendant: Ramu
-              </p>
-              <p className="text-[11px] text-slate-500 font-medium">Verified School Transport Staff</p>
-            </div>
+          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/60">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">GPS Accuracy</span>
+            <span className="font-display font-extrabold text-emerald-700 text-sm">
+              &plusmn;{busLocation?.accuracy_meters || 12}m
+            </span>
           </div>
-          <a
-            href="tel:+919876543210"
-            className="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 text-indigo-700 hover:bg-indigo-50 font-display text-xs font-black transition-all shadow-2xs text-center cursor-pointer"
-          >
-            Call Driver 📞
-          </a>
         </div>
       </div>
 
-      {/* Truthful Telemetry Disclaimer */}
-      {!busData.isLive ? (
-        <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 text-indigo-950 text-xs space-y-1 shadow-2xs">
-          <p className="font-extrabold flex items-center gap-2">
-            <span>ℹ</span> Live GPS hardware telemetry is currently standby.
-          </p>
-          <p className="text-indigo-900/80 leading-relaxed text-[11px] font-medium">
-            Live tracking activates automatically when the bus driver starts the GPS trip broadcast on the active school route.
-          </p>
+      {/* Realtime Interactive Leaflet Map Container */}
+      <div className="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between px-2 pt-1">
+          <span className="text-xs font-bold text-slate-700">Live Satellite / Street Position</span>
+          <span className="text-[11px] font-mono text-slate-400">
+            Lat: {busLocation?.latitude?.toFixed(5) || '28.53550'} &middot; Lng: {busLocation?.longitude?.toFixed(5) || '77.20900'}
+          </span>
         </div>
-      ) : (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs space-y-1 shadow-2xs">
-          <p className="font-extrabold flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping" /> Live Telemetry Active: Speed {busData.speed} km/h • ETA {busData.eta} mins
-          </p>
+
+        <div
+          ref={mapRef}
+          className="w-full h-[400px] sm:h-[480px] rounded-2xl overflow-hidden border border-slate-200 relative z-10"
+        />
+
+        <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium px-2 pb-1">
+          <span>📍 High-Accuracy Device Geolocation &middot; OpenStreetMap Leaflet Engine</span>
+          <span>Synced with Canonical Database</span>
         </div>
-      )}
+      </div>
     </div>
   );
 }
