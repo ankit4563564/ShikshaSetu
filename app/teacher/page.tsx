@@ -6,6 +6,7 @@ import { auth } from '@clerk/nextjs/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getDemoSessionFromCookies } from '@/lib/demo/session';
+import { getAuthContext } from '@/lib/auth/getAuthContext';
 import { getStudentsForTeacher } from '@/lib/supabase/getStudentsData';
 import type { StudentWithFlag } from '@/lib/supabase/getStudentsData';
 

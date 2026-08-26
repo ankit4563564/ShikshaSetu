@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import TeacherSidebar from './TeacherSidebar';
 import TodaysFocusBar from './TodaysFocusBar';
-import PersistentAISearch from './PersistentAISearch';
 import SupportRadarWidget from './widgets/SupportRadarWidget';
 import AttendanceWidget from './widgets/AttendanceWidget';
 import HomeworkWidget from './widgets/HomeworkWidget';
