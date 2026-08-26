@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { CANONICAL_STUDENT_ID, CANONICAL_TEACHER_ID } from '@/lib/canonical';
-import type { StudentReportCardData } from '@/components/teacher/SchoolPulsePDF';
+import { CANONICAL_STUDENT_ID } from '@/lib/canonical';
+import {
+  StudentReportCardData,
+  buildReportCardPDF,
+  getSubjectMarksForStudent,
+} from '@/lib/pdf/reportCardGenerator';
 
 describe('Teacher Portal — Academic Report Card PDF Generation & Data Integrity', () => {
   const mockStudents: StudentReportCardData[] = [
@@ -69,56 +73,42 @@ describe('Teacher Portal — Academic Report Card PDF Generation & Data Integrit
 
   it('2. Computes scholastic marks, total aggregate, and grade accurately', () => {
     const aarav = mockStudents[0];
-    const grades = aarav.grades || [];
-    expect(grades).toHaveLength(5);
+    const marks = getSubjectMarksForStudent(aarav);
+    expect(marks).toHaveLength(5);
 
-    const totalMax = grades.reduce((acc, g) => acc + g.maxScore, 0);
-    const totalObtained = grades.reduce((acc, g) => acc + g.score, 0);
+    const totalMax = marks.reduce((acc, g) => acc + g.maxMarks, 0);
+    const totalObtained = marks.reduce((acc, g) => acc + g.score, 0);
     const pct = Math.round((totalObtained / totalMax) * 100);
 
     expect(totalMax).toBe(500);
     expect(totalObtained).toBe(416);
     expect(pct).toBe(83); // 83.2% rounded -> 83%
 
-    const mathGrade = grades.find((g) => g.subject === 'Mathematics');
+    const mathGrade = marks.find((g) => g.subject === 'Mathematics');
     expect(mathGrade?.score).toBe(78);
+    expect(mathGrade?.grade).toBe('B+');
   });
 
-  it('3. Multi-student batch selection supports distinct report cards', () => {
-    const selectedIds = new Set(mockStudents.map((s) => s.studentId));
-    const filtered = mockStudents.filter((s) => selectedIds.has(s.studentId));
+  it('3. Generates genuine non-empty vector PDF with valid header and structure for 1 student', () => {
+    const aarav = mockStudents[0];
+    const doc = buildReportCardPDF([aarav]);
+    const arrayBuffer = doc.output('arraybuffer');
 
-    expect(filtered).toHaveLength(2);
-    expect(filtered[0].displayName).toBe('Aarav Sharma');
-    expect(filtered[1].displayName).toBe('Priya Patel');
-    expect(filtered[0].studentId).not.toBe(filtered[1].studentId);
+    expect(arrayBuffer.byteLength).toBeGreaterThan(2000);
+    const headerStr = Buffer.from(arrayBuffer).toString('utf-8', 0, 5);
+    expect(headerStr).toBe('%PDF-');
   });
 
-  it('4. Guard against zero dimensions / unmounted DOM node during PDF capture', () => {
-    const mockElement = {
-      scrollWidth: 794,
-      scrollHeight: 1120,
-    };
+  it('4. Multi-student batch selection produces multi-page PDF with all students', () => {
+    const doc = buildReportCardPDF(mockStudents);
+    const pageCount = doc.getNumberOfPages();
+    expect(pageCount).toBe(2);
 
-    const isMeasurable = mockElement.scrollWidth > 0 && mockElement.scrollHeight > 0;
-    expect(isMeasurable).toBe(true);
-
-    const emptyElement = {
-      scrollWidth: 0,
-      scrollHeight: 0,
-    };
-    const isEmpty = emptyElement.scrollWidth === 0 || emptyElement.scrollHeight === 0;
-    expect(isEmpty).toBe(true);
+    const arrayBuffer = doc.output('arraybuffer');
+    expect(arrayBuffer.byteLength).toBeGreaterThan(4000);
   });
 
-  it('5. Error validation when 0 students selected', () => {
-    const selected = new Set<string>();
-    let error: string | null = null;
-
-    if (selected.size === 0) {
-      error = 'Please select at least one student to print report cards.';
-    }
-
-    expect(error).toBe('Please select at least one student to print report cards.');
+  it('5. Guard against empty student array', () => {
+    expect(() => buildReportCardPDF([])).toThrow('Cannot generate PDF: No student data provided.');
   });
 });
