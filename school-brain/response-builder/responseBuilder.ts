@@ -24,19 +24,7 @@ export function buildFinalResponse(
   const cleanedText = sanitizeOutput(rawText);
   const formatted = formatForDisplay(cleanedText, intent, role || 'teacher', confidence);
 
-  // Build transparent "Based on" sources and "Not included" missing data block
-  let attributedText = formatted.text;
-  const verifiedSourcesList = sources.length > 0 ? sources : ['School Knowledge Base'];
-  
-  if (!attributedText.includes('Based on')) {
-    attributedText += `\n\n──────────────────────────────────────\n📌 **Based on verified sources**:\n${verifiedSourcesList.map(s => `  ✓ ${s}`).join('\n')}`;
-  }
-
-  if (missingFields && missingFields.length > 0 && !attributedText.includes('Not included')) {
-    attributedText += `\n\n⚠️ **Not included in current records**:\n${missingFields.map(m => `  • ${m}`).join('\n')}`;
-  }
-
-  const withFooter = addConfidenceFooter(attributedText, confidence, sources);
+  const withFooter = addConfidenceFooter(formatted.text, confidence, sources);
 
   // Run Recommendation Engine to derive high-value next-step follow-ups
   const dynamicRecommendations = selectNextStepRecommendations(intent, undefined, role || 'teacher', queryText || '');

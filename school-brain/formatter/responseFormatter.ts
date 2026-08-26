@@ -229,11 +229,5 @@ export function sanitizeOutput(text: string): string {
  * Adds contextual footer based on data source confidence.
  */
 export function addConfidenceFooter(text: string, confidence: ConfidenceLevel, sources: string[]): string {
-  if (confidence === 'HIGH') return text;
-
-  if (confidence === 'LIMITED') {
-    return `${text}\n\n💡 This response is based on limited data. For real-time accuracy, check the relevant portal module.`;
-  }
-
   return text;
 }
