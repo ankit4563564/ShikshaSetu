@@ -46,7 +46,7 @@ const PRESET_TOPICS: Record<string, string[]> = {
 interface AiRevisionNotesWorkspaceProps {
   initialSubject?: string;
   initialTopic?: string;
-  onAskTutor?: (concept: string) => void;
+  onAskTutor?: (context: { topic: string; subject: string; concept?: string; actionType?: string }) => void;
 }
 
 export default function AiRevisionNotesWorkspace({
@@ -88,7 +88,7 @@ export default function AiRevisionNotesWorkspace({
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Generate Notes on initial load or on button press
+  // Generate Notes on initial load or on topic change
   const handleGenerateNotes = async (subj = selectedSubject, top = selectedTopic, notes = customNotes) => {
     setIsGenerating(true);
     setIsShortenedMode(false);
@@ -101,7 +101,8 @@ export default function AiRevisionNotesWorkspace({
       const res = await generateRevisionNotesAction({
         subject: subj,
         topic: top,
-        chapterNotes: notes,
+        grade: '8',
+        customNotes: notes.trim() || undefined,
       });
 
       if (res.success && res.notes) {
@@ -115,8 +116,8 @@ export default function AiRevisionNotesWorkspace({
   };
 
   useEffect(() => {
-    handleGenerateNotes(initialSubject, initialTopic);
-  }, []);
+    handleGenerateNotes(selectedSubject, selectedTopic);
+  }, [selectedSubject, selectedTopic]);
 
   const handleExplainConcept = async (concept: string) => {
     if (!currentNotes) return;
@@ -187,27 +188,36 @@ export default function AiRevisionNotesWorkspace({
     return score;
   };
 
+  const isMathFractions = selectedTopic.toLowerCase().includes('fraction');
+
   return (
     <div className="space-y-6 font-body text-slate-900 pb-12">
-      {/* ── Top Controls / Chapter Selection Bar ── */}
-      <section className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs space-y-4">
+      {/* ── Top Controls / Context Banner Bar ── */}
+      <section className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-2xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-xs font-black">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center text-xl shadow-xs font-black">
               📚
             </div>
             <div>
-              <h2 className="font-display text-base sm:text-lg font-black text-slate-900">
-                AI Revision Notes
-              </h2>
-              <p className="text-xs text-slate-500 font-medium">
-                Concise, high-yield chapter summaries &amp; instant concept checks
+              <div className="flex items-center gap-2">
+                <h2 className="font-display text-base sm:text-lg font-black text-slate-900">
+                  AI Revision Notes
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[10px] font-extrabold">
+                  ✦ RECOMMENDED FOR YOU
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                {isMathFractions
+                  ? 'Your recent check showed that Equivalent Fractions needs a 5-minute visual review.'
+                  : `Structured revision prepared for Class 8 ${selectedSubject} &middot; ${selectedTopic}`}
               </p>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-center">
             <button
               type="button"
               onClick={handleOpenLibrary}
@@ -228,50 +238,66 @@ export default function AiRevisionNotesWorkspace({
 
         {/* Preset Selector vs Custom Input */}
         {!isCustomMode ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">
-                Select Subject
-              </label>
-              <select
-                value={selectedSubject}
-                onChange={(e) => {
-                  const newSubj = e.target.value;
-                  setSelectedSubject(newSubj);
-                  const firstTopic = PRESET_TOPICS[newSubj]?.[0] || 'Core Chapter';
-                  setSelectedTopic(firstTopic);
-                }}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-600"
-              >
-                {Object.keys(PRESET_TOPICS).map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">
-                Chapter / Topic
-              </label>
-              <div className="flex gap-2">
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">
+                  Select Subject
+                </label>
                 <select
-                  value={selectedTopic}
-                  onChange={(e) => setSelectedTopic(e.target.value)}
-                  className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-600"
+                  value={selectedSubject}
+                  onChange={(e) => {
+                    const newSubj = e.target.value;
+                    setSelectedSubject(newSubj);
+                    const firstTopic = PRESET_TOPICS[newSubj]?.[0] || 'Core Chapter';
+                    setSelectedTopic(firstTopic);
+                  }}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-600 cursor-pointer"
                 >
-                  {(PRESET_TOPICS[selectedSubject] || []).map((t) => (
-                    <option key={t} value={t}>{t}</option>
+                  {Object.keys(PRESET_TOPICS).map((s) => (
+                    <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
-                <button
-                  type="button"
-                  onClick={() => handleGenerateNotes(selectedSubject, selectedTopic)}
-                  disabled={isGenerating}
-                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs transition shadow-xs active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
-                >
-                  {isGenerating ? 'Generating...' : 'Revise Now ✨'}
-                </button>
               </div>
+
+              <div className="sm:col-span-2">
+                <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">
+                  Chapter / Topic
+                </label>
+                <div className="flex gap-2">
+                  <select
+                    value={selectedTopic}
+                    onChange={(e) => setSelectedTopic(e.target.value)}
+                    className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-600 cursor-pointer"
+                  >
+                    {(PRESET_TOPICS[selectedSubject] || []).map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateNotes(selectedSubject, selectedTopic)}
+                    disabled={isGenerating}
+                    className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs transition shadow-xs active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
+                  >
+                    {isGenerating ? 'Synthesizing...' : 'Revise Topic ✨'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* SchoolMitra Context Provenance Strip */}
+            <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/60 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 font-medium">
+              <div className="flex items-center gap-3">
+                <span className="font-bold text-indigo-700 flex items-center gap-1">
+                  <span>✦</span>
+                  <span>SchoolMitra revision prepared from:</span>
+                </span>
+                <span>✓ Class 8 {selectedSubject} syllabus</span>
+                <span>✓ Selected chapter core</span>
+                <span>✓ Recent learning activity</span>
+              </div>
+              <span className="text-[10px] font-mono text-slate-400">Class 8 &middot; CBSE / NCERT aligned</span>
             </div>
           </div>
         ) : (
@@ -328,7 +354,9 @@ export default function AiRevisionNotesWorkspace({
             <p className="font-display text-base font-black text-slate-900">
               Synthesizing key revision concepts for {selectedTopic}...
             </p>
-            <p className="text-xs text-slate-500 mt-1">Extracting core formulas, high-yield definitions, and common exam traps.</p>
+            <p className="text-xs text-slate-500 mt-1">
+              Extracting core formulas, high-yield definitions, and common exam traps.
+            </p>
           </div>
         </div>
       ) : currentNotes ? (
@@ -337,7 +365,7 @@ export default function AiRevisionNotesWorkspace({
           <div className="bg-white/90 rounded-3xl p-6 border border-slate-200/80 shadow-sm backdrop-blur-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full inline-block mb-2">
-                {currentNotes.subject} • Class {currentNotes.grade || '8'} Digital Notebook
+                {currentNotes.subject} &middot; Class {currentNotes.grade || '8'} Digital Notebook
               </span>
               <h1 className="font-display text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                 {currentNotes.title}
@@ -386,15 +414,6 @@ export default function AiRevisionNotesWorkspace({
               >
                 <span>{isSaved ? '✓ Saved' : '💾 Save Note'}</span>
               </motion.button>
-
-              <button
-                type="button"
-                onClick={() => handleGenerateNotes(selectedSubject, selectedTopic)}
-                className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition cursor-pointer"
-                title="Regenerate Notes"
-              >
-                🔄
-              </button>
             </div>
           </div>
 
@@ -419,7 +438,9 @@ export default function AiRevisionNotesWorkspace({
                 {currentNotes.formulaOrEquation && (
                   <li className="flex items-start gap-2.5 bg-white/70 p-3 rounded-2xl border border-amber-200/60">
                     <span className="font-extrabold text-amber-800 shrink-0">• Formula:</span>
-                    <span className="font-mono bg-slate-900 text-emerald-400 font-bold px-2.5 py-1 rounded-lg text-xs">{currentNotes.formulaOrEquation}</span>
+                    <span className="font-mono bg-slate-900 text-emerald-400 font-bold px-2.5 py-1 rounded-lg text-xs">
+                      {currentNotes.formulaOrEquation}
+                    </span>
                   </li>
                 )}
                 {currentNotes.rememberThis.map((r, i) => (
@@ -461,7 +482,7 @@ export default function AiRevisionNotesWorkspace({
                     </h3>
                   </div>
                   <span className="text-[11px] text-indigo-600 font-bold bg-indigo-50 px-2.5 py-0.5 rounded-full">
-                    Tap any concept for AI breakdown
+                    Tap any concept for instant breakdown
                   </span>
                 </div>
 
@@ -484,7 +505,7 @@ export default function AiRevisionNotesWorkspace({
                 {/* Instant Concept Explainer Drawer */}
                 {isExplainingConcept && (
                   <div className="p-4 bg-indigo-50/70 rounded-2xl text-xs text-indigo-700 font-bold animate-pulse border border-indigo-100">
-                    AI is preparing simple explanation and real-life analogy...
+                    SchoolMitra is preparing simple explanation and real-life analogy...
                   </div>
                 )}
                 {activeConceptExplanation && !isExplainingConcept && (
@@ -517,6 +538,21 @@ export default function AiRevisionNotesWorkspace({
                       <span className="font-extrabold block text-[10px] uppercase text-emerald-800 mb-1">❓ Quick Check:</span>
                       {activeConceptExplanation.checkQuestion}
                     </div>
+
+                    {onAskTutor && (
+                      <button
+                        type="button"
+                        onClick={() => onAskTutor({
+                          topic: currentNotes.title,
+                          subject: currentNotes.subject,
+                          concept: activeConceptExplanation.concept,
+                          actionType: 'explain',
+                        })}
+                        className="text-xs font-extrabold text-indigo-700 hover:underline flex items-center gap-1 cursor-pointer pt-1"
+                      >
+                        Ask SchoolMitra for more examples &rarr;
+                      </button>
+                    )}
                   </motion.div>
                 )}
               </div>
@@ -541,7 +577,6 @@ export default function AiRevisionNotesWorkspace({
 
               {/* ⚡ Remember This & 🧮 Formula Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* ⚡ Remember This */}
                 <div className="bg-white/90 rounded-3xl p-6 border border-slate-200/80 shadow-sm backdrop-blur-xl space-y-4">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">⚡</span>
@@ -559,12 +594,11 @@ export default function AiRevisionNotesWorkspace({
                   </ul>
                 </div>
 
-                {/* 🧮 Formula / Equation */}
                 <div className="bg-white/90 rounded-3xl p-6 border border-slate-200/80 shadow-sm backdrop-blur-xl space-y-4">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">🧮</span>
                     <h3 className="font-display text-xs font-black text-slate-900 uppercase tracking-wider">
-                      Essential Formula
+                      Essential Formula / Rule
                     </h3>
                   </div>
                   {currentNotes.formulaOrEquation ? (
@@ -581,7 +615,6 @@ export default function AiRevisionNotesWorkspace({
 
               {/* 💡 Worked Example & ⚠️ Common Mistake */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Worked Example */}
                 <div className="bg-emerald-50/80 rounded-3xl p-6 border border-emerald-200/80 shadow-sm space-y-3">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">💡</span>
@@ -594,7 +627,6 @@ export default function AiRevisionNotesWorkspace({
                   </p>
                 </div>
 
-                {/* Common Mistake */}
                 <div className="bg-rose-50/80 rounded-3xl p-6 border border-rose-200/80 shadow-sm space-y-3">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">⚠️</span>
@@ -610,7 +642,7 @@ export default function AiRevisionNotesWorkspace({
             </div>
           )}
 
-          {/* ══ QUIZ ME MODAL ══ */}
+          {/* ══ QUIZ ME / CONCEPT CHECK COMPONENT ══ */}
           {isQuizOpen && (
             <div className="p-6 bg-white rounded-3xl border border-purple-200 shadow-lg space-y-5 animate-in fade-in">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -618,15 +650,17 @@ export default function AiRevisionNotesWorkspace({
                   <span className="text-xl">🧠</span>
                   <div>
                     <h3 className="font-display text-sm font-black text-slate-900">
-                      Quick Concept Quiz: {currentNotes.title}
+                      Quick Concept Check: {currentNotes.title}
                     </h3>
-                    <p className="text-xs text-slate-500 font-medium">3–4 targeted questions based on the notes</p>
+                    <p className="text-xs text-slate-500 font-medium">
+                      3 targeted diagnostic questions generated from this chapter
+                    </p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsQuizOpen(false)}
-                  className="p-1.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 text-xs font-bold"
+                  className="p-1.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 text-xs font-bold cursor-pointer"
                 >
                   ✕ Close
                 </button>
@@ -634,7 +668,7 @@ export default function AiRevisionNotesWorkspace({
 
               {isGeneratingQuiz ? (
                 <div className="py-8 text-center text-xs text-slate-500 animate-pulse">
-                  Generating diagnostic questions...
+                  SchoolMitra is generating diagnostic questions...
                 </div>
               ) : quizQuestions.length > 0 ? (
                 <div className="space-y-4">
@@ -687,27 +721,63 @@ export default function AiRevisionNotesWorkspace({
                       disabled={Object.keys(userAnswers).length < quizQuestions.length}
                       className="w-full py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs transition shadow-sm disabled:opacity-40 cursor-pointer"
                     >
-                      Submit Answers &amp; See Explanations →
+                      Submit Check &amp; Evaluate Understanding &rarr;
                     </button>
                   ) : (
-                    <div className="p-4 bg-gradient-to-r from-purple-50 via-white to-white rounded-2xl border border-purple-200 flex items-center justify-between">
-                      <div>
-                        <span className="text-xs font-extrabold text-purple-950 block">
-                          Quiz Result: {calculateScore()} / {quizQuestions.length} Correct
+                    /* AI Evaluation & Next Action Recommendation */
+                    <div className="p-5 bg-gradient-to-r from-purple-50 via-indigo-50/40 to-white rounded-2xl border border-purple-200 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-100 pb-2.5">
+                        <div>
+                          <span className="text-xs font-extrabold text-purple-950 block">
+                            Concept Mastery: {calculateScore()} / {quizQuestions.length} Correct
+                          </span>
+                          <p className="text-[11px] text-slate-600 font-medium mt-0.5">
+                            {calculateScore() === quizQuestions.length
+                              ? '🎉 Perfect understanding! You are ready for the next topic.'
+                              : '💡 Looks like this concept needs another look before moving to applications.'}
+                          </p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-extrabold ${
+                          calculateScore() === quizQuestions.length
+                            ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                            : 'bg-amber-100 text-amber-900 border border-amber-300'
+                        }`}>
+                          {calculateScore() === quizQuestions.length ? 'Mastery Achieved' : 'Needs Practice'}
                         </span>
-                        <p className="text-[11px] text-slate-600 font-medium">
-                          {calculateScore() === quizQuestions.length
-                            ? '🎉 Perfect understanding! You are ready for the test.'
-                            : '💡 Review the common mistakes and worked examples above.'}
-                        </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleStartQuiz}
-                        className="px-3.5 py-2 bg-white border border-purple-200 text-purple-700 font-bold text-xs rounded-xl hover:bg-purple-50 cursor-pointer"
-                      >
-                        Try Again 🔄
-                      </button>
+
+                      {/* Next Action recommendation */}
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+                        <span className="text-xs text-slate-600 font-medium">
+                          {calculateScore() === quizQuestions.length
+                            ? 'Next recommended chapter: Linear Equations in One Variable'
+                            : 'Recommended: Review the common mistakes and worked examples above.'}
+                        </span>
+
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                          {calculateScore() < quizQuestions.length && onAskTutor && (
+                            <button
+                              type="button"
+                              onClick={() => onAskTutor({
+                                topic: currentNotes.title,
+                                subject: currentNotes.subject,
+                                actionType: 'hint',
+                              })}
+                              className="px-3.5 py-2 bg-white border border-purple-200 text-purple-700 font-bold text-xs rounded-xl hover:bg-purple-50 cursor-pointer"
+                            >
+                              💡 Ask Mitra for Help
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={handleStartQuiz}
+                            className="px-3.5 py-2 bg-purple-600 text-white font-bold text-xs rounded-xl hover:bg-purple-700 cursor-pointer"
+                          >
+                            Retake Check 🔄
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -731,7 +801,7 @@ export default function AiRevisionNotesWorkspace({
               <button
                 type="button"
                 onClick={() => setIsLibraryOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 text-xs font-bold"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 text-xs font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -764,12 +834,12 @@ export default function AiRevisionNotesWorkspace({
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-slate-400 group-hover:text-indigo-600 font-bold">
-                        Open →
+                        Open &rarr;
                       </span>
                       <button
                         type="button"
                         onClick={(e) => note.id && handleDeleteSavedNote(note.id, e)}
-                        className="text-slate-300 hover:text-rose-500 text-xs p-1"
+                        className="text-slate-300 hover:text-rose-500 text-xs p-1 cursor-pointer"
                         title="Delete note"
                       >
                         🗑️

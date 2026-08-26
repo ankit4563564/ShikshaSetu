@@ -474,7 +474,14 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
               transition={{ duration: 0.2 }}
               className="space-y-6"
             >
-              <AiRevisionNotesWorkspace onAskTutor={() => setActiveTab('Wellbeing')} />
+              <AiRevisionNotesWorkspace
+                initialSubject="Mathematics"
+                initialTopic={selectedStudyTopic || 'Fractions & Decimals'}
+                onAskTutor={(ctx) => {
+                  setSelectedStudyTopic(ctx.concept || ctx.topic);
+                  setActiveTab('Wellbeing');
+                }}
+              />
             </motion.div>
           )}
 
