@@ -79,13 +79,21 @@ export default async function TeacherPage() {
   }
 
   // ─── Load students for this teacher's class ───────────────────────────────
-  // getStudentsForTeacher returns [] if nothing found — never fabricates students.
-  let classStudents = await getStudentsForTeacher(teacherId);
+  let classStudents: StudentWithFlag[] = [];
+  try {
+    classStudents = await getStudentsForTeacher(teacherId);
+    if (!classStudents || classStudents.length === 0) {
+      classStudents = await getStudentsForClass(teacherGrade || '8', teacherSection || 'A');
+    }
+  } catch (loadErr) {
+    console.warn('[TeacherPage] Student loading error, falling back to class roster:', loadErr);
+    classStudents = await getStudentsForClass(teacherGrade || '8', teacherSection || 'A');
+  }
 
   // Enrich each student with rules engine status + AI narration
-  const processedStudents = classStudents.map((st) => {
-    const computedStatus = calculateStudentStatus(st.attendance, st.homework, st.grades);
-    const aiNarration = generateOfflineFallback(st.displayName || 'Student', computedStatus.evidence);
+  const processedStudents = (classStudents || []).map((st) => {
+    const computedStatus = calculateStudentStatus(st.attendance || [], st.homework || [], st.grades || []);
+    const aiNarration = generateOfflineFallback(st.displayName || 'Student', computedStatus.evidence || []);
     return {
       ...st,
       status: computedStatus.finalStatus,
@@ -95,7 +103,7 @@ export default async function TeacherPage() {
   });
 
   // Derive grade/section from students if teacher row didn't have it
-  if (processedStudents.length > 0 && !classStudents[0].grade) {
+  if (processedStudents.length > 0 && (!classStudents[0]?.grade || !teacherGrade)) {
     const firstStudent = processedStudents[0];
     if (firstStudent.grade) teacherGrade = firstStudent.grade;
     if (firstStudent.section) teacherSection = firstStudent.section;

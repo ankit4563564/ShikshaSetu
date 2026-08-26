@@ -31,6 +31,7 @@ function ContextPathSync() {
   const { setContext } = useContextRegistry();
 
   React.useEffect(() => {
+    if (!pathname) return;
     if (pathname.includes('/parent')) {
       setContext({ role: 'parent', studentName: 'Aarav Sharma', classGrade: '8', classSection: 'A', isDemoMode: false });
     } else if (pathname.includes('/teacher')) {
@@ -58,6 +59,7 @@ export function SchoolGPTProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const getRoleFromPath = () => {
+    if (!pathname) return 'landing';
     if (pathname.includes('/parent')) return 'parent';
     if (pathname.includes('/teacher')) return 'teacher';
     if (pathname.includes('/student')) return 'student';
@@ -69,6 +71,7 @@ export function SchoolGPTProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getModuleFromPath = () => {
+    if (!pathname) return 'general';
     if (pathname.includes('attendance')) return 'attendance';
     if (pathname.includes('marks')) return 'marks';
     if (pathname.includes('homework')) return 'homework';
@@ -79,7 +82,7 @@ export function SchoolGPTProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getScreenName = () => {
-    if (pathname === '/' || pathname === '' || pathname === '/landing') return 'AI Product Guide';
+    if (!pathname || pathname === '/' || pathname === '' || pathname === '/landing') return 'AI Product Guide';
     if (pathname.includes('/parent')) return 'Parent Portal';
     if (pathname.includes('/student')) return 'Student Workspace';
     if (pathname.includes('/admin')) return 'Admin Workspace';

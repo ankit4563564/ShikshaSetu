@@ -213,7 +213,18 @@ export function AmbientIntelligenceCoreProvider({ children }: { children: React.
 export function useAmbientAICore() {
   const ctx = useContext(AmbientAICoreContext);
   if (!ctx) {
-    throw new Error('useAmbientAICore must be used within AmbientIntelligenceCoreProvider');
+    return {
+      conversation: [],
+      lastAIResponse: null,
+      isLoading: false,
+      activeSurface: 'inline' as const,
+      activeActionModalPayload: null,
+      ask: async () => {},
+      executeAction: () => {},
+      closeActionModal: () => {},
+      setSurface: () => {},
+      resetConversation: () => {},
+    };
   }
   return ctx;
 }

@@ -49,7 +49,11 @@ export function ContextRegistryProvider({
 export function useContextRegistry() {
   const ctx = useContext(ContextRegistryContext);
   if (!ctx) {
-    throw new Error('useContextRegistry must be used within a ContextRegistryProvider');
+    return {
+      context: defaultContext,
+      setContext: () => {},
+      resetContext: () => {},
+    };
   }
   return ctx;
 }
