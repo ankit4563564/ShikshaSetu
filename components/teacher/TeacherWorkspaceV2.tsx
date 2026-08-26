@@ -281,331 +281,331 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
             className="space-y-6 max-w-5xl"
           >
             {/* 1. Header Greeting */}
-            <div className="space-y-1">
-              <h1 className="font-display text-2xl sm:text-3xl font-black text-slate-900 tracking-tight uppercase">
-                {timeGreeting}, <span className="text-[#2563EB]">{displayName}</span> 👋
-              </h1>
-              <p className="text-xs sm:text-sm font-medium text-slate-500">
-                Class {grade}{section} · Your teaching workspace
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
+              <div>
+                <h1 className="font-display text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  {timeGreeting}, <span className="text-indigo-600">{displayName}</span> 👋
+                </h1>
+                <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5">
+                  Class {grade}{section} &bull; Mathematics &bull; Today&apos;s Teaching Workspace
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAttendanceModalOpen(true)}
+                  className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                >
+                  ✓ Mark Attendance
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsMarksModalOpen(true)}
+                  className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                >
+                  📝 Enter Marks
+                </button>
+              </div>
             </div>
 
-            {/* 2. LEVEL 1: TODAY'S FOCUS (One Dominant Card) */}
-            <div className="p-6 sm:p-7 rounded-3xl bg-white border border-rose-200/80 shadow-[0_4px_24px_rgba(225,29,72,0.06)] space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-rose-100 pb-3">
+            {/* 2. PRIMARY: 3 STUDENTS NEED ATTENTION */}
+            <div className="p-6 sm:p-7 rounded-3xl bg-white border border-rose-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-rose-100 pb-3">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-xl">🎯</span>
+                  <span className="text-xl">⚠️</span>
                   <div>
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-rose-600">
-                      Today&apos;s Focus
+                    <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-rose-600 block">
+                      ACTION REQUIRED
                     </span>
                     <h2 className="font-display text-base sm:text-lg font-black text-slate-900">
-                      {studentCounts.needsAttention > 0
-                        ? `${studentCounts.needsAttention} students need attention`
-                        : 'All students on track'}
+                      3 Students Need Attention Today
                     </h2>
                   </div>
                 </div>
-                <span className="text-xs font-mono font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 self-start sm:self-auto">
-                  Mathematics · Equivalent Fractions
+
+                <span className="text-xs font-mono font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200">
+                  Class {grade}{section} Focus
                 </span>
               </div>
 
-              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
-                Several students struggled with the latest concept check. Targeted review recommended before advancing.
-              </p>
-
-              {/* Primary Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStatusFilter('needs_attention');
-                    setActiveTab('students');
-                  }}
-                  className="px-4 py-2.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white font-display text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
-                >
-                  <span>Review Students</span>
-                  <span>&rarr;</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAiToolkitTab('lesson');
-                    setIsAiToolkitOpen(true);
-                  }}
-                  className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-display text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
-                >
-                  <span>Plan 10-Min Revision</span>
-                  <span>&rarr;</span>
-                </button>
-              </div>
-            </div>
-
-            {/* 3. Small Status Metric Row (Compact supporting info) */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs text-center">
-              <div className="space-y-0.5">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Class Size</span>
-                <p className="font-display text-base font-bold text-slate-900">{students.length} Students</p>
-              </div>
-              <div className="space-y-0.5 border-l border-slate-100">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Attendance</span>
-                <p className="font-display text-base font-bold text-emerald-600">96% Present</p>
-              </div>
-              <div className="space-y-0.5 border-l border-slate-100">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Assignments</span>
-                <p className="font-display text-base font-bold text-slate-900">3 Active</p>
-              </div>
-              <div className="space-y-0.5 border-l border-slate-100">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Need Support</span>
-                <p className="font-display text-base font-bold text-rose-600">{studentCounts.needsAttention} Flagged</p>
-              </div>
-            </div>
-
-            {/* 4. LEVEL 2: CLASSROOM SNAPSHOT & WHAT SHOULD I TEACH NEXT? */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Classroom Snapshot */}
-              <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">📊</span>
-                  <h3 className="font-display text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wide">
-                    Classroom Snapshot
-                  </h3>
-                </div>
-                <p className="text-[11px] font-mono text-slate-400 uppercase">What the data shows:</p>
-                <ul className="space-y-2 text-xs sm:text-[13px] text-slate-700 font-medium">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB]" />
-                    <span>Class average: <strong className="text-slate-900">84% in Mathematics</strong></span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#16A085]" />
-                    <span>Attendance: <strong className="text-slate-900">96% this week</strong></span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                    <span><strong className="text-slate-900">{studentCounts.needsAttention} students</strong> need concept support</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* What Should I Teach Next? */}
-              <div className="p-5 rounded-2xl bg-[#FFF9F0] border border-[#F59E0B]/30 shadow-2xs space-y-3 flex flex-col justify-between">
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#F59E0B]">
-                      Recommended Next Action
-                    </span>
-                    <span className="text-[10px] font-mono text-slate-400">Class 8A</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                {/* Student 1: Priya Patel */}
+                <div className="p-4 rounded-2xl bg-rose-50/50 border border-rose-200/80 flex flex-col justify-between space-y-3">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-slate-900 text-sm">Priya Patel</h3>
+                      <span className="text-[10px] font-bold text-rose-700 bg-white px-2 py-0.5 rounded border border-rose-200">
+                        58% Score
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-700 font-medium">
+                      <strong>Mathematics:</strong> Equivalent Fractions needs revision.
+                    </p>
+                    <p className="text-[11px] text-slate-500">
+                      Suggested action: 5-min concept review
+                    </p>
                   </div>
-                  <h3 className="font-display text-sm sm:text-base font-bold text-slate-900">
-                    What Should I Teach Next?
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const st = students.find((s) => s.displayName?.includes('Priya')) || students[0];
+                      if (st?.studentId) setSelectedStudentId(st.studentId);
+                    }}
+                    className="w-full py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-900 font-bold text-xs border border-slate-200 transition cursor-pointer shadow-2xs text-center"
+                  >
+                    View Student &rarr;
+                  </button>
+                </div>
+
+                {/* Student 2: Aarav Sharma */}
+                <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/80 flex flex-col justify-between space-y-3">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-slate-900 text-sm">Aarav Sharma</h3>
+                      <span className="text-[10px] font-bold text-amber-800 bg-white px-2 py-0.5 rounded border border-amber-200">
+                        2 Pending
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-700 font-medium">
+                      Algebraic Expressions worksheet submission pending.
+                    </p>
+                    <p className="text-[11px] text-slate-500">
+                      Due today &bull; Reminder sent
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsHomeworkModalOpen(true)}
+                    className="w-full py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-900 font-bold text-xs border border-slate-200 transition cursor-pointer shadow-2xs text-center"
+                  >
+                    Review Homework &rarr;
+                  </button>
+                </div>
+
+                {/* Student 3: Rohan Singh */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between space-y-3">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-slate-900 text-sm">Rohan Singh</h3>
+                      <span className="text-[10px] font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                        Attendance
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-700 font-medium">
+                      Attendance requires attention (3 absences recorded this month).
+                    </p>
+                    <p className="text-[11px] text-slate-500">
+                      Parent check-in recommended
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const st = students.find((s) => s.displayName?.includes('Rohan')) || students[0];
+                      if (st?.studentId) setSelectedStudentId(st.studentId);
+                    }}
+                    className="w-full py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-900 font-bold text-xs border border-slate-200 transition cursor-pointer shadow-2xs text-center"
+                  >
+                    View Attendance &rarr;
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. TODAY'S WORK & SCHEDULE */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Today's Teaching Schedule */}
+              <div className="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">⏱️</span>
+                    <h3 className="font-display text-sm font-black text-slate-900 uppercase tracking-wide">
+                      Today&apos;s Teaching Schedule
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('calendar')}
+                    className="text-xs font-bold text-indigo-600 hover:underline cursor-pointer"
+                  >
+                    Full Schedule &rarr;
+                  </button>
+                </div>
+
+                <div className="space-y-2.5 text-xs">
+                  <div className="p-3 rounded-2xl bg-indigo-50/60 border border-indigo-200/70 flex items-center justify-between">
+                    <div>
+                      <span className="font-mono text-[10px] font-bold text-indigo-700">10:00 AM &bull; Period 2</span>
+                      <p className="font-bold text-slate-900 mt-0.5">Mathematics &mdash; Class 8A (Room 203)</p>
+                    </div>
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-indigo-600 text-white">
+                      Next Class
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <span className="font-mono text-[10px] font-bold text-slate-500">11:30 AM &bull; Period 4</span>
+                      <p className="font-bold text-slate-900 mt-0.5">Review Fractions Homework (12 submitted, 4 pending)</p>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-500">Staff Room</span>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <span className="font-mono text-[10px] font-bold text-slate-500">01:00 PM &bull; Period 6</span>
+                      <p className="font-bold text-slate-900 mt-0.5">Science Lab &mdash; Class 8B (Lab 2)</p>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-500">Lab 2</span>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <span className="font-mono text-[10px] font-bold text-slate-500">03:00 PM &bull; After School</span>
+                      <p className="font-bold text-slate-900 mt-0.5">Parent Communication (Priya &amp; Aarav parents)</p>
+                    </div>
+                    <span className="text-[10px] font-bold text-indigo-600">Messages</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Attendance & Homework Snapshot */}
+              <div className="space-y-4">
+                {/* Attendance Card */}
+                <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">📅</span>
+                      <h3 className="font-display text-sm font-black text-slate-900 uppercase tracking-wide">
+                        Today&apos;s Attendance (Class 8A)
+                      </h3>
+                    </div>
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      36 Present &bull; 2 Absent
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <p className="text-xs text-slate-600 font-medium">
+                      Morning roll call recorded. 2 absences logged for notification.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsAttendanceModalOpen(true)}
+                      className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-xs transition cursor-pointer shrink-0"
+                    >
+                      Update Attendance
+                    </button>
+                  </div>
+                </div>
+
+                {/* Homework to Review */}
+                <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">📋</span>
+                      <h3 className="font-display text-sm font-black text-slate-900 uppercase tracking-wide">
+                        Homework to Review
+                      </h3>
+                    </div>
+                    <span className="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                      12 Submitted &bull; 4 Pending
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-600 font-medium">
+                    <strong>Mathematics:</strong> Algebraic Expressions Worksheet.
+                  </p>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsHomeworkModalOpen(true)}
+                      className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                    >
+                      Review Submissions &rarr;
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 4. TEACHING SUGGESTION & CLASS PERFORMANCE */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Teaching Suggestion (Grounded Teacher Copilot) */}
+              <div className="p-5 sm:p-6 rounded-3xl bg-amber-50/70 border border-amber-200/80 shadow-2xs space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-amber-800">
+                      ✦ TEACHING SUGGESTION
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-500">Class 8A &bull; Mathematics</span>
+                  </div>
+                  <h3 className="font-display text-sm sm:text-base font-black text-slate-900">
+                    What should I teach next?
                   </h3>
-                  <p className="text-xs sm:text-[13px] text-slate-700 leading-relaxed font-medium">
-                    <strong className="text-slate-900">Equivalent Fractions:</strong> Students need reinforcement on multiplying denominators before moving forward.
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+                    6 students struggled with: <strong>Equivalent Fractions</strong>. Consider a short 10-minute visual review before moving to Decimal Operations.
                   </p>
                 </div>
 
-                <div className="pt-2">
+                <div className="flex items-center gap-2 pt-2">
                   <button
                     type="button"
                     onClick={() => {
                       setAiToolkitTab('exit_ticket');
                       setIsAiToolkitOpen(true);
                     }}
-                    className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition shadow-2xs cursor-pointer flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs shadow-xs transition cursor-pointer"
                   >
-                    <span>Plan Revision</span>
-                    <span>&rarr;</span>
+                    Prepare 10-Min Revision &rarr;
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAiToolkitTab('differentiation');
+                      setIsAiToolkitOpen(true);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-white border border-amber-300 text-amber-900 font-bold text-xs hover:bg-amber-100/50 transition cursor-pointer"
+                  >
+                    Generate 3 Practice Qs
                   </button>
                 </div>
               </div>
-            </div>
 
-            {/* 5. LEVEL 2: STUDENT SUPPORT (Clean list of students) */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">👤</span>
-                  <h3 className="font-display text-sm font-bold text-slate-900 uppercase tracking-wide">
-                    Student Support Radar
-                  </h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStatusFilter('all');
-                    setActiveTab('students');
-                  }}
-                  className="text-xs font-bold text-[#2563EB] hover:underline cursor-pointer"
-                >
-                  View Full Roster ({students.length}) &rarr;
-                </button>
-              </div>
-
-              <div className="space-y-2.5">
-                {students.map((s) => {
-                  const rawStatus = (s as any).status?.toLowerCase().replace(/\s+/g, '_') || 'on_track';
-                  const isAttention = rawStatus === 'needs_attention';
-                  const isWatching = rawStatus === 'worth_watching';
-
-                  return (
-                    <div
-                      key={s.studentId}
-                      className="p-3 bg-slate-50 border border-slate-200/70 rounded-xl flex items-center justify-between text-xs"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs">
-                          {(s.displayName || 'Student').split(' ').map((n) => n[0]).join('')}
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-xs sm:text-sm">{s.displayName || 'Student'}</h4>
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                              isAttention
-                                ? 'text-rose-700 bg-rose-50 border-rose-200'
-                                : isWatching
-                                ? 'text-amber-700 bg-amber-50 border-amber-200'
-                                : 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                            }`}
-                          >
-                            {isAttention ? 'Needs Attention' : isWatching ? 'Watching' : 'On Track'}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedStudentId(s.studentId || null)}
-                          className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs border border-slate-200 transition-colors cursor-pointer"
-                        >
-                          View 360 &rarr;
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleQuerySend(`Why does ${s.displayName || 'this student'} need attention?`)}
-                          className="px-3 py-1.5 rounded-lg bg-[#EFF6FF] hover:bg-blue-100 text-[#2563EB] font-bold text-xs border border-[#2563EB]/20 transition-colors cursor-pointer flex items-center gap-1"
-                        >
-                          <span>Ask AI</span>
-                          <span>✨</span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 6. LEVEL 3: ATTENDANCE & HOMEWORK ROW */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Attendance */}
-              <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">📅</span>
-                    <h3 className="font-display text-xs sm:text-sm font-bold text-slate-900 uppercase">
-                      Attendance
+              {/* Class Performance Summary */}
+              <div className="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200/80 shadow-2xs space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <h3 className="font-display text-sm font-black text-slate-900 uppercase tracking-wide">
+                      Class 8A Performance
                     </h3>
+                    <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full">
+                      Mathematics
+                    </span>
                   </div>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    96% Today
-                  </span>
-                </div>
-
-                <p className="text-xs text-slate-600">
-                  Class 8A: 4 of 4 logged present for morning session.
-                </p>
-
-                <div className="flex items-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setIsAttendanceModalOpen(true)}
-                    className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-xs transition cursor-pointer"
-                  >
-                    Take Attendance
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuerySend('Explain Monday attendance trend for Class 8A')}
-                    className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
-                  >
-                    Explain Trend
-                  </button>
-                </div>
-              </div>
-
-              {/* Homework */}
-              <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">📖</span>
-                    <h3 className="font-display text-xs sm:text-sm font-bold text-slate-900 uppercase">
-                      Homework
-                    </h3>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-xs text-slate-600 font-medium">Class Average:</span>
+                    <strong className="text-sm font-black text-slate-900">72% in Recent Check</strong>
                   </div>
-                  <span className="text-xs font-bold text-[#2563EB] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                    3 Active
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-slate-600 font-medium">Students Needing Support:</span>
+                    <strong className="text-sm font-black text-rose-600">{studentCounts.needsAttention} flagged</strong>
+                  </div>
                 </div>
 
-                <p className="text-xs text-slate-600">
-                  Due this week: Mathematics Fractions Sheet &amp; Science Lab Report.
-                </p>
-
-                <div className="flex items-center gap-2 pt-1">
+                <div className="flex items-center gap-2 pt-2">
                   <button
                     type="button"
-                    onClick={() => setIsHomeworkModalOpen(true)}
-                    className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-xs transition cursor-pointer"
+                    onClick={() => setIsMarksModalOpen(true)}
+                    className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition cursor-pointer text-center"
                   >
-                    Review Homework
+                    Enter / Update Marks &rarr;
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsHomeworkModalOpen(true)}
-                    className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
-                  >
-                    Create Homework
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* 7. LEVEL 3: TODAY'S SCHEDULE */}
-            <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">⏱️</span>
-                  <h3 className="font-display text-xs sm:text-sm font-bold text-slate-900 uppercase">
-                    Today&apos;s Schedule
-                  </h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('calendar')}
-                  className="text-xs font-bold text-[#2563EB] hover:underline"
-                >
-                  Open Calendar &rarr;
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                  <span className="font-mono text-[10px] font-bold text-[#2563EB]">09:00 AM – 10:00 AM</span>
-                  <h4 className="font-bold text-slate-900">Class 8A Science Lab</h4>
-                  <p className="text-slate-500 text-[11px]">Lab Room 204</p>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                  <span className="font-mono text-[10px] font-bold text-[#2563EB]">11:15 AM – 12:15 PM</span>
-                  <h4 className="font-bold text-slate-900">Class 9B Physics</h4>
-                  <p className="text-slate-500 text-[11px]">Room 302</p>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                  <span className="font-mono text-[10px] font-bold text-[#F59E0B]">02:00 PM – 03:00 PM</span>
-                  <h4 className="font-bold text-slate-900">PTM Parent Check-ins</h4>
-                  <p className="text-slate-500 text-[11px]">Staff Room &amp; Digital</p>
                 </div>
               </div>
             </div>

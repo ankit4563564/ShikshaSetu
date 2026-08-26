@@ -102,7 +102,7 @@ export default function AiRevisionNotesWorkspace({
         subject: subj,
         topic: top,
         grade: '8',
-        customNotes: notes.trim() || undefined,
+        chapterNotes: notes.trim() || undefined,
       });
 
       if (res.success && res.notes) {
