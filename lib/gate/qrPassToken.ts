@@ -3,11 +3,11 @@ import {
   encodeQrContent,
   decodeQrContent,
   isTokenExpired,
-} from '@/lib/campus-id/qrToken';
+} from '@/lib/campus-id/qrTokenCore';
 
 /**
  * Encodes a dynamic HMAC-signed QR token for an approved gate pass.
- * Delegates 100% of cryptography and signing to lib/campus-id/qrToken.ts.
+ * Delegates 100% of cryptography and signing to lib/campus-id/qrTokenCore.ts.
  */
 export function generateGatePassQrContent(passId: string): string {
   const { payload } = generateTokenPayload(passId);

@@ -425,15 +425,18 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                 </div>
                 <button
                   type="button"
-                  onClick={() => setActiveTab('students')}
-                  className="text-xs font-bold text-[#2563EB] hover:underline"
+                  onClick={() => {
+                    setStatusFilter('all');
+                    setActiveTab('students');
+                  }}
+                  className="text-xs font-bold text-[#2563EB] hover:underline cursor-pointer"
                 >
                   View Full Roster ({students.length}) &rarr;
                 </button>
               </div>
 
               <div className="space-y-2.5">
-                {students.slice(0, 5).map((s) => {
+                {students.map((s) => {
                   const rawStatus = (s as any).status?.toLowerCase().replace(/\s+/g, '_') || 'on_track';
                   const isAttention = rawStatus === 'needs_attention';
                   const isWatching = rawStatus === 'worth_watching';
