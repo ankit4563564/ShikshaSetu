@@ -7,6 +7,7 @@ export function OutcomesFeatureSection() {
     {
       title: 'RUN THE SCHOOL',
       borderColor: 'border-t-4 border-t-[#2563EB]',
+      badgeColor: 'text-[#2563EB]',
       items: [
         'Multi-session Attendance',
         'Fee Ledgers',
@@ -17,6 +18,7 @@ export function OutcomesFeatureSection() {
     {
       title: 'UNDERSTAND THE CLASSROOM',
       borderColor: 'border-t-4 border-t-[#F59E0B]',
+      badgeColor: 'text-[#F59E0B]',
       items: [
         'Formative Assessment',
         'Personalized AI Lesson Plans',
@@ -26,6 +28,7 @@ export function OutcomesFeatureSection() {
     {
       title: 'HELP STUDENTS LEARN',
       borderColor: 'border-t-4 border-t-[#16A085]',
+      badgeColor: 'text-[#16A085]',
       items: [
         'Adaptive Practice',
         'Real-time Feedback',
@@ -35,6 +38,7 @@ export function OutcomesFeatureSection() {
     {
       title: 'CONNECT FAMILIES',
       borderColor: 'border-t-4 border-t-[#F97360]',
+      badgeColor: 'text-[#F97360]',
       items: [
         'Constructive Dialogue Prompts',
         'Real-time PTM Tracking',
@@ -45,8 +49,8 @@ export function OutcomesFeatureSection() {
 
   return (
     <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#102A43]/10 shadow-[0_4px_24px_rgba(16,42,67,0.06)] space-y-4">
-      {/* Title matching PNG */}
-      <h3 className="font-display text-base font-black text-[#102A43] tracking-tight uppercase">
+      {/* Title */}
+      <h3 className="font-display text-base sm:text-lg font-black text-[#102A43] tracking-tight uppercase">
         CAPABILITIES
       </h3>
 
@@ -55,15 +59,15 @@ export function OutcomesFeatureSection() {
         {quadrants.map((q) => (
           <div
             key={q.title}
-            className={`p-3.5 rounded-xl bg-[#F8FAFC] border border-stone-200 ${q.borderColor} space-y-2 shadow-2xs`}
+            className={`p-4 rounded-xl bg-[#F8FAFC] border border-stone-200 ${q.borderColor} space-y-2.5 shadow-2xs`}
           >
             <span className="font-display text-xs font-bold text-[#102A43] block">
               {q.title}
             </span>
-            <ul className="space-y-1 text-[11px] text-[#102A43]/70">
+            <ul className="space-y-1.5 text-xs text-[#102A43]/75">
               {q.items.map((item) => (
-                <li key={item} className="flex items-center gap-1.5">
-                  <span className="w-1 h-1 rounded-full bg-stone-400" />
+                <li key={item} className="flex items-center gap-2">
+                  <span className={`w-1.5 h-1.5 rounded-full ${q.badgeColor === 'text-[#2563EB]' ? 'bg-[#2563EB]' : q.badgeColor === 'text-[#F59E0B]' ? 'bg-[#F59E0B]' : q.badgeColor === 'text-[#16A085]' ? 'bg-[#16A085]' : 'bg-[#F97360]'}`} />
                   <span>{item}</span>
                 </li>
               ))}

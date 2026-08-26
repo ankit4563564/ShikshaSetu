@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 export function EcosystemNavbar() {
   const { openRoleSelector } = useLandingModal();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,18 +41,18 @@ export function EcosystemNavbar() {
         </Link>
 
         {/* Clean Center Navigation */}
-        <nav className="hidden md:flex items-center gap-7 text-xs font-bold text-[#102A43]/80">
-          <div className="relative group cursor-pointer flex items-center gap-1 hover:text-[#2563EB] transition-colors">
-            <a href="#product-showcase">Products</a>
+        <nav className="hidden md:flex items-center gap-7 text-xs font-bold text-[#102A43]/85">
+          <a href="#product-showcase" className="hover:text-[#2563EB] transition-colors flex items-center gap-1">
+            <span>Products</span>
             <span className="text-[10px] text-stone-400">▾</span>
-          </div>
-          <a href="#the-difference" className="hover:text-[#2563EB] transition-colors">
-            Premium
           </a>
-          <div className="relative group cursor-pointer flex items-center gap-1 hover:text-[#2563EB] transition-colors">
-            <a href="#ai-intelligence">Resources</a>
+          <a href="#the-difference" className="hover:text-[#2563EB] transition-colors">
+            The Difference
+          </a>
+          <a href="#ai-intelligence" className="hover:text-[#2563EB] transition-colors flex items-center gap-1">
+            <span>Intelligence</span>
             <span className="text-[10px] text-stone-400">▾</span>
-          </div>
+          </a>
           <Link href="/pricing" className="hover:text-[#2563EB] transition-colors">
             Pricing
           </Link>
@@ -61,7 +62,7 @@ export function EcosystemNavbar() {
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="text-xs font-bold text-[#102A43] hover:text-[#2563EB] px-2 py-1.5 transition-colors"
+            className="text-xs font-bold text-[#102A43] hover:text-[#2563EB] px-2 py-1.5 transition-colors hidden sm:inline-block"
           >
             Log in
           </Link>
@@ -75,8 +76,65 @@ export function EcosystemNavbar() {
             <span>See ShikshaSetu</span>
             <span className="font-bold">&rarr;</span>
           </motion.button>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-1.5 rounded-lg text-[#102A43] hover:bg-stone-100"
+            aria-label="Toggle Navigation Menu"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
       </div>
+
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-[#FFF9F0] border-b border-[#102A43]/10 px-4 pt-2 pb-4 space-y-2 text-xs font-bold text-[#102A43]">
+          <a
+            href="#product-showcase"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 hover:text-[#2563EB]"
+          >
+            Products
+          </a>
+          <a
+            href="#the-difference"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 hover:text-[#2563EB]"
+          >
+            The Difference
+          </a>
+          <a
+            href="#perspectives"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 hover:text-[#2563EB]"
+          >
+            Three Perspectives
+          </a>
+          <a
+            href="#learning-loop"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 hover:text-[#2563EB]"
+          >
+            Learning Loop
+          </a>
+          <Link
+            href="/login"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 text-[#2563EB]"
+          >
+            Log in to Portal &rarr;
+          </Link>
+        </div>
+      )}
     </header>
   );
 }
