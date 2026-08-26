@@ -262,131 +262,426 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
       {/* Main Workspace Content Area */}
       <main className="flex-1 p-6 lg:p-10 space-y-8 max-w-7xl mx-auto">
         {/* ============================================================ */}
-        {/* TAB 1: TODAY (DEFAULT HERO VIEW)                             */}
+        {/* TAB 1: TODAY (CALM, INTELLIGENT TEACHER WORKSPACE)          */}
         {/* ============================================================ */}
         {activeTab === 'today' && (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-8"
+            transition={{ duration: 0.18 }}
+            className="space-y-6 max-w-5xl"
           >
-            {/* Header Greeting */}
-            <div className="space-y-1.5">
-              <h1 className="font-display text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-                {timeGreeting}, <span className="text-indigo-600">{displayName}</span> 👋
+            {/* 1. Header Greeting */}
+            <div className="space-y-1">
+              <h1 className="font-display text-2xl sm:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                {timeGreeting}, <span className="text-[#2563EB]">{displayName}</span> 👋
               </h1>
-              <p className="text-sm font-bold text-slate-500">Class {grade}{section} Command Center • Real-time intelligence &amp; action radar</p>
+              <p className="text-xs sm:text-sm font-medium text-slate-500">
+                Class {grade}{section} · Your teaching workspace
+              </p>
             </div>
 
-            {/* Today's Focus Priorities Bar */}
-            <TodaysFocusBar
-              needsAttentionCount={studentCounts.needsAttention}
-              pendingHomeworkCount={3}
-              attendanceRate={96}
-              totalStudents={students.length}
-              onSelectItem={handleFocusItemClick}
-            />
+            {/* 2. LEVEL 1: TODAY'S FOCUS (One Dominant Card) */}
+            <div className="p-6 sm:p-7 rounded-3xl bg-white border border-rose-200/80 shadow-[0_4px_24px_rgba(225,29,72,0.06)] space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-rose-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">🎯</span>
+                  <div>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-rose-600">
+                      Today&apos;s Focus
+                    </span>
+                    <h2 className="font-display text-base sm:text-lg font-black text-slate-900">
+                      {studentCounts.needsAttention > 0
+                        ? `${studentCounts.needsAttention} students need attention`
+                        : 'All students on track'}
+                    </h2>
+                  </div>
+                </div>
+                <span className="text-xs font-mono font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 self-start sm:self-auto">
+                  Mathematics · Equivalent Fractions
+                </span>
+              </div>
 
-            {/* AI Classroom Overview & Insight */}
-            <ClassroomInsightCard
-              grade={grade}
-              section={section}
-              totalStudents={students.length}
-              needsAttentionCount={studentCounts.needsAttention}
-              worthWatchingCount={studentCounts.worthWatching}
-              onTrackCount={studentCounts.onTrack}
-              onOpenToolkitTab={(tab) => {
-                setAiToolkitTab(tab);
-                setIsAiToolkitOpen(true);
-              }}
-            />
+              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+                Several students struggled with the latest concept check. Targeted review recommended before advancing.
+              </p>
 
-            {/* Persistent AI Search Anchor */}
-            <div className="space-y-4">
-              <PersistentAISearch onSend={handleQuerySend} isLoading={isLoading} />
+              {/* Primary Action Buttons */}
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter('needs_attention');
+                    setActiveTab('students');
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white font-display text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Review Students</span>
+                  <span>&rarr;</span>
+                </button>
 
-              {/* 6 Adaptive Suggested Prompt Cards */}
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between px-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full">
-                    ✨ Suggested AI Actions
-                  </span>
-                  <span className="text-xs font-bold text-slate-400">Click to execute or inspect</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiToolkitTab('lesson');
+                    setIsAiToolkitOpen(true);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-display text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Plan 10-Min Revision</span>
+                  <span>&rarr;</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 3. Small Status Metric Row (Compact supporting info) */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs text-center">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Class Size</span>
+                <p className="font-display text-base font-bold text-slate-900">{students.length} Students</p>
+              </div>
+              <div className="space-y-0.5 border-l border-slate-100">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Attendance</span>
+                <p className="font-display text-base font-bold text-emerald-600">96% Present</p>
+              </div>
+              <div className="space-y-0.5 border-l border-slate-100">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Assignments</span>
+                <p className="font-display text-base font-bold text-slate-900">3 Active</p>
+              </div>
+              <div className="space-y-0.5 border-l border-slate-100">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Need Support</span>
+                <p className="font-display text-base font-bold text-rose-600">{studentCounts.needsAttention} Flagged</p>
+              </div>
+            </div>
+
+            {/* 4. LEVEL 2: CLASSROOM SNAPSHOT & WHAT SHOULD I TEACH NEXT? */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Classroom Snapshot */}
+              <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">📊</span>
+                  <h3 className="font-display text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wide">
+                    Classroom Snapshot
+                  </h3>
+                </div>
+                <p className="text-[11px] font-mono text-slate-400 uppercase">What the data shows:</p>
+                <ul className="space-y-2 text-xs sm:text-[13px] text-slate-700 font-medium">
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB]" />
+                    <span>Class average: <strong className="text-slate-900">84% in Mathematics</strong></span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#16A085]" />
+                    <span>Attendance: <strong className="text-slate-900">96% this week</strong></span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                    <span><strong className="text-slate-900">{studentCounts.needsAttention} students</strong> need concept support</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* What Should I Teach Next? */}
+              <div className="p-5 rounded-2xl bg-[#FFF9F0] border border-[#F59E0B]/30 shadow-2xs space-y-3 flex flex-col justify-between">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#F59E0B]">
+                      Recommended Next Action
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">Class 8A</span>
+                  </div>
+                  <h3 className="font-display text-sm sm:text-base font-bold text-slate-900">
+                    What Should I Teach Next?
+                  </h3>
+                  <p className="text-xs sm:text-[13px] text-slate-700 leading-relaxed font-medium">
+                    <strong className="text-slate-900">Equivalent Fractions:</strong> Students need reinforcement on multiplying denominators before moving forward.
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                  {suggestedCards.map((card) => (
-                    <motion.button
-                      key={card.title}
-                      type="button"
-                      whileHover={{ scale: 1.02, translateY: -2 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handlePromptCardClick(card.title, card.prompt)}
-                      className="p-4 bg-white/90 hover:bg-white border border-slate-200/80 hover:border-indigo-300 rounded-3xl text-left transition-all shadow-sm hover:shadow-md group flex items-center justify-between gap-3 cursor-pointer backdrop-blur-xl"
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAiToolkitTab('exit_ticket');
+                      setIsAiToolkitOpen(true);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition shadow-2xs cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>Plan Revision</span>
+                    <span>&rarr;</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 5. LEVEL 2: STUDENT SUPPORT (Clean list of students) */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">👤</span>
+                  <h3 className="font-display text-sm font-bold text-slate-900 uppercase tracking-wide">
+                    Student Support Radar
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('students')}
+                  className="text-xs font-bold text-[#2563EB] hover:underline"
+                >
+                  View Full Roster ({students.length}) &rarr;
+                </button>
+              </div>
+
+              <div className="space-y-2.5">
+                {students.slice(0, 5).map((s) => {
+                  const rawStatus = (s as any).status?.toLowerCase().replace(/\s+/g, '_') || 'on_track';
+                  const isAttention = rawStatus === 'needs_attention';
+                  const isWatching = rawStatus === 'worth_watching';
+
+                  return (
+                    <div
+                      key={s.studentId}
+                      className="p-3 bg-slate-50 border border-slate-200/70 rounded-xl flex items-center justify-between text-xs"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg border shrink-0 ${card.bg} shadow-2xs`}>
-                          {card.icon}
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs">
+                          {s.displayName.split(' ').map((n) => n[0]).join('')}
                         </div>
-                        <div className="min-w-0">
-                          <h4 className="font-display text-xs sm:text-sm font-black text-slate-900 truncate">{card.title}</h4>
-                          <p className="text-[11px] text-slate-500 line-clamp-1 font-medium mt-0.5">{card.prompt}</p>
+                        <div>
+                          <h4 className="font-bold text-slate-900 text-xs sm:text-sm">{s.displayName}</h4>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                              isAttention
+                                ? 'text-rose-700 bg-rose-50 border-rose-200'
+                                : isWatching
+                                ? 'text-amber-700 bg-amber-50 border-amber-200'
+                                : 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                            }`}
+                          >
+                            {isAttention ? 'Needs Attention' : isWatching ? 'Watching' : 'On Track'}
+                          </span>
                         </div>
                       </div>
-                      <span className="text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all shrink-0 font-bold">&rarr;</span>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
 
-              {/* Quick Actions Row */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 shrink-0 mr-1">
-                  ⚡ Quick:
-                </span>
-                {quickActions.map((act) => (
-                  <motion.button
-                    key={act}
-                    type="button"
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => handleQuerySend(act)}
-                    className="px-4 py-2 rounded-full border border-slate-200/80 bg-white/90 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 text-slate-700 text-xs font-extrabold transition-all shrink-0 shadow-2xs cursor-pointer"
-                  >
-                    {act} &rarr;
-                  </motion.button>
-                ))}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedStudentId(s.studentId)}
+                          className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs border border-slate-200 transition-colors cursor-pointer"
+                        >
+                          View 360 &rarr;
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleQuerySend(`Why does ${s.displayName} need attention?`)}
+                          className="px-3 py-1.5 rounded-lg bg-[#EFF6FF] hover:bg-blue-100 text-[#2563EB] font-bold text-xs border border-[#2563EB]/20 transition-colors cursor-pointer flex items-center gap-1"
+                        >
+                          <span>Ask AI</span>
+                          <span>✨</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Priority Live Dashboard Grid */}
-            <div className="space-y-4 pt-4 border-t border-slate-200/80">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display text-lg font-extrabold text-slate-900">Live Classroom Dashboard</h2>
-                <span className="text-xs font-medium text-slate-400">Class {grade}{section} Workspace</span>
+            {/* 6. LEVEL 3: ATTENDANCE & HOMEWORK ROW */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Attendance */}
+              <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">📅</span>
+                    <h3 className="font-display text-xs sm:text-sm font-bold text-slate-900 uppercase">
+                      Attendance
+                    </h3>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    96% Today
+                  </span>
+                </div>
+
+                <p className="text-xs text-slate-600">
+                  Class 8A: 4 of 4 logged present for morning session.
+                </p>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsAttendanceModalOpen(true)}
+                    className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-xs transition cursor-pointer"
+                  >
+                    Take Attendance
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuerySend('Explain Monday attendance trend for Class 8A')}
+                    className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
+                  >
+                    Explain Trend
+                  </button>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <SupportRadarWidget
-                  grade={grade}
-                  section={section}
-                  onAskWhy={(q) => handleQuerySend(q)}
-                  onSelectStudent={(id) => setSelectedStudentId(id)}
+              {/* Homework */}
+              <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">📖</span>
+                    <h3 className="font-display text-xs sm:text-sm font-bold text-slate-900 uppercase">
+                      Homework
+                    </h3>
+                  </div>
+                  <span className="text-xs font-bold text-[#2563EB] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    3 Active
+                  </span>
+                </div>
+
+                <p className="text-xs text-slate-600">
+                  Due this week: Mathematics Fractions Sheet &amp; Science Lab Report.
+                </p>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsHomeworkModalOpen(true)}
+                    className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-xs transition cursor-pointer"
+                  >
+                    Review Homework
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsHomeworkModalOpen(true)}
+                    className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
+                  >
+                    Create Homework
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 7. LEVEL 3: TODAY'S SCHEDULE */}
+            <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">⏱️</span>
+                  <h3 className="font-display text-xs sm:text-sm font-bold text-slate-900 uppercase">
+                    Today&apos;s Schedule
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('calendar')}
+                  className="text-xs font-bold text-[#2563EB] hover:underline"
+                >
+                  Open Calendar &rarr;
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="font-mono text-[10px] font-bold text-[#2563EB]">09:00 AM – 10:00 AM</span>
+                  <h4 className="font-bold text-slate-900">Class 8A Science Lab</h4>
+                  <p className="text-slate-500 text-[11px]">Lab Room 204</p>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="font-mono text-[10px] font-bold text-[#2563EB]">11:15 AM – 12:15 PM</span>
+                  <h4 className="font-bold text-slate-900">Class 9B Physics</h4>
+                  <p className="text-slate-500 text-[11px]">Room 302</p>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="font-mono text-[10px] font-bold text-[#F59E0B]">02:00 PM – 03:00 PM</span>
+                  <h4 className="font-bold text-slate-900">PTM Parent Check-ins</h4>
+                  <p className="text-slate-500 text-[11px]">Staff Room &amp; Digital</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 8. LEVEL 3: ✨ TEACHING COPILOT (Calm, Contextual AI Entry Point) */}
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#102A43] text-white shadow-md space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#2563EB] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                    ✨
+                  </div>
+                  <div>
+                    <h3 className="font-display text-sm sm:text-base font-bold text-white">
+                      What do you need help with?
+                    </h3>
+                    <p className="text-xs text-white/70">
+                      Ask about Class 8A or choose an action:
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiToolkitTab('lesson');
+                    setIsAiToolkitOpen(true);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition border border-white/20 flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                >
+                  <span>✨ Teaching Copilot Studio</span>
+                  <span>&rarr;</span>
+                </button>
+              </div>
+
+              {/* Input */}
+              <div className="flex items-center gap-2 bg-white/10 border border-white/15 rounded-2xl p-1.5 focus-within:bg-white focus-within:text-slate-900 transition-all">
+                <input
+                  type="text"
+                  placeholder="Ask about Class 8A..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                      handleQuerySend((e.target as HTMLInputElement).value.trim());
+                      (e.target as HTMLInputElement).value = '';
+                    }
+                  }}
+                  className="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm font-medium text-white focus:text-slate-900 placeholder-white/50 focus:placeholder-slate-400 outline-none"
                 />
-                <AttendanceWidget
-                  grade={grade}
-                  section={section}
-                  onAskExplain={(q) => handleQuerySend(q)}
-                  onOpenTakeAttendance={() => setIsAttendanceModalOpen(true)}
-                />
-                <HomeworkWidget
-                  grade={grade}
-                  section={section}
-                  onDraftReminder={(q) => handleQuerySend(q)}
-                  onOpenCreateHomework={() => setIsHomeworkModalOpen(true)}
-                />
-                <ScheduleCalendarWidget />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
+                    if (input && input.value.trim()) {
+                      handleQuerySend(input.value.trim());
+                      input.value = '';
+                    }
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-xs transition cursor-pointer"
+                >
+                  Ask &rarr;
+                </button>
+              </div>
+
+              {/* 3 Contextual Suggestion Chips */}
+              <div className="flex flex-wrap gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleQuerySend('Which students need my attention today?')}
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition border border-white/10 cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>🎯</span>
+                  <span>Who needs my attention?</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuerySend('What should I teach next?')}
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition border border-white/10 cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>📚</span>
+                  <span>What should I teach next?</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuerySend('Draft a parent update for Class 8A')}
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition border border-white/10 cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>✉️</span>
+                  <span>Draft a parent update</span>
+                </button>
               </div>
             </div>
           </motion.div>
