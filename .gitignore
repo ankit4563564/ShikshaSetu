@@ -58,5 +58,7 @@ visual-audit-*.js
 sample.txt
 *.tmp
 *.bak
+scratch/
+shiksha_setu_parent/
 
 
