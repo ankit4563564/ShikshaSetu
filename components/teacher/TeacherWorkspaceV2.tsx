@@ -91,6 +91,11 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
       return {
         studentId: s.studentId || '',
         displayName: s.displayName || 'Student',
+        rollNumber: s.roll_number || '801',
+        grade: (s as any).grade || grade || '8',
+        section: (s as any).section || section || 'A',
+        teacherName: displayName || 'Ananya Mehra',
+        academicYear: '2026–27',
         attendance: {
           present: presAtt,
           total: totalAtt,
@@ -101,11 +106,12 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
           total: totalHw,
           percentage: Math.round((subHw / totalHw) * 100),
         },
-        positiveNote: (s as any).aiExplanation || `${s.displayName || 'Student'} shows strong consistency and participation.`,
-        conversationPrompt: `Discuss recent progress in Mathematics and class activities.`,
+        grades: s.grades || [],
+        positiveNote: (s as any).aiExplanation || `${s.displayName || 'Student'} demonstrates strong conceptual clarity and active participation in class discussions.`,
+        conversationPrompt: `Celebrate achievements in Mathematics and discuss goals for the upcoming term.`,
       };
     });
-  }, [students]);
+  }, [students, grade, section, displayName]);
 
   const handleQuerySend = (query: string) => {
     if (query === 'View Attendance') {
