@@ -2,8 +2,8 @@ import type { ClassifiedIntent, Intent, Entity, Action } from '../models/index';
 
 const INTENT_PATTERNS: Record<Intent, { keywords: string[]; patterns: RegExp[] }> = {
   who_needs_attention: {
-    keywords: ['attention', 'struggling', 'weak student', 'who needs help', 'at risk', 'failing', 'lagging', 'who needs attention'],
-    patterns: [/who\s+(?:needs|requires)\s+attention/i, /students?\s+(?:at\s+risk|struggling|failing|needing\s+help)/i, /who\s+is\s+falling\s+behind/i],
+    keywords: ['attention', 'struggling', 'weak student', 'who needs help', 'most help', 'at risk', 'failing', 'lagging', 'who needs attention', 'need help', 'needs support'],
+    patterns: [/who\s+(?:needs|requires)\s+(?:attention|help|support|the\s+most\s+help)/i, /students?\s+(?:at\s+risk|struggling|failing|needing\s+help|needing\s+support)/i, /who\s+is\s+falling\s+behind/i, /who\s+needs\s+.*help/i],
   },
   attendance: {
     keywords: ['attendance', 'absent', 'present', 'late', 'absence', 'truancy', 'missing', 'bunked', 'leave'],
@@ -66,8 +66,8 @@ const INTENT_PATTERNS: Record<Intent, { keywords: string[]; patterns: RegExp[] }
     patterns: [/workload/i, /teaching\s+hours/i, /free\s+period/i, /staff\s+room/i, /periods\s+per\s+day/i, /periods\s+does/i, /teach\s+per\s+day/i],
   },
   student_performance: {
-    keywords: ['performance', 'progress', 'how is', 'doing', 'report', 'analysis', 'overall grade', 'compare', 'versus', 'vs'],
-    patterns: [/perform/i, /progress/i, /how\s+is\s+[a-z]+\s+doing/i, /report/i, /analys/i, /compare\s+[a-z]+\s+and/i, /compare\s+him/i],
+    keywords: ['performance', 'progress', 'how is', 'doing', 'report', 'analysis', 'overall grade', 'going well', 'class health', 'class going', 'on track', 'is the class', 'is this class', 'how is the class', 'how is my class'],
+    patterns: [/perform/i, /progress/i, /how\s+is\s+[a-z]+\s+doing/i, /report/i, /analys/i, /(?:is|how\s+is)\s+(?:the|this|my|our)\s+class/i, /class\s+(?:going\s+well|on\s+track|doing\s+well|health|overview)/i, /is\s+this\s+class/i],
   },
   clubs: {
     keywords: ['club', 'robotics', 'drama', 'art', 'music', 'chess', 'debate', 'activity', 'extracurricular'],

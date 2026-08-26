@@ -31,13 +31,16 @@ export function planQueryExecution(
   const roleObjective = getRoleObjective(context.role || 'teacher');
 
 
-  // 1. Detect if this is a comparative query
-  const isComparison =
-    classified.action === 'compare' ||
+  // 1. Detect if this is an explicit comparative query
+  const hasExplicitComparisonKeyword =
     lowerQuery.includes('compare') ||
     lowerQuery.includes('versus') ||
     lowerQuery.includes(' vs ') ||
-    (targetEntities.length >= 2 && (intent === 'marks' || intent === 'student_performance' || intent === 'attendance'));
+    lowerQuery.includes('difference between') ||
+    lowerQuery.includes('comparison');
+  const isComparison =
+    hasExplicitComparisonKeyword &&
+    (classified.action === 'compare' || targetEntities.length >= 2 || lowerQuery.includes(' and '));
 
   // 2. Detect deterministic query (fast direct bypass without LLM overhead)
   const isDeterministic =

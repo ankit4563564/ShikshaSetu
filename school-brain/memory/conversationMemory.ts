@@ -96,7 +96,10 @@ export function resolveContextualReferences(
   state.lastIntent = memoryContext.lastDomain;
 
   // ── Resolve pronouns (him, her, their, they, them, this student) ──
-  const hasPronoun = /\b(their|them|they|his|her|him|that student|the weak students|those students|the student|these students|it|this)\b/i.test(lowerQuery);
+  const isClassScopeQuery = /\b(class|grade|section|roster|all students|school)\b/i.test(lowerQuery);
+  const isExplicitStudentPronoun = /\b(their|them|they|his|her|him|that student|the weak students|those students|the student|these students)\b/i.test(lowerQuery);
+  const hasGenericPronoun = /\b(it|this|these|those)\b/i.test(lowerQuery) && !/\b(this|these|that|those)\s+(class|grade|section|subject|period|lesson|topic|week|term|exam|school|menu|bus|timetable|schedule)\b/i.test(lowerQuery);
+  const hasPronoun = !isClassScopeQuery && (isExplicitStudentPronoun || hasGenericPronoun);
 
   if (hasPronoun) {
     if (memoryContext.lastDomain === 'who_needs_attention' && mentionedStudents.length > 0) {

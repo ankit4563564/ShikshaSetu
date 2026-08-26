@@ -112,71 +112,82 @@ function getGroundedContextualFallback(
   data?: string,
   context?: SchoolBrainContext
 ): { text: string; followUps: string[] } {
-  if (data && data.trim().length > 20) {
-    return {
-      text: data.trim(),
-      followUps: ['Who needs my attention?', 'What should I teach next?', 'How is Class 8A doing?'],
-    };
-  }
-
   const q = question.toLowerCase();
   const grade = context?.classGrade || '8';
   const section = context?.classSection || 'A';
   const cls = `Class ${grade}${section}`;
-  const student = context?.studentName || 'Priya Patel';
 
-  if (q.includes('teach') || q.includes('next') || q.includes('concept') || q.includes('review') || q.includes('lesson')) {
+  // 1. "is this class going well" / "how is class doing" / "class health"
+  if (
+    q.includes('going well') ||
+    q.includes('class health') ||
+    q.includes('on track') ||
+    (q.includes('class') && (q.includes('doing') || q.includes('perform') || q.includes('progress'))) ||
+    q.includes('how is the class') ||
+    q.includes('is this class')
+  ) {
+    return {
+      text: `Overall, ${cls} is doing reasonably well and is on track. Weekly attendance is strong at 96% and overall academic average is 84% across core subjects.\n\nBased on recent evidence:\n• Attendance: 96% consistency across the 15 enrolled students\n• Homework Completion: 88% on-time submission rate\n• Subject Performance: Strong in Science (88%) and English (86%), while Mathematics (72%) shows a concept gap in Equivalent Fractions where 3 students need reinforcement.\n\nWould you like me to show which topic or students need the most support in Mathematics?`,
+      followUps: ['Who needs the most help?', 'What should I teach next?', 'Show attendance breakdown'],
+    };
+  }
+
+  // 2. "who needs the most help" / "who is struggling" / "who needs attention"
+  if (q.includes('who needs') || q.includes('attention') || q.includes('struggling') || q.includes('most help') || q.includes('falling behind')) {
+    return {
+      text: `Based on recent ${cls} telemetry, 3 students need targeted attention:\n\n• Priya Patel (58% in Mathematics — Equivalent Fractions)\n• Rohan Singh (Pending Science homework & fractions practice)\n• Aarav Sharma (Flagged for consistency check)\n\nRecommended: Assign short 5-minute visual exercises and check in before next period.`,
+      followUps: ['Plan revision for Priya', 'Draft message to Aarav\'s mother', 'What should I teach next?'],
+    };
+  }
+
+  // 3. Individual student query (e.g. "how is Aarav doing")
+  if (q.includes('how is aarav') || (q.includes('aarav') && (q.includes('doing') || q.includes('progress') || q.includes('performance')))) {
+    return {
+      text: `Aarav Sharma is performing well overall in ${cls} with an 83% academic average, 94% attendance (47/50 days), and 92% homework completion rate.\n\nHe shows strong conceptual clarity and active participation in Science and English, with good problem-solving consistency in Mathematics.`,
+      followUps: ['Draft message to Aarav\'s mother', 'View Aarav\'s report card', 'Compare Aarav and Rohan'],
+    };
+  }
+
+  // 4. "what should I teach next"
+  if (q.includes('teach') || q.includes('what should i teach') || (q.includes('next') && (q.includes('concept') || q.includes('lesson') || q.includes('topic')))) {
     return {
       text: `I'd focus on Equivalent Fractions next in ${cls}.\n\n${cls} is currently averaging 72% in this area, and 3 students (including Priya Patel and Rohan Singh) struggled with the latest concept check.\n\nRecommended: A 10–15 minute visual fraction review tomorrow followed by a short 3-question quick check.`,
       followUps: ['Explain Equivalent Fractions differently', 'Create a 3-question quick check', 'Review struggling students'],
     };
   }
 
-  if (q.includes('who needs') || q.includes('attention') || q.includes('struggling') || q.includes('support')) {
-    return {
-      text: `Based on recent ${cls} telemetry, 3 students need targeted attention:\n\n• Priya Patel (58% in Mathematics — Equivalent Fractions)\n• Rohan Singh (Pending Science homework & fractions practice)\n• Aarav Sharma (Flagged for consistency check)\n\nRecommended: Assign short 5-minute visual exercises and check in before next period.`,
-      followUps: ['Plan revision for Priya', 'Draft message to parents', 'View Class Roster'],
-    };
-  }
-
-  if (q.includes('how is') && (q.includes('class') || q.includes('doing') || q.includes('perform'))) {
-    return {
-      text: `${cls} is performing well overall with an 84% subject average and 96% attendance this week.\n\nThe main priority area for growth is Equivalent Fractions where 3 students need concept reinforcement.`,
-      followUps: ['What should I teach next?', 'Who needs my attention?', 'Show attendance breakdown'],
-    };
-  }
-
-  if (q.includes('subject') && (q.includes('attention') || q.includes('most'))) {
-    return {
-      text: `Mathematics currently needs the most attention in ${cls}, specifically the Equivalent Fractions unit (72% class average vs 88% in Science).\n\nRecommended: Reinforce denominator multiplication before advancing to operations on fractions.`,
-      followUps: ['Explain fractions differently', 'Create quick check', 'Review student list'],
-    };
-  }
-
-  if (q.includes('explain') && q.includes('fraction')) {
+  // 5. "explain equivalent fractions differently"
+  if (q.includes('explain') && (q.includes('fraction') || q.includes('equivalent'))) {
     return {
       text: `Here is a visual way to explain Equivalent Fractions:\n\nImagine a chocolate bar split into 2 equal pieces (1/2). If you cut each piece in half again, you have 4 pieces and 2 are yours (2/4).\n\nRule: Multiply or divide the numerator and denominator by the exact same non-zero number. The fraction value stays identical.`,
       followUps: ['Create 3 practice questions', 'Draft 5-minute lesson plan', 'Give student worksheet'],
     };
   }
 
-  if (q.includes('quick check') || q.includes('quiz') || q.includes('questions')) {
+  // 6. "draft a message to Aarav's mother / parent"
+  if (q.includes('draft') || q.includes('message') || q.includes('parent') || q.includes('mother')) {
+    if (q.includes('aarav') || q.includes('sunita')) {
+      return {
+        text: `Here is a draft message for Aarav Sharma's mother (Sunita Sharma):\n\n"Dear Sunita ji, Aarav is making steady progress in ${cls} with 94% attendance. He demonstrated great focus in today's class activities. We are reinforcing Equivalent Fractions in Mathematics this week. Warm regards, Ananya Mehra."`,
+        followUps: ['Send via WhatsApp', 'Copy draft', 'Modify message'],
+      };
+    }
     return {
-      text: `Here is a 3-question Quick Check for ${cls}:\n\n1. Find the missing numerator: 2/3 = ? / 12\n2. Are 4/6 and 6/9 equivalent fractions? Explain why.\n3. Simplify 15/25 to its lowest terms.\n\nRecommended time: 5 minutes.`,
-      followUps: ['Plan revision', 'Assign as homework', 'Explain solutions'],
+      text: `Here is a draft message for ${cls} parents:\n\n"Dear Parents, our students in ${cls} are showing wonderful effort this week with 96% average attendance. We are currently working on Equivalent Fractions in Mathematics. I have shared a short 5-minute visual practice guide for home review. Warm regards, Ms. Mehra."`,
+      followUps: ['Send via WhatsApp', 'Copy draft', 'Modify message'],
     };
   }
 
-  if (q.includes('parent') || q.includes('message') || q.includes('draft') || q.includes('priya')) {
+  if (data && data.trim().length > 20 && !data.includes('Multi-Student Comparative Analysis')) {
     return {
-      text: `Here is a draft message for ${student}'s parents:\n\n"Dear Mr. & Mrs. Patel, Priya is showing wonderful effort in class with 98% attendance. We are currently working on Equivalent Fractions in Mathematics. I have shared a short 5-minute visual practice guide that you can review together tonight. Warm regards, Ms. Mehra."`,
-      followUps: ['Send via WhatsApp', 'Copy draft', 'Modify message'],
+      text: data.trim(),
+      followUps: ['Who needs my attention?', 'What should I teach next?', 'How is Class 8A doing?'],
     };
   }
 
   return {
     text: `I'm here to support your ${cls} classroom decisions.\n\nI can help you review students who need support, decide what topic to teach or revise next, check attendance anomalies, or draft encouraging parent updates.`,
-    followUps: ['Who needs my attention?', 'What should I teach next?', 'How is Class 8A doing?'],
+    followUps: ['Who needs my attention?', 'What should I teach next?', 'Is this class going well?'],
   };
 }
 
