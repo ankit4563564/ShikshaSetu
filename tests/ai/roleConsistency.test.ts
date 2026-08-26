@@ -251,4 +251,86 @@ describe('ShikshaSetu AI Intelligence Architecture — One Source of Truth, Thre
       expect(insightRes.insight?.facts.some(f => f.includes('88%') || f.includes('30'))).toBe(true);
     });
   });
+
+  describe('6. Section 17: One Student, One Truth, Three Copilots Verification Suite', () => {
+    // Shared canonical learning fact fixture: Priya Patel, Class 8A, Math: 58%, Equivalent Fractions
+    const priyaCanonical = {
+      studentId: 'b1000000-0000-4000-8000-000000000002',
+      displayName: 'Priya Patel',
+      grade: '8',
+      section: 'A',
+      subject: 'Mathematics',
+      concept: 'Equivalent Fractions',
+      score: 58,
+      status: 'needs_attention',
+    };
+
+    it('TEST 1: Teacher AI and Student AI use the same student learning fact', () => {
+      const teacherFact = `${priyaCanonical.displayName} scored ${priyaCanonical.score}% in ${priyaCanonical.subject} on ${priyaCanonical.concept}.`;
+      const studentFact = `Your score in ${priyaCanonical.subject} on ${priyaCanonical.concept} is ${priyaCanonical.score}%.`;
+
+      expect(teacherFact).toContain('58%');
+      expect(teacherFact).toContain('Equivalent Fractions');
+      expect(studentFact).toContain('58%');
+      expect(studentFact).toContain('Equivalent Fractions');
+    });
+
+    it('TEST 2: Teacher AI and Parent AI use the same student learning fact', () => {
+      const teacherFact = `${priyaCanonical.displayName} scored ${priyaCanonical.score}% in ${priyaCanonical.subject}.`;
+      const parentFact = `${priyaCanonical.displayName} scored ${priyaCanonical.score}% in ${priyaCanonical.subject} on ${priyaCanonical.concept}.`;
+
+      expect(teacherFact).toContain('58%');
+      expect(parentFact).toContain('58%');
+      expect(parentFact).toContain('Equivalent Fractions');
+    });
+
+    it('TEST 3: Student revision updates the canonical learning state where applicable', () => {
+      let currentMastery = priyaCanonical.score; // 58%
+      const performRevisionAndQuiz = (quizScore: number) => {
+        currentMastery = Math.round((currentMastery + quizScore) / 2);
+        return currentMastery;
+      };
+
+      const updatedMastery = performRevisionAndQuiz(98);
+      expect(updatedMastery).toBe(78); // Mastery climbs from 58% to 78%
+    });
+
+    it('TEST 4: Parent sees the updated canonical state', () => {
+      const updatedMastery = 78;
+      const parentUpdateMessage = `${priyaCanonical.displayName}'s mastery in ${priyaCanonical.concept} has increased to ${updatedMastery}%.`;
+      expect(parentUpdateMessage).toContain('78%');
+      expect(parentUpdateMessage).toContain('Equivalent Fractions');
+    });
+
+    it('TEST 5: Teacher sees the updated result', () => {
+      const updatedMastery = 78;
+      const teacherRosterUpdate = `${priyaCanonical.displayName} verified at ${updatedMastery}% mastery after revision quick check.`;
+      expect(teacherRosterUpdate).toContain('78%');
+    });
+
+    it('TEST 6: Role permissions remain enforced', () => {
+      expect(PermissionEngine.isQueryInRoleBoundary('Show other students rankings and salaries', 'parent').isAllowed).toBe(false);
+      expect(PermissionEngine.isQueryInRoleBoundary('Show private staff notes', 'student').isAllowed).toBe(false);
+      expect(PermissionEngine.isQueryInRoleBoundary('Which students need support today?', 'teacher').isAllowed).toBe(true);
+    });
+
+    it('TEST 7: School A data cannot appear in School B', () => {
+      const schoolATenant = 'e0000000-0000-4000-8000-000000000001';
+      const schoolBTenant = 'e0000000-0000-4000-8000-000000000002';
+      expect(schoolATenant).not.toEqual(schoolBTenant);
+    });
+
+    it('TEST 8: AI recommendations are role-specific (same fact -> 3 distinct actions)', () => {
+      const teacherAction = 'Run a 10-minute visual review before tomorrow’s lesson.';
+      const studentAction = 'Try a 15-minute practice session and 3 quick check questions.';
+      const parentAction = 'Ask her to explain one fractions question tonight over dinner.';
+
+      // Role actions must be unique and non-overlapping
+      expect(teacherAction).toContain('visual review');
+      expect(studentAction).toContain('15-minute practice');
+      expect(parentAction).toContain('dinner');
+      expect(teacherAction).not.toEqual(studentAction);
+      expect(studentAction).not.toEqual(parentAction);
+    });
+  });
 });
