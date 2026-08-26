@@ -1220,10 +1220,10 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                 <div className="border-b border-slate-100 pb-3 mb-3 flex items-center justify-between">
                   <div>
                     <h3 className="font-display text-sm font-extrabold text-slate-900">
-                      Chatting with {PARENT_MAP[activeParentStudent?.displayName || '']?.parentName || 'Parent'}
+                      {PARENT_MAP[activeParentStudent?.displayName || '']?.parentName || 'Sunita Sharma'}
                     </h3>
-                    <p className="text-xs text-slate-400 font-medium">
-                      Student: {activeParentStudent?.displayName || 'Student'} • Grade {grade}{section}
+                    <p className="text-xs text-slate-500 font-medium">
+                      Parent of {activeParentStudent?.displayName || 'Aarav Sharma'} · Class {grade}{section}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1233,7 +1233,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                         setAiToolkitTab('parent_message');
                         setIsAiToolkitOpen(true);
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-xs transition border border-indigo-200/80 cursor-pointer flex items-center gap-1"
+                      className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition border border-indigo-200/80 cursor-pointer flex items-center gap-1.5"
                     >
                       <span>✨</span>
                       <span>Draft with AI</span>
@@ -1241,7 +1241,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                     <button
                       type="button"
                       onClick={() => setSelectedStudentId(activeParentStudent?.studentId || null)}
-                      className="text-xs font-bold text-slate-500 hover:text-indigo-600 hover:underline cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
                     >
                       360° Profile →
                     </button>
@@ -1252,7 +1252,13 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                   <TeacherChat
                     studentId={activeParentStudent?.studentId || 'b1000000-0000-4000-8000-000000000001'}
                     studentName={activeParentStudent?.displayName || 'Aarav Sharma'}
+                    parentName={PARENT_MAP[activeParentStudent?.displayName || '']?.parentName || 'Sunita Sharma'}
+                    teacherName={displayName || 'Ananya Mehra'}
                     teacherId={teacherId}
+                    onOpenAiDraft={() => {
+                      setAiToolkitTab('parent_message');
+                      setIsAiToolkitOpen(true);
+                    }}
                   />
                 </div>
               </div>

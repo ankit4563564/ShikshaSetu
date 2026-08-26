@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { fetchChatMessagesAction, sendChatMessageAction, ChatMessageData } from '@/app/actions/chatActions';
 import { createClient } from '@/lib/supabase/client';
 import { useNotifications } from '@/components/shared/NotificationContext';
@@ -9,9 +9,19 @@ interface TeacherChatProps {
   studentId: string;
   studentName: string;
   teacherId: string;
+  parentName?: string;
+  teacherName?: string;
+  onOpenAiDraft?: () => void;
 }
 
-export default function TeacherChat({ studentId, studentName, teacherId }: TeacherChatProps) {
+export default function TeacherChat({
+  studentId,
+  studentName,
+  teacherId,
+  parentName = 'Sunita Sharma',
+  teacherName = 'Ananya Mehra',
+  onOpenAiDraft,
+}: TeacherChatProps) {
   const { setActiveChatStudentId, clearNotificationsForStudent } = useNotifications();
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
   
@@ -33,6 +43,9 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
 
+  const studentFirstName = studentName.split(' ')[0] || 'Student';
+  const parentFirstName = parentName.split(' ')[0] || 'Parent';
+
   // Set active chat and clear notifications for this student
   useEffect(() => {
     setActiveChatStudentId(studentId);
@@ -48,11 +61,9 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
         const history = await fetchChatMessagesAction(studentId);
         if (isMounted && history) {
           setMessages((prev) => {
-            // Merge newly fetched messages with existing optimistic messages
             const optimistic = prev.filter((m) => m.id.startsWith('temp-'));
             const nonOptimistic = history;
             
-            // Check if there are actual new messages to avoid unnecessary rerenders
             if (
               prev.length === nonOptimistic.length &&
               prev.every((m, idx) => m.id === nonOptimistic[idx]?.id)
@@ -60,7 +71,6 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
               return prev;
             }
 
-            // Remove any optimistic messages that have been confirmed in history
             const remainingOptimistic = optimistic.filter(
               (opt) => !nonOptimistic.some((dbMsg) => dbMsg.messageText === opt.messageText)
             );
@@ -73,10 +83,9 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
       }
     };
 
-    // Initial load
     syncMessages();
 
-    // Active real-time polling fallback (every 2.5s) to guarantee live updates even if websockets are delayed
+    // Active real-time polling fallback (every 2.5s) to guarantee live updates
     const pollInterval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         syncMessages();
@@ -99,7 +108,6 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
 
   // Supabase Realtime & Broadcast subscription for incoming chat messages
   useEffect(() => {
-    if (!studentId) return;
     const supabase = createClient();
     const channel = supabase
       .channel(`chat-thread-${studentId}`)
@@ -111,41 +119,41 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
           table: 'chat_messages',
           filter: `student_id=eq.${studentId}`,
         },
-        (payload: any) => {
-          const rawMessage = payload.new;
-          if (!rawMessage) return;
+        (payload) => {
+          const row = payload.new;
+          if (!row || !row.id) return;
 
           const newMsg: ChatMessageData = {
-            id: rawMessage.id,
-            studentId: rawMessage.student_id,
-            senderId: rawMessage.sender_id,
-            senderRole: rawMessage.sender_role as 'teacher' | 'parent',
-            messageText: rawMessage.content,
-            isContextFlag: rawMessage.is_context_flag || false,
-            createdAt: rawMessage.created_at,
+            id: row.id,
+            studentId: row.student_id,
+            senderId: row.sender_id,
+            senderRole: row.sender_role as 'teacher' | 'parent',
+            messageText: row.content,
+            isContextFlag: row.is_context_flag || false,
+            createdAt: row.created_at,
           };
 
           setMessages((prev) => {
-            if (prev.some((msg) => msg.id === newMsg.id)) return prev;
+            if (prev.some((m) => m.id === newMsg.id)) return prev;
 
-            const matchedOptimisticIndex = prev.findIndex(
-              (msg) => msg.senderRole === 'teacher' && msg.messageText === newMsg.messageText && msg.id.startsWith('temp-')
+            const matchedOptIndex = prev.findIndex(
+              (m) => m.senderRole === newMsg.senderRole && m.messageText === newMsg.messageText && m.id.startsWith('temp-')
             );
-
-            if (matchedOptimisticIndex !== -1) {
+            if (matchedOptIndex !== -1) {
               const updated = [...prev];
-              updated[matchedOptimisticIndex] = newMsg;
+              updated[matchedOptIndex] = newMsg;
               return updated;
             }
-
             return [...prev, newMsg];
           });
         }
       )
-      .on('broadcast', { event: 'new_chat_message' }, ({ payload }: { payload: ChatMessageData }) => {
-        if (!payload || payload.studentId !== studentId) return;
+      .on('broadcast', { event: 'new_chat_message' }, ({ payload }) => {
+        if (!payload || !payload.id || payload.studentId !== studentId) return;
+
         setMessages((prev) => {
           if (prev.some((m) => m.id === payload.id)) return prev;
+
           const matchedOptIndex = prev.findIndex(
             (m) => m.senderRole === payload.senderRole && m.messageText === payload.messageText && m.id.startsWith('temp-')
           );
@@ -203,9 +211,31 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
     }
   }, [messages, isUserNearBottom]);
 
-  const filteredMessages = messages.filter((msg) =>
-    msg.messageText.toLowerCase().includes(searchQuery.toLowerCase().trim())
-  );
+  const filteredMessages = useMemo(() => {
+    if (!searchQuery.trim()) return messages;
+    const query = searchQuery.toLowerCase().trim();
+    return messages.filter((msg) => msg.messageText.toLowerCase().includes(query));
+  }, [messages, searchQuery]);
+
+  // Teacher Productivity Quick Presets (Clicking populates composer so teacher can edit before sending)
+  const quickActions = [
+    {
+      label: '📝 Homework reminder',
+      text: `Hi ${parentFirstName}, just a quick reminder that ${studentFirstName} has pending homework for Mathematics.`,
+    },
+    {
+      label: '📅 Attendance concern',
+      text: `Hi ${parentFirstName}, I noticed ${studentFirstName} was absent/late today. Hope everything is alright at home.`,
+    },
+    {
+      label: '🎯 Assessment update',
+      text: `Hi ${parentFirstName}, just a heads-up that ${studentFirstName} has an upcoming class assessment this Friday.`,
+    },
+    {
+      label: '🌟 Positive feedback',
+      text: `Hi ${parentFirstName}, ${studentFirstName} showed great focus and participation during today's lesson!`,
+    },
+  ];
 
   // Transactional Send Flow: Only clears draft AFTER confirmed persistence
   const handleSendMessage = async (textToSend: string) => {
@@ -246,7 +276,7 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
         }
         setMessages((prev) => prev.map((msg) => (msg.id === tempId ? confirmedMsg : msg)));
 
-        // Broadcast to shared channel for instantaneous cross-tab / cross-device receipt
+        // Broadcast to shared channel for instantaneous cross-tab receipt
         try {
           const supabase = createClient();
           const channel = supabase.channel(`chat-thread-${studentId}`);
@@ -272,59 +302,95 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
     }
   };
 
-  const presets = [
-    `${studentName.split(' ')[0]} looked tired today.`,
-    'Homework not submitted.',
-    'Great participation today!',
-    'Please check school diary.',
-  ];
-
   return (
-    <div className="relative flex h-full min-h-[340px] flex-col justify-between">
-      {/* Header with Search */}
-      <div className="mb-3 border-b border-deep-teal/10 pb-2 flex items-center justify-between gap-2">
-        <h4 className="font-display text-[11px] font-black uppercase tracking-[0.14em] text-deep-teal/72">
-          Chat with Parent
-        </h4>
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="🔍 Search messages..."
-          className="rounded-lg border border-deep-teal/15 bg-white/70 px-2 py-0.5 text-[11px] text-deep-teal placeholder-deep-teal/40 outline-none focus:border-deep-teal/30"
-          aria-label="Search messages"
-        />
+    <div className="relative flex h-[520px] flex-col justify-between bg-white rounded-2xl">
+      {/* ── Search & Filter Bar ── */}
+      <div className="mb-2 pb-2 border-b border-slate-100 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+          <span>💬</span>
+          <span>Conversation History</span>
+        </div>
+        <div className="relative w-48 sm:w-60">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search messages..."
+            className="w-full pl-7 pr-2.5 py-1 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-all font-medium"
+            aria-label="Search conversation messages"
+          />
+          <span className="absolute left-2.5 top-1.5 text-[10px] text-slate-400">🔍</span>
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2 top-1 text-[10px] text-slate-400 hover:text-slate-700"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Messages Stream Container */}
-      <div ref={chatContainerRef} className="mb-3 flex-1 overflow-y-auto space-y-2 pr-1 text-xs scrollbar-thin scroll-smooth">
+      {/* ── Messages Stream Container ── */}
+      <div
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto space-y-3 px-1 py-2 text-xs scrollbar-thin scroll-smooth"
+      >
         {filteredMessages.length === 0 ? (
-          <div className="py-10 text-center italic text-deep-teal/54 font-medium">
-            {searchQuery ? 'No messages matching search.' : 'No messages yet. Send a quick update below.'}
+          <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-2 text-slate-500">
+            <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-600 text-lg shadow-2xs">
+              💬
+            </div>
+            {searchQuery ? (
+              <p className="text-xs font-medium text-slate-500">
+                No messages matching &ldquo;{searchQuery}&rdquo;
+              </p>
+            ) : (
+              <div className="space-y-1">
+                <h4 className="font-display text-xs font-bold text-slate-800">No messages yet</h4>
+                <p className="text-[11px] text-slate-400 max-w-xs mx-auto leading-relaxed">
+                  Start a conversation with {parentFirstName} about {studentFirstName}&rsquo;s learning, attendance or homework.
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           filteredMessages.map((msg) => {
             const isMe = msg.senderRole === 'teacher';
             const isDelivered = !msg.id.startsWith('temp-');
-            const roleLabel = msg.senderRole === 'teacher' ? 'Teacher' : 'Parent';
+            const authorName = isMe ? teacherName : parentName;
+            const roleLabel = isMe ? 'Teacher' : 'Parent';
+
             return (
               <div
                 key={msg.id}
-                className={`flex max-w-[86%] flex-col ${isMe ? 'self-end items-end ml-auto' : 'self-start items-start'}`}
+                className={`flex max-w-[82%] sm:max-w-[75%] flex-col ${
+                  isMe ? 'self-end items-end ml-auto' : 'self-start items-start'
+                }`}
               >
                 <div
-                  className={`rounded-xl px-3 py-2 text-xs leading-relaxed ${
+                  className={`rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
                     isMe
-                      ? 'rounded-tr-none bg-deep-teal text-white shadow-sm'
-                      : 'rounded-tl-none border border-deep-teal/10 bg-deep-teal/[0.06] text-deep-teal/95'
+                      ? 'rounded-tr-xs bg-slate-900 text-white shadow-xs'
+                      : 'rounded-tl-xs bg-slate-100 border border-slate-200/80 text-slate-800'
                   } ${msg.id.startsWith('temp-') ? 'opacity-60 animate-pulse' : ''}`}
                 >
+                  {msg.isContextFlag && (
+                    <div
+                      className={`text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md inline-block mb-1.5 ${
+                        isMe ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300'
+                      }`}
+                    >
+                      📌 Flagged Note
+                    </div>
+                  )}
                   <p className="whitespace-pre-wrap">{msg.messageText}</p>
                 </div>
-                <span className="mt-1 px-1 text-[9px] font-semibold text-deep-teal/54 flex items-center gap-1">
-                  {roleLabel} &middot; {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                <span className="mt-1 px-1 text-[10px] font-medium text-slate-400 flex items-center gap-1">
+                  <span>{authorName} &middot; {roleLabel} &middot; {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   {isMe && (
-                    <span className="text-sage font-black text-[10px]" title={isDelivered ? 'Delivered' : 'Sending'}>
+                    <span className="text-emerald-600 font-bold text-[10px]" title={isDelivered ? 'Delivered' : 'Sending'}>
                       {isDelivered ? '✓✓' : '✓'}
                     </span>
                   )}
@@ -344,11 +410,11 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
             setShouldAutoScroll(true);
             chatContainerRef.current?.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior: 'smooth' });
           }}
-          className="absolute bottom-24 right-2 bg-deep-teal hover:bg-deep-teal/90 text-white p-2 rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 z-10 cursor-pointer"
+          className="absolute bottom-28 right-4 bg-slate-900 hover:bg-slate-800 text-white p-2 rounded-full shadow-md transition-all hover:scale-105 active:scale-95 z-10 cursor-pointer"
           title="Scroll to bottom"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </button>
       )}
@@ -367,47 +433,58 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
         </div>
       )}
 
-      {/* Quick Action Presets */}
-      <div className="mb-3 space-y-1.5">
-        <span className="text-[10px] font-black uppercase tracking-[0.14em] text-deep-teal/64">
-          📌 Send Quick Update
-        </span>
+      {/* ── Quick Action Presets (Populate Composer for Review) ── */}
+      <div className="pt-2 pb-1.5 border-t border-slate-100 space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            Quick Prompts:
+          </span>
+          {onOpenAiDraft && (
+            <button
+              type="button"
+              onClick={onOpenAiDraft}
+              className="text-[10.5px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <span>✨ Draft with AI</span>
+            </button>
+          )}
+        </div>
         <div className="flex flex-wrap gap-1.5">
-          {presets.map((preset, idx) => (
+          {quickActions.map((action, idx) => (
             <button
               key={idx}
               type="button"
-              disabled={isSending}
-              onClick={() => handleSendMessage(preset)}
-              className="rounded-lg border border-deep-teal/10 bg-deep-teal/[0.05] px-2.5 py-1 text-[10.5px] font-semibold text-deep-teal/82 transition-all hover:border-deep-teal/20 hover:bg-deep-teal/[0.08] active:scale-95 disabled:opacity-50 cursor-pointer"
+              onClick={() => setInputText(action.text)}
+              className="rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 px-2.5 py-1 text-[10.5px] font-medium text-slate-700 transition-all active:scale-95 cursor-pointer text-left"
+              title="Click to populate message box"
             >
-              {preset}
+              {action.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Stable Controlled Composition Form */}
+      {/* ── Message Composer Form ── */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
           handleSendMessage(inputText);
         }}
-        className="flex gap-2 border-t border-deep-teal/10 pt-2"
+        className="flex gap-2 pt-2"
       >
         <input
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="Type message to parent..."
-          className="flex-1 rounded-lg border border-deep-teal/15 bg-white/55 px-3 py-2 text-xs text-deep-teal placeholder-deep-teal/40 transition-all focus:border-deep-teal/30 focus:bg-white focus:outline-none focus:ring-1 focus:ring-deep-teal/10 font-medium"
+          placeholder={`Write a note to ${parentFirstName} about ${studentFirstName}...`}
+          className="flex-1 rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 transition-all focus:border-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-100 font-medium"
           disabled={isSending}
           aria-label="Message input"
         />
         <button
           type="submit"
           disabled={isSending || !inputText.trim()}
-          className="rounded-lg bg-deep-teal px-4 py-2 text-xs font-bold text-white transition-all hover:bg-deep-teal/90 active:scale-95 disabled:opacity-50 shadow-md cursor-pointer flex items-center gap-1 shrink-0"
+          className="rounded-xl bg-slate-900 hover:bg-slate-800 px-4 py-2.5 text-xs font-bold text-white transition-all active:scale-95 disabled:opacity-50 shadow-xs cursor-pointer flex items-center gap-1.5 shrink-0"
         >
           <span>{isSending ? 'Sending...' : 'Send'}</span>
           <span>&rarr;</span>

@@ -315,6 +315,7 @@ export function ParentChatTab({
           messages.map((msg) => {
             const isParent = msg.senderRole === 'parent';
             const roleLabel = msg.senderRole === 'parent' ? 'Parent' : 'Teacher';
+            const authorName = isParent ? (guardianName || 'Sunita Sharma') : (teacherName || 'Ananya Mehra');
             return (
               <motion.div
                 key={msg.id}
@@ -323,7 +324,7 @@ export function ParentChatTab({
                 className={`flex flex-col ${isParent ? 'items-end' : 'items-start'}`}
               >
                 <div
-                  className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-2xs space-y-1 ${
+                  className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed shadow-2xs space-y-1 ${
                     isParent
                       ? 'bg-deep-teal text-white rounded-br-xs'
                       : 'bg-white border border-deep-teal/10 text-deep-teal rounded-bl-xs'
@@ -340,11 +341,11 @@ export function ParentChatTab({
                   )}
                   <p className="font-medium whitespace-pre-wrap">{msg.messageText}</p>
                   <span
-                    className={`block text-[9px] font-mono ${
-                      isParent ? 'text-white/60 text-right' : 'text-deep-teal/50 text-left'
+                    className={`block text-[9.5px] font-medium ${
+                      isParent ? 'text-white/70 text-right' : 'text-deep-teal/50 text-left'
                     }`}
                   >
-                    {roleLabel} &middot; {new Date(msg.createdAt).toLocaleTimeString('en-US', {
+                    {authorName} &middot; {roleLabel} &middot; {new Date(msg.createdAt).toLocaleTimeString('en-US', {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
