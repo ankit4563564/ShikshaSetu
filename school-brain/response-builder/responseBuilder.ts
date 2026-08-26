@@ -34,7 +34,7 @@ export function buildFinalResponse(
 
   return {
     text: withFooter.trim(),
-    sources: verifiedSourcesList,
+    sources: sources || [],
     suggestedFollowUps: finalFollowUps.slice(0, 4),
     source: intent,
     confidence,

@@ -183,11 +183,13 @@ export async function buildStudentContext(
 
   const confidenceModifier = completenessCount > 0 ? Math.round((completenessCount / 3) * 100) / 100 : 0.5;
 
+  const studentData = student as any;
+
   return {
-    studentId: student.id,
-    schoolId: student.school_id,
-    grade: student.grade,
-    section: student.section,
+    studentId: studentData.id,
+    schoolId: studentData.school_id,
+    grade: studentData.grade,
+    section: studentData.section,
     attendanceMetrics: {
       totalDays,
       presentDays,

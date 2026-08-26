@@ -49,7 +49,7 @@ export async function publishHomeworkAssignmentAction(formData: FormData) {
       .eq('grade', grade)
       .eq('section', section);
 
-    const targetStudentIds = (students || []).map((s) => s.id);
+    const targetStudentIds = (students || []).map((s: any) => s.id);
 
     // Do not publish to phantom/fake IDs — if class has no enrolled students, return an error.
     if (targetStudentIds.length === 0) {

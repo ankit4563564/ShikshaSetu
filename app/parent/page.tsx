@@ -114,14 +114,14 @@ export default async function ParentPage() {
   // 2. Fetch raw student data from Supabase (or fallback seed mock data)
   const studentsRaw = await getStudentsData();
 
-  const myStudents = studentsRaw.filter((s) => effectiveLinkedIds.includes(s.studentId));
+  const myStudents = studentsRaw.filter((s) => Boolean(s.studentId && effectiveLinkedIds.includes(s.studentId)));
 
   // 4. Check if alerts should be suppressed (exam period/holiday)
   const suppressAlerts = await shouldSuppressAlerts();
 
   // 5. Batch fetch evidence_logs and gate_passes for all students (fix N+1)
   const supabase = createClient();
-  const studentIdsList = myStudents.map((s) => s.studentId);
+  const studentIdsList = myStudents.map((s) => s.studentId).filter(Boolean) as string[];
   const [{ data: allDbLogs }, { data: allGatePasses }] = await Promise.all([
     supabase.from('evidence_logs').select('id, source_type, headline, bullets, raw_data, student_id').in('student_id', studentIdsList).eq('is_parent_visible', true).order('generated_at', { ascending: false }),
     supabase.from('gate_passes').select('id, status, pickup_window_start, pickup_window_end, pass_code, reason, used_at, rejection_reason, student_id').in('student_id', studentIdsList).order('created_at', { ascending: false }),
@@ -148,8 +148,11 @@ export default async function ParentPage() {
     const finalStatus = student.activeStatusFlag?.isCorrected ? 'On Track' : evaluation.status;
     const finalEvaluation = { ...evaluation, status: finalStatus };
 
-    const dbLogs = logsByStudent.get(student.studentId) || [];
-    const gatePasses = gatePassesByStudent.get(student.studentId) || [];
+    const sId = student.studentId || 'b1000000-0000-4000-8000-000000000001';
+    const sName = student.displayName || 'Student';
+
+    const dbLogs = logsByStudent.get(sId) || [];
+    const gatePasses = gatePassesByStudent.get(sId) || [];
 
     const customEvidenceItems = (dbLogs || []).map((log: any) => {
       const raw = log.raw_data as any;
@@ -169,11 +172,11 @@ export default async function ParentPage() {
 
     const combinedEvidence = [...customEvidenceItems, ...evaluation.evidence];
 
-    const noteResult = generateParentOfflineFallback(student.displayName, finalStatus);
+    const noteResult = generateParentOfflineFallback(sName, finalStatus);
 
     return {
-      studentId: student.studentId,
-      displayName: student.displayName,
+      studentId: sId,
+      displayName: sName,
       parentName: guardianName,
       parentEmail: guardianEmail,
       parentType: 'sunita' as 'sunita' | 'kavita',
@@ -181,8 +184,8 @@ export default async function ParentPage() {
       section: student.section || 'A',
       classTeacherId: student.classTeacherId,
       noteResult,
-      homework: student.homework,
-      attendance: student.attendance,
+      homework: student.homework || [],
+      attendance: student.attendance || [],
       gatePasses: gatePasses || [],
       evidence: combinedEvidence,
       productInsight: buildStudentProductInsight({

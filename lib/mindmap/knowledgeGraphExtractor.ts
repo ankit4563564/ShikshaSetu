@@ -895,7 +895,7 @@ export async function extractKnowledgeGraphFromText(
         node.title,
         node.type,
         sectionSlices[idx].text,
-        evidence.formulaVault.map((f) => ({ id: f.id, raw: f.raw, meaning: f.meaning })),
+        evidence.formulaVault.map((f) => ({ id: f.id, raw: f.raw, meaning: f.meaning || '' })),
         evidence.tableVault.map((t) => ({ id: t.id, columns: t.columns }))
       ).catch(() => ({}) as NodeDetails)
     );

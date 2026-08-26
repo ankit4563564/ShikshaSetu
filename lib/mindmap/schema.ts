@@ -181,8 +181,8 @@ export const KnowledgeGraphSchema = z
     tables: z.array(TableVaultEntrySchema).optional().default([]),
     sourceRefs: z.array(SourceRefSchema).optional().default([]),
     sourceReferences: z.array(SourceReferenceSchema).optional().default([]),
-    telemetry: z.record(z.any()).optional(),
-    qualityReport: z.record(z.any()).optional(),
+    telemetry: z.record(z.string(), z.any()).optional(),
+    qualityReport: z.record(z.string(), z.any()).optional(),
   })
   .superRefine((kg, ctx) => {
     const nodeIds = new Set<string>();
@@ -289,7 +289,7 @@ export const KnowledgeGraphSchema = z
 
       for (let i = 0; i < kg.sourceRefs.length; i++) {
         const srcRef = kg.sourceRefs[i];
-        if (srcRef.type !== 'noise' && srcRef.id !== 'src-root-doc') {
+        if (srcRef.id !== 'src-root-doc') {
           if (!claimedSpans.has(srcRef.id)) {
             let referenced = false;
             if (srcRef.type === 'formula') {
@@ -554,8 +554,8 @@ export const ConceptMindMapSchema = z.object({
   relationships: z.array(MindMapRelationshipSchema).default([]),
   sourceReferences: z.array(SourceReferenceSchema).optional().default([]),
   knowledgeGraph: KnowledgeGraphSchema.optional(),
-  telemetry: z.record(z.any()).optional(),
-  qualityReport: z.record(z.any()).optional(),
+  telemetry: z.record(z.string(), z.any()).optional(),
+  qualityReport: z.record(z.string(), z.any()).optional(),
 });
 
 export function normalizeConceptMindMap(raw: unknown): ConceptMindMap {

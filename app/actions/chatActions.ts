@@ -88,13 +88,13 @@ export async function sendChatMessageAction(data: {
     }
 
     try {
-      await recordEcosystemEvent({
-        event_type: 'chat_message_sent',
-        student_id: data.studentId,
-        actor_id: authoritativeSenderId,
-        actor_role: authoritativeSenderRole,
+      await recordEcosystemEvent(scopedDb, {
+        eventType: 'chat_message_sent',
+        studentId: data.studentId,
+        actorId: authoritativeSenderId,
+        actorRole: authoritativeSenderRole,
         title: data.isContextFlag ? 'Parent context note sent' : 'Chat message sent',
-        description: data.text.trim(),
+        body: data.text.trim(),
         metadata: {
           messageId: newRow.id,
           isContextFlag: data.isContextFlag || false,

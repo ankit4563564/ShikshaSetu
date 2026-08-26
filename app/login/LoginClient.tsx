@@ -88,7 +88,7 @@ export default function LoginClient() {
 
       if (result.status === 'complete') {
         setIsResolving(true);
-        if (result.createdSessionId) {
+        if (result.createdSessionId && setActive) {
           await setActive({ session: result.createdSessionId });
         }
         const target = await resolveAuthenticatedPortalRoute();

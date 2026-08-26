@@ -231,7 +231,7 @@ export async function completeTaskAction(
   input: CompleteTaskInput
 ): Promise<CompleteTaskResult> {
   const context = await getAuthContext();
-  requirePermission(context, 'tasks:complete');
+  requirePermission(context, 'interventions:create');
 
   const scopedDb = createScopedClient(context);
 

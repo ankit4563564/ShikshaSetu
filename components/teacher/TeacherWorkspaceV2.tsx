@@ -76,8 +76,8 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
   const { grade, section, students } = classContext;
 
   const attendanceRoster: AttendanceRosterStudent[] = students.map((s) => ({
-    studentId: s.studentId,
-    displayName: s.displayName,
+    studentId: s.studentId || '',
+    displayName: s.displayName || 'Student',
     rollNumber: s.roll_number || '',
     currentStatus: 'present',
   }));
@@ -89,8 +89,8 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
       const totalHw = s.homework?.length || 5;
       const subHw = s.homework?.filter((h) => h.isSubmitted).length || 4;
       return {
-        studentId: s.studentId,
-        displayName: s.displayName,
+        studentId: s.studentId || '',
+        displayName: s.displayName || 'Student',
         attendance: {
           present: presAtt,
           total: totalAtt,
@@ -101,7 +101,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
           total: totalHw,
           percentage: Math.round((subHw / totalHw) * 100),
         },
-        positiveNote: (s as any).aiExplanation || `${s.displayName} shows strong consistency and participation.`,
+        positiveNote: (s as any).aiExplanation || `${s.displayName || 'Student'} shows strong consistency and participation.`,
         conversationPrompt: `Discuss recent progress in Mathematics and class activities.`,
       };
     });
@@ -117,7 +117,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
       return;
     }
     if (query === 'Open Student Profile') {
-      if (students.length > 0) {
+      if (students.length > 0 && students[0].studentId) {
         setSelectedStudentId(students[0].studentId);
       }
       return;
@@ -165,7 +165,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
       setActiveTab('students');
     } else if (cardTitle === 'Student Report') {
       const targetStudent = students.find((s) => (s as any).status?.toLowerCase().includes('attention')) || students[0];
-      if (targetStudent) setSelectedStudentId(targetStudent.studentId);
+      if (targetStudent && targetStudent.studentId) setSelectedStudentId(targetStudent.studentId);
     } else if (cardTitle === 'Class Performance') {
       setActiveTab('analytics');
     } else if (cardTitle === 'Attendance Summary') {
@@ -193,13 +193,16 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
     }
   };
 
-  const openParentChat = (studentId: string, studentName: string) => {
-    setChattingStudent({ id: studentId, name: studentName });
+  const openParentChat = (studentId?: string, studentName?: string) => {
+    if (studentId && studentName) {
+      setChattingStudent({ id: studentId, name: studentName });
+    }
   };
 
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
-      const matchesSearch = s.displayName.toLowerCase().includes(studentSearch.toLowerCase()) ||
+      const name = s.displayName || '';
+      const matchesSearch = name.toLowerCase().includes(studentSearch.toLowerCase()) ||
         (s.roll_number && s.roll_number.includes(studentSearch));
       
       const normalizedStatus = (s as any).status?.toLowerCase().replace(/\s+/g, '_') || 'on_track';
@@ -448,10 +451,10 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs">
-                          {s.displayName.split(' ').map((n) => n[0]).join('')}
+                          {(s.displayName || 'Student').split(' ').map((n) => n[0]).join('')}
                         </div>
                         <div>
-                          <h4 className="font-bold text-slate-900 text-xs sm:text-sm">{s.displayName}</h4>
+                          <h4 className="font-bold text-slate-900 text-xs sm:text-sm">{s.displayName || 'Student'}</h4>
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
                               isAttention
@@ -469,14 +472,14 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => setSelectedStudentId(s.studentId)}
+                          onClick={() => setSelectedStudentId(s.studentId || null)}
                           className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs border border-slate-200 transition-colors cursor-pointer"
                         >
                           View 360 &rarr;
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleQuerySend(`Why does ${s.displayName} need attention?`)}
+                          onClick={() => handleQuerySend(`Why does ${s.displayName || 'this student'} need attention?`)}
                           className="px-3 py-1.5 rounded-lg bg-[#EFF6FF] hover:bg-blue-100 text-[#2563EB] font-bold text-xs border border-[#2563EB]/20 transition-colors cursor-pointer flex items-center gap-1"
                         >
                           <span>Ask AI</span>
@@ -802,7 +805,8 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
             {/* Students List Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredStudents.map((st) => {
-                const photo = getPhotoUrl(st.displayName);
+                const sName = st.displayName || 'Student';
+                const photo = getPhotoUrl(sName);
                 const rawStatus = (st as any).status || 'On Track';
                 const statusStr = typeof rawStatus === 'string' ? rawStatus : 'On Track';
                 const isNeedsAttention = statusStr.toLowerCase().includes('attention');
@@ -820,7 +824,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                   ? 'bg-amber-500'
                   : 'bg-emerald-500';
 
-                const initials = st.displayName
+                const initials = sName
                   .split(' ')
                   .map((n) => n[0])
                   .join('')
@@ -835,11 +839,11 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                 const hwSub = st.homework?.filter((h) => h.isSubmitted).length || 0;
                 const hwPct = totalHw > 0 ? Math.round((hwSub / totalHw) * 100) : 92;
 
-                const parentInfo = PARENT_MAP[st.displayName] || { parentName: 'Guardian', relationship: 'Parent' };
+                const parentInfo = PARENT_MAP[sName] || { parentName: 'Guardian', relationship: 'Parent' };
 
                 return (
                   <div
-                    key={st.studentId}
+                    key={st.studentId || sName}
                     className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-4 group"
                   >
                     <div className="space-y-3">
@@ -849,7 +853,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                           {photo ? (
                             <img
                               src={photo}
-                              alt={st.displayName}
+                              alt={sName}
                               className="w-12 h-12 rounded-2xl object-cover border border-slate-200/80 shadow-2xs"
                             />
                           ) : (
@@ -859,7 +863,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                           )}
                           <div>
                             <h3 className="font-display text-sm font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                              {st.displayName}
+                              {sName}
                             </h3>
                             <p className="text-[11px] text-slate-400 font-medium">
                               Roll #{st.roll_number || '801'} • {parentInfo.parentName} ({parentInfo.relationship})
@@ -875,7 +879,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
 
                       {/* AI Status Explanation / Narration Snippet */}
                       <p className="text-xs text-slate-600 font-medium line-clamp-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        {(st as any).aiExplanation || `${st.displayName} is currently performing well across all core subjects.`}
+                        {(st as any).aiExplanation || `${sName} is currently performing well across all core subjects.`}
                       </p>
 
                       {/* Metrics Pill Grid */}
@@ -895,14 +899,14 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                     <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => setSelectedStudentId(st.studentId)}
+                        onClick={() => setSelectedStudentId(st.studentId || null)}
                         className="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-display text-xs font-extrabold text-center transition-all shadow-2xs active:scale-98 cursor-pointer"
                       >
                         Open 360° Profile →
                       </button>
                       <button
                         type="button"
-                        onClick={() => openParentChat(st.studentId, st.displayName)}
+                        onClick={() => openParentChat(st.studentId, sName)}
                         className="p-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition-all cursor-pointer border border-indigo-200/60"
                         title={`Chat with ${parentInfo.parentName}`}
                       >
@@ -1163,15 +1167,17 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
 
                 <div className="space-y-2">
                   {students.map((st) => {
-                    const parent = PARENT_MAP[st.displayName] || { parentName: 'Guardian', relationship: 'Parent', phone: '+91 90000 00000' };
-                    const isSelected = activeParentTabStudentId === st.studentId;
-                    const photo = getPhotoUrl(st.displayName);
+                    const sName = st.displayName || 'Student';
+                    const sId = st.studentId || '';
+                    const parent = PARENT_MAP[sName] || { parentName: 'Guardian', relationship: 'Parent', phone: '+91 90000 00000' };
+                    const isSelected = activeParentTabStudentId === sId;
+                    const photo = getPhotoUrl(sName);
 
                     return (
                       <button
-                        key={st.studentId}
+                        key={sId || sName}
                         type="button"
-                        onClick={() => setActiveParentTabStudentId(st.studentId)}
+                        onClick={() => setActiveParentTabStudentId(sId)}
                         className={`w-full p-3.5 rounded-2xl border text-left transition-all flex items-center justify-between gap-3 cursor-pointer ${
                           isSelected
                             ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
@@ -1182,12 +1188,12 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                           {photo ? (
                             <img
                               src={photo}
-                              alt={st.displayName}
+                              alt={sName}
                               className="w-10 h-10 rounded-xl object-cover border border-white/20"
                             />
                           ) : (
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs ${isSelected ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-700'}`}>
-                              {st.displayName[0]}
+                              {sName[0]}
                             </div>
                           )}
                           <div>
@@ -1195,7 +1201,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                               {parent.parentName}
                             </h4>
                             <p className={`text-[11px] font-medium ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
-                              {st.displayName} ({parent.relationship})
+                              {sName} ({parent.relationship})
                             </p>
                           </div>
                         </div>
@@ -1214,10 +1220,10 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                 <div className="border-b border-slate-100 pb-3 mb-3 flex items-center justify-between">
                   <div>
                     <h3 className="font-display text-sm font-extrabold text-slate-900">
-                      Chatting with {PARENT_MAP[activeParentStudent.displayName]?.parentName || 'Parent'}
+                      Chatting with {PARENT_MAP[activeParentStudent?.displayName || '']?.parentName || 'Parent'}
                     </h3>
                     <p className="text-xs text-slate-400 font-medium">
-                      Student: {activeParentStudent.displayName} • Grade {grade}{section}
+                      Student: {activeParentStudent?.displayName || 'Student'} • Grade {grade}{section}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1234,7 +1240,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
                     </button>
                     <button
                       type="button"
-                      onClick={() => setSelectedStudentId(activeParentStudent.studentId)}
+                      onClick={() => setSelectedStudentId(activeParentStudent?.studentId || null)}
                       className="text-xs font-bold text-slate-500 hover:text-indigo-600 hover:underline cursor-pointer"
                     >
                       360° Profile →
@@ -1244,8 +1250,8 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
 
                 <div className="flex-1">
                   <TeacherChat
-                    studentId={activeParentStudent.studentId}
-                    studentName={activeParentStudent.displayName}
+                    studentId={activeParentStudent?.studentId || 'b1000000-0000-4000-8000-000000000001'}
+                    studentName={activeParentStudent?.displayName || 'Aarav Sharma'}
                     teacherId={teacherId}
                   />
                 </div>
@@ -1412,7 +1418,7 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
         defaultSection={section}
         initialTab={aiToolkitTab}
         initialStudentName={activeParentStudent?.displayName || 'Aarav Sharma'}
-        initialParentName={PARENT_MAP[activeParentStudent?.displayName]?.parentName || 'Sunita Sharma'}
+        initialParentName={PARENT_MAP[activeParentStudent?.displayName || '']?.parentName || 'Sunita Sharma'}
       />
 
       {/* Floating Spotlight Command Palette */}

@@ -16,7 +16,7 @@ export interface SchoolUserRecord {
 export async function inviteUserAction(formData: FormData) {
   try {
     const context = await getAuthContext();
-    requirePermission(context, 'users:write');
+    requirePermission(context, 'users:manage');
 
     const scopedDb = createScopedClient(context);
 
@@ -52,20 +52,24 @@ export async function inviteUserAction(formData: FormData) {
 
     // Associate domain role record
     if (role === 'teacher') {
-      await scopedDb.from('teachers').insert({
-        user_id: newUser.id,
-        name,
-        email,
-        school_id: context.schoolId,
-      }).catch(() => null);
+      try {
+        await scopedDb.from('teachers').insert({
+          user_id: newUser.id,
+          name,
+          email,
+          school_id: context.schoolId,
+        });
+      } catch {}
     } else if (role === 'parent') {
-      await scopedDb.from('guardians').insert({
-        user_id: newUser.id,
-        name,
-        phone,
-        email,
-        school_id: context.schoolId,
-      }).catch(() => null);
+      try {
+        await scopedDb.from('guardians').insert({
+          user_id: newUser.id,
+          name,
+          phone,
+          email,
+          school_id: context.schoolId,
+        });
+      } catch {}
     }
 
     revalidatePath('/admin');
@@ -78,7 +82,7 @@ export async function inviteUserAction(formData: FormData) {
 export async function getSchoolUsersAction(): Promise<SchoolUserRecord[]> {
   try {
     const context = await getAuthContext();
-    requirePermission(context, 'users:read');
+    requirePermission(context, 'users:manage');
 
     const scopedDb = createScopedClient(context);
 

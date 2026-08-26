@@ -70,7 +70,7 @@ export default function SchoolPulsePDF({ students, teacherId }: SchoolPulsePDFPr
       }
 
       const opt = {
-        margin: [5, 5, 5, 5],
+        margin: [5, 5, 5, 5] as [number, number, number, number],
         filename: `SchoolPulse_Report_${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false },

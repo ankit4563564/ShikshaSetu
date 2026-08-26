@@ -56,7 +56,7 @@ export default function EmbeddedBar() {
       <div className="flex items-center justify-between bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-2 text-xs font-semibold text-slate-600">
         <span className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>{uiProps.contextBanner}</span>
+          <span>{uiProps.contextBanner || 'Ambient Classroom Intelligence'}</span>
         </span>
         <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Ambient AI Active</span>
       </div>
@@ -70,7 +70,9 @@ export default function EmbeddedBar() {
             exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
             className="text-center space-y-1.5 pt-2"
           >
-            <h2 className="font-display text-2xl sm:text-3xl font-black text-slate-900">{uiProps.greeting}</h2>
+            <h2 className="font-display text-2xl sm:text-3xl font-black text-slate-900">
+              {uiProps.greeting || uiProps.greetingTitle}
+            </h2>
             <p className="text-xs sm:text-sm font-medium text-slate-500 max-w-md mx-auto">
               Ask anything naturally. SchoolGPT already understands your current workspace.
             </p>
@@ -129,7 +131,7 @@ export default function EmbeddedBar() {
                 className="p-4 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl text-left transition-all shadow-2xs hover:shadow-xs group flex flex-col justify-between gap-2 active:scale-95"
               >
                 <div className="flex items-center justify-between w-full">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-base border ${card.bg}`}>
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-base border ${card.bg || 'bg-slate-50 border-slate-200 text-slate-700'}`}>
                     {card.icon}
                   </div>
                   <span className="text-slate-400 group-hover:text-slate-900 transition-colors">&rarr;</span>

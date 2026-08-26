@@ -101,7 +101,7 @@ export function deriveDeterministicMindMapFromNotes(
     const examples: string[] = [];
     let definitionStr: string | undefined = undefined;
 
-    let pendingFormula: Partial<FormulaBlock> | null = null;
+    let pendingFormula: { latex?: string; variables?: string; unit?: string; condition?: string } | null = null;
 
     for (const rawLine of contentLines) {
       const line = rawLine.replace(/^[\*\-\•\d\.\)]+\s*/, '').trim();

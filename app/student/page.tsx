@@ -43,9 +43,11 @@ export default async function StudentPage({
       // Unconfigured or error
     }
 
-    const student = await getStudentByAuthenticatedUser(userId);
-    if (student) {
-      resolvedStudentId = student.studentId;
+    if (userId) {
+      const student = await getStudentByAuthenticatedUser(userId);
+      if (student) {
+        resolvedStudentId = student.studentId || null;
+      }
     }
   }
 

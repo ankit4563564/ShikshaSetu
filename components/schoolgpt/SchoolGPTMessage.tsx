@@ -7,6 +7,8 @@ interface SchoolGPTMessageProps {
   role: 'user' | 'assistant';
   content: string;
   contextTag?: string;
+  userQuery?: string;
+  sources?: string[];
   onActionPrompt?: (prompt: string) => void;
 }
 
@@ -14,6 +16,8 @@ export default function SchoolGPTMessage({
   role,
   content,
   contextTag = 'Based on Class 8A data',
+  userQuery,
+  sources,
   onActionPrompt,
 }: SchoolGPTMessageProps) {
   const isUser = role === 'user';

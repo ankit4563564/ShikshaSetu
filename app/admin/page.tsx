@@ -70,7 +70,7 @@ export default async function AdminPage() {
   let totalAttDays = 0;
   let presentAttDays = 0;
   studentsRaw.forEach(s => {
-    s.attendance.forEach(att => {
+    (s.attendance || []).forEach(att => {
       totalAttDays++;
       if (att.status === 'present' || att.status === 'late') {
         presentAttDays++;
@@ -83,7 +83,7 @@ export default async function AdminPage() {
   let totalMoodScore = 0;
   let totalMoodChecks = 0;
   studentsRaw.forEach(s => {
-    s.mood.forEach(m => {
+    (s.mood || []).forEach(m => {
       totalMoodScore += m.moodValue;
       totalMoodChecks++;
     });

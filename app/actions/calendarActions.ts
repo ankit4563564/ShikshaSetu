@@ -82,12 +82,12 @@ export async function createCalendarPeriodAction(data: {
   }
 
   try {
-    await recordEcosystemEvent({
-      event_type: 'school_calendar_changed',
-      actor_id: context.userId,
-      actor_role: context.role,
+    await recordEcosystemEvent(supabase, {
+      eventType: 'school_calendar_changed',
+      actorId: context.userId,
+      actorRole: (context.role === 'principal' ? 'admin' : context.role) as any,
       title: data.name,
-      description: data.description,
+      body: data.description,
       metadata: {
         action: 'create',
         type: data.type,
@@ -126,10 +126,10 @@ export async function deleteCalendarPeriodAction(id: string) {
   }
 
   try {
-    await recordEcosystemEvent({
-      event_type: 'school_calendar_changed',
-      actor_id: context.userId,
-      actor_role: context.role,
+    await recordEcosystemEvent(supabase, {
+      eventType: 'school_calendar_changed',
+      actorId: context.userId,
+      actorRole: (context.role === 'principal' ? 'admin' : context.role) as any,
       title: 'School calendar period deleted',
       metadata: {
         action: 'delete',

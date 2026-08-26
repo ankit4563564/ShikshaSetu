@@ -254,17 +254,25 @@ export async function getStudent360Data(
       createdAt: i.created_at || new Date().toISOString(),
     }));
 
+    const studentData = student as any;
+
     return {
-      studentId: student.id,
-      firstName: student.first_name,
-      lastName: student.last_name,
-      displayName: student.display_name,
-      grade: student.grade,
-      section: student.section,
-      avatarUrl: student.avatar_url,
+      studentId: studentData.id,
+      firstName: studentData.first_name || '',
+      lastName: studentData.last_name || '',
+      displayName: studentData.display_name || 'Student',
+      grade: studentData.grade || '8',
+      section: studentData.section || 'A',
+      avatarUrl: studentData.avatar_url || null,
       attendanceMetrics: context.attendanceMetrics,
       homeworkMetrics: context.homeworkMetrics,
-      academicMetrics: context.academicMetrics,
+      academicMetrics: {
+        overallAveragePercentage: context.academicMetrics.overallAveragePercentage,
+        recentGrades: context.academicMetrics.subjectTrends.map((t) => ({
+          subject: t.subject,
+          percentage: t.percentage,
+        })),
+      },
       observations: Object.freeze(observations),
       interventions: Object.freeze(interventions),
       signalAnalysis,

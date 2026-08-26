@@ -83,14 +83,14 @@ export async function getChildAiInsightAction(studentId: string): Promise<{
     const marksRecords = marksRes.data || [];
 
     const totalDays = attendanceRecords.length;
-    const presentDays = attendanceRecords.filter((a) => a.status === 'present').length;
+    const presentDays = attendanceRecords.filter((a: any) => a.status === 'present').length;
     const attPct = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 95;
 
-    const pendingHw = homeworkRecords.filter((h) => !h.is_submitted);
+    const pendingHw = homeworkRecords.filter((h: any) => !h.is_submitted);
 
     // Subject averages
     const subjectScores: Record<string, { total: number; count: number }> = {};
-    marksRecords.forEach((m) => {
+    marksRecords.forEach((m: any) => {
       if (!subjectScores[m.subject]) subjectScores[m.subject] = { total: 0, count: 0 };
       const pct = m.max_score > 0 ? (m.score / m.max_score) * 100 : 0;
       subjectScores[m.subject].total += pct;
@@ -120,7 +120,7 @@ Analyze the student's real records and output valid JSON with:
       studentName,
       attendancePercentage: `${attPct}% (${presentDays}/${totalDays} days)`,
       pendingHomeworkCount: pendingHw.length,
-      pendingHomeworkTitles: pendingHw.map((h) => `${h.subject}: ${h.title}`),
+      pendingHomeworkTitles: pendingHw.map((h: any) => `${h.subject}: ${h.title}`),
       strongSubjects: strongSubs,
       weakSubjects: weakSubs,
     });
@@ -442,8 +442,8 @@ export async function explainAttendanceAction(params: {
 
     const records = attendance || [];
     const total = records.length;
-    const present = records.filter((r) => r.status === 'present').length;
-    const late = records.filter((r) => r.status === 'late').length;
+    const present = records.filter((r: any) => r.status === 'present').length;
+    const late = records.filter((r: any) => r.status === 'late').length;
     const rate = total > 0 ? Math.round(((present + late) / total) * 100) : 100;
 
     let rating: AttendanceAiInsightResult['statusRating'] = 'Excellent';

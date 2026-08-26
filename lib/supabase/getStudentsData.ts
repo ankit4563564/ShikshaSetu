@@ -418,7 +418,7 @@ export async function getStudentsForGuardian(
     return await fetchStudentsFromDB({ studentIds: linkedStudentIds });
   } catch (error) {
     console.warn('[getStudentsForGuardian] DB unavailable, using seed fallback for linked IDs:', error);
-    return SEED_STUDENTS_FALLBACK.filter((s) => linkedStudentIds.includes(s.studentId));
+    return SEED_STUDENTS_FALLBACK.filter((s) => Boolean(s.studentId && linkedStudentIds.includes(s.studentId)));
   }
 }
 

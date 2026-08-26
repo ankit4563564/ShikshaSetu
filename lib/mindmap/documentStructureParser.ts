@@ -262,7 +262,7 @@ export function parseDocumentStructure(
       if (existing) {
         // Merge refs and text instead of duplicating node
         if (prefixInfo.inlineBody) {
-          existing.rawText = (existing.rawText ? existing.rawText + '\n' : '') + prefixInfo.inlineBody;
+          (existing as any).rawText = (existing.rawText ? existing.rawText + '\n' : '') + prefixInfo.inlineBody;
         }
         if (matchedFormulaRefs.length > 0) {
           (existing as any).formulaRefs = Array.from(new Set([...(existing.formulaRefs || []), ...matchedFormulaRefs]));
@@ -357,7 +357,7 @@ export function parseDocumentStructure(
       if (activeNode) {
         const trimmedLine = line.trim();
         if (trimmedLine.length > 0) {
-          activeNode.rawText = activeNode.rawText ? `${activeNode.rawText}\n${trimmedLine}` : trimmedLine;
+          (activeNode as any).rawText = activeNode.rawText ? `${activeNode.rawText}\n${trimmedLine}` : trimmedLine;
           if (matchedFormulaRefs.length > 0) {
             (activeNode as any).formulaRefs = Array.from(new Set([...(activeNode.formulaRefs || []), ...matchedFormulaRefs]));
           }

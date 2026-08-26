@@ -344,7 +344,7 @@ export function generateSpanCoverageReport(
   let duplicated = 0;
 
   for (const span of allSpans) {
-    if (span.id === 'src-root-doc' || span.type === 'noise') {
+    if (span.id === 'src-root-doc' || (span.type as string) === 'noise') {
       ignoredNoise++;
       continue;
     }

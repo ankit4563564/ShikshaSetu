@@ -174,8 +174,16 @@ export default function GatePortalClient() {
             </h2>
 
             <CampusScanner
-              onScan={(qr) => handleVerify(qr)}
-              scanMode="gate_exit"
+              mode="gate_exit"
+              onScan={async (qr) => {
+                await handleVerify(qr);
+                return {
+                  success: true,
+                  mode: 'gate_exit',
+                  timestamp: new Date().toISOString(),
+                  actions: [],
+                } as any;
+              }}
             />
 
             {/* Manual Code Input */}

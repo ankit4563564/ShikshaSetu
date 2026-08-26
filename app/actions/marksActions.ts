@@ -193,12 +193,13 @@ export async function publishExamAction(examId: string) {
     return { error: gradeError.message };
   }
 
-  // Fetch exam details for notification
   const { data: exam } = await scopedDb
     .from('exams')
     .select('subject, exam_name')
     .eq('id', examId)
     .single();
+
+  let uniqueStudentIds: string[] = [];
 
   if (exam) {
     // Get all students with grades for this exam
@@ -208,7 +209,7 @@ export async function publishExamAction(examId: string) {
       .eq('exam_id', examId);
 
     if (gradedStudents) {
-      const uniqueStudentIds = [...new Set(gradedStudents.map((g: any) => g.student_id as string))] as string[];
+      uniqueStudentIds = [...new Set(gradedStudents.map((g: any) => g.student_id as string))] as string[];
 
       // Batch fetch all grades for this exam (fix N+1)
       const { data: allGrades } = await scopedDb
@@ -256,7 +257,7 @@ export async function publishExamAction(examId: string) {
       await recordEcosystemEvent(scopedDb, {
         eventType: 'marks_published',
         actorId: context.userId,
-        actorRole: context.role || 'teacher',
+        actorRole: (context.role === 'principal' ? 'admin' : context.role) as any,
         title: 'Exam marks published',
         body: `${exam.exam_name} (${exam.subject}) marks published for ${uniqueStudentIds.length} students.`,
         metadata: { exam_id: examId },
@@ -441,6 +442,15 @@ export async function getStudentTrendAction(studentId: string, subject: string) 
   }));
 }
 
+const DEFAULT_DEMO_ANALYTICS: ExamAnalytics = {
+  classAverage: 78.5,
+  highestScore: 96,
+  lowestScore: 54,
+  totalStudents: 32,
+  aboveAverage: 20,
+  belowAverage: 12,
+};
+
 export async function getExamAnalyticsAction(examId: string): Promise<ExamAnalytics | null> {
   try {
     const user = await requireRole(['admin', 'teacher']);
@@ -450,7 +460,7 @@ export async function getExamAnalyticsAction(examId: string): Promise<ExamAnalyt
       .rpc('get_exam_analytics', { p_exam_id: examId });
 
     if (error || !data || data.length === 0) {
-      return DEMO_ANALYTICS[examId] || DEMO_ANALYTICS['exam-001'];
+      return DEFAULT_DEMO_ANALYTICS;
     }
 
     const row = data[0] as any;
@@ -463,7 +473,7 @@ export async function getExamAnalyticsAction(examId: string): Promise<ExamAnalyt
       belowAverage: parseInt(row.below_average),
     };
   } catch {
-    return DEMO_ANALYTICS[examId] || DEMO_ANALYTICS['exam-001'];
+    return DEFAULT_DEMO_ANALYTICS;
   }
 }
 

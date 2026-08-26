@@ -90,13 +90,13 @@ export async function requestGatePassAction(
       });
   }
 
-  await recordEcosystemEvent({
-    event_type: 'gate_pass_requested',
-    student_id: studentId,
-    actor_id: requestedBy,
-    actor_role: 'parent',
+  await recordEcosystemEvent(scopedDb, {
+    eventType: 'gate_pass_requested',
+    studentId: studentId,
+    actorId: requestedBy,
+    actorRole: 'parent',
     title: 'Gate pass requested',
-    description: `${studentName} has a new gate pass request from parent.`,
+    body: `${studentName} has a new gate pass request from parent.`,
     metadata: {
       passId: pass.id,
       reason,
@@ -117,7 +117,7 @@ export async function requestGatePassAction(
  */
 export async function approveGatePassAction(passId: string, teacherId: string) {
   const context = await getAuthContext();
-  requirePermission(context, 'gate_pass:approve');
+  requirePermission(context, 'school:manage');
   const scopedDb = createScopedClient(context);
   const performer = context.clerkUserId;
 
@@ -184,13 +184,13 @@ export async function approveGatePassAction(passId: string, teacherId: string) {
   }
 
   if (studentId) {
-    await recordEcosystemEvent({
-      event_type: 'gate_pass_approved',
-      student_id: studentId,
-      actor_id: teacherId || context.userId,
-      actor_role: context.role,
+    await recordEcosystemEvent(scopedDb, {
+      eventType: 'gate_pass_approved',
+      studentId: studentId,
+      actorId: teacherId || context.userId,
+      actorRole: (context.role === 'principal' ? 'admin' : context.role) as any,
       title: 'Gate pass approved',
-      description: `Gate pass approved for ${studentName}. Code: ${passCode}.`,
+      body: `Gate pass approved for ${studentName}. Code: ${passCode}.`,
       metadata: {
         passId,
         passCode,
@@ -210,7 +210,7 @@ export async function approveGatePassAction(passId: string, teacherId: string) {
  */
 export async function rejectGatePassAction(passId: string, teacherId: string, rejectionReason?: string) {
   const context = await getAuthContext();
-  requirePermission(context, 'gate_pass:approve');
+  requirePermission(context, 'school:manage');
   const scopedDb = createScopedClient(context);
   const performer = context.clerkUserId;
 
@@ -264,13 +264,13 @@ export async function rejectGatePassAction(passId: string, teacherId: string, re
   }
 
   if (studentId) {
-    await recordEcosystemEvent({
-      event_type: 'gate_pass_rejected',
-      student_id: studentId,
-      actor_id: context.userId,
-      actor_role: context.role,
+    await recordEcosystemEvent(scopedDb, {
+      eventType: 'gate_pass_rejected',
+      studentId: studentId,
+      actorId: context.userId,
+      actorRole: (context.role === 'principal' ? 'admin' : context.role) as any,
       title: 'Gate pass rejected',
-      description: rejectionReason || 'The gate pass request was rejected.',
+      body: rejectionReason || 'The gate pass request was rejected.',
       metadata: {
         passId,
         rejectionReason: rejectionReason || null,
@@ -290,7 +290,7 @@ export async function rejectGatePassAction(passId: string, teacherId: string, re
  */
 export async function revokeGatePassAction(passId: string, reason: string) {
   const context = await getAuthContext();
-  requirePermission(context, 'gate_pass:revoke');
+  requirePermission(context, 'school:manage');
   const scopedDb = createScopedClient(context);
   const performer = context.clerkUserId;
 
@@ -347,13 +347,13 @@ export async function revokeGatePassAction(passId: string, reason: string) {
   }
 
   if (studentId) {
-    await recordEcosystemEvent({
-      event_type: 'gate_pass_revoked',
-      student_id: studentId,
-      actor_id: context.userId,
-      actor_role: context.role,
+    await recordEcosystemEvent(scopedDb, {
+      eventType: 'card_revoked',
+      studentId: studentId,
+      actorId: context.userId,
+      actorRole: (context.role === 'principal' ? 'admin' : context.role) as any,
       title: 'Gate pass revoked',
-      description: `Active gate pass for ${studentName} was revoked by staff. Reason: ${reason}.`,
+      body: `Active gate pass for ${studentName} was revoked by staff. Reason: ${reason}.`,
       metadata: { passId, reason },
     });
   }
@@ -407,13 +407,13 @@ export async function cancelGatePassAction(passId: string) {
     });
 
   if (studentId) {
-    await recordEcosystemEvent({
-      event_type: 'gate_pass_cancelled',
-      student_id: studentId,
-      actor_id: context.userId,
-      actor_role: 'parent',
+    await recordEcosystemEvent(scopedDb, {
+      eventType: 'gate_pass_cancelled',
+      studentId: studentId,
+      actorId: context.userId,
+      actorRole: 'parent',
       title: 'Gate pass cancelled',
-      description: `The gate pass request for ${studentName} was cancelled by parent.`,
+      body: `The gate pass request for ${studentName} was cancelled by parent.`,
       metadata: { passId },
     });
   }
@@ -618,7 +618,7 @@ export async function verifyGatePassTokenAction(qrContentOrCode: string): Promis
  */
 export async function confirmGateCheckoutAction(passId: string, operationId: string): Promise<GateCheckoutResult> {
   const context = await getAuthContext();
-  requirePermission(context, 'gate:checkout');
+  requirePermission(context, 'gate:scan');
   const scopedDb = createScopedClient(context);
   const performer = context.clerkUserId;
 
@@ -726,13 +726,13 @@ export async function confirmGateCheckoutAction(passId: string, operationId: str
   }
 
   // 6. Emit canonical domain event
-  await recordEcosystemEvent({
-    event_type: 'student_checked_out',
-    student_id: pass.student_id,
-    actor_id: context.userId,
-    actor_role: context.role,
+  await recordEcosystemEvent(scopedDb, {
+    eventType: 'gate_pass_used',
+    studentId: pass.student_id,
+    actorId: context.userId,
+    actorRole: (context.role === 'principal' ? 'admin' : context.role) as any,
     title: 'Student checked out at gate',
-    description: `${studentName} was released to ${guardianName} at main gate.`,
+    body: `${studentName} was released to ${guardianName} at main gate.`,
     metadata: {
       passId,
       operationId,
@@ -810,7 +810,7 @@ export async function emergencyPickupAction(payload: EmergencyPickupPayload): Pr
   }
 
   const context = await getAuthContext();
-  requirePermission(context, 'gate:checkout');
+  requirePermission(context, 'gate:scan');
   const scopedDb = createScopedClient(context);
   const performer = context.clerkUserId;
 
@@ -888,13 +888,13 @@ export async function emergencyPickupAction(payload: EmergencyPickupPayload): Pr
   }
 
   // 5. Emit canonical domain event
-  await recordEcosystemEvent({
-    event_type: 'student_checked_out',
-    student_id: studentId,
-    actor_id: context.userId,
-    actor_role: context.role,
+  await recordEcosystemEvent(scopedDb, {
+    eventType: 'gate_pass_used',
+    studentId: studentId,
+    actorId: context.userId,
+    actorRole: (context.role === 'principal' ? 'admin' : context.role) as any,
     title: 'Emergency student checkout at gate',
-    description: `EMERGENCY OVERRIDE: ${studentName} was picked up by ${guardianName}. Reason: ${reason}`,
+    body: `EMERGENCY OVERRIDE: ${studentName} was picked up by ${guardianName}. Reason: ${reason}`,
     metadata: {
       isEmergency: true,
       operationId,

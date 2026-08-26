@@ -17,10 +17,10 @@ export class ScopedSupabaseClient {
    * from: Creates a query builder pre-scoped to the current school_id tenant context.
    */
   from(table: string) {
-    const queryBuilder = this.client.from(table);
+    const queryBuilder = (this.client as any).from(table);
     
     return {
-      select: (...args: Parameters<typeof queryBuilder.select>) =>
+      select: (...args: any[]) =>
         queryBuilder.select(...args).eq('school_id', this.schoolId),
       insert: (values: any, ...args: any[]) => {
         const payload = Array.isArray(values)

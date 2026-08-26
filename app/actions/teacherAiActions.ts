@@ -984,12 +984,12 @@ Output valid JSON matching exact schema:
         quickCheckQuestion: sanitizeAiText(parsed.quickCheckQuestion || `If we change the key variable, what happens to the output?`),
       };
 
-      return { success: true, result };
+      return { success: true, explanation: result };
     } catch {
       // Deterministic Fallback
       return {
         success: true,
-        result: {
+        explanation: {
           topic,
           subject,
           simpleExplanation: `${topic} describes how different quantities interact. Instead of memorizing the formula, focus on what changes when one part increases or decreases.`,

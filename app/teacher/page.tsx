@@ -85,7 +85,7 @@ export default async function TeacherPage() {
   // Enrich each student with rules engine status + AI narration
   const processedStudents = classStudents.map((st) => {
     const computedStatus = calculateStudentStatus(st.attendance, st.homework, st.grades);
-    const aiNarration = generateOfflineFallback(st.displayName, computedStatus.evidence);
+    const aiNarration = generateOfflineFallback(st.displayName || 'Student', computedStatus.evidence);
     return {
       ...st,
       status: computedStatus.finalStatus,

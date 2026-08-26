@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     // ── 1. STUDENTS BULK IMPORT ──
     if (importType === 'students') {
-      requirePermission(context, 'students:write');
+      requirePermission(context, 'users:manage');
 
       for (let i = 0; i < data.length; i++) {
         const row = data[i];
@@ -102,9 +102,9 @@ export async function POST(request: NextRequest) {
       }
 
       await recordEcosystemEvent(scopedDb, {
-        eventType: 'roster_imported',
+        eventType: 'academic_records_imported',
         actorId: context.userId,
-        actorRole: context.role || 'admin',
+        actorRole: (context.role === 'principal' ? 'admin' : context.role) as any,
         title: 'Bulk Students Roster Imported',
         body: `Imported ${successCount} students successfully.`,
         metadata: { successCount, warningCount, failedCount },
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     // ── 2. TEACHERS BULK IMPORT ──
     else if (importType === 'teachers') {
-      requirePermission(context, 'teachers:write');
+      requirePermission(context, 'users:manage');
 
       for (let i = 0; i < data.length; i++) {
         const row = data[i];
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
 
     // ── 3. GUARDIANS BULK IMPORT ──
     else if (importType === 'guardians') {
-      requirePermission(context, 'guardians:write');
+      requirePermission(context, 'users:manage');
 
       for (let i = 0; i < data.length; i++) {
         const row = data[i];
@@ -190,15 +190,16 @@ export async function POST(request: NextRequest) {
             .maybeSingle();
 
           if (student) {
-            await scopedDb
-              .from('guardian_access')
-              .insert({
-                student_id: student.id,
-                guardian_id: guardian.id,
-                relationship,
-                can_pickup: true,
-              })
-              .catch(() => null);
+            try {
+              await scopedDb
+                .from('guardian_access')
+                .insert({
+                  student_id: student.id,
+                  guardian_id: guardian.id,
+                  relationship,
+                  can_pickup: true,
+                });
+            } catch {}
           }
         }
       }
@@ -210,8 +211,8 @@ export async function POST(request: NextRequest) {
 
       const { data: students } = await scopedDb.from('students').select('id, display_name');
       const studentNameMap = new Map<string, string>();
-      (students || []).forEach((student) => {
-        studentNameMap.set(student.display_name.toLowerCase(), student.id);
+      (students || []).forEach((student: any) => {
+        studentNameMap.set((student.display_name || '').toLowerCase(), student.id);
       });
 
       for (let i = 0; i < data.length; i++) {

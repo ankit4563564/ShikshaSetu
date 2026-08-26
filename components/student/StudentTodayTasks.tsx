@@ -25,6 +25,7 @@ export default function StudentTodayTasks({
   homework,
   onOpenHomeworkTab,
   onOpenRevisionNotes,
+  onOpenStudyHelp,
 }: StudentTodayTasksProps) {
   // Filter only pending items
   const pendingTasks = (homework || []).filter(

@@ -89,11 +89,11 @@ export default function QuestBoard({ student, setActiveAvatar, setActiveTitle, a
     });
 
     const quest = quests.find(q => q.id === questId);
-    if (quest) {
+    if (quest && student?.studentId) {
       await createStudentAchievementAction(
         student.studentId,
         `Completed Quest: ${quest.title}`,
-        `${student.displayName} completed the "${quest.title}" quest and earned ${quest.points} Shiksha coins.`,
+        `${student.displayName || 'Student'} completed the "${quest.title}" quest and earned ${quest.points} Shiksha coins.`,
         quest.category === 'homework' ? 'homework' : 'academic'
       );
     }
@@ -126,11 +126,11 @@ export default function QuestBoard({ student, setActiveAvatar, setActiveTitle, a
       itemName = 'Focus Master Avatar';
     }
 
-    if (itemName) {
+    if (itemName && student?.studentId) {
       await createStudentAchievementAction(
         student.studentId,
         `Unlocked Shop Reward: ${itemName}`,
-        `${student.displayName} redeemed coins in the reward store to unlock "${itemName}".`,
+        `${student.displayName || 'Student'} redeemed coins in the reward store to unlock "${itemName}".`,
         'academic'
       );
     }

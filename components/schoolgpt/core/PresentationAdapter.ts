@@ -5,9 +5,11 @@ export interface UIAdapterProps {
   roleBadge: string;
   greetingTitle: string;
   greetingSubtitle: string;
+  greeting?: string;
+  contextBanner?: string;
   placeholder: string;
   contextTag: string;
-  suggestions: { title: string; prompt: string; icon: string }[];
+  suggestions: { title: string; prompt: string; icon: string; bg?: string }[];
   quickActions: string[];
 }
 
@@ -28,14 +30,16 @@ export function adaptContextToUI(ctx: DomainContext): UIAdapterProps {
       roleBadge: `${classLabel} · Teacher`,
       greetingTitle: 'Good morning, Ms. Mehra 👋',
       greetingSubtitle: 'What would you like to know about your class?',
+      greeting: 'Good morning, Ms. Mehra 👋',
+      contextBanner: `Ambient Classroom Intelligence · ${classLabel}`,
       placeholder: `Ask anything about ${classLabel}...`,
       contextTag: `Using ${classLabel} data`,
       suggestions: [
-        { title: 'Who needs my attention?', prompt: 'Which students need my attention today?', icon: '🎯' },
-        { title: 'What should I teach next?', prompt: 'What concept or topic should I teach or review next?', icon: '📚' },
-        { title: `How is ${classLabel} doing?`, prompt: `How is ${classLabel} performing this week?`, icon: '📊' },
-        { title: "Show today's attendance", prompt: "Show today's attendance summary and anomalies.", icon: '📅' },
-        { title: 'Any homework concerns?', prompt: 'Are there any pending or struggling homework submissions?', icon: '📖' },
+        { title: 'Who needs my attention?', prompt: 'Which students need my attention today?', icon: '🎯', bg: 'bg-rose-50 border-rose-200 text-rose-700' },
+        { title: 'What should I teach next?', prompt: 'What concept or topic should I teach or review next?', icon: '📚', bg: 'bg-blue-50 border-blue-200 text-blue-700' },
+        { title: `How is ${classLabel} doing?`, prompt: `How is ${classLabel} performing this week?`, icon: '📊', bg: 'bg-amber-50 border-amber-200 text-amber-700' },
+        { title: "Show today's attendance", prompt: "Show today's attendance summary and anomalies.", icon: '📅', bg: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+        { title: 'Any homework concerns?', prompt: 'Are there any pending or struggling homework submissions?', icon: '📖', bg: 'bg-purple-50 border-purple-200 text-purple-700' },
       ],
       quickActions: ['Who needs attention?', 'What to teach next?', "Today's attendance", 'Homework concerns'],
     };

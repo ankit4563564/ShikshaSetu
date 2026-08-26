@@ -276,11 +276,15 @@ export default function D3MindMapCanvas({
             const to = link.target;
             const isHovered = hoveredNodeId === to.data.id || hoveredNodeId === from.data.id;
             const strokeColor = to.data.color || '#6366f1';
+            const fy = from.y ?? 0;
+            const fx = from.x ?? 0;
+            const ty = to.y ?? 0;
+            const tx = to.x ?? 0;
 
             return (
               <path
                 key={idx}
-                d={`M ${from.y} ${from.x} C ${(from.y + to.y) / 2} ${from.x}, ${(from.y + to.y) / 2} ${to.x}, ${to.y} ${to.x}`}
+                d={`M ${fy} ${fx} C ${(fy + ty) / 2} ${fx}, ${(fy + ty) / 2} ${tx}, ${ty} ${tx}`}
                 fill="none"
                 stroke={strokeColor}
                 strokeWidth={isHovered ? 2.5 : 1.5}
