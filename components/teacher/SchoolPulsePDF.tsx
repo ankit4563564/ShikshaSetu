@@ -29,6 +29,8 @@ export interface StudentReportCardData {
 interface SchoolPulsePDFProps {
   students: StudentReportCardData[];
   teacherId?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 // Canonical default subject marks if student grades are not yet entered in test environment
@@ -67,7 +69,7 @@ function getSubjectMarksForStudent(student: StudentReportCardData) {
   return baseMarks;
 }
 
-export default function SchoolPulsePDF({ students, teacherId }: SchoolPulsePDFProps) {
+export default function SchoolPulsePDF({ students, teacherId, isOpen = true, onClose }: SchoolPulsePDFProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -82,6 +84,17 @@ export default function SchoolPulsePDF({ students, teacherId }: SchoolPulsePDFPr
       setSelectedStudents(new Set(students.map((s) => s.studentId)));
     }
   }, [students]);
+
+  // Keyboard shortcut: Escape to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && onClose) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const toggleStudent = (studentId: string) => {
     const newSet = new Set(selectedStudents);
@@ -114,14 +127,20 @@ export default function SchoolPulsePDF({ students, teacherId }: SchoolPulsePDFPr
     setIsGenerating(true);
     setError(null);
 
-    try {
-      // Allow a tick for any DOM updates
-      await new Promise((resolve) => setTimeout(resolve, 150));
+    const element = document.getElementById('school-pulse-content');
+    if (!element) {
+      setError('Report card content container could not be found.');
+      setIsGenerating(false);
+      return;
+    }
 
-      const element = document.getElementById('school-pulse-content');
-      if (!element) {
-        throw new Error('Report card content container could not be found.');
-      }
+    try {
+      // Temporarily place in viewable canvas space for html2canvas capture without visible flicker
+      element.style.left = '0px';
+      element.style.opacity = '1';
+      element.style.zIndex = '-9999';
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       if (element.scrollWidth === 0 || element.scrollHeight === 0) {
         throw new Error('Report card content has zero dimensions.');
@@ -153,10 +172,13 @@ export default function SchoolPulsePDF({ students, teacherId }: SchoolPulsePDFPr
       await html2pdf().set(opt).from(element).save();
     } catch (err: any) {
       console.error('[School Pulse] PDF generation error:', err);
-      setError(err?.message || 'Unable to generate the report card. Please try again.');
-      // Fallback to browser print if library encounters an issue
+      setError(err?.message || 'Unable to generate report cards. Please try again.');
       window.print();
     } finally {
+      if (element) {
+        element.style.left = '-99999px';
+        element.style.opacity = '0';
+      }
       setIsGenerating(false);
     }
   };
@@ -165,143 +187,170 @@ export default function SchoolPulsePDF({ students, teacherId }: SchoolPulsePDFPr
     window.print();
   };
 
+  if (!isOpen) return null;
+
+  const count = selectedStudents.size;
+
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-5 font-sans">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b pb-3 border-slate-100">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-xl font-bold">
-            📄
-          </div>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(4px)' }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="report-cards-modal-title"
+    >
+      <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-xl w-full shadow-2xl space-y-5 border border-slate-200/80 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+        {/* ── Modal Header ── */}
+        <div className="flex items-start justify-between border-b pb-3.5 border-slate-100">
           <div>
-            <h3 className="font-display text-base font-extrabold text-slate-900">
-              Academic Report Cards & School Pulse
-            </h3>
-            <p className="text-xs text-slate-500 font-medium">
-              Authoritative academic marks, attendance consistency, teacher observations & remarks
+            <h2 id="report-cards-modal-title" className="font-display text-xl font-bold text-slate-900 tracking-tight">
+              Report Cards
+            </h2>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Select students and generate their academic report cards.
             </p>
           </div>
-        </div>
-      </div>
-
-      {/* Error Alert Banner */}
-      {error && (
-        <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 text-xs font-semibold flex items-center justify-between">
-          <span>⚠️ {error}</span>
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="text-rose-500 hover:text-rose-800 text-xs font-bold cursor-pointer"
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
-      {/* Student Selection Grid */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-            Select Students ({selectedStudents.size}/{students.length})
-          </span>
-          <div className="flex gap-3">
+          {onClose && (
             <button
               type="button"
-              onClick={selectAll}
-              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline cursor-pointer"
+              onClick={onClose}
+              className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 text-xs font-bold transition-all cursor-pointer"
+              aria-label="Close dialog"
             >
-              Select All
+              ✕
             </button>
+          )}
+        </div>
+
+        {/* ── Error Alert Banner ── */}
+        {error && (
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 text-xs font-semibold flex items-center justify-between">
+            <span>⚠️ {error}</span>
             <button
               type="button"
-              onClick={clearSelection}
-              className="text-xs font-bold text-slate-400 hover:text-slate-600 underline cursor-pointer"
+              onClick={() => setError(null)}
+              className="text-rose-500 hover:text-rose-800 text-xs font-bold cursor-pointer"
             >
-              Clear
+              ✕
             </button>
+          </div>
+        )}
+
+        {/* ── Selection Control Header ── */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Select Students
+            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-slate-500 font-semibold">
+                {count} of {students.length} selected
+              </span>
+              <span className="text-slate-300">|</span>
+              <button
+                type="button"
+                onClick={selectAll}
+                className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
+              >
+                Select All
+              </button>
+              <button
+                type="button"
+                onClick={clearSelection}
+                className="font-bold text-slate-400 hover:text-slate-600 hover:underline cursor-pointer"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+
+          {/* ── Compact Student Cards Grid ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto p-0.5 scrollbar-thin">
+            {students.map((student) => {
+              const isSelected = selectedStudents.has(student.studentId);
+              return (
+                <button
+                  key={student.studentId}
+                  type="button"
+                  onClick={() => toggleStudent(student.studentId)}
+                  className={`flex items-start gap-2.5 p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-indigo-50/80 border-indigo-200 text-indigo-950 shadow-2xs'
+                      : 'bg-slate-50 border-slate-200/80 hover:bg-slate-100/70 hover:border-slate-300 text-slate-700'
+                  }`}
+                >
+                  <div
+                    className={`w-4.5 h-4.5 mt-0.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
+                      isSelected
+                        ? 'bg-indigo-600 border-indigo-600'
+                        : 'border-slate-300 bg-white'
+                    }`}
+                  >
+                    {isSelected && (
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-display text-xs font-bold text-slate-900 truncate block">
+                      {student.displayName}
+                    </span>
+                    <span className="text-[10.5px] text-slate-500 font-medium block">
+                      Class {student.grade || '8'}{student.section || 'A'}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
+                      Att: {student.attendance.percentage}% &middot; HW: {student.homework.percentage}%
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
-          {students.map((student) => (
-            <button
-              key={student.studentId}
-              type="button"
-              onClick={() => toggleStudent(student.studentId)}
-              className={`flex items-center gap-3 p-3 rounded-2xl border transition-all text-left cursor-pointer ${
-                selectedStudents.has(student.studentId)
-                  ? 'bg-indigo-50/70 border-indigo-200 text-indigo-950 shadow-2xs'
-                  : 'bg-slate-50 border-slate-200/80 hover:border-slate-300 text-slate-700'
-              }`}
-            >
-              <div
-                className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${
-                  selectedStudents.has(student.studentId)
-                    ? 'bg-indigo-600 border-indigo-600'
-                    : 'border-slate-300 bg-white'
-                }`}
-              >
-                {selectedStudents.has(student.studentId) && (
-                  <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="font-display text-xs font-extrabold truncate block">
-                  {student.displayName}
-                </span>
-                <span className="text-[10px] text-slate-500 font-medium">
-                  Attendance: {student.attendance.percentage}% • Homework: {student.homework.percentage}%
-                </span>
-              </div>
-            </button>
-          ))}
+        {/* ── Action Buttons ── */}
+        <div className="flex flex-col sm:flex-row gap-2.5 pt-3 border-t border-slate-100">
+          <button
+            type="button"
+            onClick={generatePDF}
+            disabled={count === 0 || isGenerating}
+            className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-display text-xs font-bold py-3.5 px-4 rounded-2xl transition-all active:scale-98 disabled:opacity-50 flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+          >
+            {isGenerating ? (
+              <>
+                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Generating Report Cards...</span>
+              </>
+            ) : (
+              <span>
+                Download {count} Report Card{count === 1 ? '' : 's'}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleBrowserPrint}
+            disabled={count === 0}
+            className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-display text-xs font-bold py-3.5 px-4 rounded-2xl transition-all active:scale-98 disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200/80"
+          >
+            <span>🖨️</span>
+            <span>Browser Print</span>
+          </button>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 pt-2">
-        <button
-          type="button"
-          onClick={generatePDF}
-          disabled={selectedStudents.size === 0 || isGenerating}
-          className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-display text-xs font-extrabold py-3.5 px-4 rounded-2xl transition-all active:scale-98 disabled:opacity-50 flex items-center justify-center gap-2 shadow-md cursor-pointer"
-        >
-          {isGenerating ? (
-            <>
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>Generating PDF...</span>
-            </>
-          ) : (
-            <>
-              <span>📥</span>
-              <span>Download Report Cards ({selectedStudents.size} Selected)</span>
-            </>
-          )}
-        </button>
-
-        <button
-          type="button"
-          onClick={handleBrowserPrint}
-          disabled={selectedStudents.size === 0}
-          className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-display text-xs font-extrabold py-3.5 px-4 rounded-2xl transition-all active:scale-98 disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200"
-        >
-          <span>🖨️</span>
-          <span>Browser Print</span>
-        </button>
-      </div>
-
-      {/* ── Fixed Positioned PDF Render Node (Accessible to html2canvas without offscreen clipping) ── */}
+      {/* ── Completely Off-Screen PDF Render Node (Activated only during PDF capture) ── */}
       <div
         id="school-pulse-content"
         style={{
           position: 'fixed',
           top: 0,
-          left: 0,
-          width: '794px', // Standard A4 pixel width at 96 DPI
-          zIndex: -100,
-          opacity: 1,
+          left: '-99999px',
+          width: '794px',
+          zIndex: -9999,
+          opacity: 0,
           pointerEvents: 'none',
           backgroundColor: '#ffffff',
           fontFamily: 'Inter, system-ui, -apple-system, sans-serif',

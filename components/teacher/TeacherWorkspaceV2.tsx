@@ -1384,23 +1384,14 @@ export default function TeacherWorkspaceV2({ classContext }: TeacherWorkspaceV2P
         </div>
       )}
 
-      {/* School Pulse PDF Generator Modal */}
+      {/* Academic Report Cards Modal */}
       {isPdfModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="font-display text-lg font-black text-slate-900">📄 Generate School Pulse Reports</h3>
-              <button
-                type="button"
-                onClick={() => setIsPdfModalOpen(false)}
-                className="p-1 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 text-sm font-bold cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-            <SchoolPulsePDF students={pulsePdfStudents} teacherId={teacherId} />
-          </div>
-        </div>
+        <SchoolPulsePDF
+          isOpen={isPdfModalOpen}
+          onClose={() => setIsPdfModalOpen(false)}
+          students={pulsePdfStudents}
+          teacherId={teacherId}
+        />
       )}
 
       {/* Teacher Marks & Gradebook Modal */}
