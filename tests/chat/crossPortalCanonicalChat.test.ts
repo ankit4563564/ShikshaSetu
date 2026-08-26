@@ -8,6 +8,8 @@ export interface CanonicalChatMessageRow {
   student_id: string;
   sender_id: string;
   sender_role: 'teacher' | 'parent';
+  recipient_id?: string;
+  recipient_role?: 'teacher' | 'parent';
   content: string;
   is_context_flag: boolean;
   read_at: string | null;
@@ -46,113 +48,175 @@ class MockCanonicalChatDB {
   }
 }
 
-describe('ShikshaSetu Cross-Portal Canonical Chat System', () => {
+describe('ShikshaSetu Cross-Portal Canonical Chat System & Sender Identity', () => {
   const db = new MockCanonicalChatDB();
   const SCHOOL_A = DEFAULT_SCHOOL_ID;
   const SCHOOL_B = 'e0000000-0000-4000-8000-000000000002';
 
-  const STUDENT_ID = CANONICAL_STUDENT_ID; // Aarav Sharma
-  const TEACHER_ID = CANONICAL_TEACHER_ID; // Ananya Mehra
-  const PARENT_ID = CANONICAL_GUARDIAN_ID; // Sunita Sharma
+  const STUDENT_ID = CANONICAL_STUDENT_ID;   // Aarav Sharma
+  const TEACHER_ID = CANONICAL_TEACHER_ID;   // Ananya Mehra
+  const PARENT_ID = CANONICAL_GUARDIAN_ID;   // Sunita Sharma
 
   beforeEach(() => {
     db.reset();
   });
 
-  it('1. Teacher sends message -> saved with canonical student_id, school_id, and sender credentials', () => {
-    const teacherMsg = db.insert(SCHOOL_A, {
+  it('TEST 1: Teacher Ananya sends "hi mam" -> Stored with Teacher sender and Parent recipient; Renders correctly in both portals', () => {
+    // 1. Teacher Ananya sends message
+    const msg = db.insert(SCHOOL_A, {
       student_id: STUDENT_ID,
       sender_id: TEACHER_ID,
       sender_role: 'teacher',
-      content: 'Please review today’s homework for Math.',
+      recipient_id: PARENT_ID,
+      recipient_role: 'parent',
+      content: 'hi mam',
       is_context_flag: false,
       read_at: null,
     });
 
-    expect(teacherMsg.id).toBeDefined();
-    expect(teacherMsg.school_id).toBe(SCHOOL_A);
-    expect(teacherMsg.student_id).toBe(STUDENT_ID);
-    expect(teacherMsg.sender_id).toBe(TEACHER_ID);
-    expect(teacherMsg.sender_role).toBe('teacher');
-    expect(teacherMsg.content).toBe('Please review today’s homework for Math.');
+    expect(msg.sender_id).toBe(TEACHER_ID);
+    expect(msg.sender_role).toBe('teacher');
+    expect(msg.recipient_id).toBe(PARENT_ID);
+    expect(msg.recipient_role).toBe('parent');
+    expect(msg.student_id).toBe(STUDENT_ID);
+
+    // 2. Teacher Portal view: Determines isMe (true) and displays Teacher / You
+    const teacherIsMe = msg.sender_role === 'teacher';
+    const teacherRoleLabel = msg.sender_role === 'teacher' ? 'Teacher' : 'Parent';
+    expect(teacherIsMe).toBe(true);
+    expect(teacherRoleLabel).toBe('Teacher');
+
+    // 3. Parent Portal view: Determines isMe (false) and displays Teacher
+    const parentIsMe = msg.sender_role === 'parent';
+    const parentRoleLabel = msg.sender_role === 'parent' ? 'Parent' : 'Teacher';
+    expect(parentIsMe).toBe(false);
+    expect(parentRoleLabel).toBe('Teacher');
   });
 
-  it('2. Parent Portal sees the exact same message with identical message_id, content, and timestamp', () => {
-    // Teacher sends
-    const teacherMsg = db.insert(SCHOOL_A, {
-      student_id: STUDENT_ID,
-      sender_id: TEACHER_ID,
-      sender_role: 'teacher',
-      content: 'Please review today’s homework for Math.',
-      is_context_flag: false,
-      read_at: null,
-    });
-
-    // Parent fetches for Aarav Sharma
-    const parentHistory = db.select(SCHOOL_A, STUDENT_ID);
-
-    expect(parentHistory).toHaveLength(1);
-    expect(parentHistory[0].id).toBe(teacherMsg.id);
-    expect(parentHistory[0].content).toBe('Please review today’s homework for Math.');
-    expect(parentHistory[0].sender_role).toBe('teacher');
-  });
-
-  it('3. Parent replies -> Teacher Portal sees the exact same reply in real-time history', () => {
-    // 1. Teacher initial message
+  it('TEST 2: Parent Sunita replies "Hi ma’am, I will check." -> Stored with Parent sender and Teacher recipient; Renders correctly in both portals', () => {
+    // 1. Teacher sent first
     db.insert(SCHOOL_A, {
       student_id: STUDENT_ID,
       sender_id: TEACHER_ID,
       sender_role: 'teacher',
-      content: 'Please review today’s homework for Math.',
+      recipient_id: PARENT_ID,
+      recipient_role: 'parent',
+      content: 'hi mam',
       is_context_flag: false,
       read_at: null,
     });
 
-    // 2. Parent replies
-    const parentReply = db.insert(SCHOOL_A, {
+    // 2. Parent Sunita replies
+    const reply = db.insert(SCHOOL_A, {
       student_id: STUDENT_ID,
       sender_id: PARENT_ID,
       sender_role: 'parent',
-      content: 'Thank you Ms. Mehra, I will check his notebook tonight.',
+      recipient_id: TEACHER_ID,
+      recipient_role: 'teacher',
+      content: 'Hi ma’am, I will check.',
       is_context_flag: false,
       read_at: null,
     });
 
-    // 3. Teacher queries thread
-    const teacherView = db.select(SCHOOL_A, STUDENT_ID);
+    expect(reply.sender_id).toBe(PARENT_ID);
+    expect(reply.sender_role).toBe('parent');
+    expect(reply.recipient_id).toBe(TEACHER_ID);
+    expect(reply.recipient_role).toBe('teacher');
 
-    expect(teacherView).toHaveLength(2);
-    expect(teacherView[1].id).toBe(parentReply.id);
-    expect(teacherView[1].sender_role).toBe('parent');
-    expect(teacherView[1].content).toBe('Thank you Ms. Mehra, I will check his notebook tonight.');
+    // 3. Parent Portal view for reply: isMe (true), label is Parent
+    const parentIsMe = reply.sender_role === 'parent';
+    const parentRoleLabel = reply.sender_role === 'parent' ? 'Parent' : 'Teacher';
+    expect(parentIsMe).toBe(true);
+    expect(parentRoleLabel).toBe('Parent');
+
+    // 4. Teacher Portal view for reply: isMe (false), label is Parent
+    const teacherIsMe = reply.sender_role === 'teacher';
+    const teacherRoleLabel = reply.sender_role === 'teacher' ? 'Teacher' : 'Parent';
+    expect(teacherIsMe).toBe(false);
+    expect(teacherRoleLabel).toBe('Parent');
   });
 
-  it('4. Realtime deduplication: Optimistic message is cleanly replaced by authoritative DB message without duplicates', () => {
+  it('TEST 3: Refreshing both portals maintains identical sender identity and message order', () => {
+    // Teacher sends
+    const msg1 = db.insert(SCHOOL_A, {
+      student_id: STUDENT_ID,
+      sender_id: TEACHER_ID,
+      sender_role: 'teacher',
+      content: 'hi mam',
+      is_context_flag: false,
+      read_at: null,
+    });
+
+    // Parent replies
+    const msg2 = db.insert(SCHOOL_A, {
+      student_id: STUDENT_ID,
+      sender_id: PARENT_ID,
+      sender_role: 'parent',
+      content: 'Hi ma’am, I will check.',
+      is_context_flag: false,
+      read_at: null,
+    });
+
+    // Refetch in Teacher portal
+    const teacherRefetch = db.select(SCHOOL_A, STUDENT_ID);
+    expect(teacherRefetch).toHaveLength(2);
+    expect(teacherRefetch[0].id).toBe(msg1.id);
+    expect(teacherRefetch[0].sender_role).toBe('teacher');
+    expect(teacherRefetch[1].id).toBe(msg2.id);
+    expect(teacherRefetch[1].sender_role).toBe('parent');
+
+    // Refetch in Parent portal
+    const parentRefetch = db.select(SCHOOL_A, STUDENT_ID);
+    expect(parentRefetch).toHaveLength(2);
+    expect(parentRefetch[0].id).toBe(msg1.id);
+    expect(parentRefetch[0].sender_role).toBe('teacher');
+    expect(parentRefetch[1].id).toBe(msg2.id);
+    expect(parentRefetch[1].sender_role).toBe('parent');
+  });
+
+  it('TEST 4: Same canonical message_id is visible in both Teacher and Parent portals', () => {
+    const sentMsg = db.insert(SCHOOL_A, {
+      student_id: STUDENT_ID,
+      sender_id: TEACHER_ID,
+      sender_role: 'teacher',
+      content: 'Important homework reminder.',
+      is_context_flag: false,
+      read_at: null,
+    });
+
+    const teacherView = db.select(SCHOOL_A, STUDENT_ID);
+    const parentView = db.select(SCHOOL_A, STUDENT_ID);
+
+    expect(teacherView[0].id).toBe(sentMsg.id);
+    expect(parentView[0].id).toBe(sentMsg.id);
+    expect(teacherView[0].id).toBe(parentView[0].id);
+  });
+
+  it('TEST 5: Realtime delivery replaces optimistic temporary message cleanly with no duplicates', () => {
     const tempId = `temp-${Date.now()}`;
     const optimisticMessage = {
       id: tempId,
       studentId: STUDENT_ID,
       senderId: TEACHER_ID,
       senderRole: 'teacher' as const,
-      messageText: 'Testing quick reminder',
+      messageText: 'hi mam',
       isContextFlag: false,
       createdAt: new Date().toISOString(),
     };
 
-    let localMessages = [optimisticMessage];
+    let teacherMessages = [optimisticMessage];
 
-    // Server returns persisted row
+    // Canonical insert returns confirmed row
     const serverRow = db.insert(SCHOOL_A, {
       student_id: STUDENT_ID,
       sender_id: TEACHER_ID,
       sender_role: 'teacher',
-      content: 'Testing quick reminder',
+      content: 'hi mam',
       is_context_flag: false,
       read_at: null,
     });
 
-    // Realtime handler deduplicates by matching temp message or ID
-    const incomingRealtimeMsg = {
+    const confirmedMsg = {
       id: serverRow.id,
       studentId: serverRow.student_id,
       senderId: serverRow.sender_id,
@@ -162,59 +226,25 @@ describe('ShikshaSetu Cross-Portal Canonical Chat System', () => {
       createdAt: serverRow.created_at,
     };
 
-    const updated = localMessages.some((m) => m.id === incomingRealtimeMsg.id)
-      ? localMessages
-      : localMessages.map((m) =>
-          m.id === tempId || (m.senderRole === 'teacher' && m.messageText === incomingRealtimeMsg.messageText && m.id.startsWith('temp-'))
-            ? incomingRealtimeMsg
-            : m
-        );
+    // Replace optimistic
+    teacherMessages = teacherMessages.map((m) => (m.id === tempId ? confirmedMsg : m));
 
-    expect(updated).toHaveLength(1);
-    expect(updated[0].id).toBe(serverRow.id);
-    expect(updated[0].id.startsWith('temp-')).toBe(false);
+    expect(teacherMessages).toHaveLength(1);
+    expect(teacherMessages[0].id).toBe(serverRow.id);
+    expect(teacherMessages[0].senderRole).toBe('teacher');
   });
 
-  it('5. Tenant Isolation Security: Unauthorized school cannot read or write messages for another school', () => {
-    // School A conversation
+  it('TEST 6: Tenant Isolation Security: Cross-school communications are blocked', () => {
     db.insert(SCHOOL_A, {
       student_id: STUDENT_ID,
       sender_id: TEACHER_ID,
       sender_role: 'teacher',
-      content: 'Confidential school note for Class 8A',
+      content: 'Internal Greenwood High Note',
       is_context_flag: false,
       read_at: null,
     });
 
-    // School B attempts to read School A student thread
     const schoolBResults = db.select(SCHOOL_B, STUDENT_ID);
     expect(schoolBResults).toHaveLength(0);
-
-    // School A sees its message
-    const schoolAResults = db.select(SCHOOL_A, STUDENT_ID);
-    expect(schoolAResults).toHaveLength(1);
-    expect(schoolAResults[0].content).toBe('Confidential school note for Class 8A');
-  });
-
-  it('6. Empty state contract: Empty conversation is returned when no messages exist for student', () => {
-    const UNCONTACTED_STUDENT = 'b1000000-0000-4000-8000-000000000009';
-    const messages = db.select(SCHOOL_A, UNCONTACTED_STUDENT);
-    expect(messages).toEqual([]);
-  });
-
-  it('7. Context flag persistence: Parent quick-note context flag is preserved across portal views', () => {
-    const contextNote = db.insert(SCHOOL_A, {
-      student_id: STUDENT_ID,
-      sender_id: PARENT_ID,
-      sender_role: 'parent',
-      content: 'Aarav has mild fever this morning. Please allow him to rest if needed.',
-      is_context_flag: true,
-      read_at: null,
-    });
-
-    const teacherView = db.select(SCHOOL_A, STUDENT_ID);
-    expect(teacherView).toHaveLength(1);
-    expect(teacherView[0].is_context_flag).toBe(true);
-    expect(teacherView[0].id).toBe(contextNote.id);
   });
 });

@@ -306,6 +306,7 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
           filteredMessages.map((msg) => {
             const isMe = msg.senderRole === 'teacher';
             const isDelivered = !msg.id.startsWith('temp-');
+            const roleLabel = msg.senderRole === 'teacher' ? 'Teacher' : 'Parent';
             return (
               <div
                 key={msg.id}
@@ -321,10 +322,10 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
                   <p className="whitespace-pre-wrap">{msg.messageText}</p>
                 </div>
                 <span className="mt-1 px-1 text-[9px] font-semibold text-deep-teal/54 flex items-center gap-1">
-                  {isMe ? 'You' : 'Parent'} &middot; {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {roleLabel} &middot; {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   {isMe && (
-                    <span className="text-sage font-black text-[10px]" title={isDelivered ? 'Read by parent' : 'Sending'}>
-                      {isDelivered ? '✓✓ Read' : '✓ Sent'}
+                    <span className="text-sage font-black text-[10px]" title={isDelivered ? 'Delivered' : 'Sending'}>
+                      {isDelivered ? '✓✓' : '✓'}
                     </span>
                   )}
                 </span>

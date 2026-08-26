@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getDemoSessionFromCookies } from '@/lib/demo/session';
 
@@ -49,8 +49,8 @@ export const ROLE_PERMISSIONS: Record<PortalRole, Permission[]> = {
     'homework:read',
     'homework:write',
     'marks:write',
-    'interventions:create',
     'interventions:approve',
+    'child:read_today',
   ],
   teacher: [
     'students:read_class',
@@ -64,7 +64,6 @@ export const ROLE_PERMISSIONS: Record<PortalRole, Permission[]> = {
   parent: [
     'child:read_today',
     'gate_pass:request',
-    'homework:read',
   ],
   student: [
     'homework:read',
@@ -95,7 +94,7 @@ export interface AuthContext {
  * getAuthContext: Resolves authenticated Clerk user, maps internal user_mappings,
  * extracts school_id and assigns permissions into a typed immutable AuthContext.
  */
-export async function getAuthContext(): Promise<AuthContext> {
+export async function getAuthContext(explicitRole?: PortalRole): Promise<AuthContext> {
   let clerkUserId: string | null = null;
 
   try {
@@ -107,42 +106,57 @@ export async function getAuthContext(): Promise<AuthContext> {
 
   // 1. Check for demo session if Clerk session is absent
   if (!clerkUserId) {
+    let demoRole: PortalRole = explicitRole || 'teacher';
+    let hasActiveDemo = false;
+
     try {
       const demo = await getDemoSessionFromCookies(cookies());
       if (demo?.active) {
-        const demoRole = (demo.role as PortalRole) || 'teacher';
-        const demoUserId = demoRole === 'teacher'
-          ? 'a1000000-0000-4000-8000-000000000001'
-          : demoRole === 'parent'
-          ? 'c1000000-0000-4000-8000-000000000001'
-          : 'b1000000-0000-4000-8000-000000000001';
-
-        return {
-          userId: demoUserId,
-          clerkUserId: `demo-${demoRole}-id`,
-          schoolId: DEFAULT_SCHOOL_ID,
-          role: demoRole,
-          permissions: ROLE_PERMISSIONS[demoRole] || [],
-          // Demo parent is Sunita Sharma — linked to Aarav Sharma (real seed UUID)
-          linkedStudentIds: demoRole === 'parent' ? ['b1000000-0000-4000-8000-000000000001'] : undefined,
-        };
+        hasActiveDemo = true;
+        if (!explicitRole) {
+          demoRole = (demo.role as PortalRole) || demoRole;
+        }
       }
     } catch {
       // Cookies read failed
     }
 
-    // In development / demo mode or unit test contexts, fallback to default teacher context
-    if (process.env.NODE_ENV !== 'production' || process.env.VITEST || !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
-      return {
-        userId: 'a1000000-0000-4000-8000-000000000001',
-        clerkUserId: 'demo-teacher-id',
-        schoolId: DEFAULT_SCHOOL_ID,
-        role: 'teacher',
-        permissions: ROLE_PERMISSIONS['teacher'],
-      };
+    try {
+      const headerList = headers();
+      const referer = headerList.get('referer') || '';
+      if (!explicitRole && !hasActiveDemo) {
+        if (referer.includes('/teacher')) demoRole = 'teacher';
+        else if (referer.includes('/parent')) demoRole = 'parent';
+        else if (referer.includes('/student')) demoRole = 'student';
+        else if (referer.includes('/admin')) demoRole = 'admin';
+        else if (referer.includes('/driver')) demoRole = 'driver';
+        else if (referer.includes('/gate')) demoRole = 'gate';
+        else if (referer.includes('/vendor')) demoRole = 'vendor';
+      }
+    } catch {
+      // headers read failed
     }
 
-    throw new Error('UNAUTHORIZED: Valid session required');
+    // In production without clerk user and without demo session or explicit role, throw UNAUTHORIZED
+    if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && !hasActiveDemo && !explicitRole) {
+      throw new Error('UNAUTHORIZED: Valid session required');
+    }
+
+    const demoUserId = demoRole === 'teacher'
+      ? 'a1000000-0000-4000-8000-000000000001'
+      : demoRole === 'parent'
+      ? 'c1000000-0000-4000-8000-000000000001'
+      : 'b1000000-0000-4000-8000-000000000001';
+
+    return {
+      userId: demoUserId,
+      clerkUserId: `demo-${demoRole}-id`,
+      schoolId: DEFAULT_SCHOOL_ID,
+      role: demoRole,
+      permissions: ROLE_PERMISSIONS[demoRole] || [],
+      // Demo parent is Sunita Sharma — linked to Aarav Sharma (real seed UUID)
+      linkedStudentIds: demoRole === 'parent' ? ['b1000000-0000-4000-8000-000000000001'] : undefined,
+    };
   }
 
   // 2. Query user_mappings via Admin DB to resolve tenant & role

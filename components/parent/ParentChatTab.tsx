@@ -314,6 +314,7 @@ export function ParentChatTab({
         ) : (
           messages.map((msg) => {
             const isParent = msg.senderRole === 'parent';
+            const roleLabel = msg.senderRole === 'parent' ? 'Parent' : 'Teacher';
             return (
               <motion.div
                 key={msg.id}
@@ -339,11 +340,11 @@ export function ParentChatTab({
                   )}
                   <p className="font-medium whitespace-pre-wrap">{msg.messageText}</p>
                   <span
-                    className={`block text-[9px] font-mono text-right ${
-                      isParent ? 'text-white/60' : 'text-deep-teal/40'
+                    className={`block text-[9px] font-mono ${
+                      isParent ? 'text-white/60 text-right' : 'text-deep-teal/50 text-left'
                     }`}
                   >
-                    {new Date(msg.createdAt).toLocaleTimeString('en-US', {
+                    {roleLabel} &middot; {new Date(msg.createdAt).toLocaleTimeString('en-US', {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}

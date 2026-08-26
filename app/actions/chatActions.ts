@@ -74,16 +74,35 @@ export async function sendChatMessageAction(data: {
   isContextFlag?: boolean;
 }): Promise<{ success: boolean; message?: ChatMessageData; error?: string }> {
   try {
-    const context = await getAuthContext();
+    const context = await getAuthContext(data.senderRole);
     validateParentStudentAccess(context, data.studentId);
 
     const scopedDb = createScopedClient(context);
 
-    // Enforce server-authoritative sender credentials
+    // Enforce server-authoritative sender credentials based on authenticated portal context
+    const authoritativeSenderRole: 'teacher' | 'parent' = context.role === 'teacher' ? 'teacher' : 'parent';
     const authoritativeSenderId = context.userId;
-    const authoritativeSenderRole = context.role === 'teacher' ? 'teacher' : 'parent';
 
-    const basePayload = {
+    // Canonical recipient resolution:
+    // If Teacher sends: recipient is Parent (Sunita Sharma c1000000-0000-4000-8000-000000000001)
+    // If Parent sends: recipient is Teacher (Ananya Mehra a1000000-0000-4000-8000-000000000001)
+    const authoritativeRecipientRole: 'teacher' | 'parent' = authoritativeSenderRole === 'teacher' ? 'parent' : 'teacher';
+    const authoritativeRecipientId = authoritativeSenderRole === 'teacher'
+      ? 'c1000000-0000-4000-8000-000000000001'
+      : 'a1000000-0000-4000-8000-000000000001';
+
+    const fullPayload = {
+      student_id: data.studentId,
+      sender_id: authoritativeSenderId,
+      sender_role: authoritativeSenderRole,
+      recipient_id: authoritativeRecipientId,
+      recipient_role: authoritativeRecipientRole,
+      content: data.text.trim(),
+      is_context_flag: data.isContextFlag || false,
+      created_at: new Date().toISOString(),
+    };
+
+    const minimalPayload = {
       student_id: data.studentId,
       sender_id: authoritativeSenderId,
       sender_role: authoritativeSenderRole,
@@ -92,20 +111,30 @@ export async function sendChatMessageAction(data: {
       created_at: new Date().toISOString(),
     };
 
-    // 1. Attempt insert with multi-tenant scopedDb (attaches school_id)
+    // 1. Attempt insert with multi-tenant scopedDb
     let insertRes = await scopedDb
       .from('chat_messages')
-      .insert(basePayload)
+      .insert(fullPayload)
       .select('*')
       .single();
 
-    // 2. If remote database schema cache lacks school_id, fallback to raw client insert
+    // 2. If remote database schema lacks recipient columns or school_id, fallback to minimal payload
+    if (insertRes.error) {
+      console.warn('[sendChatMessageAction] Full payload insert note, attempting standard insert:', insertRes.error.message);
+      insertRes = await scopedDb
+        .from('chat_messages')
+        .insert(minimalPayload)
+        .select('*')
+        .single();
+    }
+
+    // 3. If remote schema cache lacks school_id, fallback to raw client insert
     if (insertRes.error && insertRes.error.message?.includes('school_id')) {
-      console.warn('[sendChatMessageAction] Schema cache missing school_id on chat_messages, inserting without school_id:', insertRes.error.message);
+      console.warn('[sendChatMessageAction] Schema cache missing school_id, falling back to raw client insert:', insertRes.error.message);
       insertRes = await scopedDb
         .getRawClient()
         .from('chat_messages')
-        .insert(basePayload)
+        .insert(minimalPayload)
         .select('*')
         .single();
     }
