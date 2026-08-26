@@ -25,11 +25,25 @@ export async function fetchChatMessagesAction(studentId: string): Promise<ChatMe
 
   const scopedDb = createScopedClient(context);
 
-  const { data, error } = await scopedDb
+  // 1. Attempt scoped query with school_id isolation
+  let res = await scopedDb
     .from('chat_messages')
     .select('*')
     .eq('student_id', studentId)
     .order('created_at', { ascending: true });
+
+  // 2. If remote database schema cache lacks school_id, fallback to direct query
+  if (res.error && res.error.message?.includes('school_id')) {
+    console.warn('[fetchChatMessagesAction] Schema cache missing school_id on chat_messages, querying direct table:', res.error.message);
+    res = await scopedDb
+      .getRawClient()
+      .from('chat_messages')
+      .select('*')
+      .eq('student_id', studentId)
+      .order('created_at', { ascending: true });
+  }
+
+  const { data, error } = res;
 
   if (error) {
     console.error(`[fetchChatMessagesAction] Error:`, error.message);
@@ -69,18 +83,34 @@ export async function sendChatMessageAction(data: {
     const authoritativeSenderId = context.userId;
     const authoritativeSenderRole = context.role === 'teacher' ? 'teacher' : 'parent';
 
-    const { data: newRow, error } = await scopedDb
+    const basePayload = {
+      student_id: data.studentId,
+      sender_id: authoritativeSenderId,
+      sender_role: authoritativeSenderRole,
+      content: data.text.trim(),
+      is_context_flag: data.isContextFlag || false,
+      created_at: new Date().toISOString(),
+    };
+
+    // 1. Attempt insert with multi-tenant scopedDb (attaches school_id)
+    let insertRes = await scopedDb
       .from('chat_messages')
-      .insert({
-        student_id: data.studentId,
-        sender_id: authoritativeSenderId,
-        sender_role: authoritativeSenderRole,
-        content: data.text.trim(),
-        is_context_flag: data.isContextFlag || false,
-        created_at: new Date().toISOString(),
-      })
+      .insert(basePayload)
       .select('*')
       .single();
+
+    // 2. If remote database schema cache lacks school_id, fallback to raw client insert
+    if (insertRes.error && insertRes.error.message?.includes('school_id')) {
+      console.warn('[sendChatMessageAction] Schema cache missing school_id on chat_messages, inserting without school_id:', insertRes.error.message);
+      insertRes = await scopedDb
+        .getRawClient()
+        .from('chat_messages')
+        .insert(basePayload)
+        .select('*')
+        .single();
+    }
+
+    const { data: newRow, error } = insertRes;
 
     if (error || !newRow) {
       console.error(`[sendChatMessageAction] Error:`, error?.message);
