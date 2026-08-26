@@ -26,6 +26,7 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
   const [isSending, setIsSending] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const lastMessageCountRef = useRef(0);
   const [isUserNearBottom, setIsUserNearBottom] = useState(true);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
