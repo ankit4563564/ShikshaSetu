@@ -3,120 +3,121 @@
 import React from 'react';
 
 export function TheDifferenceSection() {
-  const legacySilos = [
-    { title: 'Attendance', desc: 'Saved in monthly CSV' },
-    { title: 'Marks & Exams', desc: 'Archived per term' },
-    { title: 'Homework Hub', desc: 'Static file attachments' },
-    { title: 'Report Cards', desc: 'Printed once a quarter' },
-    { title: 'SMS Notices', desc: 'One-way broadcast alerts' },
-  ];
-
-  const transformations = [
-    { step: 'EVIDENCE', desc: 'Daily quiz & homework signals recorded live', color: 'text-[#2563EB] bg-[#EFF6FF]' },
-    { step: 'UNDERSTANDING', desc: 'AI diagnoses concept misconceptions', color: 'text-[#F59E0B] bg-[#FFF9F0]' },
-    { step: 'ACTION', desc: 'Teacher gets 5-min review; student gets 15-min notebook', color: 'text-[#2563EB] bg-[#EFF6FF]' },
-    { step: 'OUTCOME', desc: 'Growth verified & measured on recheck (58% → 78%)', color: 'text-[#16A085] bg-[#E6F7F2]' },
-  ];
-
   return (
-    <section id="the-difference" className="py-16 md:py-20 bg-white border-b border-[#102A43]/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-        {/* Section Header */}
-        <div className="max-w-2xl space-y-2.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB]">
-            The Architectural Shift
-          </span>
-          <h2 className="font-display text-3xl sm:text-4xl font-black text-[#102A43] tracking-tight">
-            Not just an ERP.
+    <section id="the-difference" className="py-14 md:py-18 bg-[#FFF9F0] border-b border-[#102A43]/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {/* Section Heading */}
+        <div className="text-left">
+          <h2 className="font-display text-2xl sm:text-3xl font-black text-[#102A43] tracking-tight uppercase">
+            NOT JUST AN ERP
           </h2>
-          <p className="text-base text-[#102A43]/70 font-normal leading-relaxed">
-            The difference is not how many administrative modules you have. It&apos;s <strong className="text-[#102A43] font-bold">what the system does</strong> with the information inside them.
-          </p>
         </div>
 
-        {/* Side-by-Side Comparison */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          {/* LEFT: TRADITIONAL ERP */}
-          <div className="lg:col-span-5 p-6 sm:p-7 rounded-2xl bg-[#F8FAFC] border border-stone-200 space-y-5 flex flex-col justify-between shadow-[0_4px_20px_rgba(16,42,67,0.04)]">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between border-b border-stone-200 pb-2.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#102A43]/60">
-                  Legacy Paradigm
-                </span>
-                <span className="text-xs font-bold text-stone-400">Traditional ERP</span>
-              </div>
+        {/* Visual Funnel Diagram matching PNG */}
+        <div className="p-6 sm:p-8 rounded-2xl bg-white border border-[#102A43]/10 shadow-[0_8px_30px_rgba(16,42,67,0.06)] space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            {/* Left: Traditional ERP Silos */}
+            <div className="lg:col-span-4 space-y-3">
+              <span className="font-display text-sm font-bold text-[#102A43] block">
+                Traditional ERP
+              </span>
 
-              <h3 className="font-display text-base font-bold text-[#102A43]">
-                Disconnected Data Silos
-              </h3>
-              <p className="text-xs text-[#102A43]/70 leading-relaxed">
-                Information is captured, stored, and forgotten. Teachers fill logs, parents see raw percentages at term-end, and students receive no guidance.
-              </p>
-
-              {/* Fragmented Blocks */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
-                {legacySilos.map((silo) => (
-                  <div key={silo.title} className="p-2.5 rounded-lg bg-white border border-stone-200">
-                    <h4 className="font-display text-xs font-bold text-stone-700">{silo.title}</h4>
-                    <p className="text-[10px] text-stone-400">{silo.desc}</p>
+              <div className="space-y-2.5 relative">
+                {/* Silo 1: Attendance */}
+                <div className="p-3 rounded-xl bg-white border border-[#102A43]/15 shadow-xs flex items-center justify-between relative overflow-hidden">
+                  <div className="space-y-0.5">
+                    <h4 className="font-display text-xs font-bold text-[#102A43]">Attendance</h4>
+                    <p className="text-[10px] text-[#102A43]/60">Paper based, weekly</p>
                   </div>
-                ))}
+                  <div className="w-8 h-2 bg-[#2563EB] rounded-r -mr-3" />
+                </div>
+
+                {/* Silo 2: Marks & Exams */}
+                <div className="p-3 rounded-xl bg-white border border-[#102A43]/15 shadow-xs flex items-center justify-between relative overflow-hidden">
+                  <div className="space-y-0.5">
+                    <h4 className="font-display text-xs font-bold text-[#102A43]">Marks &amp; Exams</h4>
+                    <p className="text-[10px] text-[#102A43]/60">Separate spreadsheet, lost data</p>
+                  </div>
+                  <div className="w-8 h-2 bg-[#F59E0B] rounded-r -mr-3" />
+                </div>
+
+                {/* Silo 3: Homework Hub */}
+                <div className="p-3 rounded-xl bg-white border border-[#102A43]/15 shadow-xs flex items-center justify-between relative overflow-hidden">
+                  <div className="space-y-0.5">
+                    <h4 className="font-display text-xs font-bold text-[#102A43]">Homework Hub</h4>
+                    <p className="text-[10px] text-[#102A43]/60">Static assignments, no feedback</p>
+                  </div>
+                  <div className="w-8 h-2 bg-[#2563EB] rounded-r -mr-3" />
+                </div>
               </div>
             </div>
 
-            <div className="p-3 bg-stone-200/70 rounded-lg text-xs font-bold text-stone-700 flex items-center justify-between">
-              <span>DATA GETS RECORDED. Nothing changes.</span>
-              <span className="text-stone-400">🔒</span>
+            {/* Middle: Convergence Arrow Graphic */}
+            <div className="hidden lg:flex lg:col-span-1 items-center justify-center">
+              <svg width="48" height="80" viewBox="0 0 48 80" fill="none" className="text-[#2563EB]">
+                <path d="M0 15 C 24 15, 24 40, 44 40" stroke="#2563EB" strokeWidth="3" fill="none" strokeLinecap="round" />
+                <path d="M0 40 L 44 40" stroke="#F59E0B" strokeWidth="3" fill="none" strokeLinecap="round" />
+                <path d="M0 65 C 24 65, 24 40, 44 40" stroke="#2563EB" strokeWidth="3" fill="none" strokeLinecap="round" />
+                <polygon points="40,35 48,40 40,45" fill="#2563EB" />
+              </svg>
+            </div>
+
+            {/* Right: ShikshaSetu Connected Ecosystem */}
+            <div className="lg:col-span-7 space-y-3">
+              <span className="font-display text-sm font-bold text-[#102A43] block">
+                ShikshaSetu - The Connected Learning Ecosystem
+              </span>
+
+              {/* 4 Connected Stages with horizontal arrows */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 items-stretch">
+                {/* 1. Evidence */}
+                <div className="p-3 rounded-xl bg-[#F8FAFC] border border-stone-200 text-center flex flex-col justify-between space-y-1.5 shadow-2xs">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#102A43] block">
+                    EVIDENCE
+                  </span>
+                  <p className="text-[10px] text-[#102A43]/70 leading-tight">
+                    Daily quizzes, homework, AI-formative.
+                  </p>
+                </div>
+
+                {/* 2. Understanding */}
+                <div className="p-3 rounded-xl bg-[#EFF6FF] border border-[#2563EB]/25 text-center flex flex-col justify-between space-y-1.5 shadow-2xs">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#2563EB] block">
+                    UNDERSTANDING
+                  </span>
+                  <p className="text-[10px] text-[#102A43]/70 leading-tight">
+                    Identify learning gaps, student strengths.
+                  </p>
+                </div>
+
+                {/* 3. Action */}
+                <div className="p-3 rounded-xl bg-[#FFF9F0] border border-[#F59E0B]/30 text-center flex flex-col justify-between space-y-1.5 shadow-2xs">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#F59E0B] block">
+                    ACTION
+                  </span>
+                  <p className="text-[10px] text-[#102A43]/70 leading-tight">
+                    Targeted teacher support, personalized practice.
+                  </p>
+                </div>
+
+                {/* 4. Outcome */}
+                <div className="p-3 rounded-xl bg-[#16A085] text-white text-center flex flex-col justify-between space-y-1.5 shadow-xs">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-white block">
+                    OUTCOME
+                  </span>
+                  <p className="text-[10px] text-white/90 leading-tight font-medium">
+                    78% Mastery in Maths. Real-time growth.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* RIGHT: SHIKSHASETU */}
-          <div className="lg:col-span-7 p-6 sm:p-7 rounded-2xl bg-[#FFF9F0] border border-[#102A43]/15 space-y-5 flex flex-col justify-between shadow-[0_8px_30px_rgba(16,42,67,0.06)]">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between border-b border-[#102A43]/10 pb-2.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#16A085] bg-[#E6F7F2] border border-[#16A085]/30 px-2 py-0.5 rounded">
-                  Connected Learning Feedback
-                </span>
-                <span className="text-xs font-bold text-[#2563EB]">ShikshaSetu</span>
-              </div>
-
-              <h3 className="font-display text-base font-bold text-[#102A43]">
-                Live Feedback Loop Around The Learner
-              </h3>
-              <p className="text-xs text-[#102A43]/70 leading-relaxed">
-                Every quiz, attendance check, and homework mark feeds into active intelligence that drives the next action for student, teacher, and parent.
-              </p>
-
-              {/* Data Transformation Rows */}
-              <div className="space-y-2 pt-1">
-                {transformations.map((t, idx) => (
-                  <div
-                    key={t.step}
-                    className="p-3 rounded-xl bg-white border border-[#102A43]/10 flex items-center justify-between gap-3 shadow-[0_2px_8px_rgba(16,42,67,0.03)]"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className={`w-5 h-5 rounded font-mono text-[11px] font-bold flex items-center justify-center shrink-0 ${t.color}`}>
-                        {idx + 1}
-                      </span>
-                      <div>
-                        <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#102A43] block">
-                          {t.step}
-                        </span>
-                        <p className="text-xs font-medium text-[#102A43] leading-tight">
-                          {t.desc}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-stone-300 font-bold hidden sm:inline">&rarr;</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="p-3 bg-[#E6F7F2] border border-[#16A085]/30 rounded-lg text-xs font-bold text-[#16A085] flex items-center justify-between">
-              <span>DATA BECOMES ACTION for every stakeholder.</span>
-              <span className="font-bold">✓</span>
-            </div>
+          {/* Bottom Summary Banner */}
+          <div className="pt-3 border-t border-stone-100 text-center text-xs font-medium text-[#102A43]/70">
+            <span>Data gets recorded. Nothing changes. &rarr; </span>
+            <strong className="text-[#102A43] font-bold uppercase">DATA BECOMES ACTION</strong>
+            <span> for every stakeholder.</span>
           </div>
         </div>
       </div>

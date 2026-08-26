@@ -3,97 +3,74 @@
 import React from 'react';
 
 export function OutcomesFeatureSection() {
-  const categories = [
+  const quadrants = [
     {
       title: 'RUN THE SCHOOL',
-      tag: 'Administration',
-      accentColor: 'text-[#2563EB] bg-[#EFF6FF] border-[#2563EB]/20',
+      borderColor: 'border-t-4 border-t-[#2563EB]',
       items: [
-        'Multi-session Attendance & Scans',
-        'Fee Ledgers & Automated Invoicing',
-        'Timetables & Substitution Engine',
-        'Live Transport GPS & Gate Security',
+        'Multi-session Attendance',
+        'Fee Ledgers',
+        'Automated Invoicing',
+        'Live Transport GPS',
       ],
     },
     {
       title: 'UNDERSTAND THE CLASSROOM',
-      tag: 'Teacher Intelligence',
-      accentColor: 'text-[#16A085] bg-[#E6F7F2] border-[#16A085]/30',
+      borderColor: 'border-t-4 border-t-[#F59E0B]',
       items: [
-        'Formative Assessment & Marks Entry',
-        'Student Support Radar for At-Risk Topics',
-        'Homeroom Diagnostic Profiles',
-        'Differentiated Lesson Recommendations',
+        'Formative Assessment',
+        'Personalized AI Lesson Plans',
+        'Interactive Question Banks',
       ],
     },
     {
       title: 'HELP STUDENTS LEARN',
-      tag: 'Learner Growth',
-      accentColor: 'text-[#F59E0B] bg-[#FFF9F0] border-[#F59E0B]/30',
+      borderColor: 'border-t-4 border-t-[#16A085]',
       items: [
-        'Personalized AI Revision Notes',
-        'SchoolMitra Syllabus Study Companion',
-        'Interactive 3-Question Quick Checks',
-        '15-Minute Next Best Action Practice',
+        'Adaptive Practice',
+        'Real-time Feedback',
+        'Gamified Learning Paths',
       ],
     },
     {
       title: 'CONNECT FAMILIES',
-      tag: 'Parent Partnership',
-      accentColor: 'text-[#F97360] bg-[#FFF2F0] border-[#F97360]/30',
+      borderColor: 'border-t-4 border-t-[#F97360]',
       items: [
-        'Constructive Dinner Talking Prompts',
-        'Encrypted Teacher-Parent Messaging',
-        'Real-time GPS Bus Tracking & ETA',
-        'Secure QR Gate Pass Authorizations',
+        'Constructive Dialogue Prompts',
+        'Real-time PTM Tracking',
+        'Secure QR Gate Pass',
       ],
     },
   ];
 
   return (
-    <section className="py-16 md:py-20 bg-[#FFF9F0] border-b border-[#102A43]/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-        {/* Section Header */}
-        <div className="max-w-2xl space-y-2.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB] bg-white border border-[#2563EB]/20 px-2.5 py-0.5 rounded">
-            Complete Platform
-          </span>
-          <h2 className="font-display text-3xl sm:text-4xl font-black text-[#102A43] tracking-tight">
-            What ShikshaSetu runs.
-          </h2>
-          <p className="text-base text-[#102A43]/70 font-normal leading-relaxed">
-            Everything your institution needs to run daily administration, understand classrooms, guide students, and partner with parents.
-          </p>
-        </div>
+    <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#102A43]/10 shadow-[0_4px_24px_rgba(16,42,67,0.06)] space-y-4">
+      {/* Title matching PNG */}
+      <h3 className="font-display text-base font-black text-[#102A43] tracking-tight uppercase">
+        CAPABILITIES
+      </h3>
 
-        {/* 4 Compact Categories */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {categories.map((c) => (
-            <div
-              key={c.title}
-              className="p-5 rounded-xl bg-white border border-[#102A43]/15 shadow-[0_4px_16px_rgba(16,42,67,0.04)] space-y-3"
-            >
-              <div className="space-y-1">
-                <span className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded border inline-block ${c.accentColor}`}>
-                  {c.tag}
-                </span>
-                <h3 className="font-display text-sm font-bold text-[#102A43]">
-                  {c.title}
-                </h3>
-              </div>
-
-              <ul className="space-y-2 pt-2 border-t border-stone-100">
-                {c.items.map((item) => (
-                  <li key={item} className="text-xs text-[#102A43]/70 flex items-start gap-2 leading-snug">
-                    <span className="text-[#16A085] font-bold shrink-0">✓</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+      {/* 4 Quadrant Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        {quadrants.map((q) => (
+          <div
+            key={q.title}
+            className={`p-3.5 rounded-xl bg-[#F8FAFC] border border-stone-200 ${q.borderColor} space-y-2 shadow-2xs`}
+          >
+            <span className="font-display text-xs font-bold text-[#102A43] block">
+              {q.title}
+            </span>
+            <ul className="space-y-1 text-[11px] text-[#102A43]/70">
+              {q.items.map((item) => (
+                <li key={item} className="flex items-center gap-1.5">
+                  <span className="w-1 h-1 rounded-full bg-stone-400" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
-    </section>
+    </div>
   );
 }

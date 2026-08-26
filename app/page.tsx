@@ -16,36 +16,43 @@ export default function Home() {
     <LandingModalProvider>
       <LandingMotion>
         <div className="bg-[#FFF9F0] text-[#102A43] font-sans antialiased overflow-x-hidden selection:bg-[#2563EB] selection:text-white">
-          {/* Top Sticky Navigation */}
+          {/* 1. NAVBAR */}
           <EcosystemNavbar />
 
           <main className="pt-14 sm:pt-16">
-            {/* 1. HERO (Warm Cream) — The school ERP that actually understands learning */}
+            {/* 2. HERO */}
             <EcosystemHero />
 
-            {/* 2. THE DIFFERENCE (White) — Traditional ERP (Recorded) vs ShikshaSetu (Action) */}
+            {/* 3. NOT JUST AN ERP */}
             <TheDifferenceSection />
 
-            {/* 3. ONE STUDENT — THREE PERSPECTIVES — ONE TRUTH (Soft Blue) */}
+            {/* 4. ONE STUDENT. THREE PERSPECTIVES. ONE TRUTH. */}
             <ThreePerspectivesSection />
 
-            {/* 4. THE LEARNING LOOP (Warm Cream) — 58% (Amber) to 78% (Mint) concrete story */}
+            {/* 5. 58% TO 78% MASTERY: THE CONTINUOUS LEARNING LOOP */}
             <LearningLoopSection />
 
-            {/* 5. SEE THE REAL PRODUCT (White) — Live portal switcher & actual UI screenshots */}
-            <RealProductShowcaseSection />
+            {/* 6. LOWER TWO-COLUMN MASTER SHOWCASE (matching target reference PNG) */}
+            <section className="py-14 md:py-18 bg-[#FFF9F0]">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  {/* LEFT COLUMN: See ShikshaSetu in Action + AI With Context */}
+                  <div className="lg:col-span-6 space-y-6">
+                    <RealProductShowcaseSection />
+                    <AiEcosystemSection />
+                  </div>
 
-            {/* 6. AI THAT KNOWS ITS ROLE (Deep Ink) — 3-tier insight architecture */}
-            <AiEcosystemSection />
-
-            {/* 7. WHAT SHIKSHASETU RUNS (Warm Cream) — 4 semantic capability categories */}
-            <OutcomesFeatureSection />
-
-            {/* 8. FINAL CTA (Deep Ink) — Don't just manage your school. Understand every learner. */}
-            <FinalCTA />
+                  {/* RIGHT COLUMN: Capabilities + Don't Just Manage Your School */}
+                  <div className="lg:col-span-6 space-y-6">
+                    <OutcomesFeatureSection />
+                    <FinalCTA />
+                  </div>
+                </div>
+              </div>
+            </section>
           </main>
 
-          {/* Clean Footer */}
+          {/* 7. FOOTER */}
           <Footer />
         </div>
       </LandingMotion>
