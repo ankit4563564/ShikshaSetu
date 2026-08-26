@@ -937,7 +937,7 @@ export interface ExplainConceptDifferentlyResult {
 export async function explainConceptDifferentlyAction(
   subject: string,
   topic: string
-): Promise<{ success: boolean; explanation?: ExplainConceptDifferentlyResult; error?: string }> {
+): Promise<{ success: boolean; result?: ExplainConceptDifferentlyResult; explanation?: ExplainConceptDifferentlyResult; error?: string }> {
   try {
     const context = await getAuthContext();
     requirePermission(context, 'students:read_class');
@@ -976,7 +976,7 @@ Output valid JSON matching exact schema:
       const parsed = JSON.parse(response.text);
 
       const result: ExplainConceptDifferentlyResult = {
-        topic,
+        topic: sanitizeAiText(parsed.topic || topic),
         subject,
         simpleExplanation: sanitizeAiText(parsed.simpleExplanation || `${topic} is best understood by breaking it into core observable components.`),
         analogy: sanitizeAiText(parsed.analogy || `Think of ${topic} like a water circuit or balancing scale.`),
@@ -984,19 +984,21 @@ Output valid JSON matching exact schema:
         quickCheckQuestion: sanitizeAiText(parsed.quickCheckQuestion || `If we change the key variable, what happens to the output?`),
       };
 
-      return { success: true, explanation: result };
+      return { success: true, result, explanation: result };
     } catch {
       // Deterministic Fallback
+      const fallbackResult: ExplainConceptDifferentlyResult = {
+        topic,
+        subject,
+        simpleExplanation: `${topic} describes how different quantities interact. Instead of memorizing the formula, focus on what changes when one part increases or decreases.`,
+        analogy: `Think of ${topic} like sharing a pizza evenly among friends: the more slices you make, the smaller each slice becomes, but the total amount remains constant.`,
+        example: `If you have 1/2 of a cake and divide it equally between 2 people, each person gets 1/4 of the total cake.`,
+        quickCheckQuestion: `Can someone explain why 2/4 is the exact same amount as 1/2 using our pizza example?`,
+      };
       return {
         success: true,
-        explanation: {
-          topic,
-          subject,
-          simpleExplanation: `${topic} describes how different quantities interact. Instead of memorizing the formula, focus on what changes when one part increases or decreases.`,
-          analogy: `Think of ${topic} like sharing a pizza evenly among friends: the more slices you make, the smaller each slice becomes, but the total amount remains constant.`,
-          example: `If you have 1/2 of a cake and divide it equally between 2 people, each person gets 1/4 of the total cake.`,
-          quickCheckQuestion: `Can someone explain why 2/4 is the exact same amount as 1/2 using our pizza example?`,
-        },
+        result: fallbackResult,
+        explanation: fallbackResult,
       };
     }
   } catch (err: any) {

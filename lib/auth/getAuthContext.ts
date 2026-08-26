@@ -111,9 +111,15 @@ export async function getAuthContext(): Promise<AuthContext> {
       const demo = await getDemoSessionFromCookies(cookies());
       if (demo?.active) {
         const demoRole = (demo.role as PortalRole) || 'teacher';
+        const demoUserId = demoRole === 'teacher'
+          ? 'a1000000-0000-4000-8000-000000000001'
+          : demoRole === 'parent'
+          ? 'c1000000-0000-4000-8000-000000000001'
+          : 'b1000000-0000-4000-8000-000000000001';
+
         return {
-          userId: `demo-${demoRole}`,
-          clerkUserId: 'demo-user-id',
+          userId: demoUserId,
+          clerkUserId: `demo-${demoRole}-id`,
           schoolId: DEFAULT_SCHOOL_ID,
           role: demoRole,
           permissions: ROLE_PERMISSIONS[demoRole] || [],
@@ -128,8 +134,8 @@ export async function getAuthContext(): Promise<AuthContext> {
     // In development / demo mode or unit test contexts, fallback to default teacher context
     if (process.env.NODE_ENV !== 'production' || process.env.VITEST || !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
       return {
-        userId: 'demo-teacher',
-        clerkUserId: 'demo-user-id',
+        userId: 'a1000000-0000-4000-8000-000000000001',
+        clerkUserId: 'demo-teacher-id',
         schoolId: DEFAULT_SCHOOL_ID,
         role: 'teacher',
         permissions: ROLE_PERMISSIONS['teacher'],

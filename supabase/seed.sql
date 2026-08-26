@@ -426,9 +426,9 @@ VALUES
 -- 11. CHAT MESSAGES (sample teacher-parent communication)
 -- ════════════════════════════════════════════════════════════════════════════
 
-INSERT INTO chat_messages (student_id, sender_id, sender_role, content, is_context_flag, created_at) VALUES
-  ('b1000000-0000-4000-8000-000000000005', 'c1000000-0000-4000-8000-000000000005', 'parent', 'Kabir has been having trouble sleeping lately. He seems stressed but won''t tell me what''s wrong.', TRUE, '2026-06-10 21:00:00+05:30'),
-  ('b1000000-0000-4000-8000-000000000005', 'a1000000-0000-4000-8000-000000000001', 'teacher', 'Thank you for sharing that. I''ve noticed he''s been withdrawn in class too. His attendance has dropped and he hasn''t submitted homework. Can we schedule a call?', FALSE, '2026-06-11 08:00:00+05:30');
+INSERT INTO chat_messages (school_id, student_id, sender_id, sender_role, content, is_context_flag, created_at) VALUES
+  ('e0000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000005', 'c1000000-0000-4000-8000-000000000005', 'parent', 'Kabir has been having trouble sleeping lately. He seems stressed but won''t tell me what''s wrong.', TRUE, '2026-06-10 21:00:00+05:30'),
+  ('e0000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000005', 'a1000000-0000-4000-8000-000000000001', 'teacher', 'Thank you for sharing that. I''ve noticed he''s been withdrawn in class too. His attendance has dropped and he hasn''t submitted homework. Can we schedule a call?', FALSE, '2026-06-11 08:00:00+05:30');
 
 
 -- ════════════════════════════════════════════════════════════════════════════

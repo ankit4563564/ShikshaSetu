@@ -1,4 +1,4 @@
-﻿-- ============================================================================
+-- ============================================================================
 -- Migration 001: Enums & People
 -- Creates custom types and the core people tables (students, teachers,
 -- guardians) plus the guardian_access M:N join table.
@@ -398,18 +398,20 @@ CREATE INDEX idx_bus_loc_bus_time ON bus_locations (bus_identifier, recorded_at 
 
 CREATE TABLE chat_messages (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id       UUID        NOT NULL REFERENCES schools(id) ON DELETE RESTRICT,
   student_id      UUID        NOT NULL REFERENCES students(id) ON DELETE CASCADE,
   sender_id       UUID        NOT NULL,                    -- references teachers.id OR guardians.id
   sender_role     portal_role NOT NULL CHECK (sender_role IN ('teacher', 'parent')),
   content         TEXT        NOT NULL CHECK (length(content) > 0),
-  is_context_flag BOOLEAN     DEFAULT FALSE,               -- true = parent "heads-up" quick note (PRD Â§16)
+  is_context_flag BOOLEAN     DEFAULT FALSE,               -- true = parent "heads-up" quick note (PRD §16)
   read_at         TIMESTAMPTZ,
   created_at      TIMESTAMPTZ DEFAULT now() NOT NULL
 );
 
-COMMENT ON TABLE chat_messages IS 'Per-student chat thread between teacher and parent (PRD Â§6.4). sender_id is polymorphic, validated by trg_validate_chat_sender.';
-COMMENT ON COLUMN chat_messages.is_context_flag IS 'True for parent quick-notes like "Rahul had a rough morning" (PRD Â§16 two-way context flagging).';
+COMMENT ON TABLE chat_messages IS 'Per-student chat thread between teacher and parent (PRD §6.4). sender_id is polymorphic, validated by trg_validate_chat_sender.';
+COMMENT ON COLUMN chat_messages.is_context_flag IS 'True for parent quick-notes like "Rahul had a rough morning" (PRD §16 two-way context flagging).';
 
+CREATE INDEX idx_chat_school       ON chat_messages (school_id);
 CREATE INDEX idx_chat_student      ON chat_messages (student_id);
 CREATE INDEX idx_chat_student_time ON chat_messages (student_id, created_at DESC);
 CREATE INDEX idx_chat_sender       ON chat_messages (sender_id);

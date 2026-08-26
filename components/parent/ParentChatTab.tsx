@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchChatMessagesAction, sendChatMessageAction, ChatMessageData } from '@/app/actions/chatActions';
 import { draftParentTeacherMessageAction } from '@/app/actions/parentAiActions';
+import { createClient } from '@/lib/supabase/client';
 
 interface ParentChatTabProps {
   studentId: string;
@@ -71,6 +72,58 @@ export function ParentChatTab({
     }
     return () => {
       isMounted = false;
+    };
+  }, [studentId]);
+
+  // Supabase Realtime subscription for incoming chat messages
+  useEffect(() => {
+    if (!studentId) return;
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`parent-chat-${studentId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `student_id=eq.${studentId}`,
+        },
+        (payload: any) => {
+          const rawMessage = payload.new;
+          if (!rawMessage) return;
+
+          const newMsg: ChatMessageData = {
+            id: rawMessage.id,
+            studentId: rawMessage.student_id,
+            senderId: rawMessage.sender_id,
+            senderRole: rawMessage.sender_role as 'teacher' | 'parent',
+            messageText: rawMessage.content,
+            isContextFlag: rawMessage.is_context_flag || false,
+            createdAt: rawMessage.created_at,
+          };
+
+          setMessages((prev) => {
+            if (prev.some((msg) => msg.id === newMsg.id)) return prev;
+
+            const matchedOptimisticIndex = prev.findIndex(
+              (msg) => msg.senderRole === 'parent' && msg.messageText === newMsg.messageText && msg.id.startsWith('temp-')
+            );
+
+            if (matchedOptimisticIndex !== -1) {
+              const updated = [...prev];
+              updated[matchedOptimisticIndex] = newMsg;
+              return updated;
+            }
+
+            return [...prev, newMsg];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
     };
   }, [studentId]);
 
