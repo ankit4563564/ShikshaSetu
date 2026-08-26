@@ -25,7 +25,7 @@ export function ParentBusTrackingTab({
 
   const fetchLocation = async () => {
     try {
-      const loc = await getLiveBusLocationAction('BUS-21', studentId);
+      const loc = await getLiveBusLocationAction(undefined, studentId);
       if (loc) {
         setBusLocation(loc);
         const diffSec = Math.max(0, Math.floor((Date.now() - new Date(loc.last_updated).getTime()) / 1000));

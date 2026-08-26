@@ -99,4 +99,18 @@ describe('Real-Time Live GPS Bus Tracking Tests', () => {
     expect(busRecord?.school_id).toBe(CANONICAL_SCHOOL_ID);
     expect(busRecord?.route_name).toContain('Greenwood');
   });
+
+  it('6. Dynamic Bus Assignment: Parent resolves the exact bus assigned to their child', async () => {
+    // 1. Aarav's parent resolves Aarav's bus (BUS-21)
+    const aaravBus = await getLiveBusLocationAction(undefined, CANONICAL_STUDENT_ID);
+    expect(aaravBus?.bus_identifier).toBe('BUS-21');
+    expect(aaravBus?.driver_name).toBe('Rajesh Kumar');
+    expect(aaravBus?.route_name).toContain('Greenwood');
+
+    // 2. Priya's parent resolves Priya's bus (BUS-002)
+    const priyaBus = await getLiveBusLocationAction(undefined, 'b1000000-0000-4000-8000-000000000002');
+    expect(priyaBus?.bus_identifier).toBe('BUS-002');
+    expect(priyaBus?.driver_name).toBe('Suresh Sharma');
+    expect(priyaBus?.route_name).toContain('Lajpat Nagar');
+  });
 });

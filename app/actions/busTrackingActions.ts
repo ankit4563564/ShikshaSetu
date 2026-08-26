@@ -41,13 +41,27 @@ if (!globalThis.__SHIKSHASETU_LIVE_BUS__) {
       last_updated: new Date().toISOString(),
       status: 'ended',
     },
-    'BUS-001': {
+    'BUS-002': {
       school_id: CANONICAL_SCHOOL_ID,
-      bus_identifier: 'BUS-001',
-      route_name: 'Saket → School Gate #2',
-      driver_name: 'Rajesh Kumar',
-      latitude: 28.5244,
-      longitude: 77.2167,
+      bus_identifier: 'BUS-002',
+      route_name: 'Lajpat Nagar → ShikshaSetu Academy',
+      driver_name: 'Suresh Sharma',
+      latitude: 28.5677,
+      longitude: 77.2433,
+      accuracy_meters: 10,
+      speed_kmh: 0,
+      heading: 0,
+      is_live: false,
+      last_updated: new Date().toISOString(),
+      status: 'ended',
+    },
+    'BUS-003': {
+      school_id: CANONICAL_SCHOOL_ID,
+      bus_identifier: 'BUS-003',
+      route_name: 'Vasant Kunj → ShikshaSetu Academy',
+      driver_name: 'Amit Singh',
+      latitude: 28.5293,
+      longitude: 77.1555,
       accuracy_meters: 10,
       speed_kmh: 0,
       heading: 0,
@@ -131,10 +145,23 @@ export async function endLiveBusTripAction(busIdentifier: string): Promise<{ suc
   return { success: true };
 }
 
+const STUDENT_BUS_MAP: Record<string, { busId: string; routeName: string; driverName: string }> = {
+  [CANONICAL_STUDENT_ID]: { busId: 'BUS-21', routeName: 'Greenwood → ShikshaSetu Academy', driverName: 'Rajesh Kumar' },
+  'b1000000-0000-4000-8000-000000000002': { busId: 'BUS-002', routeName: 'Lajpat Nagar → ShikshaSetu Academy', driverName: 'Suresh Sharma' },
+  'b1000000-0000-4000-8000-000000000003': { busId: 'BUS-003', routeName: 'Vasant Kunj → ShikshaSetu Academy', driverName: 'Amit Singh' },
+};
+
 export async function getLiveBusLocationAction(
-  busIdentifier: string = 'BUS-21',
+  busIdentifier?: string,
   studentId: string = CANONICAL_STUDENT_ID
 ): Promise<LiveBusLocationRecord | null> {
+  const assigned = STUDENT_BUS_MAP[studentId] || {
+    busId: 'BUS-21',
+    routeName: 'Greenwood → ShikshaSetu Academy',
+    driverName: 'Rajesh Kumar',
+  };
+
+  const targetBusId = busIdentifier || assigned.busId;
   let record: LiveBusLocationRecord | null = null;
 
   if (isLiveSupabaseConfigured()) {
@@ -143,7 +170,7 @@ export async function getLiveBusLocationAction(
       const { data, error } = await supabase
         .from('bus_locations')
         .select('*')
-        .eq('bus_identifier', busIdentifier)
+        .eq('bus_identifier', targetBusId)
         .order('recorded_at', { ascending: false })
         .limit(1)
         .single();
@@ -157,8 +184,8 @@ export async function getLiveBusLocationAction(
         record = {
           school_id: CANONICAL_SCHOOL_ID,
           bus_identifier: data.bus_identifier,
-          route_name: 'Greenwood → ShikshaSetu Academy',
-          driver_name: 'Rajesh Kumar',
+          route_name: assigned.routeName,
+          driver_name: assigned.driverName,
           latitude: data.latitude,
           longitude: data.longitude,
           accuracy_meters: data.accuracy || 12,
@@ -174,8 +201,8 @@ export async function getLiveBusLocationAction(
     }
   }
 
-  if (!record && globalThis.__SHIKSHASETU_LIVE_BUS__?.[busIdentifier]) {
-    const raw = globalThis.__SHIKSHASETU_LIVE_BUS__[busIdentifier];
+  if (!record && globalThis.__SHIKSHASETU_LIVE_BUS__?.[targetBusId]) {
+    const raw = globalThis.__SHIKSHASETU_LIVE_BUS__[targetBusId];
     const diffMs = Date.now() - new Date(raw.last_updated).getTime();
     let status: 'live' | 'updating' | 'stale' | 'ended' = raw.status;
 
@@ -187,6 +214,8 @@ export async function getLiveBusLocationAction(
 
     record = {
       ...raw,
+      route_name: assigned.routeName,
+      driver_name: assigned.driverName,
       status,
     };
   }
