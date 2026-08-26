@@ -41,28 +41,27 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const [recipientId, setRecipientId] = useState<string | null>(null);
   const [dbNotifications, setDbNotifications] = useState<DBNotificationData[]>([]);
 
-  const registerStudentIds = (ids: string[]) => {
+  const registerStudentIds = useCallback((ids: string[]) => {
     const uniqueIds = Array.from(new Set(ids));
     setRegisteredStudentIds((prev) => {
       if (JSON.stringify(prev) === JSON.stringify(uniqueIds)) return prev;
       return uniqueIds;
     });
-  };
+  }, []);
 
-  const registerRecipientId = (id: string) => {
-    if (recipientId === id) return;
-    setRecipientId(id);
-  };
+  const registerRecipientId = useCallback((id: string) => {
+    setRecipientId((prev) => (prev === id ? prev : id));
+  }, []);
 
-  const clearNotificationsForStudent = (studentId: string) => {
+  const clearNotificationsForStudent = useCallback((studentId: string) => {
     setNotifications((prev) => prev.filter((n) => n.studentId !== studentId));
-  };
+  }, []);
 
-  const markAllAsRead = async () => {
+  const markAllAsRead = useCallback(async () => {
     if (!recipientId) return;
     setDbNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     await markNotificationsAsReadAction(recipientId);
-  };
+  }, [recipientId]);
 
   const mergeDbNotifications = useCallback((incoming: DBNotificationData[]) => {
     setDbNotifications((prev) => {
@@ -191,21 +190,34 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const unreadCount = dbNotifications.filter((n) => !n.isRead && !n.isArchived).length;
 
-  return (
-    <NotificationContext.Provider
-      value={{
-        notifications,
-        clearNotificationsForStudent,
-        activeChatStudentId,
-        setActiveChatStudentId,
-        registerStudentIds,
+  const contextValue = React.useMemo<NotificationContextType>(
+    () => ({
+      notifications,
+      clearNotificationsForStudent,
+      activeChatStudentId,
+      setActiveChatStudentId,
+      registerStudentIds,
 
-        dbNotifications,
-        unreadCount,
-        registerRecipientId,
-        markAllAsRead,
-      }}
-    >
+      dbNotifications,
+      unreadCount,
+      registerRecipientId,
+      markAllAsRead,
+    }),
+    [
+      notifications,
+      clearNotificationsForStudent,
+      activeChatStudentId,
+      setActiveChatStudentId,
+      registerStudentIds,
+      dbNotifications,
+      unreadCount,
+      registerRecipientId,
+      markAllAsRead,
+    ]
+  );
+
+  return (
+    <NotificationContext.Provider value={contextValue}>
       {children}
     </NotificationContext.Provider>
   );

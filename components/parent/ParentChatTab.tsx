@@ -99,9 +99,7 @@ export function ParentChatTab({
     };
 
     setMessages((prev) => [...prev, optimisticMsg]);
-    setInputText('');
     const flagToSend = isContextFlag;
-    setIsContextFlag(false);
 
     try {
       const result = await sendChatMessageAction({
@@ -114,14 +112,16 @@ export function ParentChatTab({
 
       if (!result.success) {
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
-        setErrorMsg(result.error || 'Failed to send note.');
+        setErrorMsg(result.error || "Couldn't send. Your message is still here.");
       } else if (result.message) {
+        setInputText('');
+        setIsContextFlag(false);
         setMessages((prev) => prev.map((m) => (m.id === tempId ? result.message! : m)));
       }
     } catch (err: any) {
       console.error('[ParentChatTab] Send error:', err);
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
-      setErrorMsg('Network error. Failed to send message.');
+      setErrorMsg("Network error. Couldn't send. Your message is still here.");
     } finally {
       setIsSending(false);
     }
