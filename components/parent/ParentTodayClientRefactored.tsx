@@ -334,358 +334,262 @@ export default function ParentTodayClient({
             </div>
           ) : (
             <div className="space-y-5">
-              {/* Daily Greeting Bar */}
-              <div className="flex items-center justify-between">
-                <span className="font-display text-xs font-bold text-slate-500 uppercase tracking-widest">
-                  {timeGreeting} · Today's Campus Digest
-                </span>
-                <span className="text-xs text-slate-400 font-semibold">
-                  {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-                </span>
+              {/* 1. Header Greeting & Child Identity */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-indigo-600 text-white font-black text-xl flex items-center justify-center shadow-xs">
+                    🏡
+                  </div>
+                  <div>
+                    <h1 className="font-display text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                      {timeGreeting}, {activeStudent?.parentName || 'Sunita'} 👋
+                    </h1>
+                    <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                      {activeStudent?.displayName || 'Aarav Sharma'} &bull; Class {studentGradeStr} &bull; Roll #{(activeStudent as any)?.roll_number || '801'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className={`px-3 py-1 rounded-full text-xs font-extrabold border ${
+                    todayAttendance?.status === 'present'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : 'bg-amber-50 text-amber-800 border-amber-200'
+                  }`}>
+                    {todayAttendance?.status === 'present' ? '✓ In School Today' : '● Attendance In Progress'}
+                  </span>
+                </div>
               </div>
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-7 shadow-lg shadow-indigo-950/20 text-white space-y-4 border border-indigo-900/50"
-              >
-                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
-                <div className="flex items-center justify-between relative z-10">
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className={`h-2.5 w-2.5 rounded-full ${
-                        todayAttendance?.status === 'present'
-                          ? 'bg-emerald-400 animate-ping'
-                          : todayAttendance?.status === 'absent'
-                          ? 'bg-rose-400'
-                          : 'bg-amber-400'
-                      }`}
-                    />
-                    <span className="font-display text-xs font-black text-white/90 uppercase tracking-widest">
-                      {todayAttendance?.status === 'present'
-                        ? `${studentShortName} is at School`
-                        : todayAttendance?.status === 'absent'
-                        ? 'Marked Absent Today'
-                        : todayAttendance?.status === 'late'
-                        ? 'Marked Late Today'
-                        : 'Attendance In Progress'}
+
+              {/* 2. HOW IS AARAV DOING? (Overall Progress Overview) */}
+              <section className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-2xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 font-extrabold block">
+                      ACADEMIC SNAPSHOT
                     </span>
+                    <h2 className="font-display text-base font-black text-slate-900">
+                      How is {studentShortName} doing?
+                    </h2>
+                  </div>
+                  <span className="text-xs font-bold text-slate-500">Class {studentGradeStr}</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Mathematics */}
+                  <div className="p-4 rounded-2xl bg-rose-50/60 border border-rose-200/80 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-extrabold text-xs text-slate-900">Mathematics</span>
+                      <span className="font-mono text-xs font-black text-rose-700 bg-white px-2 py-0.5 rounded border border-rose-200">
+                        58%
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 font-medium">
+                      Equivalent Fractions needs a little more practice this week.
+                    </p>
+                    <span className="text-[10px] font-bold text-rose-700 block">Needs Attention</span>
                   </div>
 
-                  <span className="px-3.5 py-1 rounded-full bg-white/10 text-white font-mono text-xs font-black border border-white/15 backdrop-blur-md">
-                    Class {studentGradeStr}
+                  {/* Science */}
+                  <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-extrabold text-xs text-slate-900">Science</span>
+                      <span className="font-mono text-xs font-black text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
+                        82%
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 font-medium">
+                      Strong grasp of Cell Structure and Plant Nutrition.
+                    </p>
+                    <span className="text-[10px] font-bold text-emerald-700 block">✓ On Track</span>
+                  </div>
+
+                  {/* English */}
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-extrabold text-xs text-slate-900">English</span>
+                      <span className="font-mono text-xs font-black text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                        76%
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 font-medium">
+                      Good comprehension. Active voice exercises completed.
+                    </p>
+                    <span className="text-[10px] font-bold text-slate-600 block">✓ On Track</span>
+                  </div>
+                </div>
+              </section>
+
+              {/* 3. WHAT NEEDS MY ATTENTION? (Actionable Items) */}
+              <section className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-2xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">⚠️</span>
+                    <h2 className="font-display text-base font-black text-slate-900">
+                      What Needs Your Attention
+                    </h2>
+                  </div>
+                  <span className="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                    2 Active Reminders
                   </span>
                 </div>
 
-                <div className="space-y-1.5 relative z-10">
-                  <h2 className="font-display text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight">
-                    {todayAttendance?.status === 'present'
-                      ? `${studentShortName} is in class today.`
-                      : todayAttendance?.status === 'absent'
-                      ? `${studentShortName} is marked absent today.`
-                      : `Welcome, ${activeStudent?.parentName || 'Parent'}.`}
-                  </h2>
-                  <p className="font-body text-xs text-white/80 font-medium">
-                    {pendingHomework.length === 0
-                      ? 'No pending homework due. All assignments are completed! 🎉'
-                      : `${pendingHomework.length} homework task${pendingHomework.length > 1 ? 's' : ''} to complete.`}
-                  </p>
-                </div>
-
-                {/* Status Snapshot Badges */}
-                <div className="flex flex-wrap gap-2.5 pt-1 relative z-10">
-                  <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
-                    <span className="text-emerald-400 font-bold">✓</span>
-                    <span className="text-xs font-bold text-white">
-                      Attendance: {attendancePercentage}%
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
-                    <span>📚</span>
-                    <span className="text-xs font-bold text-white">
-                      {pendingHomework.length} Due
-                    </span>
-                  </div>
-                  {activeGatePass && (
-                    <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-400/20 backdrop-blur-md border border-amber-400/40">
-                      <span>🎫</span>
-                      <span className="text-xs font-bold text-amber-300">
-                        Gate Pass: {activeGatePass.status.toUpperCase()}
-                      </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {/* Upcoming Test Reminder */}
+                  <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/80 space-y-2 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-white text-slate-800 border border-amber-200">
+                          Mathematics Test
+                        </span>
+                        <span className="text-xs font-bold text-amber-800">This Friday &bull; 11:30 AM</span>
+                      </div>
+                      <p className="text-xs text-slate-800 font-bold mt-2">
+                        {studentShortName} should revise: <em>Equivalent Fractions &amp; Linear Terms</em>.
+                      </p>
                     </div>
-                  )}
-                </div>
-              </motion.div>
 
-              {/* ── 2. AI Insight for Your Child Card ── */}
-              <div className="rounded-3xl bg-white/90 border border-indigo-100 p-6 shadow-sm backdrop-blur-xl space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-lg">✨</span>
-                    <h3 className="font-display text-xs font-black uppercase tracking-wider text-slate-900">
-                      AI Daily Digest for {studentShortName}
+                    <button
+                      type="button"
+                      onClick={() => setActiveNav('marks')}
+                      className="self-start text-xs font-extrabold text-amber-900 hover:underline flex items-center gap-1 cursor-pointer pt-1"
+                    >
+                      See Revision Summary &rarr;
+                    </button>
+                  </div>
+
+                  {/* Pending Homework */}
+                  <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-200/80 space-y-2 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-white text-slate-800 border border-indigo-200">
+                          Homework Due
+                        </span>
+                        <span className="text-xs font-bold text-indigo-700">Due Today</span>
+                      </div>
+                      <p className="text-xs text-slate-800 font-bold mt-2">
+                        Algebraic Expressions Worksheet (Mathematics)
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setActiveNav('homework')}
+                      className="self-start text-xs font-extrabold text-indigo-700 hover:underline flex items-center gap-1 cursor-pointer pt-1"
+                    >
+                      View Homework Details &rarr;
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              {/* 4. HOW YOU CAN HELP (PRACTICAL HOME GUIDANCE) */}
+              <section className="bg-gradient-to-r from-indigo-50/80 via-purple-50/40 to-white rounded-3xl p-5 sm:p-6 border border-indigo-200/80 shadow-2xs space-y-3">
+                <div className="flex items-center justify-between border-b border-indigo-100 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">💡</span>
+                    <h3 className="font-display text-sm font-black text-indigo-950 uppercase tracking-wide">
+                      How You Can Help at Home Tonight
                     </h3>
                   </div>
+                  <span className="text-[10px] font-bold text-indigo-700 bg-white px-2.5 py-0.5 rounded-full border border-indigo-200">
+                    5-Min Activity
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs text-slate-700 font-medium leading-relaxed">
+                    {studentShortName} is currently revising <strong>Equivalent Fractions</strong>. Try asking this quick question during dinner or homework time:
+                  </p>
+
+                  <div className="p-3.5 bg-white rounded-2xl border border-indigo-100 shadow-2xs space-y-1">
+                    <span className="text-[10px] font-extrabold uppercase text-indigo-600 block">💬 Question to ask:</span>
+                    <p className="text-xs font-bold text-slate-900 italic">
+                      &quot;Can you explain why 2/4 of a pizza is the exact same amount as 1/2 of a pizza?&quot;
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
                   <button
                     type="button"
-                    onClick={() => activeStudent && loadAiInsights(activeStudent.studentId)}
-                    disabled={isAiLoading}
-                    className="text-xs text-indigo-600 font-extrabold hover:text-indigo-800 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                    onClick={() => setActiveNav('messages')}
+                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-xs transition cursor-pointer"
                   >
-                    <span>🔄</span>
-                    <span>{isAiLoading ? 'Analyzing...' : 'Refresh'}</span>
+                    Message Teacher Ms. Ananya &rarr;
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAIDrawer(true)}
+                    className="px-3.5 py-2 rounded-xl bg-white border border-indigo-200 text-indigo-700 font-bold text-xs hover:bg-indigo-50 transition cursor-pointer"
+                  >
+                    Ask Parent Assistant 💡
+                  </button>
+                </div>
+              </section>
+
+              {/* 5. LIVE BUS TRACKING & ATTENDANCE SNAPSHOT */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Live Bus Tracking Card */}
+                <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-2xs space-y-3 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🚌</span>
+                        <h3 className="font-display text-sm font-black text-slate-900 uppercase tracking-wide">
+                          School Bus
+                        </h3>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-mono text-[10px] font-black">
+                        ● BUS 21 &middot; LIVE
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 font-medium">
+                      Greenwood Route &bull; Driver Rajesh Kumar &bull; Real device GPS active.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveNav('bus')}
+                    className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition cursor-pointer text-center"
+                  >
+                    Track Live Bus Location &rarr;
                   </button>
                 </div>
 
-                {isAiLoading ? (
-                  <div className="space-y-2.5 py-2">
-                    <div className="h-4 bg-slate-100 rounded-xl animate-pulse w-full" />
-                    <div className="h-4 bg-slate-100 rounded-xl animate-pulse w-3/4" />
-                  </div>
-                ) : aiInsight ? (
-                  <div className="space-y-3.5 text-xs">
-                    <p className="font-display text-sm font-black text-slate-900 leading-snug">
-                      {aiInsight.headline}
-                    </p>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200/70 space-y-1.5 shadow-2xs">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 block">
-                          🌟 Current Strengths
-                        </span>
-                        <ul className="text-emerald-950 font-medium space-y-1 list-disc list-inside text-xs">
-                          {aiInsight.strengths.map((s, i) => (
-                            <li key={i}>{s}</li>
-                          ))}
-                        </ul>
+                {/* Attendance Summary */}
+                <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-2xs space-y-3 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">📅</span>
+                        <h3 className="font-display text-sm font-black text-slate-900 uppercase tracking-wide">
+                          Attendance (Class 8A)
+                        </h3>
                       </div>
-
-                      <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/70 space-y-1.5 shadow-2xs">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 block">
-                          🎯 Suggested Focus
-                        </span>
-                        <ul className="text-amber-950 font-medium space-y-1 list-disc list-inside text-xs">
-                          {aiInsight.attentionAreas.map((a, i) => (
-                            <li key={i}>{a}</li>
-                          ))}
-                        </ul>
-                      </div>
+                      <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        {attendancePercentage}% Present
+                      </span>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-indigo-50/80 border border-indigo-100 flex items-start gap-3 shadow-2xs">
-                      <span className="text-lg shrink-0">💡</span>
-                      <div>
-                        <span className="font-black text-indigo-950 block text-xs">Recommended for Tonight:</span>
-                        <p className="text-indigo-900/90 font-medium text-xs mt-0.5 leading-relaxed">{aiInsight.recommendedAction}</p>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-
-              {/* ── 3. Important Today (Actionable Alerts) ── */}
-              <div className="space-y-3">
-                <h3 className="font-display text-xs font-extrabold uppercase tracking-widest text-deep-teal/50 px-1">
-                  Important Today
-                </h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Action 1: Homework alert */}
-                  {homeworkDueTodayOrTomorrow.length > 0 ? (
-                    <div className="rounded-2xl bg-amber-50/80 border border-amber-200 p-4 shadow-2xs space-y-2 flex flex-col justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 text-amber-800 font-bold text-xs">
-                          <span>📝</span>
-                          <span>Homework Due Soon</span>
-                        </div>
-                        <p className="text-xs text-amber-900 font-semibold">
-                          {homeworkDueTodayOrTomorrow[0].title} ({homeworkDueTodayOrTomorrow[0].subject})
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => setActiveNav('homework')}
-                        className="self-start text-xs font-bold text-amber-900 hover:underline flex items-center gap-1"
-                      >
-                        Review assignment details →
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="rounded-2xl bg-emerald-50/80 border border-emerald-200 p-4 shadow-2xs space-y-1">
-                      <div className="flex items-center gap-1.5 text-emerald-800 font-bold text-xs">
-                        <span>✓</span>
-                        <span>Homework Up to Date</span>
-                      </div>
-                      <p className="text-xs text-emerald-700">
-                        No urgent assignment deadlines pending today.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Action 2: Gate Pass / Attendance alert */}
-                  {isAttendanceLow ? (
-                    <div className="rounded-2xl bg-rose-50/80 border border-rose-200 p-4 shadow-2xs space-y-2 flex flex-col justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 text-rose-800 font-bold text-xs">
-                          <span>⚠</span>
-                          <span>Attendance Warning</span>
-                        </div>
-                        <p className="text-xs text-rose-900 font-medium">
-                          Attendance is currently {attendancePercentage}%, which is below the 75% target.
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => setActiveNav('attendance')}
-                        className="self-start text-xs font-bold text-rose-900 hover:underline flex items-center gap-1"
-                      >
-                        View attendance log →
-                      </button>
-                    </div>
-                  ) : activeGatePass ? (
-                    <div className="rounded-2xl bg-blue-50/80 border border-blue-200 p-4 shadow-2xs space-y-2 flex flex-col justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 text-blue-800 font-bold text-xs">
-                          <span>🎫</span>
-                          <span>Active Gate Pass</span>
-                        </div>
-                        <p className="text-xs text-blue-900 font-medium">
-                          {activeGatePass.status === 'approved'
-                            ? `Pass #${activeGatePass.pass_code} ready for gate verification.`
-                            : `Pass request is currently ${activeGatePass.status}.`}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => setActiveNav('gate')}
-                        className="self-start text-xs font-bold text-blue-900 hover:underline flex items-center gap-1"
-                      >
-                        View Gate Pass QR →
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="rounded-2xl bg-amber-50/80 border border-amber-200 p-4 shadow-2xs space-y-2 flex flex-col justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-amber-900 font-bold text-xs">
-                          <div className="flex items-center gap-1.5">
-                            <span>🚌</span>
-                            <span>Live School Bus</span>
-                          </div>
-                          <span className="px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 font-mono text-[10px] font-black">
-                            BUS 21
-                          </span>
-                        </div>
-                        <p className="text-xs text-amber-800 font-medium">
-                          Greenwood Route &middot; Driver Rajesh Kumar &middot; Real-time GPS enabled
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setActiveNav('bus')}
-                        className="self-start text-xs font-black text-amber-900 hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        Track Bus Location &rarr;
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* ── 4. Today's Timeline ── */}
-              <div className="bg-white rounded-3xl border border-deep-teal/10 p-5 shadow-xs space-y-4">
-                <div className="flex items-center justify-between border-b border-deep-teal/5 pb-2">
-                  <div>
-                    <h3 className="font-display text-sm font-extrabold text-deep-teal">
-                      Today's Timeline
-                    </h3>
-                    <p className="font-body text-[11px] text-deep-teal/50">
-                      School schedule and events in order
+                    <p className="text-xs text-slate-600 font-medium">
+                      Present: 46 days &bull; Absent: 4 days &bull; 12-day continuous streak.
                     </p>
                   </div>
-                </div>
 
-                <div className="space-y-3">
-                  {/* Event 1: Morning Check-in */}
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
-                        todayAttendance
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-deep-teal/5 text-deep-teal/40'
-                      }`}
-                    >
-                      {todayAttendance ? '✓' : '🏫'}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="font-display text-xs font-bold text-deep-teal">
-                          Morning Attendance
-                        </p>
-                        <span className="text-[10px] font-bold text-deep-teal/40">
-                          08:30 AM
-                        </span>
-                      </div>
-                      <p className="text-xs text-deep-teal/60">
-                        {todayAttendance
-                          ? `Marked ${todayAttendance.status.toUpperCase()} in Class ${studentGradeStr}`
-                          : 'Awaiting teacher attendance roll call'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Event 2: Homework Status */}
-                  <div className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-                      📚
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="font-display text-xs font-bold text-deep-teal">
-                          Homework &amp; Practice
-                        </p>
-                        <span className="text-[10px] font-bold text-deep-teal/40">
-                          Active
-                        </span>
-                      </div>
-                      <p className="text-xs text-deep-teal/60">
-                        {pendingHomework.length > 0
-                          ? `${pendingHomework.length} task${pendingHomework.length > 1 ? 's' : ''} to complete`
-                          : 'All homework submitted for this week'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Event 3: Gate / Dismissal Status */}
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
-                        activeGatePass?.status === 'used'
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : activeGatePass?.status === 'approved'
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-deep-teal/5 text-deep-teal/40'
-                      }`}
-                    >
-                      🔔
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="font-display text-xs font-bold text-deep-teal">
-                          School Dismissal
-                        </p>
-                        <span className="text-[10px] font-bold text-deep-teal/40">
-                          03:15 PM
-                        </span>
-                      </div>
-                      <p className="text-xs text-deep-teal/60">
-                        {activeGatePass?.status === 'used'
-                          ? `Picked up at school gate at ${activeGatePass.used_at || '3:42 PM'}`
-                          : activeGatePass?.status === 'approved'
-                          ? `Approved early pickup pass ready: #${activeGatePass.pass_code}`
-                          : 'Standard afternoon school dismissal at 03:15 PM'}
-                      </p>
-                    </div>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveNav('attendance')}
+                    className="w-full py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 font-bold text-xs shadow-2xs transition cursor-pointer text-center"
+                  >
+                    View Attendance Calendar &rarr;
+                  </button>
                 </div>
               </div>
 
-              {/* ── 5. Quick Modules Grid ── */}
+              {/* 6. Quick Modules Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <button
                   onClick={() => setActiveNav('marks')}
