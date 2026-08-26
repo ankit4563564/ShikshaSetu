@@ -11,6 +11,7 @@ import AdminRewardsPanel from '@/components/rewards/AdminRewardsPanel';
 import NotificationBell from '@/components/shared/NotificationBell';
 import { PrincipalCopilotStrip } from '@/components/copilot/PrincipalCopilotStrip';
 import { useNotifications } from '@/components/shared/NotificationContext';
+import AdminSchoolDataTab from './AdminSchoolDataTab';
 import type { AdminOpsInsight } from '@/lib/product-intelligence';
 import {
   ADMIN_ACTIVITY_FEED,
@@ -129,7 +130,7 @@ export default function AdminDashboardClient({
 }: AdminDashboardClientProps) {
   const router = useRouter();
   const { registerRecipientId } = useNotifications();
-  const [activeTab, setActiveTab] = useState<'overview' | 'logistics' | 'security' | 'rewards'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'data' | 'logistics' | 'security' | 'rewards'>('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -260,6 +261,7 @@ export default function AdminDashboardClient({
 
   const sidebarLinks = [
     { label: 'Dashboard', icon: Icon.LayoutDashboard, tab: 'overview' as const },
+    { label: 'School Data', icon: Icon.Users, tab: 'data' as const },
     { label: 'Logistics', icon: Icon.Truck, tab: 'logistics' as const },
     { label: 'Security', icon: Icon.Shield, tab: 'security' as const },
     { label: 'Rewards', icon: Icon.Coins, tab: 'rewards' as const },
@@ -702,6 +704,15 @@ export default function AdminDashboardClient({
                   </div>
                 </div>
               </motion.section>
+            </motion.div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════
+              SCHOOL DATA TAB — Canonical Registry Management
+              ═══════════════════════════════════════════════════════ */}
+          {activeTab === 'data' && (
+            <motion.div variants={staggerContainer} className="space-y-6">
+              <AdminSchoolDataTab />
             </motion.div>
           )}
 
