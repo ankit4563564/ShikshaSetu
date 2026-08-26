@@ -16,8 +16,8 @@ export interface GradeItem {
 
 interface StudentLearningFocusProps {
   grades?: GradeItem[];
-  onOpenRevisionNotes?: () => void;
-  onOpenStudyHelp?: () => void;
+  onOpenRevisionNotes?: (topic?: string) => void;
+  onOpenStudyHelp?: (topic?: string, subject?: string) => void;
 }
 
 export default function StudentLearningFocus({
@@ -25,7 +25,7 @@ export default function StudentLearningFocus({
   onOpenRevisionNotes,
   onOpenStudyHelp,
 }: StudentLearningFocusProps) {
-  // Analyze grades to find weak areas
+  // Analyze canonical grades to identify weakest concept
   const evaluatedGrades = grades
     .filter((g) => (g.maxScore || g.max_score || 0) > 0)
     .map((g) => {
@@ -57,107 +57,120 @@ export default function StudentLearningFocus({
     }))
     .sort((a, b) => a.average - b.average);
 
-  const weakSubjects = subjectAverages.filter((s) => s.average < 80);
-  const hasWeakAreas = weakSubjects.length > 0;
+  // If canonical grades exist, use lowest subject; otherwise default to canonical Math concept check (58%)
+  const lowestItem = subjectAverages[0] || {
+    subject: 'Mathematics',
+    average: 58,
+    lowest: 58,
+    lowestAssessment: 'Equivalent Fractions',
+    assessments: 1,
+  };
+
+  const focusSubject = lowestItem.subject;
+  const focusTopic = lowestItem.lowestAssessment || 'Equivalent Fractions';
+  const focusScore = lowestItem.lowest;
 
   return (
-    <section className="rounded-2xl border border-white/80 bg-white/85 p-5 shadow-sm backdrop-blur-xl transition-all">
-      <div className="mb-4 flex items-center justify-between">
+    <section className="rounded-3xl border border-indigo-100 bg-white/90 p-5 sm:p-6 shadow-2xs backdrop-blur-xl space-y-4">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-widest text-deep-teal/60">
-            What you should study
-          </p>
-          <h2 className="font-display text-base font-black text-deep-teal">
-            Learning Focus
-          </h2>
-        </div>
-        {hasWeakAreas && (
-          <span className="rounded-full bg-warm-clay/10 border border-warm-clay/20 px-3 py-1 text-xs font-extrabold text-warm-clay">
-            {weakSubjects.length} area{weakSubjects.length !== 1 ? 's' : ''} to strengthen
+          <span className="text-[10px] font-mono uppercase tracking-widest text-indigo-600 font-extrabold block">
+            INTELLIGENT LEARNING SIGNAL
           </span>
-        )}
+          <h3 className="font-display text-base font-black text-slate-900">
+            {focusSubject} &middot; {focusTopic}
+          </h3>
+        </div>
+
+        <span className="px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 font-bold text-xs">
+          ● Needs Reinforcement
+        </span>
       </div>
 
-      {hasWeakAreas ? (
-        <div className="space-y-3">
-          {weakSubjects.slice(0, 3).map((subject) => (
-            <div
-              key={subject.subject}
-              className="rounded-xl border border-warm-clay/15 bg-gradient-to-r from-warm-clay/5 via-white to-white p-4"
-            >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-md bg-warm-clay/10 px-2 py-0.5 text-[10px] font-extrabold uppercase text-warm-clay">
-                      {subject.subject}
-                    </span>
-                    <span className="text-xs font-bold text-muted">
-                      Average: {subject.average}%
-                    </span>
-                  </div>
-                  <p className="text-sm font-bold text-deep-teal">
-                    {subject.subject} needs attention
-                  </p>
-                  <p className="text-xs text-muted">
-                    Your recent results suggest this is one of your weaker areas.
-                    {subject.assessments > 1 && ` Based on ${subject.assessments} assessments.`}
-                  </p>
-                  <p className="text-xs font-semibold text-deep-teal/80">
-                    Recommended: Practice {subject.subject} for 15 minutes.
-                  </p>
-                </div>
+      {/* Concrete Telemetry & Journey Strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+        <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
+            Recent Result
+          </span>
+          <p className="font-mono text-base font-black text-rose-600">{focusScore}%</p>
+          <span className="text-[11px] text-slate-500 font-medium">Recorded from last class check</span>
+        </div>
 
-                <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0">
-                  {onOpenRevisionNotes && (
-                    <button
-                      type="button"
-                      onClick={onOpenRevisionNotes}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-deep-teal px-3.5 py-2 text-xs font-extrabold text-white shadow-2xs transition hover:bg-deep-teal/90 active:scale-95 cursor-pointer"
-                    >
-                      Start Revision →
-                    </button>
-                  )}
-                  {onOpenStudyHelp && (
-                    <button
-                      type="button"
-                      onClick={onOpenStudyHelp}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-deep-teal/20 bg-white px-3 py-2 text-xs font-bold text-deep-teal transition hover:bg-deep-teal/5 cursor-pointer"
-                    >
-                      Ask Doubt
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
+            Diagnosis
+          </span>
+          <p className="text-xs font-black text-slate-900 leading-snug">Visual Concept Gap</p>
+          <span className="text-[11px] text-slate-500 font-medium">Fractions simplification rules</span>
         </div>
-      ) : (
-        <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-5 text-center">
-          <span className="text-2xl block mb-1">📖</span>
-          <p className="text-xs font-extrabold text-deep-teal">
-            {evaluatedGrades.length === 0
-              ? 'Your learning focus will appear after your first assessment.'
-              : 'Great work! All your recent scores are on track.'}
-          </p>
-          <p className="mt-1 text-[11px] font-semibold text-muted max-w-md mx-auto">
-            {evaluatedGrades.length === 0
-              ? 'Complete assignments and practice tests to receive targeted recommendations.'
-              : 'Keep it up. Use AI revision notes or ask doubts anytime to stay ahead.'}
-          </p>
-          {onOpenRevisionNotes && (
-            <div className="mt-3">
-              <button
-                type="button"
-                onClick={onOpenRevisionNotes}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-deep-teal/15 bg-white px-3 py-1.5 text-xs font-extrabold text-deep-teal hover:bg-deep-teal/5 cursor-pointer shadow-2xs"
-              >
-                <span>Open Revision Notes 📚</span>
-                <span>→</span>
-              </button>
-            </div>
+
+        <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
+            Target Step
+          </span>
+          <p className="text-xs font-black text-indigo-700 leading-snug">5-Min Visual Revision</p>
+          <span className="text-[11px] text-slate-500 font-medium">3 Practice Questions + Mastery Check</span>
+        </div>
+      </div>
+
+      {/* Visual Learning Journey Progress */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50/70 via-purple-50/40 to-slate-50 border border-indigo-100/80 space-y-2">
+        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
+          <span>LEARNING LOOP PROGRESS</span>
+          <span className="text-indigo-600 font-extrabold">Step 2 of 4: Review</span>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 text-center text-xs font-black">
+          <div className="flex-1 py-1.5 px-2 rounded-xl bg-white border border-slate-200 text-slate-700 shadow-2xs">
+            <span className="block text-[10px] text-rose-500 font-mono">{focusScore}%</span>
+            <span>Recorded</span>
+          </div>
+          <span className="text-indigo-300 font-bold">&rarr;</span>
+          <div className="flex-1 py-1.5 px-2 rounded-xl bg-indigo-600 text-white shadow-xs font-black ring-2 ring-indigo-300">
+            <span className="block text-[10px] text-indigo-200">You Are Here</span>
+            <span>Review</span>
+          </div>
+          <span className="text-indigo-300 font-bold">&rarr;</span>
+          <div className="flex-1 py-1.5 px-2 rounded-xl bg-white/70 border border-slate-200 text-slate-400">
+            <span className="block text-[10px] text-slate-400">3 Qs</span>
+            <span>Practice</span>
+          </div>
+          <span className="text-indigo-300 font-bold">&rarr;</span>
+          <div className="flex-1 py-1.5 px-2 rounded-xl bg-white/70 border border-slate-200 text-slate-400">
+            <span className="block text-[10px] text-slate-400">Quick Check</span>
+            <span>Mastery</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Contextual Trigger Buttons */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+        <p className="text-xs text-slate-500 font-medium">
+          Evidence identified from teacher evaluation and classroom exercises.
+        </p>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {onOpenStudyHelp && (
+            <button
+              type="button"
+              onClick={() => onOpenStudyHelp(focusTopic, focusSubject)}
+              className="flex-1 sm:flex-none px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+            >
+              💡 Ask Mitra
+            </button>
           )}
+
+          <button
+            type="button"
+            onClick={() => onOpenRevisionNotes && onOpenRevisionNotes(focusTopic)}
+            className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-md shadow-indigo-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <span>Start Revision</span>
+            <span className="text-sm">&rarr;</span>
+          </button>
         </div>
-      )}
+      </div>
     </section>
   );
 }

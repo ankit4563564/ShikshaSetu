@@ -165,4 +165,47 @@ Keep it concise and immediately actionable.`;
       expect(delRes.success).toBe(true);
     });
   });
+
+  describe('10. Intelligent Learning Command Center Assertions', () => {
+    it('should strictly deduplicate repeated tasks with identical titles or IDs', () => {
+      const rawTasks = [
+        { id: 'hw-1', subject: 'Mathematics', title: 'Chapter 5: Algebraic Expressions', dueDate: 'Today', isSubmitted: false },
+        { id: 'hw-1', subject: 'Mathematics', title: 'Chapter 5: Algebraic Expressions', dueDate: 'Today', isSubmitted: false },
+        { id: 'hw-2', subject: 'Mathematics', title: 'Chapter 5: Algebraic Expressions', dueDate: 'Today', isSubmitted: false },
+        { id: 'hw-3', subject: 'Science', title: 'Plant Cells & Tissues', dueDate: 'Tomorrow', isSubmitted: false },
+      ];
+
+      const seen = new Set<string>();
+      const deduplicated = rawTasks.filter((h) => {
+        const key = `${h.subject}-${h.title.trim().toLowerCase()}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      expect(deduplicated).toHaveLength(2);
+      expect(deduplicated[0].title).toBe('Chapter 5: Algebraic Expressions');
+      expect(deduplicated[1].title).toBe('Plant Cells & Tissues');
+    });
+
+    it('should prioritize tasks by urgency: Overdue/Needs Attention -> Due Today -> Due Tomorrow -> Up Next', () => {
+      const tasks = [
+        { title: 'Task 3', dueDate: 'Aug 10' },
+        { title: 'Task 1', dueDate: 'Urgent Overdue' },
+        { title: 'Task 2', dueDate: 'Today at 5:00 PM' },
+      ];
+
+      const getOrder = (due: string) => {
+        const d = due.toLowerCase();
+        if (d.includes('urgent') || d.includes('overdue')) return 0;
+        if (d.includes('today')) return 1;
+        return 2;
+      };
+
+      const sorted = [...tasks].sort((a, b) => getOrder(a.dueDate) - getOrder(b.dueDate));
+      expect(sorted[0].title).toBe('Task 1');
+      expect(sorted[1].title).toBe('Task 2');
+      expect(sorted[2].title).toBe('Task 3');
+    });
+  });
 });

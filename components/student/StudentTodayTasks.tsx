@@ -18,7 +18,7 @@ interface StudentTodayTasksProps {
   homework: HomeworkItem[];
   onOpenHomeworkTab?: () => void;
   onOpenRevisionNotes?: () => void;
-  onOpenStudyHelp?: (hwTitle?: string) => void;
+  onOpenStudyHelp?: (hwTitle?: string, subject?: string) => void;
 }
 
 export default function StudentTodayTasks({
@@ -27,86 +27,109 @@ export default function StudentTodayTasks({
   onOpenRevisionNotes,
   onOpenStudyHelp,
 }: StudentTodayTasksProps) {
-  // Filter only pending items
-  const pendingTasks = (homework || []).filter(
-    (hw) => !hw.isSubmitted && !hw.is_submitted
-  );
+  // Deduplicate and filter only pending items
+  const seenKeys = new Set<string>();
+  const pendingTasks = (homework || []).filter((hw) => {
+    if (!hw || hw.isSubmitted || hw.is_submitted) return false;
+    const normalizedTitle = (hw.title || '').trim().toLowerCase();
+    const key = hw.id || `${hw.subject}-${normalizedTitle}`;
+    if (seenKeys.has(key)) return false;
+    seenKeys.add(key);
+    return true;
+  });
 
-  // Helper to categorize urgency
-  const getUrgency = (hw: HomeworkItem): { level: 'today' | 'tomorrow' | 'upcoming'; label: string; dotColor: string; badgeClass: string } => {
+  // Helper to categorize urgency and priority
+  const getUrgency = (hw: HomeworkItem): {
+    priorityOrder: number;
+    level: 'needs_attention' | 'due_today' | 'recommended' | 'up_next';
+    label: string;
+    dotColor: string;
+    badgeClass: string;
+  } => {
     const rawDue = (hw.dueDate || hw.due_date || '').toLowerCase();
-    if (rawDue.includes('today') || rawDue.includes('4:') || rawDue.includes('5:') || rawDue.includes('urgent')) {
+    if (rawDue.includes('urgent') || rawDue.includes('overdue')) {
       return {
-        level: 'today',
-        label: 'Due today',
+        priorityOrder: 0,
+        level: 'needs_attention',
+        label: 'NEEDS ATTENTION',
         dotColor: 'bg-rose-500',
-        badgeClass: 'bg-rose-50 text-rose-700 border-rose-200/60',
+        badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 font-bold',
+      };
+    }
+    if (rawDue.includes('today') || rawDue.includes('4:') || rawDue.includes('5:')) {
+      return {
+        priorityOrder: 1,
+        level: 'due_today',
+        label: 'DUE TODAY',
+        dotColor: 'bg-amber-500',
+        badgeClass: 'bg-amber-50 text-amber-800 border-amber-200 font-bold',
       };
     }
     if (rawDue.includes('tomorrow')) {
       return {
-        level: 'tomorrow',
-        label: 'Due tomorrow',
-        dotColor: 'bg-amber-500',
-        badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/60',
+        priorityOrder: 2,
+        level: 'recommended',
+        label: 'DUE TOMORROW',
+        dotColor: 'bg-indigo-500',
+        badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200 font-bold',
       };
     }
     return {
-      level: 'upcoming',
-      label: hw.dueDate || hw.due_date ? `Due ${hw.dueDate || hw.due_date}` : 'Pending',
+      priorityOrder: 3,
+      level: 'up_next',
+      label: hw.dueDate || hw.due_date ? `Due ${hw.dueDate || hw.due_date}` : 'UP NEXT',
       dotColor: 'bg-teal-600',
-      badgeClass: 'bg-teal-50 text-teal-700 border-teal-200/60',
+      badgeClass: 'bg-slate-50 text-slate-700 border-slate-200 font-semibold',
     };
   };
 
-  // Sort by urgency: 'today' first, then 'tomorrow', then 'upcoming'
+  // Sort by priority order
   const sortedTasks = [...pendingTasks].sort((a, b) => {
-    const order = { today: 0, tomorrow: 1, upcoming: 2 };
-    return order[getUrgency(a).level] - order[getUrgency(b).level];
+    return getUrgency(a).priorityOrder - getUrgency(b).priorityOrder;
   });
 
   return (
-    <section className="rounded-2xl border border-white/80 bg-white/85 p-5 shadow-sm backdrop-blur-xl transition-all">
+    <section className="rounded-2xl border border-slate-200/80 bg-white/90 p-5 sm:p-6 shadow-2xs backdrop-blur-xl transition-all">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-widest text-deep-teal/60">
-            Priority 1 · What you need to do
+          <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">
+            ACTIONABLE WORK &middot; PRIORITIZED FOR YOU
           </p>
-          <h2 className="font-display text-base font-black text-deep-teal">
+          <h2 className="font-display text-base font-black text-slate-900">
             Today&apos;s Actions
           </h2>
         </div>
         <div className="flex items-center gap-2">
           <span
-            className={`rounded-full px-3 py-1 text-xs font-extrabold ${
+            className={`rounded-full px-3 py-1 text-xs font-black ${
               sortedTasks.length > 0
-                ? 'bg-amber-50 text-amber-800 border border-amber-200/80'
-                : 'bg-sage/15 text-sage'
+                ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
             }`}
           >
             {sortedTasks.length === 0
-              ? 'All clear'
-              : `${sortedTasks.length} task${sortedTasks.length === 1 ? '' : 's'} to finish`}
+              ? '✓ All clear'
+              : `${sortedTasks.length} task${sortedTasks.length === 1 ? '' : 's'} remaining`}
           </span>
         </div>
       </div>
 
       {sortedTasks.length === 0 ? (
-        <div className="rounded-xl border border-sage/20 bg-sage/5 p-6 text-center">
+        <div className="rounded-2xl border border-emerald-200/60 bg-emerald-50/50 p-6 text-center">
           <span className="text-3xl block mb-2">🎉</span>
-          <p className="text-sm font-extrabold text-deep-teal">You&apos;re all caught up!</p>
-          <p className="mt-1 text-xs font-semibold text-muted">
-            No pending homework for today. Great job keeping your work up to date.
+          <p className="text-sm font-extrabold text-emerald-950">You&apos;re all caught up!</p>
+          <p className="mt-1 text-xs font-semibold text-emerald-800/80">
+            No pending homework assignments today. Use this time for a quick 5-min concept revision.
           </p>
         </div>
       ) : (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {sortedTasks.map((task, idx) => {
             const urgency = getUrgency(task);
             return (
               <div
-                key={task.id || `task-${idx}`}
-                className="group flex flex-col gap-3 rounded-xl border border-slate-100 bg-white p-3.5 transition hover:border-deep-teal/25 hover:shadow-xs sm:flex-row sm:items-center sm:justify-between"
+                key={task.id || `task-${idx}-${task.subject}-${task.title}`}
+                className="group flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 transition hover:border-indigo-300 hover:shadow-xs sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex items-start gap-3">
                   <span
@@ -115,16 +138,16 @@ export default function StudentTodayTasks({
                   />
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-deep-teal">
+                      <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-800">
                         {task.subject}
                       </span>
                       <span
-                        className={`rounded-md border px-2 py-0.5 text-[10px] font-bold ${urgency.badgeClass}`}
+                        className={`rounded-md border px-2 py-0.5 text-[10px] ${urgency.badgeClass}`}
                       >
                         {urgency.label}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm font-extrabold text-deep-teal leading-snug">
+                    <p className="mt-1 text-sm font-extrabold text-slate-900 leading-snug">
                       {task.title}
                     </p>
                   </div>
@@ -134,20 +157,20 @@ export default function StudentTodayTasks({
                   {onOpenStudyHelp && (
                     <button
                       type="button"
-                      onClick={() => onOpenStudyHelp(task.title)}
-                      className="inline-flex items-center gap-1 rounded-xl border border-deep-teal/20 bg-white px-3 py-1.5 text-xs font-bold text-deep-teal transition hover:bg-deep-teal/5 cursor-pointer shadow-2xs"
+                      onClick={() => onOpenStudyHelp(task.title, task.subject)}
+                      className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50 hover:text-indigo-600 cursor-pointer shadow-2xs"
                       title="Ask SchoolMitra for guidance on this assignment"
                     >
-                      <span>💡 Hint</span>
+                      <span>💡 Explain Task</span>
                     </button>
                   )}
                   <button
                     type="button"
                     onClick={onOpenHomeworkTab}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-deep-teal px-3.5 py-1.5 text-xs font-extrabold text-white shadow-2xs transition hover:bg-deep-teal/90 active:scale-95 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-1.5 text-xs font-extrabold text-white shadow-2xs transition hover:bg-slate-800 active:scale-95 cursor-pointer"
                   >
-                    {urgency.level === 'today' ? 'Submit' : 'Open'}
-                    <span className="text-[11px]">→</span>
+                    <span>{urgency.level === 'due_today' ? 'Submit' : 'Open'}</span>
+                    <span className="text-[11px]">&rarr;</span>
                   </button>
                 </div>
               </div>
