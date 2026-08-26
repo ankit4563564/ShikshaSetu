@@ -22,7 +22,7 @@ export function EcosystemHero() {
             </h1>
 
             <p className="text-base sm:text-[17px] text-[#102A43]/80 font-normal leading-relaxed max-w-md mx-auto lg:mx-0">
-              ShikshaSetu connects teachers, students, and parents around one live journey to decide what to do next.
+              ShikshaSetu connects teachers, students and parents around one learner — turning everyday school data into meaningful actions for better learning.
             </p>
 
             {/* CTAs */}

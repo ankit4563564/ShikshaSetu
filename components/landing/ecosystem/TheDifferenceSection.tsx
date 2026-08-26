@@ -5,120 +5,90 @@ import React from 'react';
 export function TheDifferenceSection() {
   return (
     <section id="the-difference" className="py-14 md:py-18 bg-[#FFF9F0] border-b border-[#102A43]/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         {/* Section Heading */}
-        <div className="text-left">
-          <h2 className="font-display text-2xl sm:text-3xl font-black text-[#102A43] tracking-tight uppercase">
-            NOT JUST AN ERP
+        <div className="text-left space-y-2 max-w-3xl">
+          <span className="font-mono text-xs font-bold text-[#2563EB] tracking-widest uppercase block">
+            DIFFERENTIATION
+          </span>
+          <h2 className="font-display text-3xl sm:text-4xl font-black text-[#102A43] tracking-tight uppercase">
+            NOT JUST AN ERP.
           </h2>
+          <p className="text-base sm:text-lg text-[#102A43]/80 font-normal">
+            From recording what happened to deciding what happens next.
+          </p>
         </div>
 
-        {/* Visual Funnel Diagram */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-white border border-[#102A43]/10 shadow-[0_8px_30px_rgba(16,42,67,0.06)] space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            {/* Left: Traditional ERP Silos */}
-            <div className="lg:col-span-4 space-y-3">
-              <span className="font-display text-sm font-bold text-[#102A43] block">
-                Traditional ERP
+        {/* Visual Comparison Funnel */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+          {/* Left Box: Traditional ERP */}
+          <div className="p-6 sm:p-8 rounded-2xl bg-white border border-[#102A43]/10 shadow-[0_4px_20px_rgba(16,42,67,0.05)] space-y-6 flex flex-col justify-between">
+            <div className="space-y-4">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 block">
+                TRADITIONAL SCHOOL ERP
               </span>
 
-              <div className="space-y-2.5 relative">
-                {/* Silo 1: Attendance */}
-                <div className="p-3.5 rounded-xl bg-white border border-[#102A43]/15 shadow-2xs flex items-center justify-between relative overflow-hidden">
-                  <div className="space-y-0.5">
-                    <h4 className="font-display text-xs font-bold text-[#102A43]">Attendance</h4>
-                    <p className="text-[11px] text-[#102A43]/65">Paper based, weekly</p>
-                  </div>
-                  <div className="w-8 h-2 bg-[#2563EB] rounded-r -mr-3.5" />
+              <div className="space-y-2 text-sm text-[#102A43]/80 font-medium">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                  📋 Attendance, Marks, Homework, Reports
                 </div>
-
-                {/* Silo 2: Marks & Exams */}
-                <div className="p-3.5 rounded-xl bg-white border border-[#102A43]/15 shadow-2xs flex items-center justify-between relative overflow-hidden">
-                  <div className="space-y-0.5">
-                    <h4 className="font-display text-xs font-bold text-[#102A43]">Marks &amp; Exams</h4>
-                    <p className="text-[11px] text-[#102A43]/65">Separate spreadsheet, lost data</p>
-                  </div>
-                  <div className="w-8 h-2 bg-[#F59E0B] rounded-r -mr-3.5" />
+                <div className="text-center font-bold text-slate-400">↓</div>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center font-bold text-slate-700">
+                  RECORD
                 </div>
-
-                {/* Silo 3: Homework Hub */}
-                <div className="p-3.5 rounded-xl bg-white border border-[#102A43]/15 shadow-2xs flex items-center justify-between relative overflow-hidden">
-                  <div className="space-y-0.5">
-                    <h4 className="font-display text-xs font-bold text-[#102A43]">Homework Hub</h4>
-                    <p className="text-[11px] text-[#102A43]/65">Static assignments, no feedback</p>
-                  </div>
-                  <div className="w-8 h-2 bg-[#2563EB] rounded-r -mr-3.5" />
+                <div className="text-center font-bold text-slate-400">↓</div>
+                <div className="p-3 rounded-xl bg-slate-100 border border-slate-300 text-center font-bold text-slate-800">
+                  DASHBOARD
                 </div>
               </div>
             </div>
 
-            {/* Middle: Convergence Arrow Graphic */}
-            <div className="hidden lg:flex lg:col-span-1 items-center justify-center">
-              <svg width="48" height="80" viewBox="0 0 48 80" fill="none" className="text-[#2563EB]">
-                <path d="M0 15 C 24 15, 24 40, 44 40" stroke="#2563EB" strokeWidth="3" fill="none" strokeLinecap="round" />
-                <path d="M0 40 L 44 40" stroke="#F59E0B" strokeWidth="3" fill="none" strokeLinecap="round" />
-                <path d="M0 65 C 24 65, 24 40, 44 40" stroke="#2563EB" strokeWidth="3" fill="none" strokeLinecap="round" />
-                <polygon points="40,35 48,40 40,45" fill="#2563EB" />
-              </svg>
-            </div>
+            <p className="text-xs text-slate-500 italic pt-2 border-t border-slate-100">
+              Digitizes past records, but leaves next actions up to manual guesswork.
+            </p>
+          </div>
 
-            {/* Right: ShikshaSetu Connected Ecosystem */}
-            <div className="lg:col-span-7 space-y-3">
-              <span className="font-display text-sm font-bold text-[#102A43] block">
-                ShikshaSetu - The Connected Learning Ecosystem
+          {/* Right Box: ShikshaSetu */}
+          <div className="p-6 sm:p-8 rounded-2xl bg-white border-2 border-[#2563EB] shadow-[0_8px_30px_rgba(37,99,235,0.12)] space-y-6 flex flex-col justify-between">
+            <div className="space-y-4">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#2563EB] block">
+                SHIKSHASETU CONNECTED ECOSYSTEM
               </span>
 
-              {/* 4 Connected Stages with horizontal arrows */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 items-stretch">
-                {/* 1. Evidence */}
-                <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-stone-200 text-center flex flex-col justify-between space-y-1.5 shadow-2xs">
-                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#102A43] block">
-                    EVIDENCE
-                  </span>
-                  <p className="text-[11px] text-[#102A43]/75 leading-tight">
-                    Daily quizzes, homework, AI-formative.
-                  </p>
+              <div className="space-y-2 text-sm text-[#102A43] font-medium">
+                <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-200 font-semibold">
+                  🏫 School Data (Marks, Attendance, Submissions)
                 </div>
-
-                {/* 2. Understanding */}
-                <div className="p-3.5 rounded-xl bg-[#EFF6FF] border border-[#2563EB]/25 text-center flex flex-col justify-between space-y-1.5 shadow-2xs">
-                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#2563EB] block">
-                    UNDERSTANDING
-                  </span>
-                  <p className="text-[11px] text-[#102A43]/75 leading-tight">
-                    Identify learning gaps, student strengths.
-                  </p>
+                <div className="text-center font-bold text-[#2563EB]">↓</div>
+                <div className="p-3 rounded-xl bg-teal-50/60 border border-teal-200 text-center font-bold text-teal-900">
+                  UNDERSTANDING
                 </div>
-
-                {/* 3. Action */}
-                <div className="p-3.5 rounded-xl bg-[#FFF9F0] border border-[#F59E0B]/30 text-center flex flex-col justify-between space-y-1.5 shadow-2xs">
-                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#F59E0B] block">
-                    ACTION
-                  </span>
-                  <p className="text-[11px] text-[#102A43]/75 leading-tight">
-                    Targeted teacher support, personalized practice.
-                  </p>
+                <div className="text-center font-bold text-[#2563EB]">↓</div>
+                <div className="p-3 rounded-xl bg-amber-50/60 border border-amber-200 text-center font-bold text-amber-900">
+                  ACTION
                 </div>
-
-                {/* 4. Outcome */}
-                <div className="p-3.5 rounded-xl bg-[#16A085] text-white text-center flex flex-col justify-between space-y-1.5 shadow-xs">
-                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-white block">
-                    OUTCOME
-                  </span>
-                  <p className="text-[11px] text-white/95 leading-tight font-medium">
-                    78% Mastery in Maths. Real-time growth.
-                  </p>
+                <div className="text-center font-bold text-[#2563EB]">↓</div>
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-300 text-center font-bold text-emerald-900">
+                  OUTCOME
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Bottom Summary Banner */}
-          <div className="pt-3 border-t border-stone-100 text-center text-xs sm:text-sm font-medium text-[#102A43]/75">
-            <span>Data gets recorded. Nothing changes. &rarr; </span>
-            <strong className="text-[#102A43] font-bold uppercase">DATA BECOMES ACTION</strong>
-            <span> for every stakeholder.</span>
+            <p className="text-xs text-emerald-800 font-bold pt-2 border-t border-blue-100">
+              ✓ Synchronously triggers role-specific next actions across Teacher, Student, and Parent.
+            </p>
           </div>
+        </div>
+
+        {/* Prominent Bottom Takeaway Banner */}
+        <div className="p-5 sm:p-6 rounded-2xl bg-[#102A43] text-white text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+          <p className="text-sm sm:text-base font-semibold leading-relaxed">
+            &quot;Traditional ERPs help schools manage what happened.<br className="hidden sm:block" />
+            <strong className="text-amber-300">ShikshaSetu connects that information to what should happen next.</strong>&quot;
+          </p>
+          <span className="px-4 py-2 rounded-xl bg-white/10 text-white font-mono text-xs font-bold shrink-0 border border-white/15">
+            Single Canonical Truth
+          </span>
         </div>
       </div>
     </section>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export type StudentTab = 'Today' | 'Homework' | 'Revision' | 'Tests & Marks' | 'Timetable' | 'Ask a Doubt';
+export type StudentTab = 'Today' | 'Homework' | 'Revision' | 'Tests & Marks' | 'Timetable' | 'Ask a Doubt' | 'Worry Jar';
 
 interface MobileNavProps {
   activeTab: StudentTab;
@@ -17,8 +17,8 @@ const TAB_CONFIG: Array<{ id: StudentTab; icon: string; label: string }> = [
   { id: 'Homework', icon: '📋', label: 'Homework' },
   { id: 'Revision', icon: '📚', label: 'Revision' },
   { id: 'Tests & Marks', icon: '📊', label: 'Marks' },
-  { id: 'Timetable', icon: '📅', label: 'Classes' },
   { id: 'Ask a Doubt', icon: '💡', label: 'Doubt' },
+  { id: 'Worry Jar', icon: '🏺', label: 'Worry Jar' },
 ];
 
 export default function StudentMobileNav({ activeTab, onTabChange, unreadCounts }: MobileNavProps) {

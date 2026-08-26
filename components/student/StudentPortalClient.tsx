@@ -11,6 +11,7 @@ import StudentLearningFocus from '@/components/student/StudentLearningFocus';
 import StudentMarksView from '@/components/student/StudentMarksView';
 import StudentExitTicketWidget from '@/components/student/StudentExitTicketWidget';
 import AiRevisionNotesWorkspace from '@/components/student/AiRevisionNotesWorkspace';
+import WorryJar from '@/components/student/WorryJar';
 import StudentMobileNav, { type StudentTab } from '@/components/student/StudentMobileNav';
 import { getCanonicalStudentState } from '@/lib/canonical';
 import { usePortalSync } from '@/hooks/usePortalSync';
@@ -28,6 +29,7 @@ const NAV_TABS: Array<{ id: StudentTab; icon: string; label: string }> = [
   { id: 'Tests & Marks', icon: '📊', label: 'Tests & Marks' },
   { id: 'Timetable', icon: '📅', label: 'Timetable' },
   { id: 'Ask a Doubt', icon: '💡', label: 'Ask a Doubt' },
+  { id: 'Worry Jar', icon: '🏺', label: 'Worry Jar' },
 ];
 
 export default function StudentPortalClient({ student }: StudentPortalClientProps) {
@@ -598,6 +600,20 @@ export default function StudentPortalClient({ student }: StudentPortalClientProp
               className="space-y-6"
             >
               <SchoolMitra studentId={studentId} studentName={displayName} />
+            </motion.div>
+          )}
+
+          {/* ══ TAB 7: WORRY JAR ══ */}
+          {activeTab === 'Worry Jar' && (
+            <motion.div
+              key="worry-jar-tab"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
+              className="space-y-6"
+            >
+              <WorryJar studentId={studentId} studentName={displayName} />
             </motion.div>
           )}
         </AnimatePresence>

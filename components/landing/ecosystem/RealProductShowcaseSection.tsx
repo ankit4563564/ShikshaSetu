@@ -1,129 +1,114 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export function RealProductShowcaseSection() {
-  const [activeTab, setActiveTab] = useState<'teacher' | 'student' | 'parent'>('teacher');
+  const [activePortal, setActivePortal] = useState<'teacher' | 'student' | 'parent'>('teacher');
 
-  const views = {
+  const portalContent = {
     teacher: {
-      title: 'Teacher Workspace',
-      url: 'app.shikshasetu.edu/teacher',
-      image: '/screenshots/teacher_page.png',
-      href: '/teacher',
-      desc: 'Live Student Support Radar & Formative Assessments',
+      tag: '👨‍🏫 TEACHER PORTAL (/teacher)',
+      question: '"Who needs my attention today?"',
+      desc: 'Ms. Ananya sees a prioritized 3-student attention radar highlighting Priya (58% Math) and Aarav with actionable visual review teaching prompts.',
+      action: 'Open Teacher Workspace →',
+      link: '/teacher',
+      color: 'text-[#2563EB]',
     },
     student: {
-      title: 'Student Portal',
-      url: 'app.shikshasetu.edu/student',
-      image: '/screenshots/student_page.png',
-      href: '/student',
-      desc: 'AI Study Notebook, Mitra Companion & Practice Quizzes',
+      tag: '🎓 STUDENT PORTAL (/student)',
+      question: '"What should I learn next?"',
+      desc: 'Aarav sees his daily priorities (Due Today, Test Tomorrow, 5-Min Practice) along with NCERT-grounded revision notes and diagnostic quiz feedback.',
+      action: 'Open Student Command Center →',
+      link: '/student',
+      color: 'text-[#0D9488]',
     },
     parent: {
-      title: 'Parent Today',
-      url: 'app.shikshasetu.edu/parent',
-      image: '/screenshots/parent_page.png',
-      href: '/parent',
-      desc: 'Daily Growth Digest, GPS Telemetry & Gate Passes',
+      tag: '🏡 PARENT PORTAL (/parent)',
+      question: '"How can I help my child?"',
+      desc: 'Sunita sees Aarav\'s academic health snapshot (Math 58%, Science 82%) and receives a practical dinner prompt to reinforce concepts at home.',
+      action: 'Open Parent Companion →',
+      link: '/parent',
+      color: 'text-[#D97706]',
     },
   };
 
-  const current = views[activeTab];
+  const curr = portalContent[activePortal];
 
   return (
-    <div id="product-showcase" className="p-6 sm:p-7 rounded-2xl bg-white border border-[#102A43]/10 shadow-[0_4px_24px_rgba(16,42,67,0.06)] space-y-4">
-      {/* Card Header & Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-3">
-        <h3 className="font-display text-base sm:text-lg font-black text-[#102A43] tracking-tight uppercase">
-          SEE SHIKSHASETU IN ACTION
-        </h3>
-
-        {/* Role Switcher Tabs */}
-        <div className="flex flex-wrap gap-1.5">
-          <button
-            type="button"
-            onClick={() => setActiveTab('teacher')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'teacher'
-                ? 'bg-[#2563EB] text-white shadow-xs'
-                : 'bg-stone-100 text-[#102A43]/70 hover:bg-stone-200'
-            }`}
-          >
-            Teacher Portal
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('student')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'student'
-                ? 'bg-[#2563EB] text-white shadow-xs'
-                : 'bg-stone-100 text-[#102A43]/70 hover:bg-stone-200'
-            }`}
-          >
-            Student Portal
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('parent')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'parent'
-                ? 'bg-[#2563EB] text-white shadow-xs'
-                : 'bg-stone-100 text-[#102A43]/70 hover:bg-stone-200'
-            }`}
-          >
-            Parent Portal
-          </button>
-        </div>
-      </div>
-
-      {/* Browser Window Mockup */}
-      <div className="rounded-xl overflow-hidden border border-stone-200 bg-stone-50 shadow-inner">
-        {/* Browser Chrome Bar */}
-        <div className="px-3.5 py-2 bg-stone-100 border-b border-stone-200 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-stone-300" />
-            <span className="w-2.5 h-2.5 rounded-full bg-stone-300" />
-            <span className="w-2.5 h-2.5 rounded-full bg-stone-300" />
-          </div>
-          <span className="text-xs font-mono text-stone-600 truncate max-w-xs">
-            https://{current.url}
+    <section className="py-14 md:py-18 bg-[#FFF9F0] border-b border-[#102A43]/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {/* Header */}
+        <div className="max-w-3xl space-y-2 text-left">
+          <span className="font-mono text-xs font-bold text-[#2563EB] tracking-widest uppercase block">
+            ACTUAL PRODUCT PROOF
           </span>
-          <Link href={current.href} className="text-xs font-bold text-[#2563EB] hover:underline flex items-center gap-1">
-            <span>Launch Live</span>
-            <span>&rarr;</span>
-          </Link>
+          <h2 className="font-display text-3xl sm:text-4xl font-black text-[#102A43] tracking-tight uppercase">
+            SEE SHIKSHASETU IN ACTION.
+          </h2>
+          <p className="text-base sm:text-lg text-[#102A43]/80 font-normal">
+            Three real interfaces built for three distinct everyday needs.
+          </p>
         </div>
 
-        {/* Screenshot Viewport with Smooth Animation */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
-            className="relative aspect-[16/10] w-full bg-stone-100"
+        {/* Portal Selector Tabs */}
+        <div className="flex flex-wrap gap-2.5">
+          <button
+            type="button"
+            onClick={() => setActivePortal('teacher')}
+            className={`px-4 py-2.5 rounded-xl font-display text-xs font-bold transition cursor-pointer ${
+              activePortal === 'teacher'
+                ? 'bg-[#2563EB] text-white shadow-xs'
+                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+            }`}
           >
-            <Image
-              src={current.image}
-              alt={current.title}
-              fill
-              className="object-cover object-top"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-          </motion.div>
-        </AnimatePresence>
-      </div>
+            Teacher: &quot;Who needs my attention?&quot;
+          </button>
+          <button
+            type="button"
+            onClick={() => setActivePortal('student')}
+            className={`px-4 py-2.5 rounded-xl font-display text-xs font-bold transition cursor-pointer ${
+              activePortal === 'student'
+                ? 'bg-[#0D9488] text-white shadow-xs'
+                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            Student: &quot;What should I learn next?&quot;
+          </button>
+          <button
+            type="button"
+            onClick={() => setActivePortal('parent')}
+            className={`px-4 py-2.5 rounded-xl font-display text-xs font-bold transition cursor-pointer ${
+              activePortal === 'parent'
+                ? 'bg-[#D97706] text-white shadow-xs'
+                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            Parent: &quot;How can I help?&quot;
+          </button>
+        </div>
 
-      {/* Bottom Subtext */}
-      <div className="flex items-center justify-between text-xs text-[#102A43]/70 pt-1">
-        <span className="font-medium">{current.desc}</span>
-        <span className="text-[#16A085] font-bold">✓ Production Verified</span>
+        {/* Active Portal Showcase Card */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#102A43]/10 shadow-[0_6px_24px_rgba(16,42,67,0.06)] space-y-4">
+          <span className={`text-xs font-mono font-bold uppercase tracking-wider block ${curr.color}`}>
+            {curr.tag}
+          </span>
+          <h3 className="font-display text-2xl sm:text-3xl font-black text-[#102A43]">
+            {curr.question}
+          </h3>
+          <p className="text-sm sm:text-base text-[#102A43]/80 leading-relaxed max-w-2xl">
+            {curr.desc}
+          </p>
+          <div className="pt-2">
+            <Link
+              href={curr.link}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900 text-white font-display text-xs font-bold hover:bg-slate-800 transition shadow-xs"
+            >
+              <span>{curr.action}</span>
+            </Link>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

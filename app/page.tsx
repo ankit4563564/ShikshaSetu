@@ -1,11 +1,14 @@
 import { EcosystemNavbar } from '@/components/landing/ecosystem/EcosystemNavbar';
 import { EcosystemHero } from '@/components/landing/ecosystem/EcosystemHero';
+import { TheProblemSection } from '@/components/landing/ecosystem/TheProblemSection';
 import { TheDifferenceSection } from '@/components/landing/ecosystem/TheDifferenceSection';
 import { ThreePerspectivesSection } from '@/components/landing/ecosystem/ThreePerspectivesSection';
+import { RealStudentExampleSection } from '@/components/landing/ecosystem/RealStudentExampleSection';
 import { LearningLoopSection } from '@/components/landing/ecosystem/LearningLoopSection';
-import { RealProductShowcaseSection } from '@/components/landing/ecosystem/RealProductShowcaseSection';
 import { AiEcosystemSection } from '@/components/landing/ecosystem/AiEcosystemSection';
-import { OutcomesFeatureSection } from '@/components/landing/ecosystem/OutcomesFeatureSection';
+import { DataProvenanceSection } from '@/components/landing/ecosystem/DataProvenanceSection';
+import { RealProductShowcaseSection } from '@/components/landing/ecosystem/RealProductShowcaseSection';
+import { WhatWeConnectSection } from '@/components/landing/ecosystem/WhatWeConnectSection';
 import { FinalCTA } from '@/components/landing/ecosystem/FinalCTA';
 import { Footer } from '@/components/landing/Footer';
 import { LandingMotion } from '@/components/landing/Motion';
@@ -20,39 +23,41 @@ export default function Home() {
           <EcosystemNavbar />
 
           <main className="pt-14 sm:pt-16">
-            {/* 2. HERO */}
+            {/* 1. HERO */}
             <EcosystemHero />
 
-            {/* 3. NOT JUST AN ERP */}
+            {/* 2. THE PROBLEM */}
+            <TheProblemSection />
+
+            {/* 3. DIFFERENTIATION: NOT JUST AN ERP */}
             <TheDifferenceSection />
 
-            {/* 4. ONE STUDENT. THREE PERSPECTIVES. ONE TRUTH. */}
+            {/* 4. CONNECTED STUDENT JOURNEY: THREE PERSPECTIVES */}
             <ThreePerspectivesSection />
 
-            {/* 5. 58% TO 78% MASTERY: THE CONTINUOUS LEARNING LOOP */}
+            {/* 5. REAL STUDENT EXAMPLE: DATA BECOMES ACTION */}
+            <RealStudentExampleSection />
+
+            {/* 6. CONTINUOUS LEARNING LOOP */}
             <LearningLoopSection />
 
-            {/* 6. LOWER TWO-COLUMN MASTER SHOWCASE (matching target reference PNG) */}
-            <section className="py-14 md:py-18 bg-[#FFF9F0]">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                  {/* LEFT COLUMN: See ShikshaSetu in Action + AI With Context */}
-                  <div className="lg:col-span-6 space-y-6">
-                    <RealProductShowcaseSection />
-                    <AiEcosystemSection />
-                  </div>
+            {/* 7. AI WITH CONTEXT (NOT JUST A CHATBOT) */}
+            <AiEcosystemSection />
 
-                  {/* RIGHT COLUMN: Capabilities + Don't Just Manage Your School */}
-                  <div className="lg:col-span-6 space-y-6">
-                    <OutcomesFeatureSection />
-                    <FinalCTA />
-                  </div>
-                </div>
-              </div>
-            </section>
+            {/* 8. DATA PROVENANCE (COMES FROM THE SCHOOL) */}
+            <DataProvenanceSection />
+
+            {/* 9. ACTUAL PRODUCT PROOF */}
+            <RealProductShowcaseSection />
+
+            {/* 10 & 11. WHAT WE CONNECT & WHY SCHOOLS USE IT */}
+            <WhatWeConnectSection />
+
+            {/* 12. FINAL CTA */}
+            <FinalCTA />
           </main>
 
-          {/* 7. FOOTER */}
+          {/* FOOTER */}
           <Footer />
         </div>
       </LandingMotion>

@@ -1,56 +1,56 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import Link from 'next/link';
 import { useLandingModal } from '../LandingModalContext';
 
 export function FinalCTA() {
-  const { openRoleSelector, openLeadModal } = useLandingModal();
+  const { openRoleSelector } = useLandingModal();
 
   return (
-    <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#102A43]/10 shadow-[0_4px_24px_rgba(16,42,67,0.06)] space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
-        {/* Left: Text and CTAs */}
-        <div className="sm:col-span-7 space-y-3.5">
-          <h3 className="font-display text-xl sm:text-2xl font-black text-[#102A43] tracking-tight leading-tight uppercase">
+    <section className="py-16 md:py-24 bg-[#102A43] text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
+        <div className="max-w-3xl mx-auto space-y-4">
+          <span className="font-mono text-xs font-bold text-amber-300 tracking-widest uppercase block">
+            THE CONNECTED FUTURE
+          </span>
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight uppercase leading-tight">
             DON&apos;T JUST MANAGE YOUR SCHOOL. <br />
             UNDERSTAND EVERY LEARNER.
-          </h3>
-          <p className="text-xs sm:text-sm text-[#102A43]/75 font-normal leading-relaxed">
-            Human-centric ShikshaSetu that understands and empowers every learner across the connected school day.
+          </h2>
+          <p className="text-base sm:text-lg text-white/80 font-normal max-w-2xl mx-auto leading-relaxed">
+            ShikshaSetu connects school information to the next meaningful action.
           </p>
-
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            <button
-              type="button"
-              onClick={openRoleSelector}
-              className="bg-[#2563EB] hover:bg-blue-700 text-white font-display text-xs font-bold px-5 py-3 rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <span>Explore ShikshaSetu</span>
-              <span className="font-bold">&rarr;</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => openLeadModal('Schedule a Demo')}
-              className="text-xs font-bold text-[#2563EB] hover:underline cursor-pointer"
-            >
-              Schedule a Demo
-            </button>
-          </div>
         </div>
 
-        {/* Right: Family Study Photography */}
-        <div className="sm:col-span-5 relative rounded-2xl overflow-hidden aspect-[4/3] border border-stone-200 shadow-2xs">
-          <Image
-            src="/images/editorial_parent_child.jpg"
-            alt="Family studying and smiling together"
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 30vw"
-          />
+        {/* Visual Pipeline Pill */}
+        <div className="inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 px-5 py-3 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md font-mono text-xs sm:text-sm font-bold text-amber-300">
+          <span>DATA</span>
+          <span className="text-white/40">→</span>
+          <span>UNDERSTANDING</span>
+          <span className="text-white/40">→</span>
+          <span>ACTION</span>
+          <span className="text-white/40">→</span>
+          <span className="text-emerald-400">OUTCOME</span>
+        </div>
+
+        {/* Action CTAs */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+          <button
+            type="button"
+            onClick={openRoleSelector}
+            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white font-display text-sm font-bold shadow-lg shadow-blue-500/25 transition cursor-pointer"
+          >
+            Explore ShikshaSetu →
+          </button>
+          <Link
+            href="/contact"
+            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/20 font-display text-sm font-bold transition"
+          >
+            Schedule a Demo →
+          </Link>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
