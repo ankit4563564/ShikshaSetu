@@ -384,175 +384,202 @@ export default function AdminDashboardClient({
           <PrincipalCopilotStrip />
 
           {/* ═══════════════════════════════════════════════════════════
-              PRIMARY: AI MORNING BRIEF
+              PRIMARY: ADMIN HOME — WHAT NEEDS TO BE MANAGED TODAY?
               ═══════════════════════════════════════════════════════════ */}
-          <motion.section variants={fadeSlideUp} className="relative overflow-hidden rounded-2xl bg-white p-6 sm:p-8 lg:p-10 shadow-sm border border-gray-200/60">
-            {/* Decorative gradient */}
-            <div className="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-primary/[0.06] blur-[80px] pointer-events-none" />
-            <div className="absolute -left-16 -bottom-16 w-48 h-48 rounded-full bg-sage/[0.04] blur-[60px] pointer-events-none" />
-
-            <div className="relative grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-8 items-start">
-              <div className="space-y-5">
-                {/* Greeting */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-primary">
-                    <Icon.Sparkles />
-                    <span className="text-[11px] font-semibold uppercase tracking-widest">AI Morning Brief</span>
-                  </div>
-                  <h1 className="font-display text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-ink tracking-tight leading-tight">
-                    {getGreeting()}, {firstName}
-                  </h1>
-                  <p className="text-sm text-muted/70 font-medium max-w-xl leading-relaxed">
-                    Everything across campus has been analyzed. Here's what needs your attention today.
-                  </p>
-                </div>
-
-                {/* Brief points */}
-                <div className="space-y-2">
-                  {briefPoints.map((pt, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.15 + i * 0.06 }}
-                      className="flex items-start gap-2.5"
-                    >
-                      <span className={`mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${sevColor[pt.severity].dot}`} />
-                      <span className={`text-sm font-medium ${pt.severity === 'green' ? 'text-muted/70' : 'text-ink'}`}>
-                        {pt.text}
-                      </span>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* Estimated review time + CTA */}
-                <div className="flex flex-wrap items-center gap-4 pt-1">
-                  <div className="flex items-center gap-1.5 text-muted/60">
-                    <Icon.Clock />
-                    <span className="text-[12px] font-medium">Estimated review time: <strong className="text-ink font-semibold">{estimatedMinutes} minutes</strong></span>
-                  </div>
-                  {priorityItems.length > 0 && (
-                    <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-[13px] font-semibold hover:bg-primary/90 transition-all shadow-md">
-                      Review Today's Priorities
-                      <Icon.ArrowRight />
-                    </button>
-                  )}
-                </div>
+          <motion.section variants={fadeSlideUp} className="relative overflow-hidden rounded-3xl bg-white p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-indigo-600 block">
+                  CAMPUS OPERATIONS
+                </span>
+                <h1 className="font-display text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                  {getGreeting()}, {firstName} 👋
+                </h1>
+                <p className="text-xs sm:text-sm font-semibold text-slate-500">
+                  ShikshaSetu Academy &bull; Central School Operations
+                </p>
               </div>
 
-              {/* ── Campus Health Score ─────────────────────────────── */}
-              <div className="relative rounded-2xl bg-gradient-to-b from-emerald-50/80 to-emerald-50/30 p-5 text-center border border-emerald-200/50">
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-600/80 block">Campus Health</span>
-                <motion.strong
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
-                  className="font-display text-5xl font-black text-emerald-700 block mt-2 tracking-tight"
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('data')}
+                  className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5"
                 >
-                  {Math.min(healthIndex, 100)}%
-                </motion.strong>
-                <p className="text-[10px] font-medium text-emerald-600/60 mt-1.5">Attendance & Engagement</p>
+                  <span>+ Add Student</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('data')}
+                  className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>+ Add Teacher</span>
+                </button>
+              </div>
+            </div>
+
+            {/* School Metric Snapshot */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1 text-center sm:text-left">
+                <span className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-slate-400 block">Total Students</span>
+                <strong className="text-xl sm:text-2xl font-black text-slate-900 block">428</strong>
+                <span className="text-[11px] text-slate-500 font-medium">Classes 1–12</span>
+              </div>
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1 text-center sm:text-left">
+                <span className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-slate-400 block">Teaching Faculty</span>
+                <strong className="text-xl sm:text-2xl font-black text-slate-900 block">32</strong>
+                <span className="text-[11px] text-emerald-700 font-bold">100% Present</span>
+              </div>
+              <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 space-y-1 text-center sm:text-left">
+                <span className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-emerald-800 block">Present Today</span>
+                <strong className="text-xl sm:text-2xl font-black text-emerald-800 block">401 (93.7%)</strong>
+                <span className="text-[11px] text-emerald-700 font-medium">27 Absences logged</span>
+              </div>
+              <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-1 text-center sm:text-left">
+                <span className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-amber-800 block">Active Bus Routes</span>
+                <strong className="text-xl sm:text-2xl font-black text-amber-800 block">6 Routes</strong>
+                <span className="text-[11px] text-amber-700 font-medium">All GPS telemetries active</span>
+              </div>
+            </div>
+
+            {/* Quick Admin Actions Strip */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-mono font-extrabold uppercase tracking-wider text-slate-400 block">
+                Quick Administrative Actions
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('data')}
+                  className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition cursor-pointer"
+                >
+                  🏫 Manage Classes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('data')}
+                  className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition cursor-pointer"
+                >
+                  👨‍👩‍👧 Assign Parent
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('logistics')}
+                  className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition cursor-pointer"
+                >
+                  🚌 Manage Transport
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('security')}
+                  className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition cursor-pointer"
+                >
+                  🎫 Gate Safety &amp; Passes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('rewards')}
+                  className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition cursor-pointer"
+                >
+                  📢 Publish School Notice
+                </button>
               </div>
             </div>
           </motion.section>
 
+          {/* ═══════════════════════════════════════════════════════════
+              NEEDS ATTENTION — OPERATIONAL TASK QUEUE
+              ═══════════════════════════════════════════════════════════ */}
+          <motion.section variants={fadeSlideUp} className="rounded-3xl bg-white p-6 sm:p-7 shadow-sm border border-rose-200 space-y-4">
+            <div className="flex items-center justify-between border-b border-rose-100 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">⚠️</span>
+                <div>
+                  <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-rose-600 block">
+                    OPERATIONAL QUEUE
+                  </span>
+                  <h2 className="font-display text-base sm:text-lg font-black text-slate-900">
+                    Needs Attention Today
+                  </h2>
+                </div>
+              </div>
+              <span className="text-xs font-mono font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200">
+                4 Actionable Items
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              {/* Item 1: Attendance */}
+              <div className="p-4 rounded-2xl bg-rose-50/50 border border-rose-200/80 space-y-2 flex flex-col justify-between">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono font-bold uppercase text-rose-700 block">Attendance</span>
+                  <p className="text-xs font-bold text-slate-900">
+                    12 students have attendance concerns (&lt;80%).
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('data')}
+                  className="text-xs font-bold text-rose-700 hover:underline text-left cursor-pointer pt-1"
+                >
+                  Review Attendance Roster &rarr;
+                </button>
+              </div>
+
+              {/* Item 2: Academic items */}
+              <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/80 space-y-2 flex flex-col justify-between">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono font-bold uppercase text-amber-800 block">Academic Reviews</span>
+                  <p className="text-xs font-bold text-slate-900">
+                    8 homework &amp; concept reviews pending across classes.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('data')}
+                  className="text-xs font-bold text-amber-800 hover:underline text-left cursor-pointer pt-1"
+                >
+                  View Class Status &rarr;
+                </button>
+              </div>
+
+              {/* Item 3: Parent requests */}
+              <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-200/80 space-y-2 flex flex-col justify-between">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono font-bold uppercase text-indigo-700 block">Parent Communications</span>
+                  <p className="text-xs font-bold text-slate-900">
+                    4 parent gate pass &amp; PTM requests awaiting confirmation.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('security')}
+                  className="text-xs font-bold text-indigo-700 hover:underline text-left cursor-pointer pt-1"
+                >
+                  Process Requests &rarr;
+                </button>
+              </div>
+
+              {/* Item 4: Fee overdue */}
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 flex flex-col justify-between">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono font-bold uppercase text-slate-600 block">Fee Registry</span>
+                  <p className="text-xs font-bold text-slate-900">
+                    3 fee payments overdue for Term 2.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('data')}
+                  className="text-xs font-bold text-slate-700 hover:underline text-left cursor-pointer pt-1"
+                >
+                  Send Fee Reminders &rarr;
+                </button>
+              </div>
+          </motion.section>
+
           {activeTab === 'overview' && (
             <motion.div variants={staggerContainer} className="space-y-8">
-
-              {/* ═══════════════════════════════════════════════════════
-                  SECONDARY: KPI Strip — 4 supporting metrics
-                  ═══════════════════════════════════════════════════════ */}
-              <motion.div variants={fadeSlideUp} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  { label: 'Attendance', value: `${stats.attendanceRate}%`, color: 'emerald' },
-                  { label: 'Support Cases', value: `${stats.needsAttention}`, color: stats.needsAttention > 0 ? 'red' : 'emerald' },
-                  { label: 'Gate Pass Requests', value: `${stats.activePasses + stats.pendingPasses}`, color: stats.pendingPasses > 0 ? 'amber' : 'emerald' },
-                  { label: "Today's Campus Entries", value: `${stats.todayScans}`, color: 'blue' },
-                ].map((kpi, i) => (
-                  <motion.div
-                    key={kpi.label}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + i * 0.05 }}
-                    className="rounded-xl bg-white p-4 border border-gray-200/60 shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <p className="text-[11px] font-semibold text-muted/60 uppercase tracking-wider">{kpi.label}</p>
-                    <strong className={`text-2xl font-extrabold block mt-1 ${
-                      kpi.color === 'emerald' ? 'text-emerald-700' :
-                      kpi.color === 'red' ? 'text-red-600' :
-                      kpi.color === 'amber' ? 'text-amber-700' :
-                      'text-blue-700'
-                    }`}>
-                      {kpi.value}
-                    </strong>
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              {/* ═══════════════════════════════════════════════════════
-                  SECONDARY: Today's Priorities — Premium task queue
-                  ═══════════════════════════════════════════════════════ */}
-              {priorityItems.length > 0 && (
-                <motion.section variants={fadeSlideUp} className="rounded-2xl bg-white p-6 lg:p-7 shadow-sm border border-gray-200/60">
-                  <div className="flex items-center justify-between mb-5">
-                    <div>
-                      <h2 className="font-display text-lg font-extrabold text-ink">Today's Priorities</h2>
-                      <p className="text-[12px] text-muted/60 mt-0.5 font-medium">Items sorted by urgency — most critical first</p>
-                    </div>
-                    {opsInsight && (
-                      <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                        opsInsight.priority === 'urgent' ? 'bg-red-50 text-red-600 border border-red-200/60' :
-                        opsInsight.priority === 'watch' ? 'bg-amber-50 text-amber-600 border border-amber-200/60' :
-                        'bg-emerald-50 text-emerald-600 border border-emerald-200/60'
-                      }`}>
-                        {opsInsight.priority === 'urgent' ? 'Requires Action' : opsInsight.priority === 'watch' ? 'Monitoring' : 'All Clear'}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="space-y-3">
-                    {priorityItems.map((item, index) => {
-                      const c = sevColor[item.severity];
-                      return (
-                        <motion.div
-                          key={item.label}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.06 }}
-                          className={`group rounded-xl p-4 transition-all border ${c.border} ${c.bg} hover:shadow-sm`}
-                        >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${c.dot}`} />
-                                <h3 className="text-sm font-semibold text-ink">{item.label}</h3>
-                              </div>
-                              <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] text-muted/70">
-                                <span className="flex items-center gap-1">
-                                  <Icon.Users />
-                                  {item.affected}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Icon.Clock />
-                                  {item.time}
-                                </span>
-                              </div>
-                              <p className="text-[12px] text-muted/60 mt-1.5">{item.suggestion}</p>
-                            </div>
-                            <button className={`flex-shrink-0 px-3.5 py-1.5 rounded-lg text-[12px] font-semibold transition-all ${
-                              item.severity === 'red'
-                                ? 'bg-red-600 text-white hover:bg-red-700 shadow-sm'
-                                : 'bg-white text-ink border border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                            }`}>
-                              Review
-                            </button>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </motion.section>
-              )}
 
               {/* ═══════════════════════════════════════════════════════
                   SECONDARY: School Health + Live Activity side by side
