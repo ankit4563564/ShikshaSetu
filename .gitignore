@@ -9,6 +9,7 @@
 
 # production
 /build
+/dist
 
 # debug logs
 *.log
@@ -27,6 +28,7 @@ yarn-error.log*
 
 # IDE & OS files
 .DS_Store
+Thumbs.db
 *.pem
 .idea/
 .vscode/
@@ -36,10 +38,13 @@ yarn-error.log*
 *.sln
 *.sw?
 
-# Gemin / Agent temporary files
+# Agent & temporary files
 .gemini/
+.turbo/
+.cache/
 
 # Test reports & build artifacts
+/coverage/
 /test-results/
 /playwright-report/
 *.tsbuildinfo
@@ -51,4 +56,7 @@ visual-audit-*.js
 
 # Temp files
 sample.txt
+*.tmp
+*.bak
+
 
