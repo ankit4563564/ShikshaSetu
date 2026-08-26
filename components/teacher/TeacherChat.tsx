@@ -39,30 +39,69 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
     return () => setActiveChatStudentId(null);
   }, [studentId, setActiveChatStudentId, clearNotificationsForStudent]);
 
-  // Load message history on studentId change
+  // Load and sync message history
   useEffect(() => {
     let isMounted = true;
-    const loadMessages = async () => {
+    const syncMessages = async () => {
       try {
         const history = await fetchChatMessagesAction(studentId);
-        if (isMounted) {
-          setMessages(history);
+        if (isMounted && history) {
+          setMessages((prev) => {
+            // Merge newly fetched messages with existing optimistic messages
+            const optimistic = prev.filter((m) => m.id.startsWith('temp-'));
+            const nonOptimistic = history;
+            
+            // Check if there are actual new messages to avoid unnecessary rerenders
+            if (
+              prev.length === nonOptimistic.length &&
+              prev.every((m, idx) => m.id === nonOptimistic[idx]?.id)
+            ) {
+              return prev;
+            }
+
+            // Remove any optimistic messages that have been confirmed in history
+            const remainingOptimistic = optimistic.filter(
+              (opt) => !nonOptimistic.some((dbMsg) => dbMsg.messageText === opt.messageText)
+            );
+
+            return [...nonOptimistic, ...remainingOptimistic];
+          });
         }
       } catch (err) {
         console.warn('[TeacherChat] Error loading messages:', err);
       }
     };
-    loadMessages();
+
+    // Initial load
+    syncMessages();
+
+    // Active real-time polling fallback (every 2.5s) to guarantee live updates even if websockets are delayed
+    const pollInterval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        syncMessages();
+      }
+    }, 2500);
+
+    const handleFocus = () => {
+      syncMessages();
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+
     return () => {
       isMounted = false;
+      clearInterval(pollInterval);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
     };
   }, [studentId]);
 
-  // Supabase Realtime subscription for incoming chat messages
+  // Supabase Realtime & Broadcast subscription for incoming chat messages
   useEffect(() => {
+    if (!studentId) return;
     const supabase = createClient();
     const channel = supabase
-      .channel(`teacher-chat-${studentId}`)
+      .channel(`chat-thread-${studentId}`)
       .on(
         'postgres_changes',
         {
@@ -102,6 +141,21 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
           });
         }
       )
+      .on('broadcast', { event: 'new_chat_message' }, ({ payload }: { payload: ChatMessageData }) => {
+        if (!payload || payload.studentId !== studentId) return;
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === payload.id)) return prev;
+          const matchedOptIndex = prev.findIndex(
+            (m) => m.senderRole === payload.senderRole && m.messageText === payload.messageText && m.id.startsWith('temp-')
+          );
+          if (matchedOptIndex !== -1) {
+            const updated = [...prev];
+            updated[matchedOptIndex] = payload;
+            return updated;
+          }
+          return [...prev, payload];
+        });
+      })
       .subscribe();
 
     return () => {
@@ -127,29 +181,26 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
     return () => container.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Auto-scroll logic
+  // Handle auto-scroll on new messages
   useEffect(() => {
-    if (!shouldAutoScroll && !isUserNearBottom) return;
+    if (messages.length === 0) return;
 
-    const container = chatContainerRef.current;
-    if (!container) return;
+    const isInitialLoad = lastMessageCountRef.current === 0;
+    const hasNewMessages = messages.length > lastMessageCountRef.current;
+    lastMessageCountRef.current = messages.length;
 
-    container.scrollTo({
-      top: container.scrollHeight,
-      behavior: shouldAutoScroll ? 'smooth' : 'auto'
-    });
-  }, [messages, shouldAutoScroll, isUserNearBottom]);
-
-  // Auto-scroll on newly sent message
-  useEffect(() => {
-    if (messages.length > 0 && messages[messages.length - 1].senderRole === 'teacher') {
-      setShouldAutoScroll(true);
-      const container = chatContainerRef.current;
-      if (container) {
-        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-      }
+    if (isInitialLoad || (hasNewMessages && isUserNearBottom)) {
+      requestAnimationFrame(() => {
+        const container = chatContainerRef.current;
+        if (container) {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: isInitialLoad ? 'auto' : 'smooth',
+          });
+        }
+      });
     }
-  }, [messages]);
+  }, [messages, isUserNearBottom]);
 
   const filteredMessages = messages.filter((msg) =>
     msg.messageText.toLowerCase().includes(searchQuery.toLowerCase().trim())
@@ -187,11 +238,25 @@ export default function TeacherChat({ studentId, studentName, teacherId }: Teach
       });
 
       if (res.success && res.message) {
+        const confirmedMsg = res.message;
         // ONLY clear draft on successful persistence
         if (inputText === textToSend) {
           setInputText('');
         }
-        setMessages((prev) => prev.map((msg) => (msg.id === tempId ? res.message! : msg)));
+        setMessages((prev) => prev.map((msg) => (msg.id === tempId ? confirmedMsg : msg)));
+
+        // Broadcast to shared channel for instantaneous cross-tab / cross-device receipt
+        try {
+          const supabase = createClient();
+          const channel = supabase.channel(`chat-thread-${studentId}`);
+          channel.send({
+            type: 'broadcast',
+            event: 'new_chat_message',
+            payload: confirmedMsg,
+          });
+        } catch (bErr) {
+          console.warn('[TeacherChat] Broadcast send note:', bErr);
+        }
       } else {
         // PRESERVE DRAFT ON FAILURE
         setMessages((prev) => prev.filter((msg) => msg.id !== tempId));

@@ -91,5 +91,17 @@ CREATE POLICY tenant_isolation_delete ON chat_messages FOR DELETE
 TO authenticated
 USING (school_id = current_user_school_id());
 
--- ── 5. Reload PostgREST Schema Cache ──
+-- ── 5. Enable Supabase Realtime Replication ──
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;
+  END IF;
+EXCEPTION WHEN OTHERS THEN
+  NULL; -- Table already in publication
+END $$;
+
+-- ── 6. Reload PostgREST Schema Cache ──
 NOTIFY pgrst, 'reload schema';

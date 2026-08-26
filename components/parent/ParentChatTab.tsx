@@ -46,21 +46,34 @@ export function ParentChatTab({
   const [aiTone, setAiTone] = useState<'polite' | 'shorter' | 'clearer'>('polite');
   const [isAiDrafting, setIsAiDrafting] = useState(false);
 
-  // Load message history on student change
+  // Load and auto-sync message history
   useEffect(() => {
     let isMounted = true;
-    async function loadMessages() {
-      setIsFetching(true);
-      setErrorMsg(null);
+    async function syncMessages() {
       try {
         const history = await fetchChatMessagesAction(studentId);
-        if (isMounted) {
-          setMessages(history);
+        if (isMounted && history) {
+          setMessages((prev) => {
+            const optimistic = prev.filter((m) => m.id.startsWith('temp-'));
+            const nonOptimistic = history;
+
+            if (
+              prev.length === nonOptimistic.length &&
+              prev.every((m, idx) => m.id === nonOptimistic[idx]?.id)
+            ) {
+              return prev;
+            }
+
+            const remainingOptimistic = optimistic.filter(
+              (opt) => !nonOptimistic.some((dbMsg) => dbMsg.messageText === opt.messageText)
+            );
+
+            return [...nonOptimistic, ...remainingOptimistic];
+          });
         }
       } catch (err: any) {
         if (isMounted) {
-          console.warn('[ParentChatTab] Failed to fetch messages:', err);
-          setErrorMsg('Could not load past conversation history.');
+          console.warn('[ParentChatTab] Failed to sync messages:', err);
         }
       } finally {
         if (isMounted) setIsFetching(false);
@@ -68,19 +81,37 @@ export function ParentChatTab({
     }
 
     if (studentId) {
-      loadMessages();
+      setIsFetching(true);
+      syncMessages();
+
+      // Active real-time polling fallback (every 2.5s) to guarantee live updates even if websockets are delayed
+      const pollInterval = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          syncMessages();
+        }
+      }, 2500);
+
+      const handleFocus = () => {
+        syncMessages();
+      };
+      window.addEventListener('focus', handleFocus);
+      document.addEventListener('visibilitychange', handleFocus);
+
+      return () => {
+        isMounted = false;
+        clearInterval(pollInterval);
+        window.removeEventListener('focus', handleFocus);
+        document.removeEventListener('visibilitychange', handleFocus);
+      };
     }
-    return () => {
-      isMounted = false;
-    };
   }, [studentId]);
 
-  // Supabase Realtime subscription for incoming chat messages
+  // Supabase Realtime & Broadcast subscription for incoming chat messages
   useEffect(() => {
     if (!studentId) return;
     const supabase = createClient();
     const channel = supabase
-      .channel(`parent-chat-${studentId}`)
+      .channel(`chat-thread-${studentId}`)
       .on(
         'postgres_changes',
         {
@@ -120,6 +151,21 @@ export function ParentChatTab({
           });
         }
       )
+      .on('broadcast', { event: 'new_chat_message' }, ({ payload }: { payload: ChatMessageData }) => {
+        if (!payload || payload.studentId !== studentId) return;
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === payload.id)) return prev;
+          const matchedOptIndex = prev.findIndex(
+            (m) => m.senderRole === payload.senderRole && m.messageText === payload.messageText && m.id.startsWith('temp-')
+          );
+          if (matchedOptIndex !== -1) {
+            const updated = [...prev];
+            updated[matchedOptIndex] = payload;
+            return updated;
+          }
+          return [...prev, payload];
+        });
+      })
       .subscribe();
 
     return () => {
@@ -167,9 +213,23 @@ export function ParentChatTab({
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
         setErrorMsg(result.error || "Couldn't send. Your message is still here.");
       } else if (result.message) {
+        const confirmedMsg = result.message;
         setInputText('');
         setIsContextFlag(false);
-        setMessages((prev) => prev.map((m) => (m.id === tempId ? result.message! : m)));
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? confirmedMsg : m)));
+
+        // Broadcast to shared channel for instantaneous cross-tab / cross-device receipt
+        try {
+          const supabase = createClient();
+          const channel = supabase.channel(`chat-thread-${studentId}`);
+          channel.send({
+            type: 'broadcast',
+            event: 'new_chat_message',
+            payload: confirmedMsg,
+          });
+        } catch (bErr) {
+          console.warn('[ParentChatTab] Broadcast send note:', bErr);
+        }
       }
     } catch (err: any) {
       console.error('[ParentChatTab] Send error:', err);
